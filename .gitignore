@@ -1,0 +1,14 @@
+# Project exclude paths
+/cmake-build-debug/
+/cmake-build-release/
+
+/Rendering/html/
+/Rendering/latex/
+/.clang-format
+
+/.idea/
+/out/
+/.vs/
+
+/*.rar
+/*.zip
