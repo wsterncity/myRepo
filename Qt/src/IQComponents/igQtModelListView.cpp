@@ -32,11 +32,11 @@ igQtModelListView::igQtModelListView(QWidget* parent) : QTreeView(parent) {
 				item->setIcon(QIcon(":/Ticon/Icons/Eyeball.svg"));
 			}
 			itemList[item] = !itemList[item];
-			printf("%s %d %d\n",item->text().toStdString().c_str(), index.row(), index.column());
+			
 			this->currentModelIdx = GetModelIndexFromItem(item);
 			auto curObj = iGame::SceneManager::Instance()->GetCurrentScene()->GetModelList()[GetModelIndexFromItem(item)];
 
-			qDebug() << curObj << ' ' << itemList[item];
+
 			curObj->SetVisibility(itemList[item]);
 			Q_EMIT UpdateCurrentScene();
 
@@ -45,7 +45,7 @@ igQtModelListView::igQtModelListView(QWidget* parent) : QTreeView(parent) {
 
 				auto curObj = iGame::SceneManager::Instance()->GetCurrentScene()->GetModelList()[GetDrawActorsFromItem(item)];
 				curObj->SetVisibility(itemList[item]);
-				qDebug() << '1' << GetDrawActorsFromItem(item);
+
 				Q_EMIT UpdateCurrentScene();
 				//Q_EMIT ChangeModelVisible(GetDrawActorsFromItem(item), itemList[item]);
 			}
@@ -59,7 +59,7 @@ igQtModelListView::igQtModelListView(QWidget* parent) : QTreeView(parent) {
 
 					auto curObj = iGame::SceneManager::Instance()->GetCurrentScene()->GetModelList()[GetDrawActorsFromItem(child)];
 					curObj->SetVisibility(itemList[item]);
-					qDebug() << '2' << GetDrawActorsFromItem(child);
+	
 					Q_EMIT UpdateCurrentScene();
 
 					//Q_EMIT ChangeModelVisible(GetDrawActorsFromItem(child), itemList[item]);

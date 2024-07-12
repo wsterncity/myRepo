@@ -2,9 +2,33 @@
 
 IGAME_NAMESPACE_BEGIN
 
-Axes::Axes() { initialize(); }
+Axes::Axes() 
+{ 
+    m_TriangleVAO.create();
+    m_PositionVBO.create(); 
+    m_ColorVBO.create();
+    m_TriangleEBO.create();
 
-Axes::~Axes(){};
+    m_FontVAO.create();
+    m_TextureCoordVBO.create(); 
+    m_WorldCoordVBO.create(); 
+    m_FontTextureEBO.create();
+
+    initialize(); 
+}
+
+Axes::~Axes()
+{
+    m_TriangleVAO.destroy();
+    m_PositionVBO.destroy();
+    m_ColorVBO.destroy();
+    m_TriangleEBO.destroy();
+
+    m_FontVAO.destroy();
+    m_TextureCoordVBO.destroy();
+    m_WorldCoordVBO.destroy();
+    m_FontTextureEBO.destroy();
+};
 
 void Axes::DrawAxes() {
     // draw axes
