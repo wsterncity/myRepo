@@ -82,12 +82,14 @@ igQtModelListView::igQtModelListView(QWidget* parent) : QTreeView(parent) {
 		});
 	connect(this, &QTreeView::clicked, this, [&](const QModelIndex& index) {
 		QStandardItem* item = model->itemFromIndex(index);
+		this->setCurrentIndex(index);
 		if (item) {
-
 			this->currentObjectIdx = GetObjectIdFromItem(item);
+//			qDebug() << currentObjectIdx;
 			iGame::SceneManager::Instance()->GetCurrentScene()->UpdateCurrentDataObject(currentObjectIdx);
 		}
 		});
+
 	// 连接右键点击事件
 	setContextMenuPolicy(Qt::CustomContextMenu);
 	connect(this, &QTreeView::customContextMenuRequested, this, &igQtModelListView::UpdateCustomMenu);
