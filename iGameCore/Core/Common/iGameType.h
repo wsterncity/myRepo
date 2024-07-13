@@ -6,33 +6,45 @@
 inline constexpr const char* FILE_NAME = "FILE_NAME";
 inline constexpr const char* FILE_PATH = "FILE_PATH";
 inline constexpr const char* FILE_SUFFIX = "FILE_SUFFIX";
+inline constexpr const char* ATTRIBUTE_NAME_ARRAY = "ATTRIBUTE_NAME_ARRAY";
 
 // DataObjectType
 inline constexpr int IG_NONE = -1;
-inline constexpr int IG_DATA_OBJECT = 0;
-inline constexpr int IG_POINT_SET = 1;
-inline constexpr int IG_SURFACE_MESH = 2;
-inline constexpr int IG_VOLUME_MESH = 3;
-inline constexpr int IG_DATAOBJECTTYPE_COUNT = 4;
+enum {
+	IG_DATA_OBJECT = 0,
+	IG_COMPOSITE_DATA_OBJECT,
+	IG_POINT_SET,
+	IG_SURFACE_MESH,
+	IG_VOLUME_MESH,
+	IG_DATA_OBJECT_COUNT,
+};
+
 
 // DrawMode
-inline constexpr int IG_POINTS = 0;
-inline constexpr int IG_WIREFRAME = 1;
-inline constexpr int IG_SURFACE = 2;
-inline constexpr int IG_SURFACE_WITH_EDGE = 3;
-inline constexpr int IG_VOLUME = 4;
+enum {
+	IG_POINTS = 0,
+	IG_WIREFRAME,
+	IG_SURFACE,
+	IG_SURFACE_WITH_EDGE,
+	IG_VOLUME,
+	IG_DRAW_MODE_COUNT,
+};
 
 // AttributeType
-inline constexpr int IG_SCALAR = 0; // 标量
-inline constexpr int IG_VECTOR = 1; // 矢量
-inline constexpr int IG_NORMAL = 2; // 法线
-inline constexpr int IG_TCOORD = 3; // 纹理坐标
-inline constexpr int IG_TENSOR = 4; // 张量
-inline constexpr int NUM_ATTRIBUTES = 5;
+enum {
+	IG_SCALAR = 0,
+	IG_VECTOR,
+	IG_NORMAL,
+	IG_TCOORD,
+	IG_TENSOR,
+	IG_ATTRIBUTE_COUNT,
+};
 
 // AttributeWithElementType
-inline constexpr int IG_POINT = 0;
-inline constexpr int IG_CELL = 1;
+enum {
+	IG_POINT = 0,
+	IG_CELL,
+};
 
 inline constexpr int IG_VOID = 0;
 inline constexpr int IG_CHAR = 1;
@@ -56,14 +68,14 @@ inline constexpr int IG_UINT32 = 6;
 inline constexpr int IG_INT64 = 7;
 inline constexpr int IG_UINT64 = 8;
 
-typedef long IGenum;
-
 // Index命名
-typedef int igIndex;
-typedef unsigned int iguIndex;
-typedef long long igIndex64;
-typedef unsigned long long iguIndex64;
-typedef short igIndex16;
-typedef unsigned short iguIndex16;
+using igIndex = int;
+using iguIndex = unsigned int;
+using igIndex64 = long long;
+using iguIndex64 = unsigned long long;
+using igIndex16 = short;
+using iguIndex16 = unsigned short;
 
+using DataObjectId = int;
+using IGenum = long;
 #endif

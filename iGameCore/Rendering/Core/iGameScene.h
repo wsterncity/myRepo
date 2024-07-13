@@ -86,11 +86,8 @@ public:
         glViewport(0, 0, m_Camera->GetViewPort().x, m_Camera->GetViewPort().y);
 
         for (auto& model : m_Models) {
-            if (model->IsDrawable())
-            {
-                model->ConvertToDrawableData();
-                model->Draw(this);
-            }
+            model->ConvertToDrawableData();
+            model->Draw(this);
         }
     }
 

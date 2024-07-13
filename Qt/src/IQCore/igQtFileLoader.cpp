@@ -69,29 +69,40 @@ void igQtFileLoader::OpenFile(const std::string& filePath)
 	mesh->GetMetadata()->AddString(FILE_NAME, filePath.substr(filePath.find_last_of('/') + 1));
 	mesh->GetMetadata()->AddString(FILE_SUFFIX, filePath.substr(filePath.find_last_of('.') + 1));
 
-	//auto obj1 = iGame::FileIO::ReadFile("H:/iGameProjects/model/obj/horse.obj");
-	//SurfaceMesh::Pointer mesh1 = DynamicCast<SurfaceMesh>(obj1);
+	auto obj1 = iGame::FileIO::ReadFile("H:/iGameProjects/model/obj/horse.obj");
+	SurfaceMesh::Pointer mesh1 = DynamicCast<SurfaceMesh>(obj1);
 
-	//points = mesh1->GetPoints()->ConvertToDataArray();
-	//pointScalar = FloatArray::New();
-	//cellScalar = FloatArray::New();
-	//pointScalar->SetName("pointScalar");
-	//cellScalar->SetName("cellScalar");
-	//for (int i = 0; i < points->GetNumberOfTuples(); i++)
-	//{
-	//	points->GetTuple(i, tu);
-	//	pointScalar->InsertNextValue(tu[0]);
-	//}
+	points = mesh1->GetPoints()->ConvertToDataArray();
+	pointScalar = FloatArray::New();
+	cellScalar = FloatArray::New();
+	pointScalar->SetName("pointScalar");
+	cellScalar->SetName("cellScalar");
+	for (int i = 0; i < points->GetNumberOfTuples(); i++)
+	{
+		points->GetTuple(i, tu);
+		pointScalar->InsertNextValue(tu[0]);
+	}
 
-	//for (int i = 0; i < mesh1->GetNumberOfFaces(); i++)
-	//{
-	//	Face* face = mesh1->GetFace(i);
-	//	cellScalar->InsertNextValue(face->Points->GetPoint(0)[0]);
-	//}
-	//mesh1->GetAttributes()->AddScalars(IG_POINT, pointScalar);
-	//mesh1->GetAttributes()->AddScalars(IG_CELL, cellScalar);
-	m_SceneManager->GetCurrentScene()->AddDataObject(obj);
-	//m_SceneManager->GetCurrentScene()->AddDataObject(obj1);
+	for (int i = 0; i < mesh1->GetNumberOfFaces(); i++)
+	{
+		Face* face = mesh1->GetFace(i);
+		cellScalar->InsertNextValue(face->Points->GetPoint(0)[0]);
+	}
+	mesh1->GetAttributes()->AddScalars(IG_POINT, pointScalar);
+	mesh1->GetAttributes()->AddScalars(IG_CELL, cellScalar);
+	
+
+	DataObject::Pointer multiData = DataObject::New();
+	multiData->AddSubDataObject(mesh);
+	multiData->AddSubDataObject(obj1);
+	multiData->SetViewStyle(IG_SURFACE);
+
+	StringArray::Pointer attrbNameArray = StringArray::New();
+	attrbNameArray->InsertToBack("pointScalar");
+	attrbNameArray->InsertToBack("cellScalar");
+	multiData->GetMetadata()->AddStringArray(ATTRIBUTE_NAME_ARRAY, attrbNameArray);
+
+	m_SceneManager->GetCurrentScene()->AddDataObject(multiData);
 	Q_EMIT EmitDoneCurrent();
 	
 

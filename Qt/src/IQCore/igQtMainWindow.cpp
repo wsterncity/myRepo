@@ -309,6 +309,7 @@ void igQtMainWindow::updateColorBarShow()
 void igQtMainWindow::ChangeViewStyle()
 {
 	int item = viewStyleCombox->currentIndex();
+	if (item < 0) return;
 	this->rendererWidget->ChangeViewStyle(item);
 }
 
@@ -325,16 +326,15 @@ void igQtMainWindow::updateViewStyleAndCloudPicture()
 	if (current)
 	{
 		IGenum defaultViewStyle = current->GetViewStyle();
-		auto& data = current->GetAttributes()->GetArrays();
 		viewStyleCombox->setCurrentIndex(defaultViewStyle);
 		scalarViewCombox->clear();
 		scalarViewCombox->addItem("None        ");
-		for (int i = 0; i < data.size(); i++)
+		
+		StringArray::Pointer nameArray = 
+			current->GetMetadata()->GetStringArray(ATTRIBUTE_NAME_ARRAY);
+		for (int i = 0; i < nameArray->Size(); i++)
 		{
-			if (data[i].active)
-			{
-				scalarViewCombox->addItem(QString::fromStdString(data[i].array->GetName()));
-			}
+			scalarViewCombox->addItem(QString::fromStdString(nameArray->GetElement(i)));
 		}
 		scalarViewCombox->setCurrentIndex(0);
 	}
@@ -343,5 +343,5 @@ void igQtMainWindow::updateViewStyleAndCloudPicture()
 void igQtMainWindow::updateCurrentDataObject()
 {
 	updateViewStyleAndCloudPicture();
-
+	int a;
 }

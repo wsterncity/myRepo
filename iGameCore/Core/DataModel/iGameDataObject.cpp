@@ -15,4 +15,77 @@ DataObject::Pointer DataObject::CreateDataObject(IGenum type) {
 		return nullptr;
 	}
 }
+
+DataObject::Pointer DataObject::GetSubDataObject(DataObjectId id) 
+{
+	if (m_SubDataObjectsHelper == nullptr)
+	{
+		return nullptr;
+	}
+
+	return m_SubDataObjectsHelper->GetSubDataObject(id);
+}
+
+DataObjectId DataObject::AddSubDataObject(DataObject::Pointer obj)
+{
+	if (m_SubDataObjectsHelper == nullptr)
+	{
+		m_SubDataObjectsHelper = SubDataObjectsHelper::New();
+	}
+
+	return m_SubDataObjectsHelper->AddSubDataObject(obj);
+}
+
+void DataObject::RemoveSubDataObject(DataObjectId id)
+{
+	if (m_SubDataObjectsHelper == nullptr)
+	{
+		return;
+	}
+
+	return m_SubDataObjectsHelper->RemoveSubDataObject(id);
+}
+
+bool DataObject::HasSubDataObject() noexcept
+{
+	if (m_SubDataObjectsHelper == nullptr)
+	{
+		return false;
+	}
+
+	return m_SubDataObjectsHelper->HasSubDataObject();
+}
+
+int DataObject::GetNumberOfSubDataObjects() noexcept
+{
+	if (m_SubDataObjectsHelper == nullptr)
+	{
+		return 0;
+	}
+
+	return m_SubDataObjectsHelper->GetNumberOfSubDataObjects();
+}
+
+void DataObject::Draw(Scene* scene)
+{
+	ProcessSubDataObjects(&DataObject::Draw, scene);
+}
+void DataObject::ConvertToDrawableData()
+{
+	ProcessSubDataObjects(&DataObject::ConvertToDrawableData);
+}
+void DataObject::ViewCloudPicture(int index, int demension) // ø… ”ªØ‘∆Õº
+{
+	ProcessSubDataObjects(&DataObject::ViewCloudPicture, index, demension);
+}
+void DataObject::SetViewStyle(IGenum mode)
+{
+	m_ViewStyle = mode; 
+	ProcessSubDataObjects(&DataObject::SetViewStyle, mode);
+}
+void DataObject::SetVisibility(bool f)
+{
+	m_Visibility = f;
+	ProcessSubDataObjects(&DataObject::SetVisibility, f);
+}
 IGAME_NAMESPACE_END

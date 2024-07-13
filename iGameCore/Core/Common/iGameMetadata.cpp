@@ -1,35 +1,39 @@
 #include "iGameMetadata.h"
 IGAME_NAMESPACE_BEGIN
-EntryValue::EntryValue(const EntryValue& value)
-{
-	m_Data.resize(value.m_Data.size());
-	memcpy(&m_Data[0], &value.m_Data[0], value.m_Data.size());
-}
-
-EntryValue::EntryValue(const std::string& value)
-{
-	m_Data.resize(value.size());
-	memcpy(&m_Data[0], &value[0], value.size());
-}
-
 void Metadata::AddInt(const std::string& name, int value)
 {
 	AddEntry(name, value);
 }
 
-bool Metadata::GetInt(const std::string& name, int* value) const
+bool Metadata::GetInt(const std::string& name, int& value) const
 {
 	return GetEntry(name, value);
 }
 
-void Metadata::AddIntArray(const std::string& name, const std::vector<int>& value)
+int Metadata::GetInt(const std::string& name) const
+{
+	int value{};
+	GetEntry(name, value);
+	return value;
+}
+
+void Metadata::AddIntArray(const std::string& name, IntArray2::Pointer value)
 {
 	AddEntry(name, value);
 }
 
-bool Metadata::GetIntArray(const std::string& name, std::vector<int>* value) const
+bool Metadata::GetIntArray(const std::string& name, IntArray2::Pointer& value) const
 {
 	return GetEntry(name, value);
+}
+
+IntArray2::Pointer Metadata::GetIntArray(const std::string& name) const
+{
+	IntArray2::Pointer value;
+	if (GetEntry(name, value)) {
+		return value;
+	}
+	return nullptr;
 }
 
 void Metadata::AddFloat(const std::string& name, float value)
@@ -37,19 +41,35 @@ void Metadata::AddFloat(const std::string& name, float value)
 	AddEntry(name, value);
 }
 
-bool Metadata::GetFloat(const std::string& name, float* value) const
+bool Metadata::GetFloat(const std::string& name, float& value) const
 {
 	return GetEntry(name, value);
 }
 
-void Metadata::AddFloatArray(const std::string& name, const std::vector<float>& value)
+float Metadata::GetFloat(const std::string& name) const
+{
+	float value{};
+	GetEntry(name, value);
+	return value;
+}
+
+void Metadata::AddFloatArray(const std::string& name, FloatArray2::Pointer value)
 {
 	AddEntry(name, value);
 }
 
-bool Metadata::GetFloatArray(const std::string& name, std::vector<float>* value) const
+bool Metadata::GetFloatArray(const std::string& name, FloatArray2::Pointer& value) const
 {
 	return GetEntry(name, value);
+}
+
+FloatArray2::Pointer Metadata::GetFloatArray(const std::string& name) const
+{
+	FloatArray2::Pointer value;
+	if (GetEntry(name, value)) {
+		return value;
+	}
+	return nullptr;
 }
 
 void Metadata::AddDouble(const std::string& name, double value)
@@ -57,19 +77,35 @@ void Metadata::AddDouble(const std::string& name, double value)
 	AddEntry(name, value);
 }
 
-bool Metadata::GetDouble(const std::string& name, double* value) const
+bool Metadata::GetDouble(const std::string& name, double& value) const
 {
 	return GetEntry(name, value);
 }
 
-void Metadata::AddDoubleArray(const std::string& name, const std::vector<double>& value)
+double Metadata::GetDouble(const std::string& name) const
+{
+	double value{};
+	GetEntry(name, value);
+	return value;
+}
+
+void Metadata::AddDoubleArray(const std::string& name, DoubleArray2::Pointer value)
 {
 	AddEntry(name, value);
 }
 
-bool Metadata::GetDoubleArray(const std::string& name, std::vector<double>* value) const
+bool Metadata::GetDoubleArray(const std::string& name, DoubleArray2::Pointer& value) const
 {
 	return GetEntry(name, value);
+}
+
+DoubleArray2::Pointer Metadata::GetDoubleArray(const std::string& name) const
+{
+	DoubleArray2::Pointer value;
+	if (GetEntry(name, value)) {
+		return value;
+	}
+	return nullptr;
 }
 
 void Metadata::AddString(const std::string& name, const std::string& value)
@@ -77,9 +113,35 @@ void Metadata::AddString(const std::string& name, const std::string& value)
 	AddEntry(name, value);
 }
 
-bool Metadata::GetString(const std::string& name, std::string* value) const
+bool Metadata::GetString(const std::string& name, std::string& value) const
 {
 	return GetEntry(name, value);
+}
+
+std::string Metadata::GetString(const std::string& name) const
+{
+	std::string value{};
+	GetEntry(name, value);
+	return value;
+}
+
+void Metadata::AddStringArray(const std::string& name, StringArray::Pointer value)
+{
+	AddEntry(name, value);
+}
+
+bool Metadata::GetStringArray(const std::string& name, StringArray::Pointer& value) const
+{
+	return GetEntry(name, value);
+}
+
+StringArray::Pointer Metadata::GetStringArray(const std::string& name) const
+{
+	StringArray::Pointer value;
+	if (GetEntry(name, value)) {
+		return value;
+	}
+	return nullptr;
 }
 
 bool Metadata::AddSubMetadata(const std::string& name, Pointer sub_metadata)
@@ -93,16 +155,7 @@ bool Metadata::AddSubMetadata(const std::string& name, Pointer sub_metadata)
 	return true;
 }
 
-const Metadata* Metadata::GetSubMetadata(const std::string& name) const
-{
-	auto sub_ptr = m_SubMetadatas.find(name);
-	if (sub_ptr == m_SubMetadatas.end()) {
-		return nullptr;
-	}
-	return sub_ptr->second.get();
-}
-
-Metadata* Metadata::GetSubMetadata(const std::string& name)
+Metadata::Pointer Metadata::GetSubMetadata(const std::string& name)
 {
 	auto sub_ptr = m_SubMetadatas.find(name);
 	if (sub_ptr == m_SubMetadatas.end()) {
