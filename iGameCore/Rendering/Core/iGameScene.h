@@ -82,7 +82,7 @@ public:
                 if (subObj != nullptr)
                 {
                     m_CurrentObjectId = id;
-                    m_CurrentObject = obj.get();
+                    m_CurrentObject = subObj.get();
                     return true;
                 }
             }
