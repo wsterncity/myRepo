@@ -72,9 +72,9 @@ void igQtFileLoader::OpenFile(const std::string& filePath)
 	mesh->GetMetadata()->AddString(FILE_NAME, filePath.substr(filePath.find_last_of('/') + 1));
 	mesh->GetMetadata()->AddString(FILE_SUFFIX, filePath.substr(filePath.find_last_of('.') + 1));
 
-	auto obj1 = iGame::FileIO::ReadFile("H:/iGameProjects/model/obj/horse.obj");
-//	auto obj1 = iGame::FileIO::ReadFile("C:\\Users\\m_ky\\Desktop\\Resource\\Model\\bunny.obj");
-	//obj1->SetUniqueDataObjectId();
+//	auto obj1 = iGame::FileIO::ReadFile("H:/iGameProjects/model/obj/horse.obj");
+	auto obj1 = iGame::FileIO::ReadFile("C:\\Users\\m_ky\\Desktop\\Resource\\Model\\bunny.obj");
+	obj1->SetUniqueDataObjectId();
 //	auto obj1 = iGame::FileIO::ReadFile(filePath);
 	SurfaceMesh::Pointer mesh1 = DynamicCast<SurfaceMesh>(obj1);
 

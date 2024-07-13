@@ -101,6 +101,7 @@ signals:
 	void DeleteModel();
 	void UpdateCurrentScene();
 
+    void UpdateCurrentItemToOtherQtModule();
 protected:
 	void AddChildToItem(QStandardItem* item, const QString& fileName, int objId);
 

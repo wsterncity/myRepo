@@ -248,7 +248,8 @@ void igQtMainWindow::initAllMySignalConnections()
 	//connect(ui->widget_FlowField, &igQtStreamTracerWidget::sendstreams, rendererWidget, &igQtModelDrawWidget::DrawStreamline);
 	//connect(ui->widget_FlowField, &igQtStreamTracerWidget::updatestreams, rendererWidget, &igQtModelDrawWidget::UpdateStreamline);
 
-	connect(ui->modelTreeView, &igQtModelListView::UpdateCurrentScene, this, &igQtMainWindow::updateCurrentDataObject);
+	connect(ui->modelTreeView, &igQtModelListView::UpdateCurrentScene, this, [&](){rendererWidget->update();});
+	connect(ui->modelTreeView, &igQtModelListView::UpdateCurrentItemToOtherQtModule, this, &igQtMainWindow::updateCurrentDataObject);
 
 	//connect(ui->modelTreeView, &igQtModelListView::ChangeModelVisible, rendererWidget, &igQtModelDrawWidget::changeTargetModelVisible);
 	//connect(ui->widget_ScalarField, &igQtScalarViewWidget::updateCurrentModelColor, rendererWidget, &igQtModelDrawWidget::UpdateCurrentModel);
@@ -349,5 +350,4 @@ void igQtMainWindow::updateCurrentDataObject()
 {
 	updateViewStyleAndCloudPicture();
 	
-	rendererWidget->update();
 }
