@@ -10,7 +10,7 @@ public:
 
 protected:
 
-    /* ц╩сц©ирти╬акё╛╧╕дэуШ╨о╣╫ igQtRenderWight ио */
+    /* Ф╡║Г■╗Е▐╞Д╩╔Е┬═Д╨├О╪▄Е┼÷Х┐╫Ф∙╢Е░┬Е┬╟ igQtRenderWight Д╦┼ */
 
 private:
 };

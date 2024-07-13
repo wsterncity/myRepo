@@ -66,15 +66,18 @@ public:
 
 	~igQtModelListView() override;
 public:
-	int GetModelIndexFromItem(QStandardItem* item);
-	int GetDrawActorsFromItem(QStandardItem* item);
+	int GetObjectIdFromItem(QStandardItem* item);
+//	int GetDrawActorsFromItem(QStandardItem* item);
 
-	QStandardItem* GetItemFromModelIndex(int currentModelIndex);
+	QStandardItem* GetObjectItemFromObjectId(int currentObjectId);
 	void DeleteCurrentModelItem(QStandardItem* item);
 public slots:
+
+    /* Add model. The model will generate a unique ID similar to its child blocks. */
 	void AddModel(QString modelName);
 
-	void InsertModel(int idx, const QString& modelName);
+    /* Insert into treeview in the target index. Inserts item after the specified index. */
+	void InsertObject(int idx, const QString& modelName);
 
 	void DeleteCurrentFile();
 
@@ -82,12 +85,13 @@ public slots:
 
 	void ChangeSelected2LastItem();
 
-	void AddChildToItem(QStandardItem* item, const QString& fileName, int actorIndex);
 
-	void AddChildToModel(int modelindex, const QString& fileName, int actorIndex);
+	void AddChildToModel(int modelindex, const QString& fileName);
 
 	void UpdateCustomMenu(const QPoint& point);
+
 	void ShowAllModel();
+
 	void HideAllModel();
 signals:
 	void ChangeModelVisible(int modelIdx, bool visible);
@@ -97,15 +101,22 @@ signals:
 
 	void UpdateCurrentScene();
 protected:
-	int currentModelIdx{ -1 };
-	int nextModelIdx{ 0 };
+//	int currentModelIdx{ -1 };
+	int currentObjectIdx{ -1 };
+//	int nextModelIdx{ 0 };
+	int nextObjectIdx{ 0 };
 	QStandardItemModel* model;
 	//QList<bool> itemList;
-	QMap<QStandardItem*, bool>itemList;
-	QMap<QStandardItem*, int>itemModelIds;
-	QMap<QStandardItem*, int>itemModelActors;
+
+
+	QMap<QStandardItem*, bool>itemVisibleList;
+	QMap<QStandardItem*, int>itemObjectIds;
+//	QMap<QStandardItem*, int>itemModelActors;
 	IconDelegate* iconDelegate;
 	QMenu* contextMenu;
 protected:
+
+    void AddChildToItem(QStandardItem* item, const QString& fileName);
+
 
 };

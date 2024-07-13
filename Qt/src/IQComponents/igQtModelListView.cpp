@@ -9,9 +9,7 @@
 #include <qmenu.h>
 #include <qaction.h>
 
-
 igQtModelListView::igQtModelListView(QWidget* parent) : QTreeView(parent) {
-
 	this->setHeaderHidden(true);
 	// Create a QStandardItemModel to hold data
 	model = new QStandardItemModel(this);
@@ -22,56 +20,55 @@ igQtModelListView::igQtModelListView(QWidget* parent) : QTreeView(parent) {
 	iconDelegate = new IconDelegate(this);
 	setItemDelegate(iconDelegate);
 	//setItemDelegate(new LineDelegate(this));
-	connect(iconDelegate, &IconDelegate::iconClicked, [this](const QModelIndex& index) {
+	connect(iconDelegate, &IconDelegate::iconClicked, [&](const QModelIndex& index) {
 		QStandardItem* item = model->itemFromIndex(index);
 		if (item) {
-			if (itemList[item]) {
+			if (itemVisibleList[item]) {
 				item->setIcon(QIcon(":/Ticon/Icons/EyeballClosed.svg"));
-			}
-			else {
+			} else {
 				item->setIcon(QIcon(":/Ticon/Icons/Eyeball.svg"));
 			}
-			itemList[item] = !itemList[item];
-			
-			this->currentModelIdx = GetModelIndexFromItem(item);
-			auto curObj = iGame::SceneManager::Instance()->GetCurrentScene()->GetModelList()[GetModelIndexFromItem(item)];
+			itemVisibleList[item] = !itemVisibleList[item];
+			printf("%s %d %d\n",item->text().toStdString().c_str(), index.row(), index.column());
+//			this->currentModelIdx = GetModelIndexFromItem(item);
+			auto curObj = iGame::SceneManager::Instance()->GetCurrentScene()->GetModelList()[GetObjectIdFromItem(item)];
 
-
-			curObj->SetVisibility(itemList[item]);
+			qDebug() << curObj << ' ' << itemVisibleList[item];
+			curObj->SetVisibility(itemVisibleList[item]);
 			Q_EMIT UpdateCurrentScene();
 
-			return;
-			if (itemModelActors.count(item)) {
-
-				auto curObj = iGame::SceneManager::Instance()->GetCurrentScene()->GetModelList()[GetDrawActorsFromItem(item)];
-				curObj->SetVisibility(itemList[item]);
-
-				Q_EMIT UpdateCurrentScene();
-				//Q_EMIT ChangeModelVisible(GetDrawActorsFromItem(item), itemList[item]);
-			}
-			else {
-				int childNum = item->rowCount();
-				for (int i = 0; i < childNum; i++) {
-					auto child = item->child(i, 0);
-					if (itemList[item]) child->setIcon(QIcon(":/Ticon/Icons/Eyeball.svg"));
-					else child->setIcon(QIcon(":/Ticon/Icons/EyeballClosed.svg"));
-					itemList[child] = itemList[item];
-
-					auto curObj = iGame::SceneManager::Instance()->GetCurrentScene()->GetModelList()[GetDrawActorsFromItem(child)];
-					curObj->SetVisibility(itemList[item]);
-	
-					Q_EMIT UpdateCurrentScene();
-
-					//Q_EMIT ChangeModelVisible(GetDrawActorsFromItem(child), itemList[item]);
-				}
-			}
+//			return;
+//			if (itemModelActors.count(item)) {
+//
+//				auto curObj = iGame::SceneManager::Instance()->GetCurrentScene()->GetModelList()[GetDrawActorsFromItem(item)];
+//				curObj->SetVisibility(itemVisibleList[item]);
+//				qDebug() << '1' << GetDrawActorsFromItem(item);
+//				Q_EMIT UpdateCurrentScene();
+//				//Q_EMIT ChangeModelVisible(GetDrawActorsFromItem(item), itemVisibleList[item]);
+//			}
+//			else {
+//				int childNum = item->rowCount();
+//				for (int i = 0; i < childNum; i++) {
+//					auto child = item->child(i, 0);
+//					if (itemVisibleList[item]) child->setIcon(QIcon(":/Ticon/Icons/Eyeball.svg"));
+//					else child->setIcon(QIcon(":/Ticon/Icons/EyeballClosed.svg"));
+//					itemVisibleList[child] = itemVisibleList[item];
+//
+//					auto curObj = iGame::SceneManager::Instance()->GetCurrentScene()->GetModelList()[GetDrawActorsFromItem(child)];
+//					curObj->SetVisibility(itemVisibleList[item]);
+//					qDebug() << '2' << GetDrawActorsFromItem(child);
+//					Q_EMIT UpdateCurrentScene();
+//
+//					//Q_EMIT ChangeModelVisible(GetDrawActorsFromItem(child), itemVisibleList[item]);
+//				}
+//			}
 		}
 		});
 	connect(this, &QTreeView::clicked, this, [&](const QModelIndex& index) {
 		QStandardItem* item = model->itemFromIndex(index);
 		if (item) {
-			this->currentModelIdx = GetModelIndexFromItem(item);
-			Q_EMIT ChangeCurrentModelIndex(this->currentModelIdx);
+			this->currentObjectIdx = GetObjectIdFromItem(item);
+//			Q_EMIT ChangeCurrentModelIndex(this->currentModelIdx);
 		}
 		});
 	// 连接右键点击事件
@@ -80,25 +77,33 @@ igQtModelListView::igQtModelListView(QWidget* parent) : QTreeView(parent) {
 
 	// sxu's test
 
-	//model->setItem(0, 0, new QStandardItem(QIcon(":/Ticon/Icons/Eyeball.svg"), "test"));
-	//QStandardItem* item1 = new QStandardItem(QIcon(":/Ticon/Icons/Eyeball.svg"), "xs");
-	//QStandardItem* item2 = new QStandardItem(QIcon(":/Ticon/Icons/Eyeball.svg"), "rya");
-	//QStandardItem* item3 = new QStandardItem(QIcon(":/Ticon/Icons/Eyeball.svg"), "xjj");
-	//QStandardItem* item4 = new QStandardItem(QIcon(":/Ticon/Icons/Eyeball.svg"), "ck");
-	//QStandardItem* item5 = new QStandardItem(QIcon(":/Ticon/Icons/Eyeball.svg"), "mky");
-	//model->item(0, 0)->setChild(0, 0, item1);
-	//model->item(0, 0)->setChild(1, 0, item2);
-	//model->item(0, 0)->setChild(2, 0, item3);
-	//model->item(0, 0)->setChild(3, 0, item4);
-	//model->item(0, 0)->setChild(4, 0, item5);
-	//itemList[item1] = true;
-	//itemList[item2] = true;
-	//itemList[item3] = true;
-	//itemList[item4] = true;
-	//itemList[item5] = true;
-	//itemList[model->item(0, 0)] = true;
+//	model->setItem(0, 0, new QStandardItem(QIcon(":/Ticon/Icons/Eyeball.svg"), "test"));
+//	QStandardItem* item1 = new QStandardItem(QIcon(":/Ticon/Icons/Eyeball.svg"), "xs");
+//	QStandardItem* item2 = new QStandardItem(QIcon(":/Ticon/Icons/Eyeball.svg"), "rya");
+//	QStandardItem* item3 = new QStandardItem(QIcon(":/Ticon/Icons/Eyeball.svg"), "xjj");
+//	QStandardItem* item4 = new QStandardItem(QIcon(":/Ticon/Icons/Eyeball.svg"), "ck");
+//	QStandardItem* item5 = new QStandardItem(QIcon(":/Ticon/Icons/Eyeball.svg"), "mky");
+//	model->item(0, 0)->setChild(0, 0, item1);
+//	model->item(0, 0)->setChild(1, 0, item2);
+//	model->item(0, 0)->setChild(2, 0, item3);
+//	model->item(0, 0)->setChild(3, 0, item4);
+//	model->item(0, 0)->setChild(4, 0, item5);
+//	itemVisibleList[item1] = true;
+//	itemVisibleList[item2] = true;
+//	itemVisibleList[item3] = true;
+//	itemVisibleList[item4] = true;
+//	itemVisibleList[item5] = true;
+//	itemVisibleList[model->item(0, 0)] = true;
 
-	this->contextMenu = new QMenu;
+//    AddModel("model0");
+//    AddModel("model1");
+//    AddModel("model2");
+//    InsertObject(3, "aaa");
+//    AddChildToModel(2, "child");
+//    InsertObject(3, "bbb");
+
+
+	this->contextMenu = new QMenu(this);
 	QAction* action_Open = new QAction(QIcon(":/Ticon/Icons/icon (5).png"), "Open", this->contextMenu);
 	QAction* action_ShwoAll = new QAction(QIcon(":/Ticon/Icons/Eyeball.svg"), "Show All", this->contextMenu);
 	QAction* action_HideAll = new QAction(QIcon(":/Ticon/Icons/EyeballClosed.svg"), "Hide All", this->contextMenu);
@@ -128,27 +133,27 @@ igQtModelListView::igQtModelListView(QWidget* parent) : QTreeView(parent) {
 }
 void igQtModelListView::ShowAllModel()
 {
-	for (auto it = itemModelIds.begin(); it != itemModelIds.end(); ++it) {
+	for (auto it = itemObjectIds.begin(); it != itemObjectIds.end(); ++it) {
 		auto item = it.key();
-		if (!itemList[item]) {
+		if (!itemVisibleList[item]) {
 			item->setIcon(QIcon(":/Ticon/Icons/Eyeball.svg"));
-			itemList[item] = true;
-			if (itemModelActors.count(item)) {
-				Q_EMIT ChangeModelVisible(GetDrawActorsFromItem(item), itemList[item]);
-			}
+			itemVisibleList[item] = true;
+//			if (itemModelActors.count(item)) {
+//				Q_EMIT ChangeModelVisible(GetDrawActorsFromItem(item), itemVisibleList[item]);
+//			}
 		}
 	}
 }
 void igQtModelListView::HideAllModel()
 {
-	for (auto it = itemModelIds.begin(); it != itemModelIds.end(); ++it) {
+	for (auto it = itemObjectIds.begin(); it != itemObjectIds.end(); ++it) {
 		auto item = it.key();
-		if (itemList[item]) {
+		if (itemVisibleList[item]) {
 			item->setIcon(QIcon(":/Ticon/Icons/EyeballClosed.svg"));
-			itemList[item] = false;
-			if (itemModelActors.count(item)) {
-				Q_EMIT ChangeModelVisible(GetDrawActorsFromItem(item), itemList[item]);
-			}
+			itemVisibleList[item] = false;
+//			if (itemModelActors.count(item)) {
+//				Q_EMIT ChangeModelVisible(GetDrawActorsFromItem(item), itemVisibleList[item]);
+//			}
 		}
 	}
 }
@@ -165,27 +170,19 @@ void igQtModelListView::UpdateCustomMenu(const QPoint& point)
 		this->contextMenu->exec(mapToGlobal(point));
 	}
 }
-int igQtModelListView::GetModelIndexFromItem(QStandardItem* item)
-{
-	if (itemModelIds.count(item)) {
-		return this->itemModelIds[item];
-	}
-	else {
-		while (item->parent() != nullptr)item = item->parent();
-		return this->itemModelIds[item];
-	}
+int igQtModelListView::GetObjectIdFromItem(QStandardItem *item) {
+    return itemObjectIds.count(item) ? itemObjectIds[item] : -1;
 }
-int igQtModelListView::GetDrawActorsFromItem(QStandardItem* item)
-{
-	return this->itemModelActors[item];
-}
+//int igQtModelListView::GetDrawActorsFromItem(QStandardItem* item)
+//{
+//	return this->itemModelActors[item];
+//}
 
 
-QStandardItem* igQtModelListView::GetItemFromModelIndex(int currentModelId)
+QStandardItem* igQtModelListView::GetObjectItemFromObjectId(int currentObjectId)
 {
-	int t = itemModelIds.size();
-	for (auto it = itemModelIds.begin(); it != itemModelIds.end(); ++it) {
-		if (it.value() == currentModelId)return it.key();
+	for (auto it = itemObjectIds.begin(); it != itemObjectIds.end(); ++it) {
+		if (it.value() == currentObjectId)return it.key();
 	}
 	return nullptr;
 }
@@ -216,70 +213,84 @@ void igQtModelListView::AddModel(QString modelName) {
 	QStandardItem* newModel = new QStandardItem(QIcon(":/Ticon/Icons/Eyeball.svg"), modelName);
 	rootItem->appendRow(newModel);
 	this->setCurrentIndex(newModel->index());
-	currentModelIdx = nextModelIdx++;
-	itemList[newModel] = true;
-	itemModelIds[newModel] = currentModelIdx;
+	currentObjectIdx = nextObjectIdx++;
+	itemVisibleList[newModel] = true;
+	itemObjectIds[newModel] = currentObjectIdx;
 }
 
 void igQtModelListView::DeleteCurrentFile() {
 
 	auto item = model->itemFromIndex(this->currentIndex());
 	//printf("%s\n", item->text().toStdString());
-	if (item && itemModelIds.count(item)) {
+	if (item && itemObjectIds.count(item)) {
 		DeleteCurrentModelItem(item);
-		itemList.remove(item);
-		itemModelIds.remove(item);
+		itemVisibleList.remove(item);
+		itemObjectIds.remove(item);
 		int childNum = item->rowCount();
 		for (int i = 0; i < childNum; i++) {
 			auto child = item->child(i, 0);
-			itemList.remove(item);
-			itemModelActors.remove(item);
+			itemVisibleList.remove(child);
+            itemObjectIds.remove(child);
+//			itemModelActors.remove(child);
 		}
 	}
 	item = model->itemFromIndex(this->currentIndex());
 	if (item) {
-		this->currentModelIdx = GetModelIndexFromItem(item);
-		Q_EMIT ChangeCurrentModelIndex(this->currentModelIdx);
+//		this->currentModelIdx = GetModelIndexFromItem(item);
+        this->currentObjectIdx = GetObjectIdFromItem(item);
+//		Q_EMIT ChangeCurrentModelIndex(this->currentModelIdx);
+		Q_EMIT ChangeCurrentModelIndex(this->currentObjectIdx);
 	}
 	//printf("%s\n", model->itemFromIndex(this->currentIndex())->text().toStdString());
 }
 
 void igQtModelListView::ChangeSelected2NextItem() {
-	if (itemList.empty()) return;
-	currentModelIdx = (currentModelIdx + 1) % itemList.size();
+	if (itemVisibleList.empty()) return;
+	currentObjectIdx = (currentObjectIdx + 1) % itemVisibleList.size();
 }
 
 void igQtModelListView::ChangeSelected2LastItem() {
-	if (itemList.empty()) return;
-	currentModelIdx = (currentModelIdx + itemList.size() - 1) % itemList.size();
+	if (itemVisibleList.empty()) return;
+    currentObjectIdx = (currentObjectIdx + itemVisibleList.size() - 1) % itemVisibleList.size();
 }
 
-void igQtModelListView::AddChildToItem(QStandardItem* item, const QString& modelName, int actorIndex)
+void igQtModelListView::AddChildToItem(QStandardItem* parentItem, const QString& modelName)
 {
-	int rowIndex = item->rowCount();
-	QStandardItem* newModel = new QStandardItem(QIcon(":/Ticon/Icons/Eyeball.svg"), modelName);
-	item->setChild(rowIndex, 0, newModel);
-	this->setCurrentIndex(newModel->index());
-	itemList[newModel] = true;
-	itemModelActors[newModel] = actorIndex;
+    int rowIndex = parentItem->rowCount();
+    QStandardItem* newModel = new QStandardItem(QIcon(":/Ticon/Icons/Eyeball.svg"), modelName);
+    parentItem->setChild(rowIndex, 0, newModel);
+    this->setCurrentIndex(newModel->index());
+    itemVisibleList[newModel] = true;
+    currentObjectIdx = nextObjectIdx ++;
+    itemObjectIds[newModel] = currentObjectIdx;
+//    itemModelActors[newModel] = actorIndex;
 }
 
-void igQtModelListView::AddChildToModel(int modelindex, const QString& modelName, int actorIndex)
+void igQtModelListView::AddChildToModel(int modelindex, const QString& modelName)
 {
-	auto item = GetItemFromModelIndex(modelindex);
-	if (item) {
-		AddChildToItem(item, modelName, actorIndex);
-	}
+    auto item = GetObjectItemFromObjectId(modelindex);
+    if (item) {
+        AddChildToItem(item, modelName);
+    }
 
 }
-void igQtModelListView::InsertModel(int idx, const QString& modelName) {
+void igQtModelListView::InsertObject(int idx, const QString& modelName) {
 	QStandardItem* rootItem = model->invisibleRootItem();
+    QStandardItem* item = nullptr;
+    while(item == nullptr)item = GetObjectItemFromObjectId(idx --);
+
 	QStandardItem* newModel = new QStandardItem(QIcon(":/Ticon/Icons/Eyeball.svg"), modelName);
-	rootItem->insertRow(idx, newModel);
-	this->setCurrentIndex(newModel->index());
-	this->currentModelIdx = nextModelIdx++;
-	itemList[newModel] = true;
-	itemModelIds[newModel] = this->currentModelIdx;
+
+//    item->appendRow(newModel);
+    auto par = item->parent();
+    if(par == nullptr) rootItem->insertRow(item->row() + 1, newModel);
+    else par->setChild(item->row() + 1, newModel);
+//    par->setChild(item->row() + 1, 0, newModel);
+//            item->insertRow(idx, newModel);
+    this->setCurrentIndex(newModel->index());
+    this->currentObjectIdx = nextObjectIdx++;
+	itemVisibleList[newModel] = true;
+	itemObjectIds[newModel] = this->currentObjectIdx;
 }
 
 igQtModelListView::~igQtModelListView() = default;

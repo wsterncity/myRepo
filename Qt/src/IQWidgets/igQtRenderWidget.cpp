@@ -29,7 +29,7 @@ igQtRenderWidget::~igQtRenderWidget()
 
 void igQtRenderWidget::initializeGL() 
 {
-    // Ä¿Ç°µ±´°¿Ú
+    // ç›®å‰å½“çª—å£
     SceneManager::Pointer sceneManager = SceneManager::Instance();
     m_Scene = sceneManager->NewScene();
 
