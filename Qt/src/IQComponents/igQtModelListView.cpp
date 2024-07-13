@@ -216,6 +216,15 @@ void igQtModelListView::AddModel(QString modelName) {
 	currentObjectIdx = nextObjectIdx++;
 	itemVisibleList[newModel] = true;
 	itemObjectIds[newModel] = currentObjectIdx;
+
+	auto curObj = iGame::SceneManager::Instance()->GetCurrentScene()->GetModelList()[currentObjectIdx];
+	if(curObj->HasSubDataObject()){
+		int subBlockNum = curObj->GetNumberOfSubDataObjects();
+		for(int i = 0; i < subBlockNum; i ++){
+			auto subObj = curObj->GetSubDataObject(i);
+			AddChildToItem(newModel, "blk_0");
+		}
+	}
 }
 
 void igQtModelListView::DeleteCurrentFile() {
