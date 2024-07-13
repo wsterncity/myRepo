@@ -84,8 +84,12 @@ igQtModelListView::igQtModelListView(QWidget* parent) : QTreeView(parent) {
 		QStandardItem* item = model->itemFromIndex(index);
 		this->setCurrentIndex(index);
 		if (item) {
-			this->currentObjectIdx = GetObjectIdFromItem(item);
-//			qDebug() << currentObjectIdx;
+			int newId = GetObjectIdFromItem(item);
+			if (newId == this->currentObjectIdx)
+			{
+				return;
+			}
+			this->currentObjectIdx = newId;
 			iGame::SceneManager::Instance()->GetCurrentScene()->UpdateCurrentDataObject(currentObjectIdx);
 		}
 		});
@@ -287,7 +291,7 @@ void igQtModelListView::AddChildToItem(QStandardItem* parentItem, const QString&
     int rowIndex = parentItem->rowCount();
     QStandardItem* newModel = new QStandardItem(QIcon(":/Ticon/Icons/Eyeball.svg"), modelName);
     parentItem->setChild(rowIndex, 0, newModel);
-    this->setCurrentIndex(newModel->index());
+    //this->setCurrentIndex(newModel->index());
     itemVisibleList[newModel] = true;
     currentObjectIdx = nextObjectIdx ++;
     itemObjectIds[newModel] = currentObjectIdx;
