@@ -23,19 +23,19 @@ igQtModelListView::igQtModelListView(QWidget* parent) : QTreeView(parent) {
 	connect(iconDelegate, &IconDelegate::iconClicked, [&](const QModelIndex& index) {
 		QStandardItem* item = model->itemFromIndex(index);
 		if (item) {
-			if (itemVisibleList[item]) {
-				item->setIcon(QIcon(":/Ticon/Icons/EyeballClosed.svg"));
-			} else {
-				item->setIcon(QIcon(":/Ticon/Icons/Eyeball.svg"));
-			}
-			itemVisibleList[item] = !itemVisibleList[item];
+			ReverseItemVisibility(item);
 			printf("%s %d %d\n",item->text().toStdString().c_str(), index.row(), index.column());
 //			this->currentModelIdx = GetModelIndexFromItem(item);
-			auto curObj = iGame::SceneManager::Instance()->GetCurrentScene()->GetModelList()[GetObjectIdFromItem(item)];
+			auto curObj = iGame::SceneManager::Instance()->GetCurrentScene()->GetCurrentObject();
 
 			qDebug() << curObj << ' ' << itemVisibleList[item];
 			curObj->SetVisibility(itemVisibleList[item]);
 			Q_EMIT UpdateCurrentScene();
+
+			for(int i = 0; i < item->rowCount(); i ++){
+				auto child = item->child(i);
+				if(itemVisibleList[child] != itemVisibleList[item]) ReverseItemVisibility(child);
+			}
 
 //			return;
 //			if (itemModelActors.count(item)) {
@@ -301,6 +301,15 @@ void igQtModelListView::InsertObject(int idx, const QString& modelName) {
     this->currentObjectIdx = nextObjectIdx++;
 	itemVisibleList[newModel] = true;
 	itemObjectIds[newModel] = this->currentObjectIdx;
+}
+
+void igQtModelListView::ReverseItemVisibility(QStandardItem *item) {
+	if (itemVisibleList[item]) {
+		item->setIcon(QIcon(":/Ticon/Icons/EyeballClosed.svg"));
+	} else {
+		item->setIcon(QIcon(":/Ticon/Icons/Eyeball.svg"));
+	}
+	itemVisibleList[item] = !itemVisibleList[item];
 }
 
 igQtModelListView::~igQtModelListView() = default;

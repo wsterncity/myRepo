@@ -118,5 +118,5 @@ protected:
 
     void AddChildToItem(QStandardItem* item, const QString& fileName);
 
-
+	void ReverseItemVisibility(QStandardItem* item);
 };
