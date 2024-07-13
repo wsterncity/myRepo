@@ -81,7 +81,7 @@ public:
                 auto subObj = obj->GetSubDataObject(index);
                 if (subObj != nullptr)
                 {
-                    m_CurrentObjectId = id;
+                    m_CurrentObjectId = index;
                     m_CurrentObject = subObj.get();
                     return true;
                 }

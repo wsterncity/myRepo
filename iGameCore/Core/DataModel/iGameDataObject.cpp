@@ -32,7 +32,7 @@ DataObjectId DataObject::AddSubDataObject(DataObject::Pointer obj)
 	{
 		m_SubDataObjectsHelper = SubDataObjectsHelper::New();
 	}
-
+	obj->SetParent(this);
 	return m_SubDataObjectsHelper->AddSubDataObject(obj);
 }
 
@@ -81,10 +81,28 @@ DataObject::SubIterator DataObject::SubEnd()
 	return m_SubDataObjectsHelper->End();
 }
 
+DataObject* DataObject::FindParent() {
+	if (m_Parent != nullptr) {
+		return m_Parent->FindParent();
+	}
+	return this;
+}
+
 DataObject::SubConstIterator DataObject::SubEnd() const
 {
 	return m_SubDataObjectsHelper->End();
 }
+
+DataObjectId DataObject::GetIncrementDataObjectId() {
+	static DataObjectId globalDataObjectId = 0;
+	return globalDataObjectId++;
+}
+void DataObject::SetParent(DataObject* parent) {
+	if (m_Parent != parent) {
+		m_Parent = parent;
+	}
+}
+
 
 void DataObject::Draw(Scene* scene)
 {
@@ -94,15 +112,56 @@ void DataObject::ConvertToDrawableData()
 {
 	ProcessSubDataObjects(&DataObject::ConvertToDrawableData);
 }
+
 void DataObject::ViewCloudPicture(int index, int demension) // 可视化云图
 {
 	ProcessSubDataObjects(&DataObject::ViewCloudPicture, index, demension);
 }
+
+void DataObject::ViewCloudPictureOfModel(int index, int demension) // 可视化云图
+{
+	auto* parent = FindParent();
+	if (parent != this) {
+		parent->ViewCloudPicture(index, demension);
+	}
+	else {
+		this->ViewCloudPicture(index, demension);
+	}
+}
+
 void DataObject::SetViewStyle(IGenum mode)
 {
 	m_ViewStyle = mode; 
 	ProcessSubDataObjects(&DataObject::SetViewStyle, mode);
 }
+
+void DataObject::SetViewStyleOfModel(IGenum mode)
+{
+	auto* parent = FindParent();
+	if (parent != this) {
+		parent->SetViewStyle(mode);
+	}
+	else {
+		this->SetViewStyle(mode);
+	}
+}
+
+IGenum DataObject::GetViewStyle() 
+{ 
+	return m_ViewStyle; 
+}
+
+IGenum DataObject::GetViewStyleOfModel() 
+{ 
+	auto* parent = FindParent();
+	if (parent != this) {
+		return parent->GetViewStyle();
+	}
+	else {
+		return this->GetViewStyle();
+	}
+}
+
 void DataObject::SetVisibility(bool f)
 {
 	this->m_Visibility = f;

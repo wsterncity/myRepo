@@ -248,7 +248,7 @@ void igQtMainWindow::initAllMySignalConnections()
 	//connect(ui->widget_FlowField, &igQtStreamTracerWidget::sendstreams, rendererWidget, &igQtModelDrawWidget::DrawStreamline);
 	//connect(ui->widget_FlowField, &igQtStreamTracerWidget::updatestreams, rendererWidget, &igQtModelDrawWidget::UpdateStreamline);
 
-	connect(ui->modelTreeView, &igQtModelListView::UpdateCurrentScene, rendererWidget, [&]() {rendererWidget->update(); });
+	connect(ui->modelTreeView, &igQtModelListView::UpdateCurrentScene, this, &igQtMainWindow::updateCurrentDataObject);
 
 	//connect(ui->modelTreeView, &igQtModelListView::ChangeModelVisible, rendererWidget, &igQtModelDrawWidget::changeTargetModelVisible);
 	//connect(ui->widget_ScalarField, &igQtScalarViewWidget::updateCurrentModelColor, rendererWidget, &igQtModelDrawWidget::UpdateCurrentModel);
@@ -323,10 +323,15 @@ void igQtMainWindow::ChangeScalarView()
 void igQtMainWindow::updateViewStyleAndCloudPicture()
 {
 	auto* current = rendererWidget->GetScene()->GetCurrentObject();
+	auto* parent = current->FindParent();
+	if (parent != nullptr && parent != current) {
+		current = parent;
+	}
 	if (current)
 	{
 		IGenum defaultViewStyle = current->GetViewStyle();
 		viewStyleCombox->setCurrentIndex(defaultViewStyle);
+
 		scalarViewCombox->clear();
 		scalarViewCombox->addItem("None        ");
 		
@@ -343,5 +348,6 @@ void igQtMainWindow::updateViewStyleAndCloudPicture()
 void igQtMainWindow::updateCurrentDataObject()
 {
 	updateViewStyleAndCloudPicture();
-	int a;
+	
+	rendererWidget->update();
 }

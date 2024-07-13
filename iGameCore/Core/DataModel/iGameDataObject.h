@@ -116,11 +116,14 @@ public:
 	SubIterator SubEnd();
 	SubConstIterator SubEnd() const;
 
+	DataObject* FindParent();
+
 protected:
 	DataObject()
 	{
 		m_Attributes = AttributeData::New();
 		m_Metadata = Metadata::New();
+		m_UniqueId = GetIncrementDataObjectId();
 	}
 	~DataObject() override = default;
 
@@ -130,15 +133,14 @@ protected:
 
 	friend class SubDataObjectsHelper;
 	SmartPointer<SubDataObjectsHelper> m_SubDataObjectsHelper{};
-	
+	DataObject* m_Parent{ nullptr };
+
 	template<typename Functor, typename... Args>
 	void ProcessSubDataObjects(Functor&& functor, Args&&... args);
 
 private:
-	DataObjectId GetIncrementDataObjectId() {
-		static DataObjectId globalDataObjectId = 0;
-		return globalDataObjectId++;
-	}
+	DataObjectId GetIncrementDataObjectId();
+	void SetParent(DataObject* parent);
 
 public:
 	virtual void Draw(Scene*);
@@ -146,8 +148,11 @@ public:
 	virtual void MakeDrawable() { m_Drawable = true; }
 	virtual bool IsDrawable() { return m_Drawable; }
 	virtual void ViewCloudPicture(int index, int demension = -1);
+	void ViewCloudPictureOfModel(int index, int demension = -1);
 	virtual void SetViewStyle(IGenum mode);
-	IGenum GetViewStyle() { return m_ViewStyle; }
+	void SetViewStyleOfModel(IGenum mode);
+	IGenum GetViewStyle();
+	IGenum GetViewStyleOfModel();
 	void SetVisibility(bool f);
 	bool GetVisibility() { return m_Visibility; }
 

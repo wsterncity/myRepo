@@ -53,7 +53,7 @@ protected:
      {
          if (m_Scene->GetCurrentObject())
          {
-             m_Scene->GetCurrentObject()->SetViewStyle(index);
+             m_Scene->GetCurrentObject()->SetViewStyleOfModel(index);
          }
          update();
      }
@@ -62,7 +62,7 @@ protected:
          makeCurrent();
          if (m_Scene->GetCurrentObject())
          {
-             m_Scene->GetCurrentObject()->ViewCloudPicture(index - 1);
+             m_Scene->GetCurrentObject()->ViewCloudPictureOfModel(index - 1);
          }
          doneCurrent();
          update();
