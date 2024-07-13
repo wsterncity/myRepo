@@ -60,19 +60,34 @@ public:
 
     void AddDataObject(DataObject::Pointer obj)
     {
-        m_Models.push_back(obj);
+        m_Models.insert(std::make_pair<>(obj->GetDataObjectId(), obj));
+        m_CurrentObjectId = obj->GetDataObjectId();
         m_CurrentObject = obj.get();
     }
 
     bool UpdateCurrentDataObject(int index)
     {
-        auto& cur = m_Models[index];
-        if (m_CurrentObject == cur.get())
-        {
-            return false;
+        for (auto& model : m_Models) {
+            auto& id = model.first;
+            auto& obj = model.second;
+            if (id == index)
+            {
+                m_CurrentObjectId = id;
+                m_CurrentObject = obj.get();
+                return true;
+            }
+            if (obj->HasSubDataObject())
+            {
+                auto subObj = obj->GetSubDataObject(index);
+                if (subObj != nullptr)
+                {
+                    m_CurrentObjectId = id;
+                    m_CurrentObject = obj.get();
+                    return true;
+                }
+            }
         }
-        m_CurrentObject = cur.get();
-        return true;
+        return false;
     }
 
     DataObject* GetCurrentObject() {
@@ -86,12 +101,12 @@ public:
         glViewport(0, 0, m_Camera->GetViewPort().x, m_Camera->GetViewPort().y);
 
         for (auto& model : m_Models) {
-            model->ConvertToDrawableData();
-            model->Draw(this);
+            model.second->ConvertToDrawableData();
+            model.second->Draw(this);
         }
     }
 
-    std::vector<DataObject::Pointer>& GetModelList() { return m_Models; }
+    std::map<DataObjectId, DataObject::Pointer>& GetModelList() { return m_Models; }
 
 protected:
     Scene();
@@ -105,7 +120,8 @@ protected:
     void DrawFrame();
     void DrawAxes();
 
-    std::vector<DataObject::Pointer> m_Models;
+    std::map<DataObjectId, DataObject::Pointer> m_Models;
+    DataObjectId m_CurrentObjectId{0};
     DataObject* m_CurrentObject{nullptr};
 
     Camera::Pointer m_Camera{};
