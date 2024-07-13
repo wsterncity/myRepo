@@ -67,8 +67,9 @@ igQtModelListView::igQtModelListView(QWidget* parent) : QTreeView(parent) {
 	connect(this, &QTreeView::clicked, this, [&](const QModelIndex& index) {
 		QStandardItem* item = model->itemFromIndex(index);
 		if (item) {
+
 			this->currentObjectIdx = GetObjectIdFromItem(item);
-//			Q_EMIT ChangeCurrentModelIndex(this->currentModelIdx);
+			iGame::SceneManager::Instance()->GetCurrentScene()->UpdateCurrentDataObject(currentObjectIdx);
 		}
 		});
 	// 连接右键点击事件
@@ -216,6 +217,15 @@ void igQtModelListView::AddModel(QString modelName) {
 	currentObjectIdx = nextObjectIdx++;
 	itemVisibleList[newModel] = true;
 	itemObjectIds[newModel] = currentObjectIdx;
+
+	auto curObj = iGame::SceneManager::Instance()->GetCurrentScene()->GetModelList()[currentObjectIdx];
+	if(curObj->HasSubDataObject()){
+		for(auto it = curObj->SubBegin(); it != curObj->SubEnd(); it ++){
+
+			auto subObj = it->second;
+			AddChildToItem(newModel, "blk_0");
+		}
+	}
 }
 
 void igQtModelListView::DeleteCurrentFile() {
