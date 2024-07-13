@@ -342,7 +342,7 @@ void igQtMainWindow::updateViewStyleAndCloudPicture()
 		{
 			scalarViewCombox->addItem(QString::fromStdString(nameArray->GetElement(i)));
 		}
-		scalarViewCombox->setCurrentIndex(0);
+		scalarViewCombox->setCurrentIndex(current->GetAttributeIndex() + 1);
 	}
 }
 

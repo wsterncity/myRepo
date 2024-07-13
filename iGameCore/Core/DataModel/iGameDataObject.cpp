@@ -113,12 +113,15 @@ void DataObject::ConvertToDrawableData()
 	ProcessSubDataObjects(&DataObject::ConvertToDrawableData);
 }
 
-void DataObject::ViewCloudPicture(int index, int demension) // ¿ÉÊÓ»¯ÔÆÍ¼
+void DataObject::ViewCloudPicture(int index, int dimension) // ï¿½ï¿½ï¿½Ó»ï¿½ï¿½ï¿½Í¼
 {
-	ProcessSubDataObjects(&DataObject::ViewCloudPicture, index, demension);
+    std::cout << index << ' ' << dimension << '\n';
+    m_AttributeIndex = index;
+    m_AttributeDimension = dimension;
+	ProcessSubDataObjects(&DataObject::ViewCloudPicture, index, dimension);
 }
 
-void DataObject::ViewCloudPictureOfModel(int index, int demension) // ¿ÉÊÓ»¯ÔÆÍ¼
+void DataObject::ViewCloudPictureOfModel(int index, int demension) // ï¿½ï¿½ï¿½Ó»ï¿½ï¿½ï¿½Í¼
 {
 	auto* parent = FindParent();
 	if (parent != this) {
@@ -167,4 +170,12 @@ void DataObject::SetVisibility(bool f)
 	this->m_Visibility = f;
 	ProcessSubDataObjects(&DataObject::SetVisibility, f);
 }
+
+    int DataObject::GetAttributeIndex() {
+        return this->m_AttributeIndex;
+    }
+
+    int DataObject::GetAttributeDimension() {
+        return this->m_AttributeDimension;
+    }
 IGAME_NAMESPACE_END

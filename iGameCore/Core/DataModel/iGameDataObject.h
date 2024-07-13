@@ -147,17 +147,21 @@ public:
 	virtual void ConvertToDrawableData();
 	virtual void MakeDrawable() { m_Drawable = true; }
 	virtual bool IsDrawable() { return m_Drawable; }
-	virtual void ViewCloudPicture(int index, int demension = -1);
-	void ViewCloudPictureOfModel(int index, int demension = -1);
+	virtual void ViewCloudPicture(int index, int dimension = -1);
+	void ViewCloudPictureOfModel(int index, int dimension = -1);
 	virtual void SetViewStyle(IGenum mode);
 	void SetViewStyleOfModel(IGenum mode);
 	IGenum GetViewStyle();
 	IGenum GetViewStyleOfModel();
 	void SetVisibility(bool f);
 	bool GetVisibility() { return m_Visibility; }
+    int GetAttributeIndex();
+    int GetAttributeDimension();
 
 protected:
 	IGenum m_ViewStyle{ IG_NONE };
+	int m_AttributeIndex{ -1 };
+	int m_AttributeDimension{ -1 };
 	bool m_Visibility{ true };
 	bool m_Drawable{ false };
 };
