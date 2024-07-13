@@ -66,6 +66,26 @@ int DataObject::GetNumberOfSubDataObjects() noexcept
 	return m_SubDataObjectsHelper->GetNumberOfSubDataObjects();
 }
 
+DataObject::SubIterator DataObject::SubBegin()
+{
+	return m_SubDataObjectsHelper->Begin();
+}
+
+DataObject::SubConstIterator DataObject::SubBegin() const
+{
+	return m_SubDataObjectsHelper->Begin();
+}
+
+DataObject::SubIterator DataObject::SubEnd()
+{
+	return m_SubDataObjectsHelper->End();
+}
+
+DataObject::SubConstIterator DataObject::SubEnd() const
+{
+	return m_SubDataObjectsHelper->End();
+}
+
 void DataObject::Draw(Scene* scene)
 {
 	ProcessSubDataObjects(&DataObject::Draw, scene);
