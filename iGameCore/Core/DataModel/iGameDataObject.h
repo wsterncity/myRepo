@@ -18,6 +18,7 @@ public:
 	I_OBJECT(DataObject);
 	static Pointer New() { return new DataObject; }
 
+	void SetUniqueDataObjectId() { m_UniqueId = GetIncrementDataObjectId(); }
 	DataObjectId GetDataObjectId() { return m_UniqueId; }
 
 	static Pointer CreateDataObject(IGenum type);
@@ -120,7 +121,6 @@ protected:
 	{
 		m_Attributes = AttributeData::New();
 		m_Metadata = Metadata::New();
-		m_UniqueId = GetIncrementDataObjectId();
 	}
 	~DataObject() override = default;
 

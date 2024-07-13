@@ -90,6 +90,27 @@ public:
         return false;
     }
 
+    DataObject* GetDataObject(int index)
+    {
+        for (auto& model : m_Models) {
+            auto& id = model.first;
+            auto& obj = model.second;
+            if (id == index)
+            {
+                return obj.get();
+            }
+            if (obj->HasSubDataObject())
+            {
+                auto subObj = obj->GetSubDataObject(index);
+                if (subObj != nullptr)
+                {
+                    return subObj.get();
+                }
+            }
+        }
+        return false;
+    }
+
     DataObject* GetCurrentObject() {
         return m_CurrentObject;
     }

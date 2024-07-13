@@ -105,7 +105,7 @@ void DataObject::SetViewStyle(IGenum mode)
 }
 void DataObject::SetVisibility(bool f)
 {
-	m_Visibility = f;
+	this->m_Visibility = f;
 	ProcessSubDataObjects(&DataObject::SetVisibility, f);
 }
 IGAME_NAMESPACE_END

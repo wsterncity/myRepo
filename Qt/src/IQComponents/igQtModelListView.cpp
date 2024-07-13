@@ -24,18 +24,34 @@ igQtModelListView::igQtModelListView(QWidget* parent) : QTreeView(parent) {
 		QStandardItem* item = model->itemFromIndex(index);
 		if (item) {
 			ReverseItemVisibility(item);
-			printf("%s %d %d\n",item->text().toStdString().c_str(), index.row(), index.column());
-//			this->currentModelIdx = GetModelIndexFromItem(item);
-			auto curObj = iGame::SceneManager::Instance()->GetCurrentScene()->GetCurrentObject();
+			//printf("%s %d %d\n",item->text().toStdString().c_str(), index.row(), index.column());
+			int id = GetObjectIdFromItem(item);
+			auto curObj = iGame::SceneManager::Instance()->GetCurrentScene()->GetDataObject(GetObjectIdFromItem(item));
 
-			qDebug() << curObj << ' ' << itemVisibleList[item];
+			//qDebug() << curObj << ' ' << itemVisibleList[item];
 			curObj->SetVisibility(itemVisibleList[item]);
 			Q_EMIT UpdateCurrentScene();
 
 			for(int i = 0; i < item->rowCount(); i ++){
 				auto child = item->child(i);
+				qDebug() << child->row();
 				if(itemVisibleList[child] != itemVisibleList[item]) ReverseItemVisibility(child);
 			}
+
+			auto par = item->parent();
+			if(par != nullptr){
+				bool haveVisibleChild = false;
+				for(int i = 0; i < par->rowCount(); i ++){
+					if(itemVisibleList[par->child(i)]){
+						haveVisibleChild = true;
+						break;
+					}
+				}
+				if((itemVisibleList[par] && !haveVisibleChild) || (!itemVisibleList[par] && haveVisibleChild) ) ReverseItemVisibility(par);
+			}
+
+
+//			if(par == nullptr) rootItem->insertRow(item->row() + 1, newModel);
 
 //			return;
 //			if (itemModelActors.count(item)) {
@@ -218,7 +234,7 @@ void igQtModelListView::AddModel(QString modelName) {
 	itemVisibleList[newModel] = true;
 	itemObjectIds[newModel] = currentObjectIdx;
 
-	auto curObj = iGame::SceneManager::Instance()->GetCurrentScene()->GetModelList()[currentObjectIdx];
+	auto curObj = iGame::SceneManager::Instance()->GetCurrentScene()->GetCurrentObject();
 	if(curObj->HasSubDataObject()){
 		for(auto it = curObj->SubBegin(); it != curObj->SubEnd(); it ++){
 
