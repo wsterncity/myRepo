@@ -23,12 +23,7 @@ igQtModelListView::igQtModelListView(QWidget* parent) : QTreeView(parent) {
 	connect(iconDelegate, &IconDelegate::iconClicked, [&](const QModelIndex& index) {
 		QStandardItem* item = model->itemFromIndex(index);
 		if (item) {
-			if (itemVisibleList[item]) {
-				item->setIcon(QIcon(":/Ticon/Icons/EyeballClosed.svg"));
-			} else {
-				item->setIcon(QIcon(":/Ticon/Icons/Eyeball.svg"));
-			}
-			itemVisibleList[item] = !itemVisibleList[item];
+			ReverseItemVisibility(item);
 			//printf("%s %d %d\n",item->text().toStdString().c_str(), index.row(), index.column());
 			int id = GetObjectIdFromItem(item);
 			auto curObj = iGame::SceneManager::Instance()->GetCurrentScene()->GetDataObject(GetObjectIdFromItem(item));
@@ -36,6 +31,27 @@ igQtModelListView::igQtModelListView(QWidget* parent) : QTreeView(parent) {
 			//qDebug() << curObj << ' ' << itemVisibleList[item];
 			curObj->SetVisibility(itemVisibleList[item]);
 			Q_EMIT UpdateCurrentScene();
+
+			for(int i = 0; i < item->rowCount(); i ++){
+				auto child = item->child(i);
+				qDebug() << child->row();
+				if(itemVisibleList[child] != itemVisibleList[item]) ReverseItemVisibility(child);
+			}
+
+			auto par = item->parent();
+			if(par != nullptr){
+				bool haveVisibleChild = false;
+				for(int i = 0; i < par->rowCount(); i ++){
+					if(itemVisibleList[par->child(i)]){
+						haveVisibleChild = true;
+						break;
+					}
+				}
+				if((itemVisibleList[par] && !haveVisibleChild) || (!itemVisibleList[par] && haveVisibleChild) ) ReverseItemVisibility(par);
+			}
+
+
+//			if(par == nullptr) rootItem->insertRow(item->row() + 1, newModel);
 
 //			return;
 //			if (itemModelActors.count(item)) {
@@ -305,6 +321,15 @@ void igQtModelListView::InsertObject(int idx, const QString& modelName) {
     this->currentObjectIdx = nextObjectIdx++;
 	itemVisibleList[newModel] = true;
 	itemObjectIds[newModel] = this->currentObjectIdx;
+}
+
+void igQtModelListView::ReverseItemVisibility(QStandardItem *item) {
+	if (itemVisibleList[item]) {
+		item->setIcon(QIcon(":/Ticon/Icons/EyeballClosed.svg"));
+	} else {
+		item->setIcon(QIcon(":/Ticon/Icons/Eyeball.svg"));
+	}
+	itemVisibleList[item] = !itemVisibleList[item];
 }
 
 igQtModelListView::~igQtModelListView() = default;
