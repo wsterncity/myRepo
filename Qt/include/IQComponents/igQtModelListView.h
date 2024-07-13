@@ -58,6 +58,10 @@ signals:
 	void iconClicked(const QModelIndex& index);
 };
 
+namespace iGame {
+	class SceneManager;
+}
+
 class IG_QT_MODULE_EXPORT igQtModelListView : public QTreeView {
 	Q_OBJECT
 
@@ -67,7 +71,6 @@ public:
 	~igQtModelListView() override;
 public:
 	int GetObjectIdFromItem(QStandardItem* item);
-//	int GetDrawActorsFromItem(QStandardItem* item);
 
 	QStandardItem* GetObjectItemFromObjectId(int currentObjectId);
 	void DeleteCurrentModelItem(QStandardItem* item);
@@ -85,38 +88,32 @@ public slots:
 
 	void ChangeSelected2LastItem();
 
-
-	void AddChildToModel(int modelindex, const QString& fileName);
-
 	void UpdateCustomMenu(const QPoint& point);
 
 	void ShowAllModel();
 
 	void HideAllModel();
+
 signals:
 	void ChangeModelVisible(int modelIdx, bool visible);
 	void ChangeCurrentModelIndex(int modelIdx);
 	void OpenFile();
 	void DeleteModel();
-
 	void UpdateCurrentScene();
+
 protected:
-//	int currentModelIdx{ -1 };
-	int currentObjectIdx{ -1 };
-//	int nextModelIdx{ 0 };
-	int nextObjectIdx{ 0 };
-	QStandardItemModel* model;
-	//QList<bool> itemList;
-
-
-	QMap<QStandardItem*, bool>itemVisibleList;
-	QMap<QStandardItem*, int>itemObjectIds;
-//	QMap<QStandardItem*, int>itemModelActors;
-	IconDelegate* iconDelegate;
-	QMenu* contextMenu;
-protected:
-
-    void AddChildToItem(QStandardItem* item, const QString& fileName);
+	void AddChildToItem(QStandardItem* item, const QString& fileName, int objId);
 
 	void ReverseItemVisibility(QStandardItem* item);
+
+	int currentObjectIdx{ -1 };
+	int nextObjectIdx{ 0 };
+	QStandardItemModel* model;
+
+	iGame::SceneManager* m_Manager;
+
+	QMap<QStandardItem*, bool> itemVisibleList;
+	QMap<QStandardItem*, int> itemObjectIds;
+	IconDelegate* iconDelegate;
+	QMenu* contextMenu;
 };

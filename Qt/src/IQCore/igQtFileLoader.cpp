@@ -45,7 +45,7 @@ void igQtFileLoader::OpenFile(const std::string& filePath)
 	multiData->SetUniqueDataObjectId();
 
 	auto obj = iGame::FileIO::ReadFile(filePath);
-	obj->SetUniqueDataObjectId();
+	//obj->SetUniqueDataObjectId();
 	SurfaceMesh::Pointer mesh = DynamicCast<SurfaceMesh>(obj);
 
 	FloatArray::Pointer points = mesh->GetPoints()->ConvertToDataArray();
@@ -72,9 +72,9 @@ void igQtFileLoader::OpenFile(const std::string& filePath)
 	mesh->GetMetadata()->AddString(FILE_NAME, filePath.substr(filePath.find_last_of('/') + 1));
 	mesh->GetMetadata()->AddString(FILE_SUFFIX, filePath.substr(filePath.find_last_of('.') + 1));
 
-//	auto obj1 = iGame::FileIO::ReadFile("H:/iGameProjects/model/obj/horse.obj");
-	auto obj1 = iGame::FileIO::ReadFile("C:\\Users\\m_ky\\Desktop\\Resource\\Model\\bunny.obj");
-	obj1->SetUniqueDataObjectId();
+	auto obj1 = iGame::FileIO::ReadFile("H:/iGameProjects/model/obj/horse.obj");
+//	auto obj1 = iGame::FileIO::ReadFile("C:\\Users\\m_ky\\Desktop\\Resource\\Model\\bunny.obj");
+	//obj1->SetUniqueDataObjectId();
 //	auto obj1 = iGame::FileIO::ReadFile(filePath);
 	SurfaceMesh::Pointer mesh1 = DynamicCast<SurfaceMesh>(obj1);
 
@@ -116,6 +116,30 @@ void igQtFileLoader::OpenFile(const std::string& filePath)
 	//mesh1->GetAttributes()->AddScalars(IG_POINT, pointScalar);
 	//mesh1->GetAttributes()->AddScalars(IG_CELL, cellScalar);
 	m_SceneManager->GetCurrentScene()->AddDataObject(multiData);
+
+
+	//auto obj2 = iGame::FileIO::ReadFile("H:/iGameProjects/model/obj/bunny.obj");
+	//SurfaceMesh::Pointer mesh2 = DynamicCast<SurfaceMesh>(obj2);
+
+	//points = mesh2->GetPoints()->ConvertToDataArray();
+	//pointScalar = FloatArray::New();
+	//cellScalar = FloatArray::New();
+	//pointScalar->SetName("pointScalar");
+	//cellScalar->SetName("cellScalar");
+	//for (int i = 0; i < points->GetNumberOfTuples(); i++)
+	//{
+	//	points->GetTuple(i, tu);
+	//	pointScalar->InsertNextValue(tu[0]);
+	//}
+
+	//for (int i = 0; i < mesh2->GetNumberOfFaces(); i++)
+	//{
+	//	Face* face = mesh2->GetFace(i);
+	//	cellScalar->InsertNextValue(face->Points->GetPoint(0)[0]);
+	//}
+	//mesh2->GetAttributes()->AddScalars(IG_POINT, pointScalar);
+	//mesh2->GetAttributes()->AddScalars(IG_CELL, cellScalar);
+	//m_SceneManager->GetCurrentScene()->AddDataObject(mesh2);
 
 	Q_EMIT EmitDoneCurrent();
 	
