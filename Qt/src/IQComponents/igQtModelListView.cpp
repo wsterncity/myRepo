@@ -29,11 +29,11 @@ igQtModelListView::igQtModelListView(QWidget* parent) : QTreeView(parent) {
 				item->setIcon(QIcon(":/Ticon/Icons/Eyeball.svg"));
 			}
 			itemVisibleList[item] = !itemVisibleList[item];
-			printf("%s %d %d\n",item->text().toStdString().c_str(), index.row(), index.column());
-//			this->currentModelIdx = GetModelIndexFromItem(item);
-			auto curObj = iGame::SceneManager::Instance()->GetCurrentScene()->GetModelList()[GetObjectIdFromItem(item)];
+			//printf("%s %d %d\n",item->text().toStdString().c_str(), index.row(), index.column());
+			int id = GetObjectIdFromItem(item);
+			auto curObj = iGame::SceneManager::Instance()->GetCurrentScene()->GetDataObject(GetObjectIdFromItem(item));
 
-			qDebug() << curObj << ' ' << itemVisibleList[item];
+			//qDebug() << curObj << ' ' << itemVisibleList[item];
 			curObj->SetVisibility(itemVisibleList[item]);
 			Q_EMIT UpdateCurrentScene();
 
@@ -218,7 +218,7 @@ void igQtModelListView::AddModel(QString modelName) {
 	itemVisibleList[newModel] = true;
 	itemObjectIds[newModel] = currentObjectIdx;
 
-	auto curObj = iGame::SceneManager::Instance()->GetCurrentScene()->GetModelList()[currentObjectIdx];
+	auto curObj = iGame::SceneManager::Instance()->GetCurrentScene()->GetCurrentObject();
 	if(curObj->HasSubDataObject()){
 		for(auto it = curObj->SubBegin(); it != curObj->SubEnd(); it ++){
 
