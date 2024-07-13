@@ -41,7 +41,7 @@ void igQtFileLoader::OpenFile(const std::string& filePath)
 	
 
 
-//	Q_EMIT EmitMakeCurrent();
+	Q_EMIT EmitMakeCurrent();
 	auto obj = iGame::FileIO::ReadFile(filePath);
 	SurfaceMesh::Pointer mesh = DynamicCast<SurfaceMesh>(obj);
 
@@ -111,10 +111,9 @@ void igQtFileLoader::OpenFile(const std::string& filePath)
 	//}
 	//mesh1->GetAttributes()->AddScalars(IG_POINT, pointScalar);
 	//mesh1->GetAttributes()->AddScalars(IG_CELL, cellScalar);
-	m_SceneManager->GetCurrentScene()->AddDataObject(obj);
-	//m_SceneManager->GetCurrentScene()->AddDataObject(obj1);
+	m_SceneManager->GetCurrentScene()->AddDataObject(multiData);
 
-//	Q_EMIT EmitDoneCurrent();
+	Q_EMIT EmitDoneCurrent();
 	
 
 	this->SaveCurrentFileToRecentFile(QString::fromStdString(filePath));
