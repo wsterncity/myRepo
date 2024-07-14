@@ -9,8 +9,6 @@ IGAME_NAMESPACE_BEGIN
 class TimeStamp
 {
 public:
-    using Self = TimeStamp;
-    using ModifiedTimeType = unsigned long;
     TimeStamp() {}
     ~TimeStamp() {}
     
@@ -27,11 +25,11 @@ public:
 
     void Modified()
     {
-        static std::atomic<ModifiedTimeType> GlobalTimeStamp(0U);
+        static std::atomic<unsigned int> GlobalTimeStamp(0U);
         this->m_ModifiedTime = ++GlobalTimeStamp;
     }
 
-    ModifiedTimeType GetMTime() const
+    unsigned int GetMTime() const
     {
         return m_ModifiedTime;
     }
@@ -45,10 +43,10 @@ public:
         return (m_ModifiedTime < ts.m_ModifiedTime);
     }
 
-    operator ModifiedTimeType() const { return m_ModifiedTime; }
+    operator unsigned int() const { return m_ModifiedTime; }
 
 private:
-    ModifiedTimeType m_ModifiedTime{ 0 };
+    unsigned int m_ModifiedTime{ 0 };
 };
 IGAME_NAMESPACE_END
 #endif

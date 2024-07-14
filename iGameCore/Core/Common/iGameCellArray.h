@@ -167,6 +167,14 @@ public:
 		return this->NumberOfCells++;
 	}
 
+	igIndex InsertNextCell2(igIndex val0, igIndex val1) {
+		igIndex cell[2]{ val0,val1 };
+		return this->InsertNextCell(cell, 2);
+	}
+	igIndex InsertNextCell3(igIndex val0, igIndex val1, igIndex val2) {
+		igIndex cell[3]{ val0,val1,val2 };
+		return this->InsertNextCell(cell, 3);
+	}
 	void DeleteCell(igIndex cellId) {
 		this->DeletedMask->MarkDeleted(cellId);
 	}

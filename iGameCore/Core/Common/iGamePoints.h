@@ -63,6 +63,11 @@ public:
 	 */
 	void Squeeze() { this->Resize(this->NumberOfPoints); }
 	
+	void SetArray(float* ps, int pNum) {
+		Buffer->Copy(ps, pNum * 3);
+		this->NumberOfPoints = pNum;
+	}
+
 	FloatArray::Pointer ConvertToDataArray() 
 	{
 		FloatArray::Pointer ConvertedArray = FloatArray::New();

@@ -2,6 +2,15 @@
 #define iGameType_h
 
 #include <stdint.h>
+#include <iGameAbi.h>
+#define IGAME_SIZEOF_CHAR KWIML_ABI_SIZEOF_CHAR
+#define IGAME_SIZEOF_SHORT KWIML_ABI_SIZEOF_SHORT
+#define IGAME_SIZEOF_INT KWIML_ABI_SIZEOF_INT
+#define IGAME_SIZEOF_LONG KWIML_ABI_SIZEOF_LONG
+#define IGAME_SIZEOF_LONG_LONG KWIML_ABI_SIZEOF_LONG_LONG
+#define IGAME_SIZEOF_FLOAT KWIML_ABI_SIZEOF_FLOAT
+#define IGAME_SIZEOF_DOUBLE KWIML_ABI_SIZEOF_DOUBLE
+#define IGAME_SIZEOF_VOID_P KWIML_ABI_SIZEOF_DATA_PTR
 
 inline constexpr const char* FILE_NAME = "FILE_NAME";
 inline constexpr const char* FILE_PATH = "FILE_PATH";
@@ -76,6 +85,7 @@ using iguIndex64 = unsigned long long;
 using igIndex16 = short;
 using iguIndex16 = unsigned short;
 
-using DataObjectId = int;
 using IGenum = long;
+using DataObjectType = IGenum;
+using DataObjectId = int;
 #endif

@@ -1,4 +1,5 @@
 ﻿#include "iGameVTKReader.h"
+#include "iGameByteSwap.h"
 
 IGAME_NAMESPACE_BEGIN
 bool VTKReader::Parsing()
@@ -18,18 +19,18 @@ bool VTKReader::Parsing()
 	//
 	if (!this->ReadString(line)) {
 		igError("Data file ends prematurely!");
-		return;
+		return false;
 	}
 	if (!strncmp(this->LowerCase(line), "dataset", 7)) {
 		// Make sure we're reading right type of geometry
 		//
 		if (!this->ReadString(line)) {
 			igError("Data file ends prematurely!");
-			return;
+			return false;
 		}
 		if (strncmp(this->LowerCase(line), "unstructured_grid", 17) != 0) {
 			igError("Cannot read dataset type: " << line);
-			return;
+			return false;
 		}
 		while (true) {
 			if (!this->ReadString(line)) {
@@ -44,16 +45,15 @@ bool VTKReader::Parsing()
 			else if (!strncmp(line, "points", 6)) {
 				if (!this->Read(&PointsNum)) {
 					igError("Cannot read number of points!");
-					return;
+					return false;
 				}
-				iGame::iGamePoints* points = iGame::iGamePoints::New();
+				Points::Pointer points = m_Data.GetPoints();
 				if (!this->ReadPointCoordinates(points, PointsNum)) {
-					return;
+					return false;
 				}
-				this->DataSet->SetPoints(points);
 			}
 			else if (!strncmp(line, "cells", 5)) {
-				if (this->FileType == IGAME_BINARY) {
+				if (this->m_FileType == IGAME_BINARY) {
 					this->ReadBinaryCells(ncells, CellsId, CellsConnect);
 					// Update the dataset
 					if (Types) {
@@ -62,10 +62,10 @@ bool VTKReader::Parsing()
 					}
 				}
 				else {// ascii
-					Cells = iGame::iGameIntArray::New();
+					Cells = IntArray::New();
 					if (!(this->Read(&ncells) && this->Read(&size))) {
 						igError("Cannot read cells!");
-						return;
+						return false;
 					}
 					this->ReadAsciiCells(ncells, Cells);
 					// Update the dataset
@@ -77,12 +77,12 @@ bool VTKReader::Parsing()
 			else if (!strncmp(line, "cell_types", 10)) {
 				if (!this->Read(&ncells)) {
 					igError("Cannot read cell types!");
-					return;
+					return false;
 				}
-				Types = (iGameIntArray*)this->ReadArray("int", ncells, 1);
+				Types = DynamicCast<IntArray>(this->ReadArray("int", ncells, 1));
 				// allocate array for piece cell types
-				if (this->FileType == IGAME_BINARY) {
-					iGameByteSwap::Swap4BERange(Types, read2);
+				if (this->m_FileType == IGAME_BINARY) {
+					ByteSwap::Swap4BERange(Types, read2);
 					// Update the dataset
 					if (CellsId && CellsConnect) {
 						this->TransferVtkCellToiGameCell(CellsId, CellsConnect, Types);
@@ -99,26 +99,26 @@ bool VTKReader::Parsing()
 			else if (!strncmp(line, "cell_data", 9)) {
 				if (!this->Read(&CellsNum)) {
 					igError("Cannot read cell data!");
-					return;
+					return false;
 				}
 				if (ncells != CellsNum) {
 					igError("Number of cells don't match!");
-					return;
+					return false;
 				}
-				this->ReadCellData(this->DataSet, ncells);
+				this->ReadCellData(ncells);
 				break; // out of this loop
 			}
 
 			else if (!strncmp(line, "point_data", 10)) {
 				if (!this->Read(&npts)) {
 					igError("Cannot read point data!");
-					return;
+					return false;
 				}
 				if (npts != PointsNum) {
 					igError("Number of points don't match!");
-					return;
+					return false;
 				}
-				this->ReadPointData(this->DataSet, npts);
+				this->ReadPointData(npts);
 				break; // out of this loop
 			}
 			else {
@@ -131,20 +131,17 @@ bool VTKReader::Parsing()
 		igDebug("No geometry defined in data file!");
 		if (!this->Read(&PointsNum)) {
 			igError("Cannot read point data!");
-			return;
+			return false;
 		}
-		this->ReadPointData(this->DataSet, PointsNum);
+		this->ReadPointData(PointsNum);
 	}
 	else {
 		igError("Unrecognized keyword: " << line);
 	}
-	delete Cells;
-	delete Types;
-	delete CellsId;
-	delete CellsConnect;
+	m_Data;
 	this->UpdateProgress(1.0);
-	igDebug("Read " << this->DataSet->GetNumberOfPoints() << " points,"
-		<< this->DataSet->GetNumberOfCells() << " cells.\n");
+	//igDebug("Read " << this->DataSet->GetNumberOfPoints() << " points,"
+	//	<< this->DataSet->GetNumberOfCells() << " cells.\n");
 	return true;
 }
 IGAME_NAMESPACE_END

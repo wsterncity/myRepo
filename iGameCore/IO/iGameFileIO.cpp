@@ -111,10 +111,10 @@ DataObject::Pointer FileIO::ReadFile(const std::string &file_name)
         }
         case VTK:
         {
-
-//            auto app = iGameVTKReader::New();
-//            resObj = app->ReadFile(file_name);
-//            delete app;
+			VTKReader::Pointer reader = VTKReader::New();
+			reader->SetFilePath(file_name);
+			reader->Update();
+			resObj = reader->GetOutput();
             break;
         }
         case OBJ:
