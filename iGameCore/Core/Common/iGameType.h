@@ -76,6 +76,7 @@ using iguIndex64 = unsigned long long;
 using igIndex16 = short;
 using iguIndex16 = unsigned short;
 
-using DataObjectId = int;
 using IGenum = long;
+using DataObjectType = IGenum;
+using DataObjectId = int;
 #endif

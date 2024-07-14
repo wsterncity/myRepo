@@ -2,44 +2,9 @@
 #include <cassert>
 
 IGAME_NAMESPACE_BEGIN
-bool Filter::HasController()
-{
-    return this->Controller != nullptr;
-}
-
-void Filter::SetController(ControllerPointer newController)
-{
-    ControllerPointer oldController = this->Controller;
-    if (oldController != newController)
-    {
-        this->Controller = newController;
-    }
-}
-
-Controller::Pointer Filter::GetController()
-{
-    if (!this->HasController())
-    {
-        Controller::Pointer controller = this->CreateDefaultController();
-        controller->SetFilter(this);
-        this->SetController(controller);
-    }
-	return this->Controller;
-}
-
-Controller::Pointer Filter::CreateDefaultController()
-{
-    return StandardController::New();
-}
-
-bool Filter::ProcessSignal(unsigned long)
-{
-    return true;
-}
-
 void Filter::Update()
 {
-    this->GetController()->Update();
+    this->Execute();
 }
 
 int Filter::GetNumberOfInputPort() const
@@ -52,7 +17,7 @@ int Filter::GetNumberOfOutputPort() const
     return this->OutputPort.size();
 }
 
-bool Filter::SetInput(int port, DataObjectPointer data)
+bool Filter::SetInput(int port, DataObject::Pointer data)
 {
     if (this->GetNumberOfInputPort() <= port)
     {
@@ -62,7 +27,7 @@ bool Filter::SetInput(int port, DataObjectPointer data)
     return true;
 }
 
-bool Filter::SetInput(DataObjectPointer data)
+bool Filter::SetInput(DataObject::Pointer data)
 {
     return this->SetInput(0, data);
 }
@@ -87,7 +52,7 @@ DataObject::Pointer Filter::GetInputByName(const std::string& name)
     return nullptr;
 }
 
-bool Filter::SetOutput(int port, DataObjectPointer data)
+bool Filter::SetOutput(int port, DataObject::Pointer data)
 {
     if (this->GetNumberOfOutputPort() <= port)
     {
@@ -97,7 +62,7 @@ bool Filter::SetOutput(int port, DataObjectPointer data)
     return true;
 }
 
-bool Filter::SetOutput(DataObjectPointer data)
+bool Filter::SetOutput(DataObject::Pointer data)
 {
     return this->SetOutput(0, data);
 }
