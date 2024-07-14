@@ -32,7 +32,7 @@ igQtModelListView::igQtModelListView(QWidget* parent) : QTreeView(parent) {
 			obj->SetVisibility(itemVisibleList[item]);
 
 			//this->set
-			//Q_EMIT UpdateCurrentScene();
+			Q_EMIT UpdateCurrentScene();
 
 			for(int i = 0; i < item->rowCount(); i ++){
 				auto child = item->child(i);
@@ -57,8 +57,8 @@ igQtModelListView::igQtModelListView(QWidget* parent) : QTreeView(parent) {
 		});
 
 	connect(this, &QTreeView::clicked, this, [&](const QModelIndex& index) {
-		this->setCurrentIndex(index);
 		QStandardItem* item = model->itemFromIndex(index);
+		this->setCurrentIndex(index);
 		if (item) {
 			int newId = GetObjectIdFromItem(item);
 			if (newId == this->currentObjectIdx)
@@ -66,10 +66,13 @@ igQtModelListView::igQtModelListView(QWidget* parent) : QTreeView(parent) {
 				return;
 			}
 			this->currentObjectIdx = newId;
+
+            qDebug() << this->currentObjectIdx;
 			m_Manager->GetCurrentScene()->UpdateCurrentDataObject(currentObjectIdx);
-			Q_EMIT UpdateCurrentScene();
+			Q_EMIT UpdateCurrentItemToOtherQtModule();
 		}
 		});
+
 	// 连接右键点击事件
 	setContextMenuPolicy(Qt::CustomContextMenu);
 	connect(this, &QTreeView::customContextMenuRequested, this, &igQtModelListView::UpdateCustomMenu);
