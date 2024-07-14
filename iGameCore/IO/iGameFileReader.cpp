@@ -101,7 +101,10 @@ bool FileReader::CreateDataObject()
 
 	// 混合网格类型判断
 	if (numFaces && numVolumes) {
-		//m_Output = VolumeMesh::New();
+        VolumeMesh::Pointer mesh = VolumeMesh::New();
+        mesh->SetPoints(m_Data.GetPoints());
+        mesh->SetVolumes(m_Data.GetVolumes());
+        m_Output = mesh;
 	}
 
 	// 表面网格类型判断
@@ -118,34 +121,6 @@ bool FileReader::CreateDataObject()
 		mesh->SetPoints(m_Data.GetPoints());
 		mesh->SetVolumes(m_Data.GetVolumes());
 		m_Output = mesh;
-
-		//if (numPolygons) {
-		//	this->Type = HYBRID;
-		//}
-
-		//// 统计不同类型体元素的数量
-		//int count = 0;
-		//if (numTetras) count++;
-		//if (numHexahedrons) count++;
-		//if (numPrisms) count++;
-		//if (numPyramids) count++;
-
-		//// 判断体网格类型
-		//if (count > 1) {
-		//	this->Type = HYBRID;
-		//}
-		//else if (numTetras) {
-		//	this->Type = TET;
-		//}
-		//else if (numHexahedrons) {
-		//	this->Type = HEX;
-		//}
-		//else if (numPrisms) {
-		//	this->Type = PRI;
-		//}
-		//else if (numPyramids) {
-		//	this->Type = PYR;
-		//}
 	}
 
 	return true;

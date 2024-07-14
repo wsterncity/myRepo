@@ -1041,4 +1041,136 @@ const void VTKAbstractReader::TransferVtkCellToiGameCell(DataArray::Pointer Cell
 	this->UpdateReadProgress();
 }
 
+void VTKAbstractReader::TransferVtkCellToiGameCell(DataCollection &m_Data, DataArray::Pointer CellsID,
+												   DataArray::Pointer CellsConnect, DataArray::Pointer VtkCellsType) {
+
+
+	CellArray::Pointer Lines = m_Data.GetLines();
+	CellArray::Pointer Faces = m_Data.GetFaces();
+	CellArray::Pointer Volumes = m_Data.GetVolumes();
+
+	int CellNum = VtkCellsType->GetNumberOfTuples();
+	int index = 0;
+	int size = 0;
+	int vhs[64];
+	int st, ed;
+	for (int i = 0; i < CellNum; i++) {
+		st = static_cast<int>(CellsID->GetValue(i));
+		ed = static_cast<int>(CellsID->GetValue(i + 1));
+		size = ed - st;
+		for (int j = 0; j < size; j++) {
+			vhs[j] = static_cast<int>(CellsConnect->GetValue(st + j));
+		}
+		VTKTYPE type = (VTKTYPE)VtkCellsType->GetValue(i);
+		switch (type)
+		{
+			case iGame::VTKAbstractReader::T0:
+				break;
+			case iGame::VTKAbstractReader::VERTEX:
+				break;
+			case iGame::VTKAbstractReader::POLYVERTEX:
+				break;
+			case iGame::VTKAbstractReader::LINE:
+				assert(size == 2);
+				Lines->InsertNextCell2(vhs[0], vhs[1]);
+				break;
+			case iGame::VTKAbstractReader::POLYLINE:
+				for (int k = 0; k < size; k++) {
+					Lines->InsertNextCell2(vhs[k], vhs[(k + 1) % size]);
+				}
+				break;
+			case iGame::VTKAbstractReader::TRIANGLE:
+				assert(size == 3);
+				Faces->InsertNextCell(vhs, size);
+				break;
+			case iGame::VTKAbstractReader::TRIANGLESTRIP:
+				break;
+			case iGame::VTKAbstractReader::POLYGON:
+				Faces->InsertNextCell(vhs, size);
+				break;
+			case iGame::VTKAbstractReader::PIXEL:
+				break;
+			case iGame::VTKAbstractReader::QUAD:
+				assert(size == 4);
+				Faces->InsertNextCell(vhs, size);
+				break;
+			case iGame::VTKAbstractReader::TETRA:
+				assert(size == 4);
+				Volumes->InsertNextCell(vhs, size);
+				break;
+			case iGame::VTKAbstractReader::VOXEL:
+				break;
+			case iGame::VTKAbstractReader::HEXAHEDRON:
+				assert(size == 8);
+				Volumes->InsertNextCell(vhs, size);
+				break;
+			case iGame::VTKAbstractReader::WEDGE:
+				Volumes->InsertNextCell(vhs, size);
+				break;
+			case iGame::VTKAbstractReader::PYRAMID:
+				Volumes->InsertNextCell(vhs, size);
+				break;
+			case iGame::VTKAbstractReader::PENTAGONAL_PRISM:
+				break;
+			case iGame::VTKAbstractReader::HEXAGONAL_PRISM:
+				break;
+			case iGame::VTKAbstractReader::T17:
+				break;
+			case iGame::VTKAbstractReader::T18:
+				break;
+			case iGame::VTKAbstractReader::T19:
+				break;
+			case iGame::VTKAbstractReader::T20:
+				break;
+			case iGame::VTKAbstractReader::QUADRATIC_EDGE:
+				break;
+			case iGame::VTKAbstractReader::QUADRATIC_TRIANGLE:
+				break;
+			case iGame::VTKAbstractReader::QUADRATIC_QUAD:
+				break;
+			case iGame::VTKAbstractReader::QUADRATIC_TETRA:
+			{
+				igIndex tmp[16][3] = { {0,6,4},{6,2,5},{5,1,4},{6,5,4},
+									   {0,4,7},{4,1,8},{7,8,3},{7,4,8},
+									   {1,5,8},{5,2,9},{8,9,3},{8,5,9},
+									   {0,7,6},{3,9,7},{9,6,7},{2,6,9}
+				};
+				for (int i = 0; i < 16; i++) {
+					igIndex tmpvhs[3] = { vhs[tmp[i][0]] ,vhs[tmp[i][1]] ,vhs[tmp[i][2]] };
+					Faces->InsertNextCell(tmpvhs, 3);
+				}
+			}
+				break;
+			case iGame::VTKAbstractReader::QUADRATIC_HEXAHEDRON:
+				break;
+			case iGame::VTKAbstractReader::QUADRATIC_WEDGE:
+				break;
+			case iGame::VTKAbstractReader::QUADRATIC_PYRAMID:
+				break;
+			case iGame::VTKAbstractReader::BIQUADRATIC_QUAD:
+				break;
+			case iGame::VTKAbstractReader::TRIQUADRATIC_HEXAHEDRON:
+				break;
+			case iGame::VTKAbstractReader::QUADRATIC_LINEAR_QUAD:
+				break;
+			case iGame::VTKAbstractReader::QUADRATIC_LINEAR_WEDGE:
+				break;
+			case iGame::VTKAbstractReader::BIQUADRATIC_QUADRATIC_WEDGE:
+				break;
+			case iGame::VTKAbstractReader::BIQUADRATIC_QUADRATIC_HEXAHEDRON:
+				break;
+			case iGame::VTKAbstractReader::BIQUADRATIC_TRIANGLE:
+				break;
+			case iGame::VTKAbstractReader::CUBIC_LINE:
+				break;
+			case iGame::VTKAbstractReader::QUADRATIC_POLYGON:
+				break;
+			case iGame::VTKAbstractReader::TRIQUADRATIC_PYRAMID:
+				break;
+			default:
+				break;
+		}
+	}
+}
+
 IGAME_NAMESPACE_END

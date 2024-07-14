@@ -62,6 +62,8 @@ public:
 
 	const void TransferVtkCellToiGameCell(IntArray::Pointer, IntArray::Pointer);
 	const void TransferVtkCellToiGameCell(DataArray::Pointer, DataArray::Pointer, IntArray::Pointer VtkCellsType);
+
+	static void TransferVtkCellToiGameCell(DataCollection& m_Data, DataArray::Pointer, DataArray::Pointer, DataArray::Pointer VtkCellsType);
 	int ReadPointData(int numPts);
 	int ReadCellData(int numCells);
 
