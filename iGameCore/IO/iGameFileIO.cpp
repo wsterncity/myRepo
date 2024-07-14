@@ -1,6 +1,6 @@
 #include "iGameFileIO.h"
 
-//#include "iGameVTKReader.h"
+#include "iGameVTKReader.h"
 //#include "iGameOFFReader.h"
 //#include "iGameMESHReader.h"
 #include "iGameOBJReader.h"
@@ -109,13 +109,14 @@ DataObject::Pointer FileIO::ReadFile(const std::string &file_name)
         {
             break;
         }
-        //case VTK:
-        //{
-        //    auto app = iGameVTKReader::New();
-        //    resObj = app->ReadFile(file_name);
-        //    delete app;
-        //    break;
-        //}
+        case VTK:
+        {
+			VTKReader::Pointer reader = VTKReader::New();
+			reader->SetFilePath(file_name);
+			reader->Update();
+			resObj = reader->GetOutput();
+            break;
+        }
         case OBJ:
         {
 			OBJReader::Pointer reader = OBJReader::New();

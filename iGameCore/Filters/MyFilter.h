@@ -10,14 +10,11 @@ public:
 	I_OBJECT(MyFilter);
 	static Pointer New() { return new MyFilter; }
 
-	bool ProcessSignal(unsigned long event) override;
 
 protected:
-	MyFilter();
-	~MyFilter() = default;
+	MyFilter() = default;
+	~MyFilter() override = default;
 
-	bool ProcessDataObject();
-	bool ProcessData();
 
 };
 IGAME_NAMESPACE_END

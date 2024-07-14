@@ -11,14 +11,11 @@ IGAME_NAMESPACE_BEGIN
 #define IGAME_ASCII 1
 #define IGAME_BINARY 2
 
-inline size_t GetFileSize(FILE* file_)
-{
-	if (fseek(file_, SEEK_SET, SEEK_END) != 0) {
-		return false;
-	}
-	const size_t file_size = static_cast<size_t>(_ftelli64(file_));
-	rewind(file_);
-	return file_size;
+inline size_t GetFileSize(std::ifstream& file) {
+	file.seekg(0, std::ios::end);
+	size_t size = file.tellg();
+	file.seekg(0, std::ios::beg);
+	return size;
 }
 
 class FileReader : public Filter {
@@ -29,12 +26,10 @@ public:
 	bool Open();
 	bool ReadToBuffer();
 	virtual bool Parsing() = 0;
-	bool GenDataObject();
+	bool CreateDataObject();
 	bool Close();
 
 	void SetFilePath(const std::string& filePath) { this->m_FilePath = filePath; }
-
-	bool ProcessSignal(unsigned long event) override;
 
 	/**
 	 * Internal function to read in a value.  Returns zero if there was an
@@ -57,22 +52,67 @@ public:
 	int ReadString(char result[256]);
 	int ReadString(std::string& str);
 	char* LowerCase(char* str, const size_t len = 256);
-	//DataArray::Pointer ReadArray(const char* dataType, int numTuples, int numComp);
+	DataArray::Pointer ReadArray(const char* dataType, int numTuples, int numComp);
+
+	void UpdateReadProgress() {
+		if (!this->IS)return;
+		double progress = 1.0 * (this->IS - m_Buffer->GetRawPointer()) / m_Buffer->GetNumberOfValues();
+		this->UpdateProgress(progress);
+	}
+
+	int DecodeString(char* resname, const char* name)
+	{
+		if (!resname || !name)
+		{
+			return 0;
+		}
+		std::ostringstream str;
+		size_t cc = 0;
+		unsigned int ch;
+		size_t len = strlen(name);
+		size_t reslen = 0;
+		char buffer[10] = "0x";
+		while (name[cc])
+		{
+			if (name[cc] == '%')
+			{
+				if (cc <= (len - 3))
+				{
+					buffer[2] = name[cc + 1];
+					buffer[3] = name[cc + 2];
+					buffer[4] = 0;
+					sscanf(buffer, "%x", &ch);
+					str << static_cast<char>(ch);
+					cc += 2;
+					reslen++;
+				}
+			}
+			else
+			{
+				str << name[cc];
+				reslen++;
+			}
+			cc++;
+		}
+		strncpy(resname, str.str().c_str(), reslen + 1);
+		resname[reslen] = 0;
+		return static_cast<int>(reslen);
+	}
 
 protected:
     FileReader();
 	~FileReader() override = default;
 
-	bool ProcessDataObject();
-	bool ProcessData();
+	bool Execute() override;
 
 	class DataCollection {
 	public:
 		Points::Pointer        Points{};
-		AttributeData::Pointer PointData{};
-		AttributeData::Pointer CellData{};
+		//AttributeData::Pointer PointData{};
+		//AttributeData::Pointer CellData{};
+		AttributeData::Pointer Data{};
 		
-		CellArray::Pointer     Lines{};
+		CellArray::Pointer Lines{};
 
 		// 表面结构
 		CellArray::Pointer Faces{};
@@ -90,23 +130,30 @@ protected:
 			}
 			return Points;
 		}
-
-		AttributeData::Pointer GetPointData()
+		AttributeData::Pointer GetData()
 		{
-			if (PointData == nullptr)
+			if (Data == nullptr)
 			{
-				PointData = AttributeData::New();
+				Data = AttributeData::New();
 			}
-			return PointData;
+			return Data;
 		}
-		AttributeData::Pointer GetCellData()
-		{
-			if (CellData == nullptr)
-			{
-				CellData = AttributeData::New();
-			}
-			return CellData;
-		}
+		//AttributeData::Pointer GetPointData()
+		//{
+		//	if (PointData == nullptr)
+		//	{
+		//		PointData = AttributeData::New();
+		//	}
+		//	return PointData;
+		//}
+		//AttributeData::Pointer GetCellData()
+		//{
+		//	if (CellData == nullptr)
+		//	{
+		//		CellData = AttributeData::New();
+		//	}
+		//	return CellData;
+		//}
 		CellArray::Pointer GetLines()
 		{
 			if (Lines == nullptr)
@@ -155,7 +202,7 @@ protected:
 	std::string m_FileName;
 	std::string m_FileSuffix;
 	size_t m_FileSize;
-	std::shared_ptr<FILE> m_File{};
+	std::unique_ptr<std::ifstream> m_File{};
 
 	const char* IS;
 

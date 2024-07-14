@@ -13,10 +13,10 @@ public:
 
 	void Initialize()
 	{
-		if (this->Data)
-		{
-			delete[] this->Data;
-		}
+		//if (this->Data)
+		//{
+		//	delete[] this->Data;
+		//}
 		this->Data = nullptr;
 		this->Size = 0;
 	}
@@ -64,6 +64,12 @@ public:
 	}
 
 	ValueType* GetPointer() { return this->Data; }
+
+	void Copy(ValueType* ps, size_t s) {
+		delete[] this->Data;
+		this->Data = ps;
+		this->Size = s;
+	}
 
 	size_t GetSize() const { return this->Size; }
 	size_t GetBytes() const { return this->Size * sizeof(ValueType); }

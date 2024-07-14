@@ -80,7 +80,7 @@ public:
 
 protected:
     ElementArray() {}
-    ~ElementArray() override {}
+    //~ElementArray() override = default;
 };
 
 class IntArray2 : public ElementArray<int> {
