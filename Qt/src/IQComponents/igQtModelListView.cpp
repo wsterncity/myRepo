@@ -67,7 +67,6 @@ igQtModelListView::igQtModelListView(QWidget* parent) : QTreeView(parent) {
 			}
 			this->currentObjectIdx = newId;
 
-            qDebug() << this->currentObjectIdx;
 			m_Manager->GetCurrentScene()->UpdateCurrentDataObject(currentObjectIdx);
 			Q_EMIT UpdateCurrentItemToOtherQtModule();
 		}

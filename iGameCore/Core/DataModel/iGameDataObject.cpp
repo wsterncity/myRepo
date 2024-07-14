@@ -115,7 +115,6 @@ void DataObject::ConvertToDrawableData()
 
 void DataObject::ViewCloudPicture(int index, int dimension) // ���ӻ���ͼ
 {
-    std::cout << index << ' ' << dimension << '\n';
     m_AttributeIndex = index;
     m_AttributeDimension = dimension;
 	ProcessSubDataObjects(&DataObject::ViewCloudPicture, index, dimension);

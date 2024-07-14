@@ -61,8 +61,8 @@ public:
     void RemoveEntry(const std::string& name);
 
     int GetNumberOfEntries() const { return static_cast<int>(m_Entries.size()); }
-    const std::map<std::string, EntryValue>& entries() const { return m_Entries; }
-    const std::map<std::string, Pointer>& sub_metadatas() const { return m_SubMetadatas; }
+    const std::unordered_map<std::string, EntryValue>& entries() const { return m_Entries; }
+    const std::unordered_map<std::string, Pointer>& sub_metadatas() const { return m_SubMetadatas; }
 
 protected:
     Metadata() {}
@@ -87,8 +87,8 @@ protected:
         return true;
     }
 
-    std::map<std::string, EntryValue> m_Entries;
-    std::map<std::string, Pointer> m_SubMetadatas;
+    std::unordered_map<std::string, EntryValue> m_Entries;
+    std::unordered_map<std::string, Pointer> m_SubMetadatas;
 };
 IGAME_NAMESPACE_END
 #endif

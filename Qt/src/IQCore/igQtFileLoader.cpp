@@ -40,12 +40,12 @@ void igQtFileLoader::OpenFile(const std::string& filePath)
 	if (filePath.empty() || strrchr(filePath.data(), '.') == nullptr)return;
 	
 
-	Q_EMIT EmitMakeCurrent();
+//	Q_EMIT EmitMakeCurrent();
 	DataObject::Pointer multiData = DataObject::New();
 	multiData->SetUniqueDataObjectId();
 
 	auto obj = iGame::FileIO::ReadFile(filePath);
-	//obj->SetUniqueDataObjectId();
+	obj->SetUniqueDataObjectId();
 	SurfaceMesh::Pointer mesh = DynamicCast<SurfaceMesh>(obj);
 
 	FloatArray::Pointer points = mesh->GetPoints()->ConvertToDataArray();
@@ -94,8 +94,8 @@ void igQtFileLoader::OpenFile(const std::string& filePath)
 		Face* face = mesh1->GetFace(i);
 		cellScalar->InsertNextValue(face->Points->GetPoint(0)[0]);
 	}
-	mesh1->GetAttributes()->AddScalars(IG_POINT, pointScalar);
-	mesh1->GetAttributes()->AddScalars(IG_CELL, cellScalar);
+    mesh1->GetAttributes()->AddScalars(IG_POINT, pointScalar);
+    mesh1->GetAttributes()->AddScalars(IG_CELL, cellScalar)	;
 	
 
 	
@@ -141,7 +141,7 @@ void igQtFileLoader::OpenFile(const std::string& filePath)
 	//mesh2->GetAttributes()->AddScalars(IG_CELL, cellScalar);
 	//m_SceneManager->GetCurrentScene()->AddDataObject(mesh2);
 
-	Q_EMIT EmitDoneCurrent();
+//	Q_EMIT EmitDoneCurrent();
 	
 
 	this->SaveCurrentFileToRecentFile(QString::fromStdString(filePath));
