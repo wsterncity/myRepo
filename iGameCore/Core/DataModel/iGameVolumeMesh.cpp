@@ -330,17 +330,17 @@ void VolumeMesh::ConvertToDrawableData()
 	//m_LineEBO.destroy();
 	//m_TriangleEBO.destroy();
 
+	if (this->GetFaces() == nullptr)
+	{
+		this->BuildFaces();
+	}
+
 	// set line indices
 	if (this->GetEdges() == nullptr)
 	{
 		this->BuildEdges();
 	}
 	m_LineIndices = this->GetEdges()->ConvertToDataArray();
-
-	if (this->GetFaces() == nullptr)
-	{
-		this->BuildFaces();
-	}
 
 	// set triangle indices
 	IndexArray::Pointer triangleIndices = IndexArray::New();
@@ -363,10 +363,10 @@ void VolumeMesh::ConvertToDrawableData()
 		GL_FALSE, 0);
 
 	// line
-	//m_LineVAO.vertexBuffer(GL_VBO_IDX_0, m_PositionVBO, 0, 3 * sizeof(float));
-	//GLSetVertexAttrib(m_LineVAO, GL_LOCATION_IDX_0, GL_VBO_IDX_0, 3, GL_FLOAT,
-	//	GL_FALSE, 0);
-	//m_LineVAO.elementBuffer(m_LineEBO);
+	m_LineVAO.vertexBuffer(GL_VBO_IDX_0, m_PositionVBO, 0, 3 * sizeof(float));
+	GLSetVertexAttrib(m_LineVAO, GL_LOCATION_IDX_0, GL_VBO_IDX_0, 3, GL_FLOAT,
+		GL_FALSE, 0);
+	m_LineVAO.elementBuffer(m_LineEBO);
 
 	// triangle
 	m_TriangleVAO.vertexBuffer(GL_VBO_IDX_0, m_PositionVBO, 0, 3 * sizeof(float));
@@ -379,9 +379,9 @@ void VolumeMesh::ConvertToDrawableData()
 		m_Positions->GetNumberOfValues() * sizeof(float),
 		m_Positions->GetRawPointer());
 
-	//GLAllocateGLBuffer(m_LineEBO,
-	//	m_LineIndices->GetNumberOfValues() * sizeof(igIndex),
-	//	m_LineIndices->GetRawPointer());
+	GLAllocateGLBuffer(m_LineEBO,
+		m_LineIndices->GetNumberOfValues() * sizeof(igIndex),
+		m_LineIndices->GetRawPointer());
 
 	GLAllocateGLBuffer(m_TriangleEBO,
 		m_TriangleIndices->GetNumberOfValues() * sizeof(igIndex),

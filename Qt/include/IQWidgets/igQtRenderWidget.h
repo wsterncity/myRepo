@@ -49,7 +49,7 @@ protected:
          doneCurrent();
      }
 
-     void ChangeViewStyle(IGenum index)
+     void ChangeViewStyle(int index)
      {
          if (m_Scene->GetCurrentObject())
          {
@@ -57,12 +57,12 @@ protected:
          }
          update();
      }
-     void ChangeScalarView(int index)
+     void ChangeScalarView(int index, int dim = -1)
      {
          makeCurrent();
          if (m_Scene->GetCurrentObject())
          {
-             m_Scene->GetCurrentObject()->ViewCloudPictureOfModel(index - 1);
+             m_Scene->GetCurrentObject()->ViewCloudPictureOfModel(index - 1, dim - 1);
          }
          doneCurrent();
          update();

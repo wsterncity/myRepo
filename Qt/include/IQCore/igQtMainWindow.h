@@ -53,15 +53,18 @@ public:
 
     igQtProgressBarWidget* progressBarWidget;
     QComboBox* viewStyleCombox;
-    QComboBox* scalarViewCombox;
+    QComboBox* attributeViewIndexCombox;
+    QComboBox* attributeViewDimCombox;
 
 private slots:
     void updateRecentFilePaths();
     void updateColorBarShow();
     void ChangeViewStyle();
     void ChangeScalarView();
+    void ChangeScalarViewDim();
     void updateViewStyleAndCloudPicture();
     void updateCurrentDataObject();
+
 private:
     Ui::MainWindow* ui;
 };

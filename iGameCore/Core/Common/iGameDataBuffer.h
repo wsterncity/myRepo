@@ -5,7 +5,7 @@
 
 IGAME_NAMESPACE_BEGIN
 template<typename TValueType>
-class DataBuffer : public Object{
+class DataBuffer : public Object {
 public:
 	I_TEMPLATED_OBJECT(DataBuffer, TValueType);
 	static Pointer New() { return new DataBuffer; }

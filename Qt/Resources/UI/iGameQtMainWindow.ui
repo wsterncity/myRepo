@@ -531,9 +531,20 @@ border:2px solid #EEF1F7
    <addaction name="action_StreamLine"/>
    <addaction name="action_Glyph"/>
   </widget>
-  <widget class="QToolBar" name="toolBar_scalarview">
+  <widget class="QToolBar" name="toolBar_attribute_view_index">
    <property name="windowTitle">
-    <string>toolBar_6</string>
+    <string>toolBar_attribute_view_index</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+  </widget>
+  <widget class="QToolBar" name="toolBar_attribute_view_dim">
+   <property name="windowTitle">
+    <string>toolBar_attribute_view_dim</string>
    </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>

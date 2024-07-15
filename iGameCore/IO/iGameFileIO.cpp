@@ -1,17 +1,17 @@
 #include "iGameFileIO.h"
 
 #include "iGameVTKReader.h"
-//#include "iGameOFFReader.h"
-//#include "iGameMESHReader.h"
+#include "iGameOFFReader.h"
+#include "iGameMESHReader.h"
 #include "iGameOBJReader.h"
 //#include "iGameSTLReader.h"
-//#include "iGamePLYReader.h"
+#include "iGamePLYReader.h"
 //#include "iGamePVDReader.h"
 //#include "iGameVTSReader.h"
 //#include "iGameVTMReader.h"
 //#include "iGameVTUReader.h"
 //#include "CGNS/iGameCGNSReader.h"
-//#include "INP/iGameINPReader.h"
+#include "iGameINPReader.h"
 
 IGAME_NAMESPACE_BEGIN
 IGenum FileIO::GetFileType(const std::string& file_name)
@@ -125,20 +125,22 @@ DataObject::Pointer FileIO::ReadFile(const std::string &file_name)
 			resObj = reader->GetOutput();
             break;
         }
-  //      case iGame::FileIO::OFF:
-  //      {
-  //          auto app = iGameOFFReader::New();
-  //          resObj = app->ReadFile(file_name);
-  //          delete app;
-  //          break;
-  //      }
-  //      case iGame::FileIO::MESH:
-  //      {
-  //          auto app = iGameMESHReader::New();
-  //          resObj = app->ReadFile(file_name);
-  //          delete app;
-  //          break;
-  //      }
+        case iGame::FileIO::OFF:
+        {
+			OFFReader::Pointer reader = OFFReader::New();
+			reader->SetFilePath(file_name);
+			reader->Update();
+			resObj = reader->GetOutput();
+			break;
+        }
+        case iGame::FileIO::MESH:
+        {
+			MESHReader::Pointer reader = MESHReader::New();
+			reader->SetFilePath(file_name);
+			reader->Update();
+			resObj = reader->GetOutput();
+			break;
+        }
   //      case iGame::FileIO::STL:
   //      {
   //          auto app = iGameSTLReader::New();
@@ -146,13 +148,14 @@ DataObject::Pointer FileIO::ReadFile(const std::string &file_name)
   //          delete app;
   //          break;
   //      }
-  //      case iGame::FileIO::PLY:
-  //      {
-  //          auto app = iGamePLYReader::New();
-  //          resObj = app->ReadFile(file_name);
-  //          delete app;
-  //          break;
-  //      }
+        case iGame::FileIO::PLY:
+        {
+			PLYReader::Pointer reader = PLYReader::New();
+			reader->SetFilePath(file_name);
+			reader->Update();
+			resObj = reader->GetOutput();
+			break;
+        }
 		//case iGame::FileIO::CGNS:
 		//{
 		//	//auto app = iGameCGNSReader::New();
@@ -160,13 +163,15 @@ DataObject::Pointer FileIO::ReadFile(const std::string &file_name)
 		//	//delete app;
 		//}
 		//break;
-		//case iGame::FileIO::INP:
-		//{
-		//	auto app = iGameINPReader::New();
-		//	resObj = app->ReadFile(file_name);
-		//	delete app;
-		//}
-		//break;
+		case iGame::FileIO::INP:
+		{
+			INPReader::Pointer reader = INPReader::New();
+			reader->SetFilePath(file_name);
+			reader->Update();
+			resObj = reader->GetOutput();
+			break;
+		}
+		break;
   //      case iGame::FileIO::STEP:
   //      {
 

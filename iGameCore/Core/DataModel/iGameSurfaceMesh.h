@@ -168,20 +168,23 @@ public:
 			for (int i = 0; i < this->GetNumberOfFaces(); i++)
 			{
 				Face* face = this->GetFace(i);
-				auto& p0 = face->Points->GetPoint(0);
-				newPositions->InsertNextTuple3(p0[0], p0[1], p0[2]);
+				for (int j = 2; j < face->GetCellSize(); j++) {
+					auto& p0 = face->Points->GetPoint(0);
+					newPositions->InsertNextTuple3(p0[0], p0[1], p0[2]);
 
-				auto& p1 = face->Points->GetPoint(1);
-				newPositions->InsertNextTuple3(p1[0], p1[1], p1[2]);
+					auto& p1 = face->Points->GetPoint(j - 1);
+					newPositions->InsertNextTuple3(p1[0], p1[1], p1[2]);
 
-				auto& p2 = face->Points->GetPoint(2);
-				newPositions->InsertNextTuple3(p2[0], p2[1], p2[2]);
+					auto& p2 = face->Points->GetPoint(j);
+					newPositions->InsertNextTuple3(p2[0], p2[1], p2[2]);
 
-				colors->GetTuple(i, color);
-				newColors->InsertNextTuple3(color[0], color[1], color[2]);
-				newColors->InsertNextTuple3(color[0], color[1], color[2]);
-				newColors->InsertNextTuple3(color[0], color[1], color[2]);
+					colors->GetTuple(i, color);
+					newColors->InsertNextTuple3(color[0], color[1], color[2]);
+					newColors->InsertNextTuple3(color[0], color[1], color[2]);
+					newColors->InsertNextTuple3(color[0], color[1], color[2]);
+				}
 			}
+			m_CellPositionSize = newPositions->GetNumberOfTuples();
 
 			GLAllocateGLBuffer(m_CellPositionVBO,
 				newPositions->GetNumberOfValues() * sizeof(float),
@@ -198,6 +201,7 @@ public:
 				GL_FALSE, 0);
 		}
 	}
+
 private:
 	GLVertexArray m_PointVAO, m_LineVAO, m_TriangleVAO;
 	GLBuffer m_PositionVBO, m_ColorVBO, m_NormalVBO, m_TextureVBO;
@@ -205,6 +209,7 @@ private:
 
 	GLVertexArray m_CellVAO;
 	GLBuffer m_CellPositionVBO, m_CellColorVBO;
+	int m_CellPositionSize{};
 
 	FloatArray::Pointer m_Positions{};
 	FloatArray::Pointer m_Colors{};
@@ -215,7 +220,7 @@ private:
 	bool m_Flag{ false };
 	bool m_UseColor{ false };
 	bool m_ColorWithCell{ false };
-	int m_PointSize{ 4 };
+	int m_PointSize{ 1 };
 	int m_LineWidth{ 1 };
 
 	DataArray::Pointer m_ViewAttribute;

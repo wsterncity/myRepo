@@ -116,7 +116,7 @@ void SurfaceMesh::BuildEdges()
 	igIndex i, ncell;
 	EdgeTable::Pointer EdgeTable = EdgeTable::New();
 	igIndex nfaces = this->GetNumberOfFaces();
-	igIndex edgeIds[16]{}, face[32]{};
+	igIndex edgeIds[32]{}, face[32]{};
 
 	m_FaceEdges = CellArray::New();
 	EdgeTable->Initialize(this->GetNumberOfPoints());
@@ -250,7 +250,7 @@ void SurfaceMesh::Draw(Scene* scene)
 		scene->GetShader(Scene::PATCH)->use();
 		m_CellVAO.bind();
 		int a = this->GetNumberOfFaces();
-		glad_glDrawArrays(GL_TRIANGLES, 0, this->GetNumberOfFaces() * 3);
+		glad_glDrawArrays(GL_TRIANGLES, 0, m_CellPositionSize);
 		m_CellVAO.release();
 		return;
 	}

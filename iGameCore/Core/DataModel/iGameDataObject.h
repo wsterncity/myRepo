@@ -35,6 +35,7 @@ public:
 		return true;
 	}
 
+	void SetAttributes(AttributeData::Pointer p) { m_Attributes = p; }
 	AttributeData* GetAttributes() { return m_Attributes.get(); }
 	Metadata* GetMetadata() { return m_Metadata.get(); }
 
@@ -147,8 +148,10 @@ public:
 	virtual void ConvertToDrawableData();
 	virtual void MakeDrawable() { m_Drawable = true; }
 	virtual bool IsDrawable() { return m_Drawable; }
+
 	virtual void ViewCloudPicture(int index, int dimension = -1);
 	void ViewCloudPictureOfModel(int index, int dimension = -1);
+
 	virtual void SetViewStyle(IGenum mode);
 	void SetViewStyleOfModel(IGenum mode);
 	IGenum GetViewStyle();

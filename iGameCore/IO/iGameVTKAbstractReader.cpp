@@ -797,6 +797,7 @@ const void VTKAbstractReader::TransferVtkCellToiGameCell(IntArray::Pointer VtkCe
 		vhs = VtkCells->GetRawPointer() + index + 1;
 		index += size + 1;
 		VTKTYPE type = (VTKTYPE)VtkCellsType->GetValue(i);
+		//if(type != 7)
 		switch (type)
 		{
 		case iGame::VTKAbstractReader::T0:
