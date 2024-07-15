@@ -5,7 +5,7 @@
 #include "iGameMESHReader.h"
 #include "iGameOBJReader.h"
 //#include "iGameSTLReader.h"
-//#include "iGamePLYReader.h"
+#include "iGamePLYReader.h"
 #include "iGamePVDReader.h"
 #include "iGameVTSReader.h"
 #include "iGameVTUReader.h"

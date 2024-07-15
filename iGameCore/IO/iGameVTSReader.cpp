@@ -11,7 +11,7 @@
 #include "tinyxml.h"
 #include "iGameFileReader.h"
 
-
+IGAME_NAMESPACE_BEGIN
 bool iGame::iGameVTSReader::Parsing() {
     TiXmlElement* elem;
     const char* data;
