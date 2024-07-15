@@ -28,7 +28,6 @@ bool iGameXMLFileReader::Execute() {
     clock_t start, end;
     start = clock();
 
-
     if(!Open()){
         return false;
     }
@@ -44,7 +43,6 @@ bool iGameXMLFileReader::Execute() {
     std::cout << "Read file success!" << std::endl;
     std::cout << "   The time cost: " << end - start << "ms" << std::endl;
     delete doc;
-
     return true;
 }
 
@@ -68,6 +66,8 @@ bool iGameXMLFileReader::CreateDataObject() {
     // 统计各类型元素的数量
     int numFaces = m_Data.GetNumberOfFaces();
     int numVolumes = m_Data.GetNumberOfVolumes();
+    int numPoints = m_Data.GetNumberOfPoints();
+    int numLines = m_Data.GetNumberOfLines();
 
     // 混合网格类型判断
     if (numFaces && numVolumes) {
@@ -92,6 +92,17 @@ bool iGameXMLFileReader::CreateDataObject() {
         mesh->SetVolumes(m_Data.GetVolumes());
         m_Output = mesh;
     }
+        //  单独点集判断
+    else if(numPoints){
+        PointSet::Pointer pointSet = PointSet::New();
+        pointSet->SetPoints(m_Data.GetPoints());
+        m_Output = pointSet;
+    }
+    //  单独边集判断
+    else if(numLines){
+
+    }
+
 
     return true;
 }
