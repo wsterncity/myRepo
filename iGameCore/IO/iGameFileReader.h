@@ -30,7 +30,7 @@ public:
 	bool CreateDataObject();
 	bool Close();
 
-	void SetFilePath(const std::string& filePath) { this->m_FilePath = filePath; }
+	void SetFilePath(const std::string& filePath);
 
 	/**
 	 * Internal function to read in a value.  Returns zero if there was an

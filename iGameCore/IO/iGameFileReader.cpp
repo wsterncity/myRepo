@@ -43,6 +43,8 @@ bool FileReader::Execute()
 		std::cerr << "Generate DataObject failure\n";
 		return false;
 	}
+	m_Output->SetName(m_FileName);
+    std::cout << m_FileName << '\n';
 	this->SetOutput(0, m_Output);
 	end = clock();
 	std::cout << "Read file success!" << std::endl;
@@ -668,6 +670,10 @@ DataArray::Pointer FileReader::ReadArray(const char* dataType, int numTuples, in
 	return array;
 }
 
+    void FileReader::SetFilePath(const std::string &filePath) {
+		 this->m_FilePath = filePath;
+		 this->m_FileName = filePath.substr(filePath.find_last_of('/') + 1, filePath.size());;
+    }
 
 
 IGAME_NAMESPACE_END

@@ -113,14 +113,14 @@ void DataObject::ConvertToDrawableData()
 	ProcessSubDataObjects(&DataObject::ConvertToDrawableData);
 }
 
-void DataObject::ViewCloudPicture(int index, int dimension) // ���ӻ���ͼ
+void DataObject::ViewCloudPicture(int index, int dimension) // ????????
 {
     m_AttributeIndex = index;
     m_AttributeDimension = dimension;
 	ProcessSubDataObjects(&DataObject::ViewCloudPicture, index, dimension);
 }
 
-void DataObject::ViewCloudPictureOfModel(int index, int demension) // ���ӻ���ͼ
+void DataObject::ViewCloudPictureOfModel(int index, int demension) // ????????
 {
 	auto* parent = FindParent();
 	if (parent != this) {
