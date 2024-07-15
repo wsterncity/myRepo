@@ -1,22 +1,25 @@
-﻿#ifndef iGameVTSReader_h
+﻿/**
+ * @class   iGameVTSReader
+ * @brief   iGameVTSReader's brief
+ */
+#ifndef iGameVTSReader_h
 #define iGameVTSReader_h
 
-#include "iGameFileReader.h"
+
+#include "iGameXMLFileReader.h"
 
 IGAME_NAMESPACE_BEGIN
-
-class VTSReader : public FileReader {
+class iGameVTSReader : public iGameXMLFileReader{
 public:
-	I_OBJECT(VTSReader);
-	static Pointer New() { return new VTSReader; }
+    I_OBJECT(iGameVTSReader)
 
-	bool Parsing() override;
+    static Pointer New(){return new iGameVTSReader;}
 
-
+    bool Parsing() override;
 
 protected:
-	VTSReader() = default;
-	~VTSReader() override = default;
+    iGameVTSReader() = default;
+    ~iGameVTSReader() = default;
 };
 
 IGAME_NAMESPACE_END

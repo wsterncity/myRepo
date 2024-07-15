@@ -132,34 +132,6 @@ bool FileReader::CreateDataObject()
 		mesh->SetVolumes(m_Data.GetVolumes());
 		mesh->SetAttributes(m_Data.GetData());
 		m_Output = mesh;
-
-		//if (numPolygons) {
-		//	this->Type = HYBRID;
-		//}
-
-		//// 统计不同类型体元素的数量
-		//int count = 0;
-		//if (numTetras) count++;
-		//if (numHexahedrons) count++;
-		//if (numPrisms) count++;
-		//if (numPyramids) count++;
-
-		//// 判断体网格类型
-		//if (count > 1) {
-		//	this->Type = HYBRID;
-		//}
-		//else if (numTetras) {
-		//	this->Type = TET;
-		//}
-		//else if (numHexahedrons) {
-		//	this->Type = HEX;
-		//}
-		//else if (numPrisms) {
-		//	this->Type = PRI;
-		//}
-		//else if (numPyramids) {
-		//	this->Type = PYR;
-		//}
 	}
 
 	return true;
@@ -707,6 +679,10 @@ DataArray::Pointer FileReader::ReadArray(const char* dataType, int numTuples, in
 	return array;
 }
 
+    void FileReader::SetFilePath(const std::string &filePath) {
+		 this->m_FilePath = filePath;
+		 this->m_FileName = filePath.substr(filePath.find_last_of('/') + 1, filePath.size());;
+    }
 
 
 IGAME_NAMESPACE_END

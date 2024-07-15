@@ -5,9 +5,10 @@
 #include "iGameMESHReader.h"
 #include "iGameOBJReader.h"
 //#include "iGameSTLReader.h"
-#include "iGamePLYReader.h"
-//#include "iGamePVDReader.h"
-//#include "iGameVTSReader.h"
+//#include "iGamePLYReader.h"
+#include "iGamePVDReader.h"
+#include "iGameVTSReader.h"
+#include "iGameVTUReader.h"
 //#include "iGameVTMReader.h"
 //#include "iGameVTUReader.h"
 //#include "CGNS/iGameCGNSReader.h"
@@ -182,25 +183,31 @@ DataObject::Pointer FileIO::ReadFile(const std::string &file_name)
 
   //      }
   //          break;
-  //      case iGame::FileIO::VTS:
-  //      {
-  //          auto app = iGameVTSReader();
-  //          resObj = app.ReadFile(file_name);
-  //          break;
-  //      }
-  //      case iGame::FileIO::VTU:
-  //      {
-  //          auto app = iGameVTUReader();
-  //          resObj = app.ReadFile(file_name);
-  //          break;
-  //      }
+        case iGame::FileIO::VTS:
+        {
+            iGameVTSReader::Pointer reader = iGameVTSReader::New();
+            reader->SetFilePath(file_name);
+            reader->Update();
+            resObj = reader->GetOutput();
+            break;
+        }
+        case iGame::FileIO::VTU:
+        {
+			iGameVTUReader::Pointer reader = iGameVTUReader::New();
+			reader->SetFilePath(file_name);
+			reader->Update();
+			resObj = reader->GetOutput();
+			break;
+        }
 
-  //      case iGame::FileIO::PVD:
-  //      {
-  //          auto app = iGamePVDReader();
-  //          resObj = app.ReadFile(file_name);
-  //          break;
-  //      }
+        case iGame::FileIO::PVD:
+        {
+			iGamePVDReader::Pointer reader = iGamePVDReader::New();
+			reader->SetFilePath(file_name);
+			reader->Update();
+			resObj = reader->GetOutput();
+            break;
+        }
   //      case iGame::FileIO::VTM:
   //      {
   //          auto app = iGameVTMReader::New();

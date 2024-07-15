@@ -67,7 +67,6 @@ igQtModelListView::igQtModelListView(QWidget* parent) : QTreeView(parent) {
 			}
 			this->currentObjectIdx = newId;
 
-            qDebug() << this->currentObjectIdx;
 			m_Manager->GetCurrentScene()->UpdateCurrentDataObject(currentObjectIdx);
 			Q_EMIT UpdateCurrentItemToOtherQtModule();
 		}
@@ -191,8 +190,10 @@ void igQtModelListView::AddModel(QString modelName) {
 		int index = 0;
 		for(auto it = curObj->SubBegin(); it != curObj->SubEnd(); it ++){
 			auto subObj = it->second;
-			std::string name = "block_";
-			name.append(std::to_string(index++));
+
+			std::string name = subObj->GetName();
+//			std::string name = "block_";
+//			name.append(std::to_string(index++));
 			AddChildToItem(newModel, QString::fromStdString(name), subObj->GetDataObjectId());
 		}
 	}

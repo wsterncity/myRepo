@@ -40,73 +40,69 @@ void igQtFileLoader::OpenFile(const std::string& filePath)
 	if (filePath.empty() || strrchr(filePath.data(), '.') == nullptr)return;
 	
 
-	Q_EMIT EmitMakeCurrent();
-	//DataObject::Pointer multiData = DataObject::New();
-	//multiData->SetUniqueDataObjectId();
-
-	//auto obj = iGame::FileIO::ReadFile(filePath);
-	////obj->SetUniqueDataObjectId();
-	//SurfaceMesh::Pointer mesh = DynamicCast<SurfaceMesh>(obj);
-
-	//FloatArray::Pointer points = mesh->GetPoints()->ConvertToDataArray();
-	//FloatArray::Pointer pointScalar = FloatArray::New();
-	//FloatArray::Pointer cellScalar = FloatArray::New();
-	//pointScalar->SetName("pointScalar");
-	//cellScalar->SetName("cellScalar");
-	//float tu[3];
-	//for (int i = 0; i < points->GetNumberOfTuples(); i++)
-	//{
-	//	points->GetTuple(i, tu);
-	//	pointScalar->InsertNextValue(tu[0]);
-	//}
-
-	//for (int i = 0; i < mesh->GetNumberOfFaces(); i++)
-	//{
-	//	Face* face = mesh->GetFace(i);
-	//	cellScalar->InsertNextValue(face->Points->GetPoint(0)[0]);
-	//}
-	//mesh->GetAttributes()->AddScalars(IG_POINT, pointScalar);
-	//mesh->GetAttributes()->AddScalars(IG_CELL, cellScalar);
-
-	//mesh->GetMetadata()->AddString(FILE_PATH, filePath);
-	//mesh->GetMetadata()->AddString(FILE_NAME, filePath.substr(filePath.find_last_of('/') + 1));
-	//mesh->GetMetadata()->AddString(FILE_SUFFIX, filePath.substr(filePath.find_last_of('.') + 1));
-
-	//auto obj1 = iGame::FileIO::ReadFile("H:/iGameProjects/model/obj/horse.obj");
-	////auto obj1 = iGame::FileIO::ReadFile("C:\\Users\\m_ky\\Desktop\\Resource\\Model\\bunny.obj");
-	//SurfaceMesh::Pointer mesh1 = DynamicCast<SurfaceMesh>(obj1);
-
-	//points = mesh1->GetPoints()->ConvertToDataArray();
-	//pointScalar = FloatArray::New();
-	//cellScalar = FloatArray::New();
-	//pointScalar->SetName("pointScalar");
-	//cellScalar->SetName("cellScalar");
-	//for (int i = 0; i < points->GetNumberOfTuples(); i++)
-	//{
-	//	points->GetTuple(i, tu);
-	//	pointScalar->InsertNextValue(tu[0]);
-	//}
-
-	//for (int i = 0; i < mesh1->GetNumberOfFaces(); i++)
-	//{
-	//	Face* face = mesh1->GetFace(i);
-	//	cellScalar->InsertNextValue(face->Points->GetPoint(0)[0]);
-	//}
-	//mesh1->GetAttributes()->AddScalars(IG_POINT, pointScalar);
-	//mesh1->GetAttributes()->AddScalars(IG_CELL, cellScalar);
-	//
-
-	//
-	//multiData->AddSubDataObject(mesh);
-	//multiData->AddSubDataObject(obj1);
-	//multiData->SetViewStyle(IG_SURFACE);
-
-	//StringArray::Pointer attrbNameArray = StringArray::New();
-	//attrbNameArray->InsertToBack("pointScalar");
-	//attrbNameArray->InsertToBack("cellScalar");
-	//multiData->GetMetadata()->AddStringArray(ATTRIBUTE_NAME_ARRAY, attrbNameArray);
-
-	//m_SceneManager->GetCurrentScene()->AddDataObject(multiData);
+//	DataObject::Pointer multiData = DataObject::New();
+//	multiData->SetUniqueDataObjectId();
+//
+//	auto obj = iGame::FileIO::ReadFile(filePath);
+//	obj->SetUniqueDataObjectId();
+//	SurfaceMesh::Pointer mesh = DynamicCast<SurfaceMesh>(obj);
+//
+//	FloatArray::Pointer points = mesh->GetPoints()->ConvertToDataArray();
+//	FloatArray::Pointer pointScalar = FloatArray::New();
+//	FloatArray::Pointer cellScalar = FloatArray::New();
+//	pointScalar->SetName("pointScalar");
+//	cellScalar->SetName("cellScalar");
+//	float tu[3];
+//	for (int i = 0; i < points->GetNumberOfTuples(); i++)
+//	{
+//		points->GetTuple(i, tu);
+//		pointScalar->InsertNextValue(tu[0]);
+//	}
+//
+//	for (int i = 0; i < mesh->GetNumberOfFaces(); i++)
+//	{
+//		Face* face = mesh->GetFace(i);
+//		cellScalar->InsertNextValue(face->Points->GetPoint(0)[0]);
+//	}
+//	mesh->GetAttributes()->AddScalars(IG_POINT, pointScalar);
+//	mesh->GetAttributes()->AddScalars(IG_CELL, cellScalar);
+//
+//	mesh->GetMetadata()->AddString(FILE_PATH, filePath);
+//	mesh->GetMetadata()->AddString(FILE_NAME, filePath.substr(filePath.find_last_of('/') + 1));
+//	mesh->GetMetadata()->AddString(FILE_SUFFIX, filePath.substr(filePath.find_last_of('.') + 1));
+//
+////	auto obj1 = iGame::FileIO::ReadFile("H:/iGameProjects/model/obj/horse.obj");
+//	auto obj1 = iGame::FileIO::ReadFile("C:/Users/m_ky/Desktop/Resource/Model/bunny.obj");
+//	obj1->SetUniqueDataObjectId();
+////	auto obj1 = iGame::FileIO::ReadFile(filePath);
+//	SurfaceMesh::Pointer mesh1 = DynamicCast<SurfaceMesh>(obj1);
+//
+//	points = mesh1->GetPoints()->ConvertToDataArray();
+//	pointScalar = FloatArray::New();
+//	cellScalar = FloatArray::New();
+//	pointScalar->SetName("pointScalar");
+//	cellScalar->SetName("cellScalar");
+//	for (int i = 0; i < points->GetNumberOfTuples(); i++)
+//	{
+//		points->GetTuple(i, tu);
+//		pointScalar->InsertNextValue(tu[0]);
+//	}
+//
+//	for (int i = 0; i < mesh1->GetNumberOfFaces(); i++)
+//	{
+//		Face* face = mesh1->GetFace(i);
+//		cellScalar->InsertNextValue(face->Points->GetPoint(0)[0]);
+//	}
+//    mesh1->GetAttributes()->AddScalars(IG_POINT, pointScalar);
+//    mesh1->GetAttributes()->AddScalars(IG_CELL, cellScalar)	;
+//	multiData->AddSubDataObject(mesh);
+//	multiData->AddSubDataObject(obj1);
+//	multiData->SetViewStyle(IG_SURFACE);
+//	StringArray::Pointer attrbNameArray = StringArray::New();
+//	attrbNameArray->InsertToBack("pointScalar");
+//	attrbNameArray->InsertToBack("cellScalar");
+//	multiData->GetMetadata()->AddStringArray(ATTRIBUTE_NAME_ARRAY, attrbNameArray);
+//	m_SceneManager->GetCurrentScene()->AddDataObject(multiData);
 
 	auto obj = iGame::FileIO::ReadFile(filePath);
 	PointSet::Pointer mesh = DynamicCast<PointSet>(obj);

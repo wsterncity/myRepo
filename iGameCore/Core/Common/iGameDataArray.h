@@ -108,7 +108,7 @@ public:
 	// 获取数据类型的字节数
 	static int GetDataTypeSize(int type);
 	int GetDataTypeSize() const {
-		return this->GetDataTypeSize(this->GetDataType());
+		return iGame::DataArray::GetDataTypeSize(this->GetDataType());
 	}
 	virtual int GetDataType() const = 0;
 
