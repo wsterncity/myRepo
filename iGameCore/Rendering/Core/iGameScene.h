@@ -6,11 +6,11 @@
 #define OPENIGAME_SCENCE_H
 
 #include "OpenGL/GLShader.h"
+#include "iGameAxes.h"
 #include "iGameCamera.h"
 #include "iGameFontSet.h"
 #include "iGameLight.h"
 #include "iGameSurfaceMesh.h"
-#include "iGameAxes.h"
 
 IGAME_NAMESPACE_BEGIN
 class Scene : public Object {
@@ -25,7 +25,7 @@ public:
     };
     struct UniformBufferObject {
         alignas(16) igm::vec3 viewPos;
-        alignas(4) int useColor{ 0 };
+        alignas(4) int useColor{0};
     };
 
     enum ShaderType {
@@ -39,7 +39,7 @@ public:
         SHADERTYPE_COUNT
     };
 
-    // 给Actor以及Mapper使用的接口
+    // 锟斤拷Actor锟皆硷拷Mapper使锟矫的接匡拷
     MVPMatrix& MVP() { return this->m_MVP; }
     UniformBufferObject& UBO() { return this->m_UBO; }
     void UpdateUniformBuffer();
@@ -50,37 +50,33 @@ public:
     GLShaderProgram* GetShader(IGenum type);
     bool HasShader(IGenum type);
 
-    // 给Qt使用的接口
+    // 锟斤拷Qt使锟矫的接匡拷
     void ChangeViewStyle(IGenum mode);
 
-    // 渲染使用的接口
+    // 锟斤拷染使锟矫的接匡拷
     void Draw();
     void Resize(int width, int height, int pixelRatio);
     void Update();
 
-    void AddDataObject(DataObject::Pointer obj)
-    {
+    void AddDataObject(DataObject::Pointer obj) {
         m_Models.insert(std::make_pair<>(obj->GetDataObjectId(), obj));
         m_CurrentObjectId = obj->GetDataObjectId();
         m_CurrentObject = obj.get();
+        if (auto visibility = m_CurrentObject->GetVisibility()) {
+            ChangeDataObjectVisibility(m_CurrentObjectId, visibility);
+        }
     }
 
-    bool UpdateCurrentDataObject(int index)
-    {
-        for (auto& model : m_Models) {
-            auto& id = model.first;
-            auto& obj = model.second;
-            if (id == index)
-            {
+    bool UpdateCurrentDataObject(int index) {
+        for (auto& [id, obj]: m_Models) {
+            if (id == index) {
                 m_CurrentObjectId = id;
                 m_CurrentObject = obj.get();
                 return true;
             }
-            if (obj->HasSubDataObject())
-            {
+            if (obj->HasSubDataObject()) {
                 auto subObj = obj->GetSubDataObject(index);
-                if (subObj != nullptr)
-                {
+                if (subObj != nullptr) {
                     m_CurrentObjectId = index;
                     m_CurrentObject = subObj.get();
                     return true;
@@ -90,44 +86,53 @@ public:
         return false;
     }
 
-    DataObject* GetDataObject(int index)
-    {
-        for (auto& model : m_Models) {
-            auto& id = model.first;
-            auto& obj = model.second;
-            if (id == index)
-            {
-                return obj.get();
-            }
-            if (obj->HasSubDataObject())
-            {
+    DataObject* GetDataObject(int index) {
+        for (auto& [id, obj]: m_Models) {
+            if (id == index) { return obj.get(); }
+            if (obj->HasSubDataObject()) {
                 auto subObj = obj->GetSubDataObject(index);
-                if (subObj != nullptr)
-                {
-                    return subObj.get();
-                }
+                if (subObj != nullptr) { return subObj.get(); }
             }
         }
         return false;
     }
 
-    DataObject* GetCurrentObject() {
-        return m_CurrentObject;
+    DataObject* GetCurrentObject() { return m_CurrentObject; }
+
+    void ChangeDataObjectVisibility(int index, bool visibility) {
+        auto* obj = GetDataObject(index);
+        obj->SetVisibility(visibility);
+
+        if (visibility) {
+            m_VisibleModelsCount++;
+            if (m_VisibleModelsCount == 1) {
+                auto center =
+                        igm::vec3{0.293951035f, 21.5820999f, 0.193099976f};
+                float radius = 114.204018f;
+                
+                m_FirstModelCenter = igm::vec4{center, radius};
+                m_Camera->SetCamaraPos(center.x, center.y,
+                                       center.z + 2.0f * radius);
+            };
+        } else {
+            m_VisibleModelsCount--;
+        }
     }
 
-    void DrawModels() 
-    {
+    void DrawModels() {
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LESS);
         glViewport(0, 0, m_Camera->GetViewPort().x, m_Camera->GetViewPort().y);
 
-        for (auto& model : m_Models) {
-            model.second->ConvertToDrawableData();
-            model.second->Draw(this);
+        for (auto& [id, obj]: m_Models) {
+            obj->ConvertToDrawableData();
+            obj->Draw(this);
         }
     }
 
-    std::map<DataObjectId, DataObject::Pointer>& GetModelList() { return m_Models; }
+    std::map<DataObjectId, DataObject::Pointer>& GetModelList() {
+        return m_Models;
+    }
 
 protected:
     Scene();
@@ -136,7 +141,7 @@ protected:
     void InitOpenGL();
     void InitFont();
     void InitAxes();
-    
+
     void UpdateUniformData();
     void DrawFrame();
     void DrawAxes();
@@ -153,7 +158,9 @@ protected:
     UniformBufferObject m_UBO;
     igm::mat4 m_ModelRotate{};
     igm::vec3 m_BackgroundColor{};
-    igm::vec4 m_FirstActorCenter{0.0f, 0.0f, 0.0f, 0.707f};
+
+    uint32_t m_VisibleModelsCount = 0;
+    igm::vec4 m_FirstModelCenter{0.0f, 0.0f, 0.0f, 1.0f};
 
     unsigned int m_MVPBlock, m_UBOBlock;
     std::map<IGenum, std::unique_ptr<GLShaderProgram>> m_ShaderPrograms;

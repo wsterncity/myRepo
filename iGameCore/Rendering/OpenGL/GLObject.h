@@ -45,9 +45,8 @@ public:
     void create() { handle = createHandle(); }
     void destroy() { destroyHandle(handle); }
 
-    ~GLObject() { /*destroyHandle(handle);*/ }
+    ~GLObject() { destroy(); }
 };
-
 
 
 IGAME_NAMESPACE_END
