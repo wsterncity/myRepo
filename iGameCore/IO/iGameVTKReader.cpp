@@ -21,6 +21,7 @@ bool VTKReader::Parsing()
 		igError("Data file ends prematurely!");
 		return false;
 	}
+
 	if (!strncmp(this->LowerCase(line), "dataset", 7)) {
 		// Make sure we're reading right type of geometry
 		//
@@ -32,6 +33,7 @@ bool VTKReader::Parsing()
 			igError("Cannot read dataset type: " << line);
 			return false;
 		}
+
 		while (true) {
 			if (!this->ReadString(line)) {
 				break;
