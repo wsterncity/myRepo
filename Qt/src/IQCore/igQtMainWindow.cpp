@@ -158,8 +158,8 @@ void igQtMainWindow::initAllComponents()
 	//	iGame::iGameManager::Instance()->UpdateCenter(x, y, z);
 	//	rendererWidget->update();
 	//	});
-	//connect(ui->action_DeleteMesh, &QAction::triggered, ui->modelTreeView, &igQtModelListView::DeleteCurrentFile);
-	//connect(ui->action_DeleteMesh, &QAction::triggered, rendererWidget, &igQtModelDrawWidget::deleteModel);
+	connect(ui->action_DeleteMesh, &QAction::triggered, ui->modelTreeView, &igQtModelListView::DeleteCurrentFile);
+	connect(ui->action_DeleteMesh, &QAction::triggered, this, &igQtMainWindow::updateCurrentSceneWidget);
 	//connect(ui->action_NextMesh, &QAction::triggered, ui->modelTreeView, &igQtModelListView::ChangeSelected2NextItem);
 	//connect(ui->action_NextMesh, &QAction::triggered, rendererWidget, &igQtModelDrawWidget::changeCurrentModel2Next);
 	//connect(ui->action_LastMesh, &QAction::triggered, ui->modelTreeView, &igQtModelListView::ChangeSelected2LastItem);
@@ -256,6 +256,7 @@ void igQtMainWindow::initAllMySignalConnections()
 
 	connect(fileLoader, &igQtFileLoader::FinishReading, this, &igQtMainWindow::updateRecentFilePaths);
 	connect(fileLoader, &igQtFileLoader::FinishReading, this, &igQtMainWindow::updateViewStyleAndCloudPicture);
+	connect(fileLoader, &igQtFileLoader::FinishReading, this, &igQtMainWindow::updateCurrentSceneWidget);
     connect(fileLoader, &igQtFileLoader::EmitMakeCurrent, rendererWidget,&igQtRenderWidget::MakeCurrent);
     connect(fileLoader, &igQtFileLoader::EmitDoneCurrent, rendererWidget,&igQtRenderWidget::DoneCurrent);
 
@@ -274,7 +275,7 @@ void igQtMainWindow::initAllMySignalConnections()
 	//connect(ui->widget_FlowField, &igQtStreamTracerWidget::sendstreams, rendererWidget, &igQtModelDrawWidget::DrawStreamline);
 	//connect(ui->widget_FlowField, &igQtStreamTracerWidget::updatestreams, rendererWidget, &igQtModelDrawWidget::UpdateStreamline);
 
-	connect(ui->modelTreeView, &igQtModelListView::UpdateCurrentScene, this, [&](){rendererWidget->update();});
+	connect(ui->modelTreeView, &igQtModelListView::UpdateCurrentScene, this, &igQtMainWindow::updateCurrentSceneWidget);
 	connect(ui->modelTreeView, &igQtModelListView::UpdateCurrentItemToOtherQtModule, this, &igQtMainWindow::updateCurrentDataObject);
 
 	//connect(ui->modelTreeView, &igQtModelListView::ChangeModelVisible, rendererWidget, &igQtModelDrawWidget::changeTargetModelVisible);
@@ -384,36 +385,37 @@ void igQtMainWindow::ChangeScalarViewDim()
 }
 void igQtMainWindow::updateViewStyleAndCloudPicture()
 {
-	auto* current = rendererWidget->GetScene()->GetCurrentObject();
-	auto* parent = current->FindParent();
-	if (parent != nullptr && parent != current) {
-		current = parent;
-	}
-	if (current)
-	{
-		// Update View Style
-		IGenum defaultViewStyle = current->GetViewStyle();
-		viewStyleCombox->setCurrentIndex(defaultViewStyle);
-
-		// Update Attribute View Index
-		attributeViewIndexCombox->clear();
-		attributeViewIndexCombox->addItem("None        ");
-		
-		StringArray::Pointer nameArray = 
-			current->GetMetadata()->GetStringArray(ATTRIBUTE_NAME_ARRAY);
-		for (int i = 0; i < nameArray->Size(); i++)
-		{
-			attributeViewIndexCombox->addItem(QString::fromStdString(nameArray->GetElement(i)));
-		}
-		attributeViewIndexCombox->setCurrentIndex(current->GetAttributeIndex() + 1);
-
-
-		
-	}
+//	auto* current = rendererWidget->GetScene()->GetCurrentObject();
+//	if (current)
+//	{
+//		// Update View Style
+////>>>>>>> 5c590c0b5220d077d84cdab81b6eed106d7d4de8
+//		IGenum defaultViewStyle = current->GetViewStyle();
+//		viewStyleCombox->setCurrentIndex(defaultViewStyle);
+//
+//		// Update Attribute View Index
+//		attributeViewIndexCombox->clear();
+//		attributeViewIndexCombox->addItem("None        ");
+//
+//		StringArray::Pointer nameArray =
+//			current->GetMetadata()->GetStringArray(ATTRIBUTE_NAME_ARRAY);
+//		for (int i = 0; i < nameArray->Size(); i++)
+//		{
+//			attributeViewIndexCombox->addItem(QString::fromStdString(nameArray->GetElement(i)));
+//		}
+//		attributeViewIndexCombox->setCurrentIndex(current->GetAttributeIndex() + 1);
+//
+//
+//
+//	}
 }
 
 void igQtMainWindow::updateCurrentDataObject()
 {
 	updateViewStyleAndCloudPicture();
 	
+}
+
+void igQtMainWindow::updateCurrentSceneWidget() {
+	this->rendererWidget->update();
 }

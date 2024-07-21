@@ -90,6 +90,7 @@ void VolumeMesh::BuildFaces()
 	igIndex cell[64]{}, faceIds[64]{}, face[64]{};
 
 	m_VolumeFaces = CellArray::New();
+    int a = this->GetNumberOfVolumes();
 	for (i = 0; i < this->GetNumberOfVolumes(); i++)
 	{
 		Volume* vol = this->GetVolume(i);
