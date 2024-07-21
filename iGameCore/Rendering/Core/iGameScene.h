@@ -67,6 +67,24 @@ public:
         }
     }
 
+    void RemoveCurrentDataObject() {
+        m_Models.erase(m_CurrentObjectId);
+        if (m_Models.empty()) return;
+        m_CurrentObjectId = m_Models.begin()->first;
+        m_CurrentObject = m_Models.begin()->second;
+    }
+
+    void RemoveDataObject(DataObject::Pointer obj) {
+        for (auto it = m_Models.begin(); it != m_Models.end(); ++it) {
+            if (it->second == obj) {
+                m_Models.erase(it);
+                m_CurrentObjectId = m_Models.begin()->first;
+                m_CurrentObject = m_Models.begin()->second;
+                break;
+            }
+        }
+    }
+
     bool UpdateCurrentDataObject(int index) {
         for (auto& [id, obj]: m_Models) {
             if (id == index) {
@@ -109,11 +127,11 @@ public:
                 auto center =
                         igm::vec3{0.293951035f, 21.5820999f, 0.193099976f};
                 float radius = 114.204018f;
-                
+
                 m_FirstModelCenter = igm::vec4{center, radius};
                 m_Camera->SetCamaraPos(center.x, center.y,
                                        center.z + 2.0f * radius);
-            };
+            }
         } else {
             m_VisibleModelsCount--;
         }
