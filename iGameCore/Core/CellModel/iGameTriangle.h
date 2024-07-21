@@ -28,7 +28,7 @@ public:
 		Vector3f d20 = v2 - v0;
 
 		Vector3f normal = CrossProduct(d10, d20);
-		normal.Normalize();
+		normal.normalize();
 		return normal;
 	}
 

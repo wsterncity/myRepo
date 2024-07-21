@@ -11,6 +11,7 @@
 
 #include "iGameObject.h"
 #include "iGameElementArray.h"
+#include "iGameFlatArray.h"
 
 IGAME_NAMESPACE_BEGIN
 using EntryValue = std::variant<unsigned char, char, unsigned short, short,

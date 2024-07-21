@@ -9,8 +9,7 @@
 #include "iGamePVDReader.h"
 #include "iGameVTSReader.h"
 #include "iGameVTUReader.h"
-//#include "iGameVTMReader.h"
-//#include "iGameVTUReader.h"
+#include "iGameVTMReader.h"
 //#include "CGNS/iGameCGNSReader.h"
 #include "iGameINPReader.h"
 
@@ -208,13 +207,14 @@ DataObject::Pointer FileIO::ReadFile(const std::string &file_name)
 			resObj = reader->GetOutput();
             break;
         }
-  //      case iGame::FileIO::VTM:
-  //      {
-  //          auto app = iGameVTMReader::New();
-  //          resObj = app->ReadFile(file_name);
-  //          delete app;
-  //          break;
-  //      }
+        case iGame::FileIO::VTM:
+        {
+            iGameVTMReader::Pointer reader = iGameVTMReader::New();
+            reader->SetFilePath(file_name);
+            reader->Update();
+            resObj = reader->GetOutput();
+            break;
+        }
         default:
             break;
     }

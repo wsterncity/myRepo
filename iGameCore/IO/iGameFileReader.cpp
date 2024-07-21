@@ -44,14 +44,14 @@ bool FileReader::Execute()
 		return false;
 	}
 	int size = m_Output->GetAttributes()->GetArrays().size();
+	StringArray::Pointer attrbNameArray = StringArray::New();
 	if (size > 0) {
-		StringArray::Pointer attrbNameArray = StringArray::New();
 		for (int i = 0; i < size; i++) {
 			auto& data = m_Output->GetAttributes()->GetAttribute(i);
 			attrbNameArray->InsertToBack(data.array->GetName());
 		}
-		m_Output->GetMetadata()->AddStringArray(ATTRIBUTE_NAME_ARRAY, attrbNameArray);
 	}
+	m_Output->GetMetadata()->AddStringArray(ATTRIBUTE_NAME_ARRAY, attrbNameArray);
 	this->SetOutput(0, m_Output);
 	end = clock();
 	std::cout << "Read file success!" << std::endl;
