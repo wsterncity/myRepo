@@ -1,9 +1,10 @@
-/**
+﻿/**
  * @class   iGameVTSReader
  * @brief   iGameVTSReader's brief
  */
+#ifndef iGameVTSReader_h
+#define iGameVTSReader_h
 
-#pragma once
 
 #include "iGameXMLFileReader.h"
 
@@ -22,3 +23,4 @@ protected:
 };
 
 IGAME_NAMESPACE_END
+#endif

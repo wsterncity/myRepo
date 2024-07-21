@@ -1,4 +1,4 @@
-//
+﻿//
 // Created by m_ky on 2024/7/14.
 //
 
@@ -11,7 +11,7 @@
 #include "tinyxml.h"
 #include "iGameFileReader.h"
 
-
+IGAME_NAMESPACE_BEGIN
 bool iGame::iGameVTSReader::Parsing() {
     TiXmlElement* elem;
     const char* data;
@@ -158,3 +158,4 @@ bool iGame::iGameVTSReader::Parsing() {
 //    }
     return true;
 }
+IGAME_NAMESPACE_END

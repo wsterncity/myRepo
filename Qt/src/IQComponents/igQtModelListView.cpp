@@ -180,7 +180,6 @@ void igQtModelListView::AddModel(QString modelName) {
 	QStandardItem* newModel = new QStandardItem(QIcon(":/Ticon/Icons/Eyeball.svg"), modelName);
 	rootItem->appendRow(newModel);
 	this->setCurrentIndex(newModel->index());
-
 	auto curObj = m_Manager->GetCurrentScene()->GetCurrentObject();
 	itemVisibleList[newModel] = true;
 	itemObjectIds[newModel] = curObj->GetDataObjectId();
@@ -200,13 +199,11 @@ void igQtModelListView::AddModel(QString modelName) {
 }
 
 void igQtModelListView::DeleteCurrentFile() {
-
+    QModelIndex a = this->currentIndex();
 	auto item = model->itemFromIndex(this->currentIndex());
 	//printf("%s\n", item->text().toStdString());
 	if (item && itemObjectIds.count(item)) {
-		DeleteCurrentModelItem(item);
-		itemVisibleList.remove(item);
-		itemObjectIds.remove(item);
+
 		int childNum = item->rowCount();
 		for (int i = 0; i < childNum; i++) {
 			auto child = item->child(i, 0);
@@ -214,13 +211,15 @@ void igQtModelListView::DeleteCurrentFile() {
             itemObjectIds.remove(child);
 //			itemModelActors.remove(child);
 		}
+
+        DeleteCurrentModelItem(item);
+        itemVisibleList.remove(item);
+        itemObjectIds.remove(item);
 	}
+    m_Manager->GetCurrentScene()->RemoveCurrentDataObject();
 	item = model->itemFromIndex(this->currentIndex());
 	if (item) {
-//		this->currentModelIdx = GetModelIndexFromItem(item);
         this->currentObjectIdx = GetObjectIdFromItem(item);
-//		Q_EMIT ChangeCurrentModelIndex(this->currentModelIdx);
-		Q_EMIT ChangeCurrentModelIndex(this->currentObjectIdx);
 	}
 	//printf("%s\n", model->itemFromIndex(this->currentIndex())->text().toStdString());
 }

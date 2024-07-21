@@ -205,8 +205,8 @@ private:
 	int m_PointSize{ 4 };
 	int m_LineWidth{ 1 };
 
-	DataArray::Pointer m_ViewAttribute;
-	int m_ViewDemension;
+	DataArray::Pointer m_ViewAttribute{};
+	int m_ViewDemension{};
 };
 IGAME_NAMESPACE_END
 #endif

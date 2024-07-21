@@ -147,23 +147,27 @@ public:
 			Data[i] = cell[i];
 		}
 		this->DeletedMask->AddTag();
-		if (NumberOfCells == 0)
-		{
-			NumberOfComponent = ncell;
-		}
-		else if (NumberOfCells == -1)
+		if (UseOffset)
 		{
 			this->Offset->AddId(endOffset);
 		}
-		else if (NumberOfComponent != ncell)
+		else
 		{
-			for (int i = 0; i < NumberOfCells; i++)
+			if (NumberOfCells == 0)
 			{
-				this->Offset->AddId(NumberOfComponent);
+				NumberOfComponent = ncell;
 			}
-			this->Offset->AddId(endOffset);
+			else if (NumberOfComponent != ncell)
+			{
+				for (int i = 0; i < NumberOfCells; i++)
+				{
+					this->Offset->AddId((i + 1) * NumberOfComponent);
+				}
+				this->Offset->AddId(endOffset);
+				UseOffset = true;
+			}	
 		}
-		
+
 		return this->NumberOfCells++;
 	}
 
@@ -212,7 +216,7 @@ public:
 
 	IndexArray::Pointer ConvertToDataArray()
 	{
-		if (NumberOfComponent == -1)
+		if (UseOffset)
 		{
 			return nullptr;
 		}
@@ -238,15 +242,15 @@ protected:
 	~CellArray() override { }
 
 	int GetBeginOffset(igIndex cellId) const {
-		return NumberOfComponent == -1 ? this->Offset->GetId(cellId) : NumberOfComponent * cellId;
+		return UseOffset ? this->Offset->GetId(cellId) : NumberOfComponent * cellId;
 	}
 
 	int GetEndOffset(igIndex cellId) const {
-		return NumberOfComponent == -1 ? this->Offset->GetId(cellId + 1) : NumberOfComponent * (cellId + 1);
+		return UseOffset ? this->Offset->GetId(cellId + 1) : NumberOfComponent * (cellId + 1);
 	}
 
 	int GetCellSize(igIndex cellId) const {
-		return NumberOfComponent == -1 ? this->Offset->GetId(cellId + 1) - this->Offset->GetId(cellId) : NumberOfComponent;
+		return UseOffset ? this->Offset->GetId(cellId + 1) - this->Offset->GetId(cellId) : NumberOfComponent;
 	}
 
 	void InitializeMemory()
@@ -273,6 +277,7 @@ protected:
 	igIndex NumberOfComponent{ -1 };
 	IdList::Pointer Offset{};
 	Tag::Pointer DeletedMask{};
+	bool UseOffset{ false };
 
 	Cell::Pointer Cell{};
 };

@@ -81,9 +81,9 @@ void igQtMainWindow::initToolbarComponent()
 	connect(viewStyleCombox, SIGNAL(currentIndexChanged(QString)), this, SLOT(ChangeViewStyle()));
 	ui->toolBar_meshview->addWidget(viewStyleCombox);
 	
-	scalarViewCombox = new QComboBox(this);
-	scalarViewCombox->addItem("None        ");
-	scalarViewCombox->setStyleSheet("QComboBox {"
+	attributeViewIndexCombox = new QComboBox(this);
+	attributeViewIndexCombox->addItem("None        ");
+	attributeViewIndexCombox->setStyleSheet("QComboBox {"
 		"background-color: #f0f0f0;"
 		"color: #202020;"              // 设置文本颜色为浅白色
 		"border: 1px solid #ffffff;"   // 设置边框样式为灰色实线边框
@@ -103,8 +103,34 @@ void igQtMainWindow::initToolbarComponent()
 		"}"
 	);
 
-	connect(scalarViewCombox, SIGNAL(activated(int)), this, SLOT(ChangeScalarView()));
-	ui->toolBar_scalarview->addWidget(scalarViewCombox);
+	connect(attributeViewIndexCombox, SIGNAL(activated(int)), this, SLOT(ChangeScalarView()));
+	ui->toolBar_attribute_view_index->addWidget(attributeViewIndexCombox);
+
+
+	attributeViewDimCombox = new QComboBox(this);
+	attributeViewDimCombox->addItem("magnitude");
+	attributeViewDimCombox->setStyleSheet("QComboBox {"
+		"background-color: #f0f0f0;"
+		"color: #202020;"              // 设置文本颜色为浅白色
+		"border: 1px solid #ffffff;"   // 设置边框样式为灰色实线边框
+		"padding: 5px;"                // 设置内边距
+		"font-size: 16px;"              // 设置下拉菜单项字体大小为14px
+		"}"
+		"QComboBox QAbstractItemView {"
+		"font-family: Arial;"           // 设置下拉菜单项字体为Arial
+		"color: #404040;"               // 设置下拉菜单项字体颜色为浅灰色
+		"}"
+		"QComboBox::drop-down {"
+		"subcontrol-origin: padding;"
+		"subcontrol-position: top right;"
+		"width: 10px;"
+		"border-left: 1px solid #202020;"
+		"border-color: #eeeeee;"
+		"}"
+	);
+
+	connect(attributeViewDimCombox, SIGNAL(activated(int)), this, SLOT(ChangeScalarViewDim()));
+	ui->toolBar_attribute_view_dim->addWidget(attributeViewDimCombox);
 }
 void igQtMainWindow::initAllComponents()
 {
@@ -132,8 +158,8 @@ void igQtMainWindow::initAllComponents()
 	//	iGame::iGameManager::Instance()->UpdateCenter(x, y, z);
 	//	rendererWidget->update();
 	//	});
-	//connect(ui->action_DeleteMesh, &QAction::triggered, ui->modelTreeView, &igQtModelListView::DeleteCurrentFile);
-	//connect(ui->action_DeleteMesh, &QAction::triggered, rendererWidget, &igQtModelDrawWidget::deleteModel);
+	connect(ui->action_DeleteMesh, &QAction::triggered, ui->modelTreeView, &igQtModelListView::DeleteCurrentFile);
+	connect(ui->action_DeleteMesh, &QAction::triggered, this, &igQtMainWindow::updateCurrentSceneWidget);
 	//connect(ui->action_NextMesh, &QAction::triggered, ui->modelTreeView, &igQtModelListView::ChangeSelected2NextItem);
 	//connect(ui->action_NextMesh, &QAction::triggered, rendererWidget, &igQtModelDrawWidget::changeCurrentModel2Next);
 	//connect(ui->action_LastMesh, &QAction::triggered, ui->modelTreeView, &igQtModelListView::ChangeSelected2LastItem);
@@ -317,34 +343,71 @@ void igQtMainWindow::ChangeViewStyle()
 
 void igQtMainWindow::ChangeScalarView()
 {
-	int item = scalarViewCombox->currentIndex();
-	if (item < 0) return;
-	this->rendererWidget->ChangeScalarView(item);
+	int item1 = attributeViewIndexCombox->currentIndex();
+	int item2 = attributeViewDimCombox->currentIndex();
+	if (item1 < 0) return;
+	if (item2 < 0) {
+		this->rendererWidget->ChangeScalarView(item1, -1);
+	}
+	else {
+		this->rendererWidget->ChangeScalarView(item1, item2 - 1);
+	}
+
+	static const char* name[3] = { "x", "y", "z" };
+	auto* current = rendererWidget->GetScene()->GetCurrentObject();
+	attributeViewDimCombox->clear();
+	attributeViewDimCombox->addItem("magnitude");
+	int index = item1;
+	if (index == 0) {
+		attributeViewDimCombox->setCurrentIndex(0);
+	}
+	else {
+		int num = current->GetAttributes()->GetAttribute(index - 1).array->GetNumberOfComponents();
+		for (int i = 0; i < num; i++)
+		{
+			attributeViewDimCombox->addItem(name[i]);
+		}
+		attributeViewDimCombox->setCurrentIndex(current->GetAttributeDimension() + 1);
+	}
 }
 
+void igQtMainWindow::ChangeScalarViewDim()
+{
+	int item1 = attributeViewIndexCombox->currentIndex();
+	int item2 = attributeViewDimCombox->currentIndex();
+	if (item1 < 0) return;
+	if (item2 < 0) {
+		this->rendererWidget->ChangeScalarView(item1, -1);
+	}
+	else {
+		this->rendererWidget->ChangeScalarView(item1, item2 - 1);
+	}
+}
 void igQtMainWindow::updateViewStyleAndCloudPicture()
 {
-	auto* current = rendererWidget->GetScene()->GetCurrentObject();
-	if (current)
-	{
-		auto* parent = current->FindParent();
-		if (parent != nullptr && parent != current) {
-			current = parent;
-		}
-		IGenum defaultViewStyle = current->GetViewStyle();
-		viewStyleCombox->setCurrentIndex(defaultViewStyle);
-
-		scalarViewCombox->clear();
-		scalarViewCombox->addItem("None        ");
-		
-		StringArray::Pointer nameArray = 
-			current->GetMetadata()->GetStringArray(ATTRIBUTE_NAME_ARRAY);
-		for (int i = 0; i < nameArray->Size(); i++)
-		{
-			scalarViewCombox->addItem(QString::fromStdString(nameArray->GetElement(i)));
-		}
-		scalarViewCombox->setCurrentIndex(current->GetAttributeIndex() + 1);
-	}
+//	auto* current = rendererWidget->GetScene()->GetCurrentObject();
+//	if (current)
+//	{
+//		// Update View Style
+////>>>>>>> 5c590c0b5220d077d84cdab81b6eed106d7d4de8
+//		IGenum defaultViewStyle = current->GetViewStyle();
+//		viewStyleCombox->setCurrentIndex(defaultViewStyle);
+//
+//		// Update Attribute View Index
+//		attributeViewIndexCombox->clear();
+//		attributeViewIndexCombox->addItem("None        ");
+//
+//		StringArray::Pointer nameArray =
+//			current->GetMetadata()->GetStringArray(ATTRIBUTE_NAME_ARRAY);
+//		for (int i = 0; i < nameArray->Size(); i++)
+//		{
+//			attributeViewIndexCombox->addItem(QString::fromStdString(nameArray->GetElement(i)));
+//		}
+//		attributeViewIndexCombox->setCurrentIndex(current->GetAttributeIndex() + 1);
+//
+//
+//
+//	}
 }
 
 void igQtMainWindow::updateCurrentDataObject()

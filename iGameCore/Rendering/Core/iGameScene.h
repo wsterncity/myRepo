@@ -65,6 +65,27 @@ public:
         m_CurrentObject = obj.get();
     }
 
+    void RemoveCurrentDataObject()
+    {
+        m_Models.erase(m_CurrentObjectId);
+        if(m_Models.empty()) return;
+        m_CurrentObjectId = m_Models.begin()->first;
+        m_CurrentObject = m_Models.begin()->second;
+    }
+
+    void RemoveDataObject(DataObject::Pointer  obj)
+    {
+        for(auto it = m_Models.begin(); it != m_Models.end(); ++it){
+            if(it->second == obj) {
+                m_Models.erase(it);
+                m_CurrentObjectId = m_Models.begin()->first;
+                m_CurrentObject = m_Models.begin()->second;
+                break;
+            }
+        }
+
+    }
+
     bool UpdateCurrentDataObject(int index)
     {
         for (auto& model : m_Models) {

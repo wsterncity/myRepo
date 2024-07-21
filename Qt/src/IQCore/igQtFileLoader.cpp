@@ -105,14 +105,41 @@ void igQtFileLoader::OpenFile(const std::string& filePath)
 //	m_SceneManager->GetCurrentScene()->AddDataObject(multiData);
 
 	auto obj = iGame::FileIO::ReadFile(filePath);
+
+//    PointSet::Pointer mesh = DynamicCast<PointSet>(obj);
+//	FloatArray::Pointer points = mesh->GetPoints()->ConvertToDataArray();
+//	FloatArray::Pointer pointScalar = FloatArray::New();
+//	FloatArray::Pointer cellScalar = FloatArray::New();
+//
+//	pointScalar->SetNumberOfComponents(3);
+//	cellScalar->SetNumberOfComponents(3);
+//	pointScalar->SetName("pointScalar");
+//	cellScalar->SetName("cellScalar");
+//	float tu[3];
+//	for (int i = 0; i < points->GetNumberOfTuples(); i++)
+//	{
+//		points->GetTuple(i, tu);
+//		pointScalar->InsertNextValue(tu[0]);
+//		pointScalar->InsertNextValue(tu[1]);
+//		pointScalar->InsertNextValue(tu[2]);
+//	}
+//	//for (int i = 0; i < mesh->GetNumberOfFaces(); i++)
+//	//{
+//	//	Face* face = mesh->GetFace(i);
+//	//	cellScalar->InsertNextValue(face->Points->GetPoint(0)[0]);
+//	//	cellScalar->InsertNextValue(face->Points->GetPoint(0)[1]);
+//	//	cellScalar->InsertNextValue(face->Points->GetPoint(0)[2]);
+//	//}
+//	mesh->GetAttributes()->AddScalars(IG_POINT, pointScalar);
+//	//mesh->GetAttributes()->AddScalars(IG_CELL, cellScalar);
+//
+//	StringArray::Pointer attrbNameArray = StringArray::New();
+//	attrbNameArray->InsertToBack("pointScalar");
+//	//attrbNameArray->InsertToBack("cellScalar");
+//	obj->GetMetadata()->AddStringArray(ATTRIBUTE_NAME_ARRAY, attrbNameArray);
+
 	m_SceneManager->GetCurrentScene()->AddDataObject(obj);
-	StringArray::Pointer attrbNameArray = StringArray::New();
-	attrbNameArray->InsertToBack("pointScalar");
-	attrbNameArray->InsertToBack("cellScalar");
-	obj->GetMetadata()->AddStringArray(ATTRIBUTE_NAME_ARRAY, attrbNameArray);
-
-
-
+	Q_EMIT EmitDoneCurrent();
 	this->SaveCurrentFileToRecentFile(QString::fromStdString(filePath));
 	Q_EMIT AddFileToModelList(QString(filePath.substr(filePath.find_last_of('/') + 1).c_str()));
 	Q_EMIT FinishReading();
@@ -223,6 +250,7 @@ void igQtFileLoader::InitRecentFileActions(std::vector<QString> FilePaths)
 	UpdateRecentActionList();
 	return;
 }
+
 void igQtFileLoader::UpdateRecentActionList() {
 	int st = this->recentFileActionList.size() - 1;;
 	int ed = std::max(st - maxFileNr + 1, 0);

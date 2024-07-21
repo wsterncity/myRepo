@@ -43,8 +43,15 @@ bool FileReader::Execute()
 		std::cerr << "Generate DataObject failure\n";
 		return false;
 	}
-	m_Output->SetName(m_FileName);
-    std::cout << m_FileName << '\n';
+	int size = m_Output->GetAttributes()->GetArrays().size();
+	if (size > 0) {
+		StringArray::Pointer attrbNameArray = StringArray::New();
+		for (int i = 0; i < size; i++) {
+			auto& data = m_Output->GetAttributes()->GetAttribute(i);
+			attrbNameArray->InsertToBack(data.array->GetName());
+		}
+		m_Output->GetMetadata()->AddStringArray(ATTRIBUTE_NAME_ARRAY, attrbNameArray);
+	}
 	this->SetOutput(0, m_Output);
 	end = clock();
 	std::cout << "Read file success!" << std::endl;
@@ -103,10 +110,11 @@ bool FileReader::CreateDataObject()
 
 	// 混合网格类型判断
 	if (numFaces && numVolumes) {
-        VolumeMesh::Pointer mesh = VolumeMesh::New();
-        mesh->SetPoints(m_Data.GetPoints());
-        mesh->SetVolumes(m_Data.GetVolumes());
-        m_Output = mesh;
+		VolumeMesh::Pointer mesh = VolumeMesh::New();
+		mesh->SetPoints(m_Data.GetPoints());
+		mesh->SetVolumes(m_Data.GetVolumes());
+		mesh->SetAttributes(m_Data.GetData());
+		m_Output = mesh;
 	}
 
 	// 表面网格类型判断
@@ -122,6 +130,7 @@ bool FileReader::CreateDataObject()
 		VolumeMesh::Pointer mesh = VolumeMesh::New();
 		mesh->SetPoints(m_Data.GetPoints());
 		mesh->SetVolumes(m_Data.GetVolumes());
+		mesh->SetAttributes(m_Data.GetData());
 		m_Output = mesh;
 	}
 
