@@ -62,6 +62,8 @@ private slots:
     void ChangeScalarView();
     void updateViewStyleAndCloudPicture();
     void updateCurrentDataObject();
+
+    void updateCurrentSceneWidget();
 private:
     Ui::MainWindow* ui;
 };

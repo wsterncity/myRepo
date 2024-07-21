@@ -28,7 +28,10 @@ public:
 
 	int GetNumberOfComponents() const noexcept { return this->NumberOfComponents; }
 	igIndex GetNumberOfTuples() const noexcept { return this->NumberOfValues / this->NumberOfComponents; }
-	igIndex GetNumberOfValues() const noexcept { return this->NumberOfValues; }
+	igIndex GetNumberOfValues() const noexcept {
+        int a = this->NumberOfValues;
+        return this->NumberOfValues;
+    }
 
 	virtual double GetValue(igIndex valueId) = 0;
 	virtual void GetTuple(igIndex tupleId, float* tuple) = 0;
