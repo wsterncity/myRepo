@@ -2,7 +2,7 @@
 #define iGamePoints_h
 
 #include "iGameObject.h"
-#include "iGameVectorD.h"
+#include "iGameVector.h"
 #include "iGameDataBuffer.h"
 #include "iGameDataArray.h"
 

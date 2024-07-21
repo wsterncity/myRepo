@@ -211,7 +211,7 @@ public:
 
 	inline void normalize()
 	{
-		double magnitude = std::sqrt(this->SquaredNorm());
+		double magnitude = std::sqrt(this->squaredNorm());
 		if (magnitude == 0) {
 			return;
 		}
@@ -373,33 +373,33 @@ inline std::ostream& operator<<(
 	return out;
 }
 
-//typedef Vector<float, 2> Vector2f;
-//typedef Vector<float, 3> Vector3f;
-//typedef Vector<float, 4> Vector4f;
-//typedef Vector<float, 5> Vector5f;
-//typedef Vector<float, 6> Vector6f;
-//typedef Vector<float, 7> Vector7f;
-//
-//typedef Vector<double, 2> Vector2d;
-//typedef Vector<double, 3> Vector3d;
-//typedef Vector<double, 4> Vector4d;
-//typedef Vector<double, 5> Vector5d;
-//typedef Vector<double, 6> Vector6d;
-//typedef Vector<double, 7> Vector7d;
-//
-//typedef Vector<int, 2> Vector2i;
-//typedef Vector<int, 3> Vector3i;
-//typedef Vector<int, 4> Vector4i;
-//typedef Vector<int, 5> Vector5i;
-//typedef Vector<int, 6> Vector6i;
-//typedef Vector<int, 7> Vector7i;
-//
-//typedef Vector<uint32_t, 2> Vector2ui;
-//typedef Vector<uint32_t, 3> Vector3ui;
-//typedef Vector<uint32_t, 4> Vector4ui;
-//typedef Vector<uint32_t, 5> Vector5ui;
-//typedef Vector<uint32_t, 6> Vector6ui;
-//typedef Vector<uint32_t, 7> Vector7ui;
+typedef Vector<float, 2> Vector2f;
+typedef Vector<float, 3> Vector3f;
+typedef Vector<float, 4> Vector4f;
+typedef Vector<float, 5> Vector5f;
+typedef Vector<float, 6> Vector6f;
+typedef Vector<float, 7> Vector7f;
+
+typedef Vector<double, 2> Vector2d;
+typedef Vector<double, 3> Vector3d;
+typedef Vector<double, 4> Vector4d;
+typedef Vector<double, 5> Vector5d;
+typedef Vector<double, 6> Vector6d;
+typedef Vector<double, 7> Vector7d;
+
+typedef Vector<int, 2> Vector2i;
+typedef Vector<int, 3> Vector3i;
+typedef Vector<int, 4> Vector4i;
+typedef Vector<int, 5> Vector5i;
+typedef Vector<int, 6> Vector6i;
+typedef Vector<int, 7> Vector7i;
+
+typedef Vector<uint32_t, 2> Vector2ui;
+typedef Vector<uint32_t, 3> Vector3ui;
+typedef Vector<uint32_t, 4> Vector4ui;
+typedef Vector<uint32_t, 5> Vector5ui;
+typedef Vector<uint32_t, 6> Vector6ui;
+typedef Vector<uint32_t, 7> Vector7ui;
 
 IGAME_NAMESPACE_END
 #endif

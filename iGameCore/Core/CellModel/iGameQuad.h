@@ -29,14 +29,14 @@ public:
 		Vector3f center = (v0 + v1 + v2 + v3) / 4;
 
 		Vector3f normal;
-		normal.SetZero();
+		normal.setZero();
 
 		normal += Triangle::ComputrNormal(center, v0, v1);
 		normal += Triangle::ComputrNormal(center, v1, v2);
 		normal += Triangle::ComputrNormal(center, v2, v3);
 		normal += Triangle::ComputrNormal(center, v3, v0);
 
-		normal.Normalize();
+		normal.normalize();
 		return normal;
 	}
 

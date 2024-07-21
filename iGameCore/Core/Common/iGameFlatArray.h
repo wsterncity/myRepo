@@ -207,10 +207,9 @@ public:
         assert(0 <= _Pos && _Pos < this->GetNumberOfValues());
         return static_cast<double>(this->VectorType::operator[](_Pos));
     }
-    void SetValue(igIndex valueId, double value) override {
+    void SetValue(igIndex _Pos, double _Value) override {
         this->VectorType::operator[](_Pos) = static_cast<TValue>(_Value);
     }
-    
     void GetElement(const igIndex _Pos, double* _Element) override {
         assert(0 <= _Pos && _Pos < this->GetNumberOfElements());
         TValue* data = this->RawPointer(_Pos);
@@ -243,5 +242,36 @@ protected:
 
     std::vector<TValue> m_Element{};
 };
+
+class IntArray2 : public FlatArray<int> {
+public:
+    I_OBJECT(IntArray2);
+    static Pointer New() { return new IntArray2; }
+
+protected:
+    IntArray2() = default;
+    ~IntArray2() override = default;
+};
+
+class FloatArray2 : public FlatArray<float> {
+public:
+    I_OBJECT(FloatArray2);
+    static Pointer New() { return new FloatArray2; }
+
+protected:
+    FloatArray2() = default;
+    ~FloatArray2() override = default;
+};
+
+class DoubleArray2 : public FlatArray<double> {
+public:
+    I_OBJECT(DoubleArray2);
+    static Pointer New() { return new DoubleArray2; }
+
+protected:
+    DoubleArray2() = default;
+    ~DoubleArray2() override = default;
+};
+
 IGAME_NAMESPACE_END
 #endif
