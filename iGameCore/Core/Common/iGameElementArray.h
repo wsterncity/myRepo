@@ -2,6 +2,7 @@
 #define iGameElementArray_h
 
 #include "iGameObject.h"
+#include "iGameVector.h"
 
 IGAME_NAMESPACE_BEGIN
 template<typename TElement>
@@ -74,14 +75,23 @@ public:
         return this->VectorType::end();
     }
 
+    size_type GetNumberOfElements() const {
+        return this->VectorType::size();
+    }
+
     size_type Size() const {
         return this->VectorType::size();
+    }
+
+    TElement* RawPointer() {
+        return this->VectorType::data();
     }
 
 protected:
     ElementArray() {}
     ~ElementArray() override = default;
 };
+
 
 class IntArray2 : public ElementArray<int> {
 public:
