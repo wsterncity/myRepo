@@ -28,6 +28,11 @@ enum {
 	IG_DATA_OBJECT_COUNT,
 };
 
+// ArrayType
+enum {
+	IG_ARRAY_OBJECT = 0,
+	IG_ELEMENT_ARRAY,
+};
 
 // DrawMode
 enum {

@@ -122,6 +122,7 @@ bool FileReader::CreateDataObject()
 		SurfaceMesh::Pointer mesh = SurfaceMesh::New();
 		mesh->SetPoints(m_Data.GetPoints());
 		mesh->SetFaces(m_Data.GetFaces());
+		mesh->SetAttributes(m_Data.GetData());
 		m_Output = mesh;
 	}
 
