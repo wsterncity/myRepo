@@ -385,29 +385,32 @@ void igQtMainWindow::ChangeScalarViewDim()
 }
 void igQtMainWindow::updateViewStyleAndCloudPicture()
 {
-//	auto* current = rendererWidget->GetScene()->GetCurrentObject();
-//	if (current)
-//	{
-//		// Update View Style
-////>>>>>>> 5c590c0b5220d077d84cdab81b6eed106d7d4de8
-//		IGenum defaultViewStyle = current->GetViewStyle();
-//		viewStyleCombox->setCurrentIndex(defaultViewStyle);
-//
-//		// Update Attribute View Index
-//		attributeViewIndexCombox->clear();
-//		attributeViewIndexCombox->addItem("None        ");
-//
-//		StringArray::Pointer nameArray =
-//			current->GetMetadata()->GetStringArray(ATTRIBUTE_NAME_ARRAY);
-//		for (int i = 0; i < nameArray->Size(); i++)
-//		{
-//			attributeViewIndexCombox->addItem(QString::fromStdString(nameArray->GetElement(i)));
-//		}
-//		attributeViewIndexCombox->setCurrentIndex(current->GetAttributeIndex() + 1);
-//
-//
-//
-//	}
+	auto* current = rendererWidget->GetScene()->GetCurrentObject();
+	if (current)
+	{
+		// Update View Style
+//>>>>>>> 5c590c0b5220d077d84cdab81b6eed106d7d4de8
+		IGenum defaultViewStyle = current->GetViewStyle();
+		viewStyleCombox->setCurrentIndex(defaultViewStyle);
+
+		// Update Attribute View Index
+		attributeViewIndexCombox->clear();
+		attributeViewIndexCombox->addItem("None        ");
+
+		StringArray::Pointer nameArray =
+			current->GetMetadata()->GetStringArray(ATTRIBUTE_NAME_ARRAY);
+		if(nameArray != nullptr){
+            for (int i = 0; i < nameArray->Size(); i++)
+            {
+                attributeViewIndexCombox->addItem(QString::fromStdString(nameArray->GetElement(i)));
+            }
+            attributeViewIndexCombox->setCurrentIndex(current->GetAttributeIndex() + 1);
+        }
+
+
+
+
+	}
 }
 
 void igQtMainWindow::updateCurrentDataObject()

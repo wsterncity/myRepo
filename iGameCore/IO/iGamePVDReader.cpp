@@ -67,7 +67,5 @@ bool iGame::iGamePVDReader::Parsing() {
 bool iGame::iGamePVDReader::CreateDataObject() {
 //    if(child_map.size() == 1) m_Output = child_map.begin()->second;
     m_Output = child_map.begin()->second;
-
-
     return true;
 }

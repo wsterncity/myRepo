@@ -49,21 +49,62 @@ bool iGame::iGameVTUReader::Parsing() {
     }
 
     // find Points' Scalar Data
-//    elem = FindTargetItem(root, "PointData")->FirstChildElement("DataArray");
-//    //  use while loop to find point's multiple scala data.
-//    while(elem){
-//
-//        data = elem->Attribute("Name");
-//        std::string scalarName = data ? data :  "Undefined Scalar";
-//        data = elem->Attribute("NumberOfComponents");
-//        int scalarComponents = data ? mAtoi(data) : 1;
-//        iGamePointData* pointData;
-//        iGameFloatArray* ScalarData;
-//        data = elem->GetText();
-//
-//        if(data)
-//        {
-//
+    elem = FindTargetItem(root, "PointData")->FirstChildElement("DataArray");
+    //  use while loop to find point's multiple scala data.
+    while(elem){
+
+        data = elem->Attribute("Name");
+        std::string scalarName = data ? data :  "Undefined Scalar";
+        data = elem->Attribute("NumberOfComponents");
+
+        DataArray::Pointer  array;
+        const char* type = elem->Attribute("type");
+
+        int scalarComponents = data ? mAtoi(data) : 1;
+        data = elem->GetText();
+        if(data)
+        {
+            if(!strncmp(type, "Float32", 7)){
+                DataArray::Pointer arr = FloatArray::New();
+//                arr->SetNumberOfComponents(scalarComponents);
+
+                float* ps = new float[scalarComponents];
+                token = strtok_s(const_cast<char*>(data), " ", &nextToken);
+                while (token != nullptr) {
+                    for(int i = 0; i < scalarComponents; i ++) {
+
+                        auto& it = ps[i];
+                        it = mAtof(token);
+                        token = strtok_s(nullptr, " ", &nextToken);
+                    }
+                    arr->InsertNextTuple(ps);
+                }
+                array = arr;
+                delete[] ps;
+
+            } else if(!strncmp(type, "Int64", 5)){
+                DataArray::Pointer arr = FloatArray::New();
+                float* ps = new float[scalarComponents];
+                token = strtok_s(const_cast<char*>(data), " ", &nextToken);
+                while (token != nullptr) {
+                    for(int i = 0; i < scalarComponents; i ++) {
+
+                        auto& it = ps[i];
+                        it = mAtof(token);
+                        token = strtok_s(nullptr, " ", &nextToken);
+                    }
+                    arr->InsertNextTuple(ps);
+                }
+                array = arr;
+                delete[] ps;
+            }
+
+            if(array != nullptr){
+                array->SetName(scalarName);
+                m_Data.GetData()->AddScalars(IG_POINT, array);
+            }
+
+
 //            if(dataSet->GetPointData() == nullptr)
 //            {
 //                pointData = iGamePointData::New();
@@ -89,10 +130,11 @@ bool iGame::iGameVTUReader::Parsing() {
 //                token = strtok_s(nullptr, " ", &nextToken);
 //                ScalarData->AddValue(i);
 //            }
-//
-//        }
-//        elem = elem->NextSiblingElement("DataArray");
-//    }
+
+
+        }
+        elem = elem->NextSiblingElement("DataArray");
+    }
 
     // find Piece's Cell data.
     elem = FindTargetItem(root, "Cells");
