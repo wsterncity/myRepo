@@ -27,7 +27,7 @@ bool FileReader::Execute()
 		std::cerr << "Read to buffer failure\n";
 		return false;
 	}
-	this->IS = m_Buffer->GetRawPointer();
+	this->IS = m_Buffer->RawPointer();
 	if (!Parsing())
 	{
 		std::cerr << "Parsing failure\n";
@@ -43,12 +43,12 @@ bool FileReader::Execute()
 		std::cerr << "Generate DataObject failure\n";
 		return false;
 	}
-	int size = m_Output->GetAttributes()->GetArrays().size();
+	int size = m_Output->GetPropertySet()->GetAllPropertys()->GetNumberOfElements();
 	StringArray::Pointer attrbNameArray = StringArray::New();
 	if (size > 0) {
 		for (int i = 0; i < size; i++) {
-			auto& data = m_Output->GetAttributes()->GetAttribute(i);
-			attrbNameArray->InsertToBack(data.array->GetName());
+			auto& data = m_Output->GetPropertySet()->GetProperty(i);
+			attrbNameArray->AddElement(data.pointer->GetName());
 		}
 	}
 	m_Output->GetMetadata()->AddStringArray(ATTRIBUTE_NAME_ARRAY, attrbNameArray);
@@ -96,8 +96,8 @@ bool FileReader::ReadToBuffer()
 		return false;
 	}
 
-	m_Buffer->SetNumberOfValues(this->m_FileSize);
-	m_File->read(m_Buffer->GetRawPointer(), m_FileSize);
+	m_Buffer->Resize(this->m_FileSize);
+	m_File->read(m_Buffer->RawPointer(), m_FileSize);
 
 	return m_File->gcount() == static_cast<std::streamsize>(m_FileSize);
 }
@@ -113,7 +113,7 @@ bool FileReader::CreateDataObject()
 		VolumeMesh::Pointer mesh = VolumeMesh::New();
 		mesh->SetPoints(m_Data.GetPoints());
 		mesh->SetVolumes(m_Data.GetVolumes());
-		mesh->SetAttributes(m_Data.GetData());
+		mesh->SetPropertySet(m_Data.GetData());
 		m_Output = mesh;
 	}
 
@@ -122,7 +122,7 @@ bool FileReader::CreateDataObject()
 		SurfaceMesh::Pointer mesh = SurfaceMesh::New();
 		mesh->SetPoints(m_Data.GetPoints());
 		mesh->SetFaces(m_Data.GetFaces());
-		mesh->SetAttributes(m_Data.GetData());
+		mesh->SetPropertySet(m_Data.GetData());
 		m_Output = mesh;
 	}
 
@@ -131,7 +131,7 @@ bool FileReader::CreateDataObject()
 		VolumeMesh::Pointer mesh = VolumeMesh::New();
 		mesh->SetPoints(m_Data.GetPoints());
 		mesh->SetVolumes(m_Data.GetVolumes());
-		mesh->SetAttributes(m_Data.GetData());
+		mesh->SetPropertySet(m_Data.GetData());
 		m_Output = mesh;
 	}
 
@@ -262,7 +262,7 @@ int FileReader::Read(double* result)
 int FileReader::ReadLine(char result[256])
 {
 	const char* lineEnd = strchr(this->IS, '\n');
-	if (!lineEnd) lineEnd = m_Buffer->GetRawPointer() + m_Buffer->GetNumberOfValues() - 1;
+	if (!lineEnd) lineEnd = m_Buffer->RawPointer() + m_Buffer->GetNumberOfValues() - 1;
 	if (!this->IS || this->IS > lineEnd) {
 		result[0] = '\0';
 		return 0;
@@ -294,7 +294,7 @@ int FileReader::ReadString(char result[256])
 	}
 	size_t slen = 0;
 	if (!op) {
-		op = m_Buffer->GetRawPointer() + m_Buffer->GetNumberOfValues() - 1;
+		op = m_Buffer->RawPointer() + m_Buffer->GetNumberOfValues() - 1;
 		slen = op - this->IS + 1;
 	}
 	else {
@@ -320,7 +320,7 @@ int FileReader::ReadString(std::string& result)
 	if (!op || op > lineEnd) {
 		op = lineEnd;
 	}
-	if (!op) op = m_Buffer->GetRawPointer() + m_Buffer->GetNumberOfValues();
+	if (!op) op = m_Buffer->RawPointer() + m_Buffer->GetNumberOfValues();
 
 	if (this->IS > op) {
 		result[0] = '\0';
@@ -391,16 +391,16 @@ int iGameReadASCIIData(FileReader::Pointer self, T* data, int numTuples, int num
 	return 1;
 }
 
-DataArray::Pointer FileReader::ReadArray(const char* dataType, int numTuples, int numComp)
+ArrayObject::Pointer FileReader::ReadArray(const char* dataType, int numTuples, int numComp)
 {
 	char* type = strdup(dataType);
 	type = this->LowerCase(type);
 
-	DataArray::Pointer array;
+	ArrayObject::Pointer array;
 	if (!strncmp(type, "bit", 3))
 	{
 		/*	array = vtkBitArray::New();
-			array->SetNumberOfComponents(numComp);
+			array->SetElementSize(numComp);
 			if (numTuples != 0 && numComp != 0)
 			{
 				unsigned char* ptr = ((vtkBitArray*)array)->WritePointer(0, numTuples * numComp);
@@ -444,9 +444,9 @@ DataArray::Pointer FileReader::ReadArray(const char* dataType, int numTuples, in
 	else if (!strcmp(type, "char") || !strcmp(type, "signed_char"))
 	{
 		CharArray::Pointer arr = CharArray::New();
-		arr->SetNumberOfComponents(numComp);
-		arr->SetNumberOfTuples(numTuples);
-		char* ptr = arr->GetRawPointer();
+		arr->SetElementSize(numComp);
+		arr->Resize(numTuples);
+		char* ptr = arr->RawPointer();
 		if (m_FileType == IGAME_BINARY)
 		{
 			iGameReadBinaryData(this, ptr, numTuples, numComp);
@@ -461,9 +461,9 @@ DataArray::Pointer FileReader::ReadArray(const char* dataType, int numTuples, in
 	else if (!strncmp(type, "unsigned_char", 13))
 	{
 		UnsignedCharArray::Pointer arr = UnsignedCharArray::New();
-		arr->SetNumberOfComponents(numComp);
-		arr->SetNumberOfTuples(numTuples);
-		unsigned char* ptr = arr->GetRawPointer();
+		arr->SetElementSize(numComp);
+		arr->Resize(numTuples);
+		unsigned char* ptr = arr->RawPointer();
 		if (m_FileType == IGAME_BINARY)
 		{
 			iGameReadBinaryData(this, ptr, numTuples, numComp);
@@ -478,9 +478,9 @@ DataArray::Pointer FileReader::ReadArray(const char* dataType, int numTuples, in
 	else if (!strncmp(type, "short", 5))
 	{
 		ShortArray::Pointer arr = ShortArray::New();
-		arr->SetNumberOfComponents(numComp);
-		arr->SetNumberOfTuples(numTuples);
-		short* ptr = arr->GetRawPointer();
+		arr->SetElementSize(numComp);
+		arr->Resize(numTuples);
+		short* ptr = arr->RawPointer();
 		if (m_FileType == IGAME_BINARY) {
 			iGameReadBinaryData(this, ptr, numTuples, numComp);
 			ByteSwap::Swap2BERange(ptr, numTuples * numComp);
@@ -494,9 +494,9 @@ DataArray::Pointer FileReader::ReadArray(const char* dataType, int numTuples, in
 	else if (!strncmp(type, "unsigned_short", 14))
 	{
 		UnsignedShortArray::Pointer arr = UnsignedShortArray::New();
-		arr->SetNumberOfComponents(numComp);
-		arr->SetNumberOfTuples(numTuples);
-		unsigned short* ptr = arr->GetRawPointer();
+		arr->SetElementSize(numComp);
+		arr->Resize(numTuples);
+		unsigned short* ptr = arr->RawPointer();
 		if (m_FileType == IGAME_BINARY) {
 			iGameReadBinaryData(this, ptr, numTuples, numComp);
 			ByteSwap::Swap2BERange((short*)ptr, numTuples * numComp);
@@ -510,7 +510,7 @@ DataArray::Pointer FileReader::ReadArray(const char* dataType, int numTuples, in
 		// currently writing vtkidtype as int.
 		// may be long long,need to transfer
 		IntArray::Pointer arr = IntArray::New();
-		arr->SetNumberOfComponents(numComp);
+		arr->SetElementSize(numComp);
 		std::vector<int> buffer(numTuples * numComp);
 		if (m_FileType == IGAME_BINARY) {
 			iGameReadBinaryData(this, buffer.data(), numTuples, numComp);
@@ -519,8 +519,8 @@ DataArray::Pointer FileReader::ReadArray(const char* dataType, int numTuples, in
 		else {
 			iGameReadASCIIData(this, buffer.data(), numTuples, numComp);
 		}
-		array->SetNumberOfTuples(numTuples);
-		int* ptr2 = arr->GetRawPointer();
+		arr->Resize(numTuples);
+		int* ptr2 = arr->RawPointer();
 		for (int idx = 0; idx < numTuples * numComp; idx++) {
 			ptr2[idx] = buffer[idx];
 		}
@@ -528,9 +528,9 @@ DataArray::Pointer FileReader::ReadArray(const char* dataType, int numTuples, in
 	}
 	else if (!strncmp(type, "int", 3)) {
 		IntArray::Pointer arr = IntArray::New();
-		arr->SetNumberOfComponents(numComp);
-		arr->SetNumberOfTuples(numTuples);
-		int* ptr = arr->GetRawPointer();
+		arr->SetElementSize(numComp);
+		arr->Resize(numTuples);
+		int* ptr = arr->RawPointer();
 		if (m_FileType == IGAME_BINARY) {
 			iGameReadBinaryData(this, ptr, numTuples, numComp);
 			ByteSwap::Swap4BERange(ptr, numTuples * numComp);
@@ -542,9 +542,9 @@ DataArray::Pointer FileReader::ReadArray(const char* dataType, int numTuples, in
 	}
 	else if (!strncmp(type, "unsigned_int", 12)) {
 		UnsignedIntArray::Pointer arr = UnsignedIntArray::New();
-		arr->SetNumberOfComponents(numComp);
-		arr->SetNumberOfTuples(numTuples);
-		unsigned int* ptr = arr->GetRawPointer();
+		arr->SetElementSize(numComp);
+		arr->Resize(numTuples);
+		unsigned int* ptr = arr->RawPointer();
 		if (m_FileType == IGAME_BINARY) {
 			iGameReadBinaryData(this, ptr, numTuples, numComp);
 			ByteSwap::Swap4BERange((int*)ptr, numTuples * numComp);
@@ -558,9 +558,9 @@ DataArray::Pointer FileReader::ReadArray(const char* dataType, int numTuples, in
 
 	else if (!strncmp(type, "vtktypeint64", 12)) {
 		LongLongArray::Pointer arr = LongLongArray::New();
-		arr->SetNumberOfComponents(numComp);
-		arr->SetNumberOfTuples(numTuples);
-		long long* ptr = arr->GetRawPointer();
+		arr->SetElementSize(numComp);
+		arr->Resize(numTuples);
+		long long* ptr = arr->RawPointer();
 		if (m_FileType == IGAME_BINARY) {
 			iGameReadBinaryData(this, ptr, numTuples, numComp);
 			ByteSwap::Swap8BERange(ptr, numTuples * numComp);
@@ -572,9 +572,9 @@ DataArray::Pointer FileReader::ReadArray(const char* dataType, int numTuples, in
 	}
 	else if (!strncmp(type, "vtktypeuint64", 13)) {
 		UnsignedLongLongArray::Pointer arr = UnsignedLongLongArray::New();
-		arr->SetNumberOfComponents(numComp);
-		arr->SetNumberOfTuples(numTuples);
-		unsigned long long* ptr = arr->GetRawPointer();
+		arr->SetElementSize(numComp);
+		arr->Resize(numTuples);
+		unsigned long long* ptr = arr->RawPointer();
 		if (m_FileType == IGAME_BINARY) {
 			iGameReadBinaryData(this, ptr, numTuples, numComp);
 			ByteSwap::Swap8BERange(ptr, numTuples * numComp);
@@ -587,9 +587,9 @@ DataArray::Pointer FileReader::ReadArray(const char* dataType, int numTuples, in
 
 	else if (!strncmp(type, "float", 5)) {
 		FloatArray::Pointer arr = FloatArray::New();
-		arr->SetNumberOfComponents(numComp);
-		arr->SetNumberOfTuples(numTuples);
-		float* ptr = arr->GetRawPointer();
+		arr->SetElementSize(numComp);
+		arr->Resize(numTuples);
+		float* ptr = arr->RawPointer();
 		if (m_FileType == IGAME_BINARY) {
 			iGameReadBinaryData(this, ptr, numTuples, numComp);
 			ByteSwap::Swap4BERange(ptr, numTuples * numComp);
@@ -602,9 +602,9 @@ DataArray::Pointer FileReader::ReadArray(const char* dataType, int numTuples, in
 
 	else if (!strncmp(type, "double", 6)) {
 		DoubleArray::Pointer arr = DoubleArray::New();
-		arr->SetNumberOfComponents(numComp);
-		arr->SetNumberOfTuples(numTuples);
-		double* ptr = arr->GetRawPointer();
+		arr->SetElementSize(numComp);
+		arr->Resize(numTuples);
+		double* ptr = arr->RawPointer();
 		if (this->m_FileType == IGAME_BINARY) {
 			iGameReadBinaryData(this, ptr, numTuples, numComp);
 			ByteSwap::Swap8BERange(ptr, numTuples * numComp);
@@ -617,7 +617,7 @@ DataArray::Pointer FileReader::ReadArray(const char* dataType, int numTuples, in
 	else if (!strncmp(type, "variant", 7))
 	{
 		/*	array = iGameVariantArray::New();
-			array->SetNumberOfComponents(numComp);
+			array->SetElementSize(numComp);
 			for (int i = 0; i < numTuples; i++)
 			{
 				for (int j = 0; j < numComp; j++)

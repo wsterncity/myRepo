@@ -105,7 +105,7 @@ bool iGame::iGameVTSReader::Parsing() {
                 vhs[0] = x ,  vhs[1] = x  + 1,  vhs[2] = x  + y_dimension + 1,  vhs[3] = x  + y_dimension;
                 vhs[4] = xz,  vhs[5] = xz + 1,  vhs[6] = xz + y_dimension + 1,  vhs[7] = xz + y_dimension;
 //                Hexahdrons->AddCell(vhs, 8);
-                volume->InsertNextCell(vhs, 8);
+                volume->AddCellIds(vhs, 8);
             }
         }
     }

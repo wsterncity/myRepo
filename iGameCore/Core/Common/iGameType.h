@@ -91,6 +91,10 @@ using igIndex16 = short;
 using iguIndex16 = unsigned short;
 
 using IGenum = long;
+using IGsize = unsigned long long;
+using IGuint = unsigned int;
+using IGint = int;
+
 using DataObjectType = IGenum;
 using DataObjectId = int;
 #endif

@@ -8,7 +8,7 @@ bool PLYReader::Parsing()
 	int EdgeNum = 0;
 
 	auto& left = this->IS;
-	auto right = left + m_Buffer->GetNumberOfValues() * m_Buffer->GetDataTypeSize();
+	auto right = left + m_Buffer->GetNumberOfValues();
 
 	while (left < right) {
 		while (*left == ' ')left++;
@@ -99,7 +99,7 @@ const char* PLYReader::ReadFaces(const char* left, int FaceNum)
 			left = mAtoi(left, vhs[j]) + 1;
 		}
 		left = lineEnd + 1;
-		Faces->InsertNextCell(vhs, Component);
+		Faces->AddCellIds(vhs, Component);
 	}
 	return left;
 }

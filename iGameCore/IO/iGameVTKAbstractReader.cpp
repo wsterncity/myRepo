@@ -94,8 +94,12 @@ int VTKAbstractReader::ReadPointCoordinates(Points::Pointer points, int PointsNu
 
 	data = DynamicCast<FloatArray>(this->ReadArray(line, PointsNum, 3));
 	if (data != nullptr) {
-		points->SetArray(data->GetRawPointer(), PointsNum);
-		
+		//points->SetArray(data->RawPointer(), PointsNum);
+		float p[3]{};
+		for (int i = 0; i < PointsNum; i++) {
+			data->GetElement(i, p);
+			points->AddPoint(p);
+		}
 	}
 	else {
 		return 0;
@@ -237,7 +241,7 @@ int VTKAbstractReader::ReadCellData(int CellsNum)
 int VTKAbstractReader::ReadPointData(int PointsNum)
 {
 	char line[256];
-	AttributeData::Pointer PointData = m_Data.GetData();
+	PropertySet::Pointer PointData = m_Data.GetData();
 	
 	this->DataType = POINT_TYPE;
 	igDebug("Reading vtk point data");
@@ -416,7 +420,7 @@ int VTKAbstractReader::ReadScalarData(int PointsNum)
 			m_Data.GetData()->AddScalars(IG_POINT, data);
 		}
 		else if (this->DataType == CELL_TYPE) {
-
+			m_Data.GetData()->AddScalars(IG_CELL, data);
 		}
 	}
 	else {
@@ -431,7 +435,7 @@ int VTKAbstractReader::ReadScalarData(int PointsNum)
 int VTKAbstractReader::ReadVectorData(int PointsNum)
 {
 	char line[256], name[256];
-	DataArray::Pointer data;
+	ArrayObject::Pointer data;
 	char buffer[256];
 
 	if (!(this->ReadString(buffer) && this->ReadString(line))) {
@@ -446,10 +450,10 @@ int VTKAbstractReader::ReadVectorData(int PointsNum)
 	if (data != nullptr) {
 		data->SetName(name);
 		if (this->DataType == POINT_TYPE) {
-			m_Data.GetData()->AddAttribute(IG_VECTOR, IG_POINT, data);
+			m_Data.GetData()->AddProperty(IG_VECTOR, IG_POINT, data);
 		}
 		else if (this->DataType == CELL_TYPE) {
-
+			m_Data.GetData()->AddProperty(IG_VECTOR, IG_CELL, data);
 		}
 	}
 	else {
@@ -465,7 +469,7 @@ int VTKAbstractReader::ReadVectorData(int PointsNum)
 int VTKAbstractReader::ReadNormalData(int PointsNum)
 {
 	char line[256], name[256];
-	DataArray::Pointer data;
+	ArrayObject::Pointer data;
 	char buffer[256];
 
 	if (!(this->ReadString(buffer) && this->ReadString(line))) {
@@ -479,10 +483,10 @@ int VTKAbstractReader::ReadNormalData(int PointsNum)
 	if (data != nullptr) {
 		data->SetName(name);
 		if (this->DataType == POINT_TYPE) {
-			m_Data.GetData()->AddAttribute(IG_NORMAL, IG_POINT, data);
+			m_Data.GetData()->AddProperty(IG_NORMAL, IG_POINT, data);
 		}
 		else if (this->DataType == CELL_TYPE) {
-
+			m_Data.GetData()->AddProperty(IG_NORMAL, IG_CELL, data);
 		}
 	}
 	else {
@@ -498,7 +502,7 @@ int VTKAbstractReader::ReadNormalData(int PointsNum)
 int VTKAbstractReader::ReadTensorData(int PointsNum, int numComp)
 {
 	char line[256], name[256];
-	DataArray::Pointer data;
+	ArrayObject::Pointer data;
 	char buffer[256];
 
 	if (!(this->ReadString(buffer) && this->ReadString(line))) {
@@ -512,10 +516,10 @@ int VTKAbstractReader::ReadTensorData(int PointsNum, int numComp)
 	if (data != nullptr) {
 		data->SetName(name);
 		if (this->DataType == POINT_TYPE) {
-			m_Data.GetData()->AddAttribute(IG_TENSOR, IG_POINT, data);
+			m_Data.GetData()->AddProperty(IG_TENSOR, IG_POINT, data);
 		}
 		else if (this->DataType == CELL_TYPE) {
-
+			m_Data.GetData()->AddProperty(IG_TENSOR, IG_CELL, data);
 		}
 	}
 	else {
@@ -543,16 +547,16 @@ int VTKAbstractReader::ReadCoScalarData(int PointsNum)
 	// handle binary different from ASCII since they are stored
 	// in a different format float versus uchar
 	if (m_FileType == IGAME_BINARY) {
-		DataArray::Pointer data;
+		ArrayObject::Pointer data;
 		char type[14] = "unsigned_char";
 		data = this->ReadArray(type, PointsNum, numComp);
 		if (data != nullptr) {
 			data->SetName(name);
 			if (this->DataType == POINT_TYPE) {
-				m_Data.GetData()->AddAttribute(IG_SCALAR, IG_POINT, data);
+				m_Data.GetData()->AddProperty(IG_SCALAR, IG_POINT, data);
 			}
 			else if (this->DataType == CELL_TYPE) {
-
+				m_Data.GetData()->AddProperty(IG_SCALAR, IG_CELL, data);
 			}
 		}
 		else {
@@ -560,22 +564,22 @@ int VTKAbstractReader::ReadCoScalarData(int PointsNum)
 		}
 	}
 	else {
-		DataArray::Pointer data;
+		ArrayObject::Pointer data;
 		char type[6] = "float";
 		data = this->ReadArray(type, PointsNum, numComp);
 		if (data != nullptr) {
 			UnsignedCharArray::Pointer scalars = UnsignedCharArray::New();
-			scalars->SetNumberOfComponents(numComp);
-			scalars->SetNumberOfTuples(PointsNum);
+			scalars->SetElementSize(numComp);
+			scalars->Resize(PointsNum);
 			scalars->SetName(name);
 			for (i = 0; i < PointsNum; i++) {
 				for (j = 0; j < numComp; j++) {
 					idx = i * numComp + j;
-					scalars->SetValue(idx, (double)(unsigned char)(255.0 * data->GetValue(idx) + 0.5));
+					scalars->SetValue(idx, (unsigned char)(255.0 * data->GetValue(idx) + 0.5));
 				}
 			}
 			if (this->DataType == POINT_TYPE) {
-				m_Data.GetData()->AddAttribute(IG_SCALAR, IG_POINT, scalars);
+				m_Data.GetData()->AddProperty(IG_SCALAR, IG_POINT, scalars);
 			}
 			else if (this->DataType == CELL_TYPE) {
 
@@ -597,7 +601,7 @@ int VTKAbstractReader::ReadTCoordsData(int PointsNum)
 {
 	int dim = 0;
 	char line[256], name[256];
-	DataArray::Pointer data;
+	ArrayObject::Pointer data;
 	char buffer[256];
 
 	if (!(this->ReadString(buffer) && this->Read(&dim) && this->ReadString(line))) {
@@ -618,10 +622,10 @@ int VTKAbstractReader::ReadTCoordsData(int PointsNum)
 	if (data != nullptr) {
 		data->SetName(name);
 		if (this->DataType == POINT_TYPE) {
-			m_Data.GetData()->AddAttribute(IG_TCOORD, IG_POINT, data);
+			m_Data.GetData()->AddProperty(IG_TCOORD, IG_POINT, data);
 		}
 		else if (this->DataType == CELL_TYPE) {
-
+			m_Data.GetData()->AddProperty(IG_TCOORD, IG_CELL, data);
 		}
 	}
 	else {
@@ -637,7 +641,7 @@ int VTKAbstractReader::ReadTCoordsData(int PointsNum)
 int VTKAbstractReader::ReadGlobalIds(int PointsNum)
 {
 	char line[256], name[256];
-	DataArray::Pointer data;
+	ArrayObject::Pointer data;
 	char buffer[256];
 
 	if (!(this->ReadString(buffer) && this->ReadString(line))) {
@@ -670,7 +674,7 @@ int VTKAbstractReader::ReadGlobalIds(int PointsNum)
 int VTKAbstractReader::ReadPedigreeIds(int PointsNum)
 {
 	char line[256], name[256];
-	DataArray::Pointer data;
+	ArrayObject::Pointer data;
 	char buffer[256];
 
 	if (!(this->ReadString(buffer) && this->ReadString(line))) {
@@ -704,7 +708,7 @@ int VTKAbstractReader::ReadEdgeFlags(int PointsNum)
 {
 	int skipEdgeFlags = 0;
 	char line[256], name[256];
-	DataArray::Pointer data;
+	ArrayObject::Pointer data;
 	char buffer[256];
 
 	if (!(this->ReadString(buffer) && this->ReadString(line))) {
@@ -718,7 +722,7 @@ int VTKAbstractReader::ReadEdgeFlags(int PointsNum)
 	if (data != nullptr) {
 		data->SetName(name);
 		if (this->DataType == POINT_TYPE) {
-			//this->DataSet->GetPointData()->AddAttribute(EDGEFLAG, data);
+			//this->DataSet->GetPointData()->AddProperty(EDGEFLAG, data);
 		}
 		else if (this->DataType == CELL_TYPE) {
 
@@ -748,7 +752,7 @@ int VTKAbstractReader::ReadFieldData()
 
 	char name[256], type[256];
 	int numComp, numTuples;
-	DataArray::Pointer data;
+	ArrayObject::Pointer data;
 
 	if (!(this->ReadString(name) && this->Read(&numArrays))) {
 		/*igError("Cannot read field header!" << " for file: " << (fname ? fname : "(Null FileName)"));*/
@@ -769,10 +773,10 @@ int VTKAbstractReader::ReadFieldData()
 		if (data != nullptr) {
 			data->SetName(name);
 			if (this->DataType == POINT_TYPE) {
-				m_Data.GetData()->AddAttribute(IG_SCALAR, IG_POINT, data);
+				m_Data.GetData()->AddProperty(IG_SCALAR, IG_POINT, data);
 			}
 			else if (this->DataType == CELL_TYPE) {
-
+				m_Data.GetData()->AddProperty(IG_SCALAR, IG_CELL, data);
 			}
 		}
 	}
@@ -787,14 +791,14 @@ const void VTKAbstractReader::TransferVtkCellToiGameCell(IntArray::Pointer VtkCe
 	CellArray::Pointer Faces = m_Data.GetFaces();
 	CellArray::Pointer Volumes = m_Data.GetVolumes();
 
-	int CellNum = VtkCellsType->GetNumberOfTuples();
+	int CellNum = VtkCellsType->GetNumberOfElements();
 	int IndexNum = VtkCells->GetNumberOfValues();
 	int index = 0;
 	int size = 0;
 	int* vhs;
 	for (int i = 0; i < CellNum; i++) {
 		size = VtkCells->GetValue(index);
-		vhs = VtkCells->GetRawPointer() + index + 1;
+		vhs = VtkCells->RawPointer() + index + 1;
 		index += size + 1;
 		VTKTYPE type = (VTKTYPE)VtkCellsType->GetValue(i);
 		//if(type != 7)
@@ -808,43 +812,43 @@ const void VTKAbstractReader::TransferVtkCellToiGameCell(IntArray::Pointer VtkCe
 			break;
 		case iGame::VTKAbstractReader::LINE:
 			assert(size == 2);
-			Lines->InsertNextCell2(vhs[0], vhs[1]);
+			Lines->AddCellId2(vhs[0], vhs[1]);
 			break;
 		case iGame::VTKAbstractReader::POLYLINE:
 			for (int k = 0; k < size; k++) {
-				Lines->InsertNextCell2(vhs[k], vhs[(k + 1) % size]);
+				Lines->AddCellId2(vhs[k], vhs[(k + 1) % size]);
 			}
 			break;
 		case iGame::VTKAbstractReader::TRIANGLE:
 			assert(size == 3);
-			Faces->InsertNextCell(vhs, size);
+			Faces->AddCellIds(vhs, size);
 			break;
 		case iGame::VTKAbstractReader::TRIANGLESTRIP:
 			break;
 		case iGame::VTKAbstractReader::POLYGON:
-			Faces->InsertNextCell(vhs, size);
+			Faces->AddCellIds(vhs, size);
 			break;
 		case iGame::VTKAbstractReader::PIXEL:
 			break;
 		case iGame::VTKAbstractReader::QUAD:
 			assert(size == 4);
-			Faces->InsertNextCell(vhs, size);
+			Faces->AddCellIds(vhs, size);
 			break;
 		case iGame::VTKAbstractReader::TETRA:
 			assert(size == 4);
-			Volumes->InsertNextCell(vhs, size);
+			Volumes->AddCellIds(vhs, size);
 			break;
 		case iGame::VTKAbstractReader::VOXEL:
 			break;
 		case iGame::VTKAbstractReader::HEXAHEDRON:
 			assert(size == 8);
-			Volumes->InsertNextCell(vhs, size);
+			Volumes->AddCellIds(vhs, size);
 			break;
 		case iGame::VTKAbstractReader::WEDGE:
-			Volumes->InsertNextCell(vhs, size);
+			Volumes->AddCellIds(vhs, size);
 			break;
 		case iGame::VTKAbstractReader::PYRAMID:
-			Volumes->InsertNextCell(vhs, size);
+			Volumes->AddCellIds(vhs, size);
 			break;
 		case iGame::VTKAbstractReader::PENTAGONAL_PRISM:
 			break;
@@ -873,7 +877,7 @@ const void VTKAbstractReader::TransferVtkCellToiGameCell(IntArray::Pointer VtkCe
 			};
 			for (int i = 0; i < 16; i++) {
 				igIndex tmpvhs[3] = { vhs[tmp[i][0]] ,vhs[tmp[i][1]] ,vhs[tmp[i][2]] };
-				Faces->InsertNextCell(tmpvhs, 3);
+				Faces->AddCellIds(tmpvhs, 3);
 			}
 		}
 		break;
@@ -910,13 +914,13 @@ const void VTKAbstractReader::TransferVtkCellToiGameCell(IntArray::Pointer VtkCe
 
 	this->UpdateReadProgress();
 }
-const void VTKAbstractReader::TransferVtkCellToiGameCell(DataArray::Pointer CellsID, DataArray::Pointer CellsConnect, IntArray::Pointer VtkCellsType)
+const void VTKAbstractReader::TransferVtkCellToiGameCell(ArrayObject::Pointer CellsID, ArrayObject::Pointer CellsConnect, IntArray::Pointer VtkCellsType)
 {
 	CellArray::Pointer Lines = m_Data.GetLines();
 	CellArray::Pointer Faces = m_Data.GetFaces();
 	CellArray::Pointer Volumes = m_Data.GetVolumes();
 
-	int CellNum = VtkCellsType->GetNumberOfTuples();
+	int CellNum = VtkCellsType->GetNumberOfElements();
 	int index = 0;
 	int size = 0;
 	int vhs[64];
@@ -939,43 +943,43 @@ const void VTKAbstractReader::TransferVtkCellToiGameCell(DataArray::Pointer Cell
 			break;
 		case iGame::VTKAbstractReader::LINE:
 			assert(size == 2);
-			Lines->InsertNextCell2(vhs[0], vhs[1]);
+			Lines->AddCellId2(vhs[0], vhs[1]);
 			break;
 		case iGame::VTKAbstractReader::POLYLINE:
 			for (int k = 0; k < size; k++) {
-				Lines->InsertNextCell2(vhs[k], vhs[(k + 1) % size]);
+				Lines->AddCellId2(vhs[k], vhs[(k + 1) % size]);
 			}
 			break;
 		case iGame::VTKAbstractReader::TRIANGLE:
 			assert(size == 3);
-			Faces->InsertNextCell(vhs, size);
+			Faces->AddCellIds(vhs, size);
 			break;
 		case iGame::VTKAbstractReader::TRIANGLESTRIP:
 			break;
 		case iGame::VTKAbstractReader::POLYGON:
-			Faces->InsertNextCell(vhs, size);
+			Faces->AddCellIds(vhs, size);
 			break;
 		case iGame::VTKAbstractReader::PIXEL:
 			break;
 		case iGame::VTKAbstractReader::QUAD:
 			assert(size == 4);
-			Faces->InsertNextCell(vhs, size);
+			Faces->AddCellIds(vhs, size);
 			break;
 		case iGame::VTKAbstractReader::TETRA:
 			assert(size == 4);
-			Volumes->InsertNextCell(vhs, size);
+			Volumes->AddCellIds(vhs, size);
 			break;
 		case iGame::VTKAbstractReader::VOXEL:
 			break;
 		case iGame::VTKAbstractReader::HEXAHEDRON:
 			assert(size == 8);
-			Volumes->InsertNextCell(vhs, size);
+			Volumes->AddCellIds(vhs, size);
 			break;
 		case iGame::VTKAbstractReader::WEDGE:
-			Volumes->InsertNextCell(vhs, size);
+			Volumes->AddCellIds(vhs, size);
 			break;
 		case iGame::VTKAbstractReader::PYRAMID:
-			Volumes->InsertNextCell(vhs, size);
+			Volumes->AddCellIds(vhs, size);
 			break;
 		case iGame::VTKAbstractReader::PENTAGONAL_PRISM:
 			break;
@@ -1004,7 +1008,7 @@ const void VTKAbstractReader::TransferVtkCellToiGameCell(DataArray::Pointer Cell
 			};
 			for (int i = 0; i < 16; i++) {
 				igIndex tmpvhs[3] = { vhs[tmp[i][0]] ,vhs[tmp[i][1]] ,vhs[tmp[i][2]] };
-				Faces->InsertNextCell(tmpvhs, 3);
+				Faces->AddCellIds(tmpvhs, 3);
 			}
 		}
 		break;
@@ -1042,15 +1046,15 @@ const void VTKAbstractReader::TransferVtkCellToiGameCell(DataArray::Pointer Cell
 	this->UpdateReadProgress();
 }
 
-void VTKAbstractReader::TransferVtkCellToiGameCell(DataCollection &m_Data, DataArray::Pointer CellsID,
-												   DataArray::Pointer CellsConnect, DataArray::Pointer VtkCellsType) {
+void VTKAbstractReader::TransferVtkCellToiGameCell(DataCollection &m_Data, ArrayObject::Pointer CellsID,
+												   ArrayObject::Pointer CellsConnect, ArrayObject::Pointer VtkCellsType) {
 
 
 	CellArray::Pointer Lines = m_Data.GetLines();
 	CellArray::Pointer Faces = m_Data.GetFaces();
 	CellArray::Pointer Volumes = m_Data.GetVolumes();
 
-	int CellNum = VtkCellsType->GetNumberOfTuples();
+	int CellNum = VtkCellsType->GetNumberOfElements();
 	int index = 0;
 	int size = 0;
 	int vhs[64];
@@ -1073,43 +1077,43 @@ void VTKAbstractReader::TransferVtkCellToiGameCell(DataCollection &m_Data, DataA
 				break;
 			case iGame::VTKAbstractReader::LINE:
 				assert(size == 2);
-				Lines->InsertNextCell2(vhs[0], vhs[1]);
+				Lines->AddCellId2(vhs[0], vhs[1]);
 				break;
 			case iGame::VTKAbstractReader::POLYLINE:
 				for (int k = 0; k < size; k++) {
-					Lines->InsertNextCell2(vhs[k], vhs[(k + 1) % size]);
+					Lines->AddCellId2(vhs[k], vhs[(k + 1) % size]);
 				}
 				break;
 			case iGame::VTKAbstractReader::TRIANGLE:
 				assert(size == 3);
-				Faces->InsertNextCell(vhs, size);
+				Faces->AddCellIds(vhs, size);
 				break;
 			case iGame::VTKAbstractReader::TRIANGLESTRIP:
 				break;
 			case iGame::VTKAbstractReader::POLYGON:
-				Faces->InsertNextCell(vhs, size);
+				Faces->AddCellIds(vhs, size);
 				break;
 			case iGame::VTKAbstractReader::PIXEL:
 				break;
 			case iGame::VTKAbstractReader::QUAD:
 				assert(size == 4);
-				Faces->InsertNextCell(vhs, size);
+				Faces->AddCellIds(vhs, size);
 				break;
 			case iGame::VTKAbstractReader::TETRA:
 				assert(size == 4);
-				Volumes->InsertNextCell(vhs, size);
+				Volumes->AddCellIds(vhs, size);
 				break;
 			case iGame::VTKAbstractReader::VOXEL:
 				break;
 			case iGame::VTKAbstractReader::HEXAHEDRON:
 				assert(size == 8);
-				Volumes->InsertNextCell(vhs, size);
+				Volumes->AddCellIds(vhs, size);
 				break;
 			case iGame::VTKAbstractReader::WEDGE:
-				Volumes->InsertNextCell(vhs, size);
+				Volumes->AddCellIds(vhs, size);
 				break;
 			case iGame::VTKAbstractReader::PYRAMID:
-				Volumes->InsertNextCell(vhs, size);
+				Volumes->AddCellIds(vhs, size);
 				break;
 			case iGame::VTKAbstractReader::PENTAGONAL_PRISM:
 				break;
@@ -1138,7 +1142,7 @@ void VTKAbstractReader::TransferVtkCellToiGameCell(DataCollection &m_Data, DataA
 				};
 				for (int i = 0; i < 16; i++) {
 					igIndex tmpvhs[3] = { vhs[tmp[i][0]] ,vhs[tmp[i][1]] ,vhs[tmp[i][2]] };
-					Faces->InsertNextCell(tmpvhs, 3);
+					Faces->AddCellIds(tmpvhs, 3);
 				}
 			}
 				break;

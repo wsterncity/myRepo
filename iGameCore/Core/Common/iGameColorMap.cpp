@@ -4,79 +4,79 @@ IGAME_NAMESPACE_BEGIN
 void ColorMap::InitColorBarByOneSegmentType()
 {
 	ColorBar->Reset();
-	ColorBar->SetNumberOfComponents(3);
-	ColorBar->Resize(2);
-	ColorBar->InsertNextTuple3(0.0, 0.0, 0.0);
-	ColorBar->InsertNextTuple3(1.0, 1.0, 1.0);
+	ColorBar->SetElementSize(3);
+	ColorBar->Reserve(2);
+	ColorBar->AddElement3(0.0, 0.0, 0.0);
+	ColorBar->AddElement3(1.0, 1.0, 1.0);
 
 	ColorRange->Reset();
-	ColorRange->Resize(2);
-	ColorRange->InsertNextValue(0.0);
-	ColorRange->InsertNextValue(1.0);
+	ColorRange->Reserve(2);
+	ColorRange->AddValue(0.0);
+	ColorRange->AddValue(1.0);
 	ColorBarSize = 1;
 }
 void ColorMap::InitColorBarByTwoSegmentType()
 {
 	ColorBar->Reset();
-	ColorBar->SetNumberOfComponents(3);
-	ColorBar->Resize(3);
-	ColorBar->InsertNextTuple3(0.0, 0.0, 1.0);
-	ColorBar->InsertNextTuple3(1.0, 1.0, 1.0);
-	ColorBar->InsertNextTuple3(1.0, 0.0, 0.0);
+	ColorBar->SetElementSize(3);
+	ColorBar->Reserve(3);
+	ColorBar->AddElement3(0.0, 0.0, 1.0);
+	ColorBar->AddElement3(1.0, 1.0, 1.0);
+	ColorBar->AddElement3(1.0, 0.0, 0.0);
 
 	ColorRange->Reset();
-	ColorRange->Resize(3);
-	ColorRange->InsertNextValue(0.0);
-	ColorRange->InsertNextValue(0.5);
-	ColorRange->InsertNextValue(1.0);
+	ColorRange->Reserve(3);
+	ColorRange->AddValue(0.0);
+	ColorRange->AddValue(0.5);
+	ColorRange->AddValue(1.0);
 	ColorBarSize = 2;
 }
 void ColorMap::InitColorBarByFourSegmentType()
 {
 	ColorBar->Reset();
-	ColorBar->SetNumberOfComponents(3);
-	ColorBar->Resize(5);
-	ColorBar->InsertNextTuple3(0.0, 0.0, 1.0);
-	ColorBar->InsertNextTuple3(0.0, 1.0, 1.0);
-	ColorBar->InsertNextTuple3(0.0, 1.0, 0.0);
-	ColorBar->InsertNextTuple3(1.0, 1.0, 0.0);
-	ColorBar->InsertNextTuple3(1.0, 0.0, 0.0);
+	ColorBar->SetElementSize(3);
+	ColorBar->Reserve(5);
+	ColorBar->AddElement3(0.0, 0.0, 1.0);
+	ColorBar->AddElement3(0.0, 1.0, 1.0);
+	ColorBar->AddElement3(0.0, 1.0, 0.0);
+	ColorBar->AddElement3(1.0, 1.0, 0.0);
+	ColorBar->AddElement3(1.0, 0.0, 0.0);
 
 	ColorRange->Reset();
-	ColorRange->Resize(5);
-	ColorRange->InsertNextValue(0.0);
-	ColorRange->InsertNextValue(0.25);
-	ColorRange->InsertNextValue(0.5);
-	ColorRange->InsertNextValue(0.75);
-	ColorRange->InsertNextValue(1.0);
+	ColorRange->Reserve(5);
+	ColorRange->AddValue(0.0);
+	ColorRange->AddValue(0.25);
+	ColorRange->AddValue(0.5);
+	ColorRange->AddValue(0.75);
+	ColorRange->AddValue(1.0);
 	ColorBarSize = 4;
 }
 void ColorMap::InitColorBarByFiveSegmentType()
 {
 	ColorBar->Reset();
-	ColorBar->SetNumberOfComponents(3);
-	ColorBar->Resize(6);
-	ColorBar->InsertNextTuple3(0.0, 0.0, 1.0);
-	ColorBar->InsertNextTuple3(0.0, 1.0, 1.0);
-	ColorBar->InsertNextTuple3(0.0, 1.0, 0.0);
-	ColorBar->InsertNextTuple3(1.0, 1.0, 0.0);
-	ColorBar->InsertNextTuple3(1.0, 0.0, 0.0);
-	ColorBar->InsertNextTuple3(1.0, 0.0, 1.0);
+	ColorBar->SetElementSize(3);
+	ColorBar->Reserve(6);
+	ColorBar->AddElement3(0.0, 0.0, 1.0);
+	ColorBar->AddElement3(0.0, 1.0, 1.0);
+	ColorBar->AddElement3(0.0, 1.0, 0.0);
+	ColorBar->AddElement3(1.0, 1.0, 0.0);
+	ColorBar->AddElement3(1.0, 0.0, 0.0);
+	ColorBar->AddElement3(1.0, 0.0, 1.0);
 
 	ColorRange->Reset();
-	ColorRange->Resize(6);
-	ColorRange->InsertNextValue(0.0);
-	ColorRange->InsertNextValue(0.2);
-	ColorRange->InsertNextValue(0.4);
-	ColorRange->InsertNextValue(0.6);
-	ColorRange->InsertNextValue(0.8);
-	ColorRange->InsertNextValue(1.0);
+	ColorRange->Reserve(6);
+	ColorRange->AddValue(0.0);
+	ColorRange->AddValue(0.2);
+	ColorRange->AddValue(0.4);
+	ColorRange->AddValue(0.6);
+	ColorRange->AddValue(0.8);
+	ColorRange->AddValue(1.0);
 	ColorBarSize = 5;
 }
 void ColorMap::SetColorBar(int index, float r, float g, float b)
 {
 	float rgb[3]{ r,g,b };
-	ColorBar->SetTuple(index, rgb);
+	ColorBar->SetElement(index, rgb);
 }
 void  ColorMap::SetColorRange(int index, float& x) {
 	this->ColorRange->SetValue(index, x);
@@ -86,13 +86,13 @@ void ColorMap::DeleteIndexColor(int index)
 {
 	FloatArray::Pointer retColor = FloatArray::New();
 	FloatArray::Pointer retRange = FloatArray::New();
-	retColor->SetNumberOfComponents(3);
+	retColor->SetElementSize(3);
 	float color[3];
 	for (int i = 0; i <= ColorBarSize; i++) {
 		if (i == index)continue;
-		this->ColorBar->GetTuple(i, color);
-		retColor->InsertNextTuple(color);
-		retRange->InsertNextValue(ColorRange->GetValue(i));
+		this->ColorBar->GetElement(i, color);
+		retColor->AddElement(color);
+		retRange->AddValue(ColorRange->GetValue(i));
 	}
 	ColorBar = retColor;
 	ColorRange = retRange;
@@ -101,32 +101,32 @@ void ColorMap::DeleteIndexColor(int index)
 void ColorMap::AddColorBar(int index, float r, float g, float b)
 {
 	FloatArray::Pointer ret = FloatArray::New();
-	ret->SetNumberOfComponents(3);
+	ret->SetElementSize(3);
 	for (int i = 0; i < index; i++) {
 		float color[3];
-		ColorBar->GetTuple(i, color);
-		ret->InsertNextTuple(color);
+		ColorBar->GetElement(i, color);
+		ret->AddElement(color);
 	}
-	ret->InsertNextTuple3(r, g, b);
+	ret->AddElement3(r, g, b);
 	for (int i = index; i <= ColorBarSize; i++) {
 		float color[3];
-		ColorBar->GetTuple(i, color);
-		ret->InsertNextTuple(color);
+		ColorBar->GetElement(i, color);
+		ret->AddElement(color);
 	}
-	ColorBarSize = std::min(ret->GetNumberOfTuples() - 1, this->ColorRange->GetNumberOfTuples() - 1);
+	ColorBarSize = std::min(ret->GetNumberOfElements() - 1, this->ColorRange->GetNumberOfElements() - 1);
 	ColorBar = ret;
 }
 void ColorMap::AddColorRange(int index, float x)
 {
 	FloatArray::Pointer ret = FloatArray::New();
 	for (int i = 0; i < index; i++) {
-		ret->InsertNextValue(ColorRange->GetValue(i));
+		ret->AddValue(ColorRange->GetValue(i));
 	}
-	ret->InsertNextValue(x);
+	ret->AddValue(x);
 	for (int i = index; i <= ColorBarSize; i++) {
-		ret->InsertNextValue(ColorRange->GetValue(i));
+		ret->AddValue(ColorRange->GetValue(i));
 	}
-	ColorBarSize = std::min(ret->GetNumberOfTuples() - 1, this->ColorBar->GetNumberOfTuples() - 1);
+	ColorBarSize = std::min(ret->GetNumberOfElements() - 1, this->ColorBar->GetNumberOfElements() - 1);
 	ColorRange = ret;
 }
 
@@ -143,21 +143,21 @@ void ColorMap::MapColor(float value, float rgb[3])
 	float startRGB[3];
 	float finalRGB[3];
 	//std::cout << idx << std::endl;
+	ColorBar->SetElementSize(3);
 	if (idx == 0) {
-		ColorBar->GetTuple(idx, startRGB);
+		ColorBar->GetElement(idx, startRGB);
 		st_v = 0.0;
 	}
 	else {
-		ColorBar->GetTuple(idx - 1, startRGB);
+		ColorBar->GetElement(idx - 1, startRGB);
 		st_v = ColorRange->GetValue(idx - 1);
-
 	}
 	if (idx == ColorBarSize + 1) {
-		ColorBar->GetTuple(ColorBarSize, finalRGB);
+		ColorBar->GetElement(ColorBarSize, finalRGB);
 		fi_v = 1.0;
 	}
 	else {
-		ColorBar->GetTuple(idx, finalRGB);
+		ColorBar->GetElement(idx, finalRGB);
 		fi_v = ColorRange->GetValue(idx);
 	}
 	local_v = (value - st_v) / (fi_v - st_v);
@@ -173,20 +173,20 @@ void ColorMap::MapColor(float value, float rgb[3])
 FloatArray::Pointer ColorMap::GetColorBarDrawInfo()
 {
 	FloatArray::Pointer ret = FloatArray::New();
-	ret->SetNumberOfComponents(3);
+	ret->SetElementSize(3);
 	float color[16];
 	for (int i = 0; i < ColorBarSize; i++) {
-		ColorBar->GetTuple(i, color);
-		ret->InsertNextTuple3(-0.95f, ColorRange->GetValue(i) - 0.9, 0.0);
-		ret->InsertNextTuple3(color[0], color[1], color[2]);
-		ret->InsertNextTuple3(-0.90f, ColorRange->GetValue(i) - 0.9, 0.0);
-		ret->InsertNextTuple3(color[0], color[1], color[2]);
+		ColorBar->GetElement(i, color);
+		ret->AddElement3(-0.95f, ColorRange->GetValue(i) - 0.9, 0.0);
+		ret->AddElement3(color[0], color[1], color[2]);
+		ret->AddElement3(-0.90f, ColorRange->GetValue(i) - 0.9, 0.0);
+		ret->AddElement3(color[0], color[1], color[2]);
 
-		ColorBar->GetTuple(i + 1, color);
-		ret->InsertNextTuple3(-0.90, ColorRange->GetValue(i + 1) - 0.9, 0.0);
-		ret->InsertNextTuple3(color[0], color[1], color[2]);
-		ret->InsertNextTuple3(-0.95, ColorRange->GetValue(i + 1) - 0.9, 0.0);
-		ret->InsertNextTuple3(color[0], color[1], color[2]);
+		ColorBar->GetElement(i + 1, color);
+		ret->AddElement3(-0.90, ColorRange->GetValue(i + 1) - 0.9, 0.0);
+		ret->AddElement3(color[0], color[1], color[2]);
+		ret->AddElement3(-0.95, ColorRange->GetValue(i + 1) - 0.9, 0.0);
+		ret->AddElement3(color[0], color[1], color[2]);
 	}
 	return ret;
 }

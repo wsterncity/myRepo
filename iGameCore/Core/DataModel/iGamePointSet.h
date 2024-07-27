@@ -3,7 +3,7 @@
 
 #include "iGameDataObject.h"
 #include "iGamePoints.h"
-#include "iGameAttributeData.h"
+#include "iGamePropertySet.h"
 #include "iGameDrawableObject.h"
 
 IGAME_NAMESPACE_BEGIN
@@ -52,14 +52,14 @@ public:
 	bool IsDrawable() override { return true; }
 	void ViewCloudPicture(int index, int demension = -1) override
 	{
-		auto& attr = this->GetAttributes()->GetAttribute(index);
-		if (attr.active && attr.attachmentType == IG_POINT)
+		auto& attr = this->GetPropertySet()->GetProperty(index);
+		if (!attr.isDeleted && attr.attachmentType == IG_POINT)
 		{
-			this->SetAttributeWithPointData(attr.array, demension);
+			this->SetAttributeWithPointData(attr.pointer, demension);
 		}
 	}
 
-	virtual void SetAttributeWithPointData(DataArray::Pointer attr, igIndex i = -1)
+	virtual void SetAttributeWithPointData(ArrayObject::Pointer attr, igIndex i = -1)
 	{
 		if (m_ViewAttribute != attr || m_ViewDemension != i)
 		{
@@ -93,7 +93,7 @@ public:
 
 			GLAllocateGLBuffer(m_ColorVBO,
 				m_Colors->GetNumberOfValues() * sizeof(float),
-				m_Colors->GetRawPointer());
+				m_Colors->RawPointer());
 
 			m_PointVAO.vertexBuffer(GL_VBO_IDX_1, m_ColorVBO, 0, 3 * sizeof(float));
 			GLSetVertexAttrib(m_PointVAO, GL_LOCATION_IDX_1, GL_VBO_IDX_1, 3, GL_FLOAT,
@@ -111,7 +111,7 @@ private:
 	bool m_UseColor{false};
 	int m_PointSize{4};
 
-	DataArray::Pointer m_ViewAttribute;
+	ArrayObject::Pointer m_ViewAttribute;
 	int m_ViewDemension;
 };
 

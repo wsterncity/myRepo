@@ -110,12 +110,12 @@ const float* ScalarsToColors::MapValueToRGB(float v, float& shift, float& scale)
 
 //------------------------------------------------------------------------------
 
-void ScalarsToColors::InitRange(DataArray::Pointer input, int component, int size)
+void ScalarsToColors::InitRange(ArrayObject::Pointer input, int component, int size)
 {
 	float minv = 1e9;
 	float maxv = -1e9;
 	int vectorMode = this->GetVectorMode();
-	int inComponent = input->GetNumberOfComponents();
+	int inComponent = input->GetElementSize();
 	if (vectorMode == COMPONENT)
 	{
 		if (component == -1) {
@@ -160,9 +160,9 @@ void ScalarsToColors::InitRange(DataArray::Pointer input, int component, int siz
 	case COMPONENT:
 	{
 		float data[16];
-		for (int i = 0; i < input->GetNumberOfTuples(); i++)
+		for (int i = 0; i < input->GetNumberOfElements(); i++)
 		{
-			input->GetTuple(i, data);
+			input->GetElement(i, data);
 			minv = std::min(minv, data[component]);
 			maxv = std::max(maxv, data[component]);
 		}
@@ -171,9 +171,9 @@ void ScalarsToColors::InitRange(DataArray::Pointer input, int component, int siz
 	case MAGNITUDE:
 	{
 		float data[16];
-		for (int i = 0; i < input->GetNumberOfTuples(); i++)
+		for (int i = 0; i < input->GetNumberOfElements(); i++)
 		{
-			input->GetTuple(i, data);
+			input->GetElement(i, data);
 			float sum = 0.0;
 			for (int j = component; j < component + size; j++) {
 				sum += data[j] * data[j];
@@ -191,13 +191,13 @@ void ScalarsToColors::InitRange(DataArray::Pointer input, int component, int siz
 	this->SetRange(minv, maxv);
 }
 FloatArray::Pointer ScalarsToColors::MapScalars(
-	DataArray::Pointer scalars, int component, int outputFormat)
+	ArrayObject::Pointer scalars, int component, int outputFormat)
 {
 	//component::渲染第几个维度
-	int numberOfComponents = scalars->GetNumberOfComponents();
+	int numberOfComponents = scalars->GetElementSize();
 	FloatArray::Pointer newColors = FloatArray::New();
-	newColors->SetNumberOfComponents(outputFormat);
-	newColors->Resize(scalars->GetNumberOfTuples());
+	newColors->SetElementSize(outputFormat);
+	newColors->Reserve(scalars->GetNumberOfElements());
 	if (component < 0 && numberOfComponents>1) {
 		this->SetVectorModeToMagnitude();
 		this->MapVectorsThroughTable(scalars, newColors, outputFormat);
@@ -216,10 +216,10 @@ FloatArray::Pointer ScalarsToColors::MapScalars(
 }
 //------------------------------------------------------------------------------
 // Map a set of vector values through the table
-void ScalarsToColors::MapVectorsThroughTable(DataArray::Pointer input, FloatArray::Pointer output,
+void ScalarsToColors::MapVectorsThroughTable(ArrayObject::Pointer input, FloatArray::Pointer output,
 	int outputFormat, int vectorComponent, int vectorSize)
 {
-	int inComponents = input->GetNumberOfComponents();
+	int inComponents = input->GetElementSize();
 	int vectorMode = this->GetVectorMode();
 	if (vectorMode == COMPONENT) {
 		if (vectorComponent == -1) {
@@ -267,13 +267,13 @@ void ScalarsToColors::MapVectorsThroughTable(DataArray::Pointer input, FloatArra
 		float shift, scale;
 		ComputeShiftScale(shift, scale);
 		float data[16];
-		for (int i = 0; i < input->GetNumberOfTuples(); i++)
+		for (int i = 0; i < input->GetNumberOfElements(); i++)
 		{
-			input->GetTuple(i, data);
+			input->GetElement(i, data);
 			const float* rgb = MapValueToRGB(data[index], shift, scale);
 			//const unsigned char* rgb = MapValue(data[index], shift, scale);
 			//std::array<unsigned char, 3>tmp = { rgb[0], rgb[1], rgb[2] };
-			output->InsertNextTuple3(rgb[0], rgb[1], rgb[2]);
+			output->AddElement3(rgb[0], rgb[1], rgb[2]);
 		}
 	}
 	break;
@@ -283,16 +283,16 @@ void ScalarsToColors::MapVectorsThroughTable(DataArray::Pointer input, FloatArra
 		float shift, scale;
 		ComputeShiftScale(shift, scale);
 		float data[16];
-		DataArray::Pointer tmp;
-		for (int i = 0; i < input->GetNumberOfTuples(); i++) {
-			input->GetTuple(i, data);
+		ArrayObject::Pointer tmp;
+		for (int i = 0; i < input->GetNumberOfElements(); i++) {
+			input->GetElement(i, data);
 			float value = 0.0;
 			for (int j = index; j < index + vectorSize; j++) {
 				value += data[j] * data[j];
 			}
 			value = sqrt(value);
 			const float* rgb = MapValueToRGB(value, shift, scale);
-			output->InsertNextTuple3(rgb[0], rgb[1], rgb[2]);
+			output->AddElement3(rgb[0], rgb[1], rgb[2]);
 		}
 	}
 	break;
@@ -301,10 +301,10 @@ void ScalarsToColors::MapVectorsThroughTable(DataArray::Pointer input, FloatArra
 		if (inComponents < 3)return;
 		float data[16];
 		std::array<unsigned char, 3> rgb;
-		for (int i = 0; i < input->GetNumberOfTuples(); i++)
+		for (int i = 0; i < input->GetNumberOfElements(); i++)
 		{
-			input->GetTuple(i, data);
-			output->InsertNextTuple3(data[0], data[1], data[2]);
+			input->GetElement(i, data);
+			output->AddElement3(data[0], data[1], data[2]);
 		}
 	}
 	break;

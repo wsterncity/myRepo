@@ -65,7 +65,7 @@ bool INPReader::Parsing()
 						this->Read(&vhs[i]);
 						vhs[i]--;
 					}
-					Faces->InsertNextCell(vhs, 4);
+					Faces->AddCellIds(vhs, 4);
 				}
 				else if (!strncmp(Type, "c3d8r", 5))
 				{
@@ -75,7 +75,7 @@ bool INPReader::Parsing()
 						this->Read(&vhs[i]);
 						vhs[i]--;
 					}
-					Volumes->InsertNextCell(vhs, 8);
+					Volumes->AddCellIds(vhs, 8);
 				}
 				while (*this->IS == ' ' || *this->IS == '\n' || *this->IS == '\r')this->IS++;
 				if (*this->IS == '*')break;

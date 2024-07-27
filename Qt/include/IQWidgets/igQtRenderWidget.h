@@ -62,7 +62,7 @@ protected:
          makeCurrent();
          if (m_Scene->GetCurrentObject())
          {
-             m_Scene->GetCurrentObject()->ViewCloudPictureOfModel(index - 1, dim - 1);
+             m_Scene->GetCurrentObject()->ViewCloudPictureOfModel(index - 1, dim);
          }
          doneCurrent();
          update();

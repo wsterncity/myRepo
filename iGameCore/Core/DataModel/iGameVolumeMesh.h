@@ -66,17 +66,17 @@ public:
 			m_ColorWithCell = false;
 			return;
 		}
-		auto& attr = this->GetAttributes()->GetAttribute(index);
-		if (attr.active)
+		auto& attr = this->GetPropertySet()->GetProperty(index);
+		if (!attr.isDeleted)
 		{
 			if (attr.attachmentType == IG_POINT)
-				this->SetAttributeWithPointData(attr.array, demension);
+				this->SetAttributeWithPointData(attr.pointer, demension);
 			else if (attr.attachmentType == IG_CELL)
-				this->SetAttributeWithCellData(attr.array, demension);
+				this->SetAttributeWithCellData(attr.pointer, demension);
 		}
 	}
 
-	void SetAttributeWithPointData(DataArray::Pointer attr, igIndex i = -1) override
+	void SetAttributeWithPointData(ArrayObject::Pointer attr, igIndex i = -1) override
 	{
 		if (m_ViewAttribute != attr || m_ViewDemension != i)
 		{
@@ -103,7 +103,7 @@ public:
 
 			GLAllocateGLBuffer(m_ColorVBO,
 				m_Colors->GetNumberOfValues() * sizeof(float),
-				m_Colors->GetRawPointer());
+				m_Colors->RawPointer());
 
 			m_PointVAO.vertexBuffer(GL_VBO_IDX_1, m_ColorVBO, 0, 3 * sizeof(float));
 			GLSetVertexAttrib(m_PointVAO, GL_LOCATION_IDX_1, GL_VBO_IDX_1, 3, GL_FLOAT,
@@ -120,7 +120,7 @@ public:
 		}
 	}
 
-	void SetAttributeWithCellData(DataArray::Pointer attr, igIndex i = -1)
+	void SetAttributeWithCellData(ArrayObject::Pointer attr, igIndex i = -1)
 	{
 		if (m_ViewAttribute != attr || m_ViewDemension != i)
 		{
@@ -147,34 +147,34 @@ public:
 
 			FloatArray::Pointer newPositions = FloatArray::New();
 			FloatArray::Pointer newColors = FloatArray::New();
-			newPositions->SetNumberOfComponents(3);
-			newColors->SetNumberOfComponents(3);
+			newPositions->SetElementSize(3);
+			newColors->SetElementSize(3);
 
 			float color[3]{};
 			for (int i = 0; i < this->GetNumberOfFaces(); i++)
 			{
 				Face* face = this->GetFace(i);
 				auto& p0 = face->Points->GetPoint(0);
-				newPositions->InsertNextTuple3(p0[0], p0[1], p0[2]);
+				newPositions->AddElement3(p0[0], p0[1], p0[2]);
 
 				auto& p1 = face->Points->GetPoint(1);
-				newPositions->InsertNextTuple3(p1[0], p1[1], p1[2]);
+				newPositions->AddElement3(p1[0], p1[1], p1[2]);
 
 				auto& p2 = face->Points->GetPoint(2);
-				newPositions->InsertNextTuple3(p2[0], p2[1], p2[2]);
+				newPositions->AddElement3(p2[0], p2[1], p2[2]);
 
-				colors->GetTuple(i, color);
-				newColors->InsertNextTuple3(color[0], color[1], color[2]);
-				newColors->InsertNextTuple3(color[0], color[1], color[2]);
-				newColors->InsertNextTuple3(color[0], color[1], color[2]);
+				colors->GetElement(i, color);
+				newColors->AddElement3(color[0], color[1], color[2]);
+				newColors->AddElement3(color[0], color[1], color[2]);
+				newColors->AddElement3(color[0], color[1], color[2]);
 			}
 
 			GLAllocateGLBuffer(m_CellPositionVBO,
 				newPositions->GetNumberOfValues() * sizeof(float),
-				newPositions->GetRawPointer());
+				newPositions->RawPointer());
 			GLAllocateGLBuffer(m_CellColorVBO,
 				newColors->GetNumberOfValues() * sizeof(float),
-				newColors->GetRawPointer());
+				newColors->RawPointer());
 
 			m_CellVAO.vertexBuffer(GL_VBO_IDX_0, m_CellPositionVBO, 0, 3 * sizeof(float));
 			GLSetVertexAttrib(m_CellVAO, GL_LOCATION_IDX_0, GL_VBO_IDX_0, 3, GL_FLOAT,
@@ -195,9 +195,9 @@ private:
 
 	FloatArray::Pointer m_Positions{};
 	FloatArray::Pointer m_Colors{};
-	IndexArray::Pointer m_PointIndices{};
-	IndexArray::Pointer m_LineIndices{};
-	IndexArray::Pointer m_TriangleIndices{};
+	IdArray::Pointer m_PointIndices{};
+	IdArray::Pointer m_LineIndices{};
+	IdArray::Pointer m_TriangleIndices{};
 
 	bool m_Flag{ false };
 	bool m_UseColor{ false };
@@ -205,7 +205,7 @@ private:
 	int m_PointSize{ 4 };
 	int m_LineWidth{ 1 };
 
-	DataArray::Pointer m_ViewAttribute{};
+	ArrayObject::Pointer m_ViewAttribute{};
 	int m_ViewDemension{};
 };
 IGAME_NAMESPACE_END

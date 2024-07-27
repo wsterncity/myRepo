@@ -2,6 +2,7 @@
 #define iGameCellLinks_h
 
 #include "iGameObject.h"
+#include "iGameElementArray.h"
 
 IGAME_NAMESPACE_BEGIN
 class CellLinks : public Object {
@@ -11,120 +12,132 @@ public:
 
 	struct Link
 	{
-		uint8_t capcity;
-		uint8_t ncells;
-		igIndex* cells;
+		uint8_t capcity{0};
+		uint8_t size{0};
+		igIndex* pointer{nullptr};
 	};
 
-	void Allocate(igIndex numLinks, int ext = 0) {
-		Link linkInit = { 0, 0, nullptr };
-
+	void Allocate(const IGsize numLinks, int ext = 0) {
 		this->Initialize();
-		this->Size = numLinks;
-		this->Array = new Link[numLinks];
-
-		for (igIndex i = 0; i < numLinks; i++)
-		{
-			this->Array[i] = linkInit;
-		}
+		this->Resize(numLinks);
 	}
 
 	void Initialize() {
-		if (this->Array)
-		{
-			for (igIndex i = 0; i < this->Size; i++)
-			{
-				delete[] this->Array[i].cells;
-			}
-
-			delete[] this->Array;
-			this->Array = nullptr;
-		}
-		this->Size = 0;
-		this->MaxId = -1;
-		this->NumberOfLinks = 0;
-		this->NumberOfCells = 0;
+		m_Buffer->Initialize();
 	}
 
-	Link& GetLink(igIndex linkId) { return this->Array[linkId]; }
-
-	igIndex GetNcells(igIndex linkId) { return this->Array[linkId].ncells; }
-
-	igIndex* GetCells(igIndex linkId) { return this->Array[linkId].cells; }
-
-	igIndex InsertNextLink(int ncells = 0) {
-		if (++this->MaxId >= this->Size)
-		{
-			this->Resize(this->Size + 1);
-		}
-		if (ncells > 0) 
-		{
-			this->ResizeLink(this->MaxId, ncells);
-		}
-		return this->MaxId;
-	}
-
-	void DeleteLink(igIndex linkId) {
-		this->Array[linkId].ncells = this->Array[linkId].capcity = 0;
-		delete[] this->Array[linkId].cells;
-		this->Array[linkId].cells = nullptr;
-	}
-
-	void RemoveCellReference(igIndex cellId, igIndex linkId)
+	void Reserve(const IGsize _Newsize)
 	{
-		igIndex* cells = this->Array[linkId].cells;
-		igIndex ncells = this->Array[linkId].ncells;
+		m_Buffer->Reserve(_Newsize);
+	}
 
-		for (igIndex i = 0; i < ncells; i++)
+	void Resize(const IGsize _Newsize)
+	{
+		m_Buffer->Resize(_Newsize);
+	}
+
+	void SetNumberOfLinks(const IGsize _Newsize) {
+		this->Resize(_Newsize);
+	}
+
+	IGsize GetNumberOfLinks() const noexcept {
+		return m_Buffer->GetNumberOfElements();
+	}
+
+	void Squeeze()
+	{
+		m_Buffer->Squeeze();
+	}
+
+	void Reset()
+	{
+		m_Buffer->Reset();
+	}
+
+	Link& GetLink(const IGsize linkId) { return m_Buffer->ElementAt(linkId); }
+
+	int GetLinkSize(const IGsize linkId) { return m_Buffer->ElementAt(linkId).size; }
+
+	igIndex* GetLinkPointer(const IGsize linkId) { return m_Buffer->ElementAt(linkId).pointer; }
+	const igIndex* GetLinkPointer(const IGsize linkId) const { return m_Buffer->ElementAt(linkId).pointer; }
+
+	IGsize AddLink(uint8_t size = 0) {
+		m_Buffer->AddElement(Link{ 0,0,nullptr });
+		if (size > 0)
 		{
-			if (cells[i] == cellId)
+			this->ResizeLink(this->GetNumberOfLinks() - 1, size);
+		}
+		return this->GetNumberOfLinks() - 1;
+	}
+
+	void DeleteLink(const IGsize linkId) {
+		Link& link = this->GetLink(linkId);
+		link.size = link.capcity = 0;
+		if (link.pointer)
+		{
+			delete[] link.pointer;
+		}
+		link.pointer = nullptr;
+	}
+
+	void RemoveReference(const IGsize cellId, const IGsize linkId)
+	{
+		Link& link = this->GetLink(linkId);
+
+		for (int i = 0; i < link.size; i++)
+		{
+			if (link.pointer[i] == cellId)
 			{
-				for (igIndex j = i; j < (ncells - 1); j++)
+				for (int j = i; j < (link.size - 1); j++)
 				{
-					cells[j] = cells[j + 1];
+					link.pointer[j] = link.pointer[j + 1];
 				}
-				this->Array[linkId].ncells--;
+				link.size--;
 				break;
 			}
 		}
 	}
 
-	void AddCellReference(igIndex cellId, igIndex linkId)
+	void AddReference(const IGsize cellId, const IGsize linkId)
 	{
-		if (this->Array[linkId].ncells >= this->Array[linkId].capcity) {
-			this->ResizeLink(linkId, this->Array[linkId].ncells);
+		Link& link = this->GetLink(linkId);
+		if (link.size >= link.capcity) {
+			this->ResizeLink(linkId, 2 * link.size + 1);
 		}
-		this->Array[linkId].cells[this->Array[linkId].ncells++] = cellId;
+		link.pointer[link.size++] = cellId;
 	}
 
-	void ResizeLink(igIndex linkId, int size)
+	void ResizeLink(const IGsize linkId, uint8_t _Newsize)
 	{
-		if (size < 1) size = 1;
-		igIndex newSize = this->Array[linkId].ncells + size;
-		igIndex* cells = new igIndex[newSize];
-		memcpy(cells, this->Array[linkId].cells,
-			static_cast<size_t>(this->Array[linkId].ncells) * sizeof(igIndex));
-		delete[] this->Array[linkId].cells;
-		this->Array[linkId].cells = cells;
-		this->Array[linkId].capcity = newSize;
-	}
+		Link& link = this->GetLink(linkId);
+		igIndex* cells = nullptr;
 
-	void Squeeze()
-	{
-		this->Resize(this->MaxId + 1);
-	}
+		if ((cells = new igIndex[_Newsize]) == nullptr) {
+			return;
+		}
 
-	void Reset() 
-	{
-		this->MaxId = -1;
-	}
+		memcpy(cells, link.pointer, static_cast<size_t>(
+			_Newsize < link.size ? _Newsize : link.size) * sizeof(igIndex));
 
-	void IncrementLinkCount(igIndex linkId) { this->Array[linkId].ncells++; }
-
-	void AllocateLinks(igIndex n) {
-		for (igIndex i = 0; i < n; ++i)
+		if (link.pointer)
 		{
-			this->Array[i].cells = new igIndex[this->Array[i].ncells];
+			delete[] link.pointer;
+		}
+		
+		link.pointer = cells;
+		link.capcity = _Newsize;
+		if (link.size > link.capcity) {
+			link.size = link.capcity;
+		}
+	}
+
+	void IncrementLinkSize(const IGsize linkId) { this->GetLink(linkId).size++; }
+
+	void AllocateLinks(const IGsize n) {
+		for (int i = 0; i < n; ++i)
+		{
+			Link& link = GetLink(i);
+			link.pointer = new igIndex[link.size];
 		}
 	}
 
@@ -132,50 +145,7 @@ protected:
 	CellLinks() {};
 	~CellLinks() override {};
 
-	Link* Array;              // pointer to data
-	igIndex Size;             // allocated size of data
-	igIndex MaxId;            // maximum index inserted thus far
-
-	igIndex NumberOfLinks;
-	igIndex NumberOfCells;
-
-	Link* Resize(igIndex sz) 
-	{
-		igIndex i;
-		Link* newArray;
-		igIndex newSize;
-		Link linkInit = { 0, 0, nullptr };
-
-		if (sz > this->Size)
-		{
-			newSize = this->Size + sz;
-		}
-		else if (sz == this->Size)
-		{
-			return this->Array;
-		}
-		else {
-			newSize = sz;
-		}
-
-		newArray = new Link[newSize];
-
-		for (i = 0; i < sz && i < this->Size; i++)
-		{
-			newArray[i] = this->Array[i];
-		}
-
-		for (i = this->Size; i < newSize; i++)
-		{
-			newArray[i] = linkInit;
-		}
-
-		this->Size = newSize;
-		delete[] this->Array;
-		this->Array = newArray;
-
-		return this->Array;
-	}
+	ElementArray<Link>::Pointer m_Buffer{};
 };
 IGAME_NAMESPACE_END
 #endif

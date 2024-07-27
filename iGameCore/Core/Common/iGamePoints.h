@@ -3,8 +3,7 @@
 
 #include "iGameObject.h"
 #include "iGameVector.h"
-#include "iGameDataBuffer.h"
-#include "iGameDataArray.h"
+#include "iGameFlatArray.h"
 
 IGAME_NAMESPACE_BEGIN
 
@@ -14,99 +13,44 @@ public:
 	I_OBJECT(Points);
 	static Pointer New() { return new Points; }
 
-	void Initialize()
-	{
-		this->InitializeMemory();
-		this->NumberOfPoints = 0;
-		this->Size = 0;
-	}
+	void Initialize();
 
-	bool Allocate(igIndex numPoints, int strategy = 0)
-	{
-		return this->AllocateInternal(numPoints * 3, 0);
-	}
+	void Reserve(const IGsize _NewPointsNum);
 
-	igIndex GetNumberOfPoints() const noexcept { return this->NumberOfPoints; }
+	void Resize(const IGsize _NewPointsNum);
 
-	void GetPoint(igIndex ptId, Vector3d& p);
-	void GetPoint(igIndex ptId, Vector3f& p);
-	Point& GetPoint(igIndex ptId);
-	const Point& GetPoint(igIndex ptId) const;
+	void Reset();
 
-	void SetPoint(igIndex ptId, const Vector3d& p);
-	void SetPoint(igIndex ptId, const Vector3f& p);
-	void SetPoint(igIndex ptId, float x, float y, float z);
+	void Squeeze();
 
-	igIndex AddPoint(const Vector3d& p);
-	igIndex AddPoint(const Vector3f& p);
-	igIndex AddPoint(float x, float y, float z);
-	igIndex AddPoint(float p[3]);
-	igIndex AddPoint(double p[3]);
+	void SetNumberOfPoints(const IGsize _NewPointsNum);
 
-	void SetNumberOfPoints(const igIndex numPoints)
-	{
-		this->AllocateInternal(numPoints * 3, numPoints);
-	}
+	IGsize GetNumberOfPoints() const noexcept;
 
-	bool Resize(const igIndex numPoints);
+	void GetPoint(const IGsize ptId, Vector3d& p);
+	void GetPoint(const IGsize ptId, Vector3f& p);
+	Point& GetPoint(const IGsize ptId);
+	const Point& GetPoint(const IGsize ptId) const;
 
-	/**
-	 * Reset to an empty state but retain previously allocated memory.
-	 */
-	void Reset() 
-	{
-		this->NumberOfPoints = 0;
-	}
-	
-	/**
-	 * Free any unused memory.
-	 */
-	void Squeeze() { this->Resize(this->NumberOfPoints); }
-	
-	void SetArray(float* ps, int pNum) {
-		Buffer->Copy(ps, pNum * 3);
-		this->NumberOfPoints = pNum;
-	}
+	void SetPoint(const IGsize ptId, const Vector3d& p);
+	void SetPoint(const IGsize ptId, const Vector3f& p);
+	void SetPoint(const IGsize ptId, float x, float y, float z);
 
-	FloatArray::Pointer ConvertToDataArray() 
-	{
-		FloatArray::Pointer ConvertedArray = FloatArray::New();
-		ConvertedArray->SetArray(this->Buffer, 3, this->NumberOfPoints * 3, this->Size);
-		return ConvertedArray;
-	}
+	IGsize AddPoint(const Vector3d& p);
+	IGsize AddPoint(const Vector3f& p);
+	IGsize AddPoint(float x, float y, float z);
+	IGsize AddPoint(float p[3]);
+	IGsize AddPoint(double p[3]);
 
-	float* GetRawPointer() { return this->Buffer->Data; }
+	FloatArray::Pointer ConvertToArray();
+
+	float* RawPointer();
 
 protected:
-	Points() 
-	{
-		this->Buffer = DataBuffer<float>::New();
-	}
+	Points();
 	~Points() override = default;
 
-	bool AllocateInternal(igIndex sz, igIndex numberOfPoints)
-	{
-		if (sz > this->Size)
-		{
-			this->InitializeMemory();
-			this->Size = (sz > 0 ? sz : 1);
-			this->Buffer->Allocate(this->Size);
-		}
-		this->NumberOfPoints = numberOfPoints;
-		return true;
-	}
-
-	/**
-	 * Release memory.
-	 */
-	void InitializeMemory()
-	{
-		this->Buffer->Initialize();
-	}
-
-	DataBuffer<float>::Pointer Buffer{};
-	igIndex NumberOfPoints{ 0 };
-	igIndex Size{ 0 };
+	FloatArray::Pointer m_Buffer{};
 };
 
 IGAME_NAMESPACE_END

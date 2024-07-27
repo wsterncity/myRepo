@@ -34,7 +34,7 @@ void PointSet::ConvertToDrawableData()
 		return;
 	}
 
-	m_Positions = m_Points->ConvertToDataArray();
+	m_Positions = m_Points->ConvertToArray();
 
 	m_PointVAO.destroy();
 	m_PositionVBO.destroy();
@@ -48,7 +48,7 @@ void PointSet::ConvertToDrawableData()
 
 	GLAllocateGLBuffer(m_PositionVBO,
 		m_Positions->GetNumberOfValues() * sizeof(float),
-		m_Positions->GetRawPointer());
+		m_Positions->RawPointer());
 
 	m_PointVAO.vertexBuffer(GL_VBO_IDX_0, m_PositionVBO, 0, 3 * sizeof(float));
 	GLSetVertexAttrib(m_PointVAO, GL_LOCATION_IDX_0, GL_VBO_IDX_0, 3, GL_FLOAT,

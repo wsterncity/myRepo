@@ -1,160 +1,101 @@
 #include "iGamePoints.h"
 
 IGAME_NAMESPACE_BEGIN
+void Points::Initialize() {
+	m_Buffer->Initialize();
+}
 
-void Points::GetPoint(igIndex ptId, Vector3d& p)
-{
-	float* ptr = this->Buffer->Data + ptId * 3;
-	for (int i = 0; i < 3; i++) {
-		p[i] = ptr[i];
-	}
+void Points::Reserve(const IGsize _NewPointsNum) {
+	m_Buffer->Reserve(_NewPointsNum);
 }
-void Points::GetPoint(igIndex ptId, Vector3f& p)
-{
-	float* ptr = this->Buffer->Data + ptId * 3;
-	for (int i = 0; i < 3; i++) {
-		p[i] = ptr[i];
-	}
+
+void Points::Resize(const IGsize _NewPointsNum) {
+	m_Buffer->Resize(_NewPointsNum);
 }
-Point& Points::GetPoint(igIndex ptId) {
-	float* ptr = this->Buffer->Data + ptId * 3;
+
+void Points::Reset() {
+	m_Buffer->Reset();
+}
+
+void Points::Squeeze() {
+	m_Buffer->Squeeze();
+}
+
+void Points::SetNumberOfPoints(const IGsize _NewPointsNum)
+{
+	this->Resize(_NewPointsNum);
+}
+
+IGsize Points::GetNumberOfPoints() const noexcept { return m_Buffer->GetNumberOfElements(); }
+
+void Points::GetPoint(const IGsize ptId, Vector3d& p)
+{
+	m_Buffer->GetElement(ptId, p.pointer());
+}
+void Points::GetPoint(const IGsize ptId, Vector3f& p)
+{
+	m_Buffer->GetElement(ptId, p.pointer());
+}
+Point& Points::GetPoint(const IGsize ptId)
+{
+	float* ptr = m_Buffer->RawPointer() + ptId * 3;
 	Point* p = reinterpret_cast<Point*>(ptr);
 	return *p;
 }
-const Point& Points::GetPoint(igIndex ptId) const {
-	float* ptr = this->Buffer->Data + ptId * 3;
-	const Point* p = reinterpret_cast<const Point*>(ptr);
-	return *p;
-}
-
-void Points::SetPoint(igIndex ptId, const Vector3d& p)
+const Point& Points::GetPoint(const IGsize ptId) const
 {
-	float* ptr = this->Buffer->Data + ptId * 3;
-	for (int i = 0; i < 3; i++)
-	{
-		ptr[i] = p[i];
-	}
+	return this->GetPoint(ptId);
 }
-void Points::SetPoint(igIndex ptId, const Vector3f& p)
+
+void Points::SetPoint(const IGsize ptId, const Vector3d& p)
 {
-	float* ptr = this->Buffer->Data + ptId * 3;
-	for (int i = 0; i < 3; i++)
-	{
-		ptr[i] = p[i];
-	}
+	Vector3f pp(p);
+	m_Buffer->SetElement(ptId, pp);
 }
-void Points::SetPoint(igIndex ptId, float x, float y, float z) {
-	float* ptr = this->Buffer->Data + ptId * 3;
-	ptr[0] = x;
-	ptr[1] = y;
-	ptr[2] = z;
-}
-
-igIndex Points::AddPoint(const Vector3d& p)
+void Points::SetPoint(const IGsize ptId, const Vector3f& p)
 {
-	if (this->NumberOfPoints * 3 >= this->Size)
-	{
-		if (!this->Resize(2 * this->NumberOfPoints + 1)) // grow by factor of 2
-		{
-			return this->NumberOfPoints - 1;
-		}
-	}
-
-	float* ptr = this->Buffer->Data + this->NumberOfPoints * 3;
-	for (int i = 0; i < 3; i++) {
-		ptr[i] = p[i];
-	}
-	return this->NumberOfPoints++;
+	m_Buffer->SetElement(ptId, p.pointer());
 }
-
-igIndex Points::AddPoint(const Vector3f& p)
+void Points::SetPoint(const IGsize ptId, float x, float y, float z)
 {
-	if (this->NumberOfPoints * 3 >= this->Size)
-	{
-		if (!this->Resize(2 * this->NumberOfPoints + 1)) // grow by factor of 2
-		{
-			return this->NumberOfPoints - 1;
-		}
-	}
-
-	float* ptr = this->Buffer->Data + this->NumberOfPoints * 3;
-	for (int i = 0; i < 3; i++) {
-		ptr[i] = p[i];
-	}
-	return this->NumberOfPoints++;
+	Vector3f p(x, y, z);
+	m_Buffer->SetElement(ptId, p);
 }
 
-igIndex Points::AddPoint(float x, float y, float z)
+IGsize Points::AddPoint(const Vector3d& p)
 {
-	if (this->NumberOfPoints * 3 >= this->Size)
-	{
-		if (!this->Resize(2 * this->NumberOfPoints + 1)) // grow by factor of 2
-		{
-			return this->NumberOfPoints - 1;
-		}
-	}
-
-	float* ptr = this->Buffer->Data + this->NumberOfPoints * 3;
-	ptr[0] = x;
-	ptr[1] = y;
-	ptr[2] = z;
-	return this->NumberOfPoints++;
+	Vector3f pp(p);
+	return m_Buffer->AddElement(pp);
 }
-
-igIndex Points::AddPoint(float p[3])
+IGsize Points::AddPoint(const Vector3f& p)
 {
-	if (this->NumberOfPoints * 3 >= this->Size)
-	{
-		if (!this->Resize(2 * this->NumberOfPoints + 1)) // grow by factor of 2
-		{
-			return this->NumberOfPoints - 1;
-		}
-	}
-
-	float* ptr = this->Buffer->Data + this->NumberOfPoints * 3;
-	for (int i = 0; i < 3; i++) {
-		ptr[i] = p[i];
-	}
-	return this->NumberOfPoints++;
+	return m_Buffer->AddElement(p);
 }
-
-igIndex Points::AddPoint(double p[3]) {
-	if (this->NumberOfPoints * 3 >= this->Size)
-	{
-		if (!this->Resize(2 * this->NumberOfPoints + 1)) // grow by factor of 2
-		{
-			return this->NumberOfPoints - 1;
-		}
-	}
-	float* ptr = this->Buffer->Data + this->NumberOfPoints * 3;
-	for (int i = 0; i < 3; i++) {
-		ptr[i] = p[i];
-	}
-	return this->NumberOfPoints++;
-}
-bool Points::Resize(const igIndex numPoints)
+IGsize Points::AddPoint(float x, float y, float z)
 {
-	igIndex newSize = numPoints * 3;
+	Vector3f p(x, y, z);
+	return m_Buffer->AddElement(p);
+}
+IGsize Points::AddPoint(float p[3])
+{
+	return m_Buffer->AddElement(p);
+}
+IGsize Points::AddPoint(double p[3])
+{
+	float pp[3]{ (float)p[0], (float)p[1] ,(float)p[2] };
+	return m_Buffer->AddElement(pp);
+}
 
-	if (newSize == this->Size)
-	{
-		return true;
-	}
+FloatArray::Pointer Points::ConvertToArray()
+{
+	return m_Buffer;
+}
 
-	if (newSize <= 0)
-	{
-		this->Initialize();
-		return true;
-	}
+float* Points::RawPointer() { return m_Buffer->RawPointer(); }
 
-	this->Buffer->Resize(newSize);
-
-	if (this->NumberOfPoints > numPoints)
-	{
-		this->NumberOfPoints = numPoints;
-	}
-
-	this->Size = newSize;
-	return true;
+Points::Points()
+{
+	m_Buffer = FloatArray::New();
+	m_Buffer->SetElementSize(3);
 }
 IGAME_NAMESPACE_END

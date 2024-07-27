@@ -14,18 +14,17 @@ public:
     using ConstIterator = typename VectorType::const_iterator;
     using Reference = typename VectorType::reference;
     using ConstReference = typename VectorType::const_reference;
-    using size_type = typename VectorType::size_type;
 
     void Initialize() {
         this->VectorType::swap(std::vector<TValue>());
     }
 
-    void Reserve(const size_type _NewElementNum) {
-        this->VectorType::reserve(_NewElementNum * ElementSize);
+    void Reserve(const IGsize _NewElementNum) {
+        this->VectorType::reserve(_NewElementNum * m_ElementSize);
     }
 
-    void Resize(const size_type _NewElementNum) {
-        this->VectorType::resize(_NewElementNum * ElementSize);
+    void Resize(const IGsize _NewElementNum) {
+        this->VectorType::resize(_NewElementNum * m_ElementSize);
     }
 
     void Reset() {
@@ -36,97 +35,105 @@ public:
         this->Resize(GetNumberOfElements());
     }
 
-    void SetElementSize(const int _Newsize) {
+    void SetElementSize(const int _Newsize) override {
         assert(_Newsize > 0);
         m_ElementSize = _Newsize;
     }
-
-    size_type GetNumberOfValues() const {
+    int GetElementSize() override {
+        return m_ElementSize;
+    }
+    IGsize GetNumberOfValues() const override {
         return this->VectorType::size();
     }
-
-    size_type GetNumberOfElements() const {
+    IGsize GetNumberOfElements() const override {
         return this->GetNumberOfValues() / m_ElementSize;
     }
+    IGsize GetCapacity() const {
+        return this->VectorType::capacity();
+    }
 
     template<int dimension_t>
-    size_type InsertToBack(Vector<TValue, dimension_t>&& _Element) 
+    IGsize AddElement(Vector<TValue, dimension_t>&& _Element) 
     {
-        assert(dimension_t >= ElementSize);
-        size_type index = this->GetNumberOfElements();
-        if (index * m_ElementSize >= this->GetNumberOfValues())
+        assert(dimension_t >= m_ElementSize);
+        IGsize index = this->GetNumberOfElements();
+        if (index * m_ElementSize >= this->GetCapacity())
         {
-            this->Resize(2 * index + 1)
+            this->Reserve(2 * index + 1);
         }
 
-        TValue* data = this->RawPointer(index);
         for (int i = 0; i < m_ElementSize; ++i) {
-            data[i] = _Element[i];
+            this->VectorType::push_back(_Element[i]);
         }
         return index;
     }
     template<int dimension_t>
-    size_type InsertToBack(const Vector<TValue, dimension_t>& _Element)
+    IGsize AddElement(const Vector<TValue, dimension_t>& _Element)
     {
-        assert(dimension_t >= ElementSize);
-        size_type index = this->GetNumberOfElements();
-        if (index * m_ElementSize >= this->GetNumberOfValues())
+        assert(dimension_t >= m_ElementSize);
+        IGsize index = this->GetNumberOfElements();
+        if (index * m_ElementSize >= this->GetCapacity())
         {
-            this->Resize(2 * index + 1)
+            this->Reserve(2 * index + 1);
         }
 
-        TValue* data = this->RawPointer(index);
         for (int i = 0; i < m_ElementSize; ++i) {
-            data[i] = _Element[i];
+            this->VectorType::push_back(_Element[i]);
         }
         return index;
     }
-    size_type InsertToBack(const std::vector<TValue>& _Element)
+    IGsize AddElement(const std::vector<TValue>& _Element)
     {
         assert(_Element.size() >= ElementSize);
-        size_type index = this->GetNumberOfElements();
-        if (index * m_ElementSize >= this->GetNumberOfValues())
+        IGsize index = this->GetNumberOfElements();
+        if (index * m_ElementSize >= this->GetCapacity())
         {
-            this->Resize(2 * index + 1)
+            this->Reserve(2 * index + 1);
         }
 
-        TValue* data = this->RawPointer(index);
         for (int i = 0; i < m_ElementSize; ++i) {
-            data[i] = _Element[i];
+            this->VectorType::push_back(_Element[i]);
         }
         return index;
     }
-    size_type InsertToBack(TValue* _Element)
+    IGsize AddElement(TValue* _Element)
     {
-        size_type index = this->GetNumberOfElements();
-        if (index * m_ElementSize >= this->GetNumberOfValues())
+        IGsize index = this->GetNumberOfElements();
+        if (index * m_ElementSize >= this->GetCapacity())
         {
-            this->Resize(2 * index + 1)
+            this->Reserve(2 * index + 1);
         }
 
-        TValue* data = this->RawPointer(index);
         for (int i = 0; i < m_ElementSize; ++i) {
-            data[i] = _Element[i];
+            this->VectorType::push_back(_Element[i]);
         }
         return index;
     }
+    IGsize AddElement2(TValue val0, TValue val1) {
+        TValue value[2]{ val0, val1 };
+        return this->AddElement(value);
+    }
+    IGsize AddElement3(TValue val0, TValue val1, TValue val2) {
+        TValue value[3]{ val0, val1, val2 };
+        return this->AddElement(value);
+    }
 
-    void ElementAt(const size_type _Pos, TValue*& _Element) {
+    void ElementAt(const IGsize _Pos, TValue*& _Element) {
         assert(0 <= _Pos && _Pos < this->GetNumberOfElements());
         _Element = this->RawPointer(_Pos);
     }
-    void ElementAt(const size_type _Pos, const TValue*& _Element) const {
+    void ElementAt(const IGsize _Pos, const TValue*& _Element) const {
         assert(0 <= _Pos && _Pos < this->GetNumberOfElements());
         _Element = this->RawPointer(_Pos);
     }
-    void GetElement(const size_type _Pos, TValue* _Element) const {
+    void ElementAt(const IGsize _Pos, TValue* _Element) {
         assert(0 <= _Pos && _Pos < this->GetNumberOfElements());
         TValue* data = this->RawPointer(_Pos);
         for (int i = 0; i < m_ElementSize; ++i) {
             _Element[i] = data[i];
         }
     }
-    void GetElement(const size_type _Pos, std::vector<TValue>& _Element) const {
+    void ElementAt(const IGsize _Pos, std::vector<TValue>& _Element) const {
         assert(0 <= _Pos && _Pos < this->GetNumberOfElements());
         _Element.clear();
         TValue* data = this->RawPointer(_Pos);
@@ -134,7 +141,7 @@ public:
             _Element.push_back(data[i]);
         }
     }
-    const std::vector<TValue>& GetElement(const size_type _Pos) {
+    const std::vector<TValue>& GetElement(const IGsize _Pos) {
         assert(0 <= _Pos && _Pos < this->GetNumberOfElements());
         m_Element.clear();
         TValue* data = this->RawPointer(_Pos);
@@ -145,24 +152,24 @@ public:
     }
 
     template<int dimension_t>
-    void SetElement(const size_type _Pos, Vector<TValue, dimension_t>&& _Element) {
+    void SetElement(const IGsize _Pos, Vector<TValue, dimension_t>&& _Element) {
         assert(0 <= _Pos && _Pos < this->GetNumberOfElements());
-        assert(dimension_t >= ElementSize);
+        assert(dimension_t >= m_ElementSize);
         TValue* data = this->RawPointer(_Pos);
         for (int i = 0; i < m_ElementSize; ++i) {
             data[i] = _Element[i];
         }
     }
     template<int dimension_t>
-    void SetElement(const size_type _Pos, const Vector<TValue, dimension_t>& _Element) {
+    void SetElement(const IGsize _Pos, const Vector<TValue, dimension_t>& _Element) {
         assert(0 <= _Pos && _Pos < this->GetNumberOfElements());
-        assert(dimension_t >= ElementSize);
+        assert(dimension_t >= m_ElementSize);
         TValue* data = this->RawPointer(_Pos);
         for (int i = 0; i < m_ElementSize; ++i) {
             data[i] = _Element[i];
         }
     }
-    void SetElement(const size_type _Pos, const std::vector<TValue>& _Element) {
+    void SetElement(const IGsize _Pos, const std::vector<TValue>& _Element) {
         assert(0 <= _Pos && _Pos < this->GetNumberOfElements());
         assert(_Element.size() >= ElementSize);
         TValue* data = this->RawPointer(_Pos);
@@ -170,7 +177,14 @@ public:
             data[i] = _Element[i];
         }
     }
-    void SetElement(const size_type _Pos, TValue* _Element) {
+    void SetElement(const IGsize _Pos, TValue* _Element) {
+        assert(0 <= _Pos && _Pos < this->GetNumberOfElements());
+        TValue* data = this->RawPointer(_Pos);
+        for (int i = 0; i < m_ElementSize; ++i) {
+            data[i] = _Element[i];
+        }
+    }
+    void SetElement(const IGsize _Pos, const TValue* _Element) {
         assert(0 <= _Pos && _Pos < this->GetNumberOfElements());
         TValue* data = this->RawPointer(_Pos);
         for (int i = 0; i < m_ElementSize; ++i) {
@@ -178,46 +192,74 @@ public:
         }
     }
 
-    void InsertToBack(TValue&& _Value) {
+    IGsize AddValue(TValue _Value)
+    {
         this->VectorType::push_back(_Value);
+        return this->VectorType::size();
     }
-    void InsertToBack(const TValue& _Value) {
-        this->VectorType::push_back(_Value);
-    }
-    TValue GetValue(const size_type _Pos) {
+    Reference ValueAt(const IGsize _Pos) {
         return this->VectorType::operator[](_Pos);
     }
-    Reference ValueAt(const size_type _Pos) {
-        return this->VectorType::operator[](_Pos);
-    }
-    ConstReference ValueAt(const size_type _Pos) const {
+    ConstReference ValueAt(const IGsize _Pos) const {
         return this->SuperClass::operator[](_Pos);
     }
-    void SetValue(const size_type _Pos, TValue&& _Value) {
-        this->VectorType::operator[](_Pos) = _Value;
+
+    bool SetArray(const std::vector<TValue>& _Buffer, int _ElementSize) {
+        if (_ElementSize < 1)
+        {
+            return false;
+        }
+        this->VectorType::swap(_Buffer);
+        m_ElementSize = _ElementSize;
+        return true;
     }
-    void SetValue(const size_type _Pos, const TValue& _Value) {
-        this->VectorType::operator[](_Pos) = _Value;
-    }
+    bool SetArray(TValue* _DataBuffer, int _ElementSize,
+        const IGsize _Size, const IGsize _Capacity)
+	{
+		if (_DataBuffer == nullptr || _ElementSize < 1 || _Size < 0 || _Capacity < 0)
+		{
+			return false;
+		}
 
+        std::vector<TValue> vec;
+        vec.reserve(_Capacity);
+        vec.assign(_DataBuffer, _DataBuffer + _Size);
+        
+        this->VectorType::swap(vec);
+		m_ElementSize = _ElementSize;
+		return true;
+	}
 
-
-
-    double GetValue(const igIndex _Pos) override {
+    double GetValue(const IGsize _Pos) override {
         assert(0 <= _Pos && _Pos < this->GetNumberOfValues());
         return static_cast<double>(this->VectorType::operator[](_Pos));
     }
-    void SetValue(igIndex _Pos, double _Value) override {
+    void SetValue(IGsize _Pos, double _Value) override {
         this->VectorType::operator[](_Pos) = static_cast<TValue>(_Value);
     }
-    void GetElement(const igIndex _Pos, double* _Element) override {
+    void GetElement(const IGsize _Pos, float* _Element) override {
+        assert(0 <= _Pos && _Pos < this->GetNumberOfElements());
+        TValue* data = this->RawPointer(_Pos);
+        for (int i = 0; i < m_ElementSize; ++i) {
+            _Element[i] = static_cast<float>(data[i]);
+        }
+    }
+    void GetElement(const IGsize _Pos, double* _Element) override {
         assert(0 <= _Pos && _Pos < this->GetNumberOfElements());
         TValue* data = this->RawPointer(_Pos);
         for (int i = 0; i < m_ElementSize; ++i) {
             _Element[i] = static_cast<double>(data[i]);
         }
     }
-    void GetElement(const igIndex _Pos, std::vector<double>& _Element) override {
+    void GetElement(const IGsize _Pos, std::vector<float>& _Element) override {
+        assert(0 <= _Pos && _Pos < this->GetNumberOfElements());
+        _Element.clear();
+        TValue* data = this->RawPointer(_Pos);
+        for (int i = 0; i < m_ElementSize; ++i) {
+            _Element.push_back(static_cast<float>(data[i]));
+        }
+    }
+    void GetElement(const IGsize _Pos, std::vector<double>& _Element) override {
         assert(0 <= _Pos && _Pos < this->GetNumberOfElements());
         _Element.clear();
         TValue* data = this->RawPointer(_Pos);
@@ -225,15 +267,13 @@ public:
             _Element.push_back(static_cast<double>(data[i]));
         }
     }
-    
-    int GetElementSize(const igIndex _Pos) override {
-        return m_ElementSize;
-    }
 
-    TValue* RawPointer(const size_type _Pos = 0) {
+    TValue* RawPointer(const IGsize _Pos = 0) {
         return this->VectorType::data() + _Pos * m_ElementSize;
     }
-
+    const TValue* RawPointer(const IGsize _Pos = 0) const {
+        return this->VectorType::data() + _Pos * m_ElementSize;
+    }
 protected:
     FlatArray() = default;
     ~FlatArray() override = default;
@@ -243,35 +283,30 @@ protected:
     std::vector<TValue> m_Element{};
 };
 
-class IntArray2 : public FlatArray<int> {
-public:
-    I_OBJECT(IntArray2);
-    static Pointer New() { return new IntArray2; }
-
-protected:
-    IntArray2() = default;
-    ~IntArray2() override = default;
+#define iGameNewDataArrayMacro(TypeName, ValueType)              \
+class TypeName : public FlatArray<ValueType> {                   \
+public:                                                          \
+	I_OBJECT(TypeName);                                          \
+	static Pointer New() { return new TypeName; }                \
+protected:														 \
+	TypeName() = default;                                        \
+	~TypeName() override = default;                              \
 };
 
-class FloatArray2 : public FlatArray<float> {
-public:
-    I_OBJECT(FloatArray2);
-    static Pointer New() { return new FloatArray2; }
+iGameNewDataArrayMacro(FloatArray, float)
+iGameNewDataArrayMacro(DoubleArray, double)
 
-protected:
-    FloatArray2() = default;
-    ~FloatArray2() override = default;
-};
+iGameNewDataArrayMacro(IntArray, int)
+iGameNewDataArrayMacro(UnsignedIntArray, unsigned int)
 
-class DoubleArray2 : public FlatArray<double> {
-public:
-    I_OBJECT(DoubleArray2);
-    static Pointer New() { return new DoubleArray2; }
+iGameNewDataArrayMacro(CharArray, char)
+iGameNewDataArrayMacro(UnsignedCharArray, unsigned char)
 
-protected:
-    DoubleArray2() = default;
-    ~DoubleArray2() override = default;
-};
+iGameNewDataArrayMacro(ShortArray, short)
+iGameNewDataArrayMacro(UnsignedShortArray, unsigned short)
+
+iGameNewDataArrayMacro(LongLongArray, long long)
+iGameNewDataArrayMacro(UnsignedLongLongArray, unsigned long long)
 
 IGAME_NAMESPACE_END
 #endif

@@ -7,7 +7,7 @@ bool OFFReader::Parsing()
 	int FaceNum = 0;
 	int LineNum = 0;
 	auto& left = this->IS;
-	const char* right = left + m_Buffer->GetNumberOfValues() * m_Buffer->GetDataTypeSize();
+	const char* right = left + m_Buffer->GetNumberOfValues();
 
 	while (left < right)
 	{
@@ -96,7 +96,7 @@ const char* OFFReader::ReadFaces(const char* left, int FaceNum)
 		for (int j = 0; j < Component; j++) {
 			left = mAtoi(left, vhs[j]) + 1;
 		}
-		Faces->InsertNextCell(vhs, Component);
+		Faces->AddCellIds(vhs, Component);
 		left = lineEnd + 1;
 	}
 	return left;

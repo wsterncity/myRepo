@@ -1,7 +1,7 @@
 ﻿#ifndef iGameScalarsToColors_h
 #define iGameScalarsToColors_h
 
-#include "iGameDataArray.h"
+#include "iGameFlatArray.h"
 #include "iGameColorMap.h"
 
 IGAME_NAMESPACE_BEGIN
@@ -13,18 +13,18 @@ public:
 	
 	/*Get the range of scaled data*/
 	virtual float* GetRange();
-	virtual void InitRange(DataArray::Pointer input) {
+	virtual void InitRange(ArrayObject::Pointer input) {
 		this->SetVectorModeToMagnitude();
 		InitRange(input, 0, -1);
 	}
 	/*Init the range of scaled data,the data is input,the component is the scaled component*/
-	virtual void InitRange(DataArray::Pointer input, int component) {
+	virtual void InitRange(ArrayObject::Pointer input, int component) {
 		this->SetVectorModeToComponent();
 		InitRange(input, component, 1);
 	}
 	/*Init the range of scaled data,the data is input,
 	the component is the scaled component,the size is the length to scale*/
-	virtual void InitRange(DataArray::Pointer input, int component, int size);
+	virtual void InitRange(ArrayObject::Pointer input, int component, int size);
 	/*Set the range of scaled data*/
 	virtual void SetRange(float min, float max);
 	virtual void SetRange(const float rng[2]) { this->SetRange(rng[0], rng[1]); }
@@ -61,8 +61,8 @@ public:
 	3 means the rgb, 4 means the rgba, 1 means the Grayscale
 	*/
 	virtual FloatArray::Pointer MapScalars(
-		DataArray::Pointer scalars, int component, int outputFormat = 3);
-	virtual FloatArray::Pointer MapScalars(DataArray::Pointer scalars) {
+		ArrayObject::Pointer scalars, int component, int outputFormat = 3);
+	virtual FloatArray::Pointer MapScalars(ArrayObject::Pointer scalars) {
 		return MapScalars(scalars, -1, 3);
 	}
 	/*Map scalars, return the color array with unsigned char type,
@@ -92,9 +92,9 @@ public:
 	/*vectorComponent means the start dimension,
 	vectorSize means the size to compute,for example,
 	vectorComponent=0，vectorSize=1 means the first dimension to compute color*/
-	void MapVectorsThroughTable(DataArray::Pointer input, FloatArray::Pointer output, int outputFormat,
+	void MapVectorsThroughTable(ArrayObject::Pointer input, FloatArray::Pointer output, int outputFormat,
 		int vectorComponent, int vectorSize);
-	void MapVectorsThroughTable(DataArray::Pointer input, FloatArray::Pointer output, int outputFormat) {
+	void MapVectorsThroughTable(ArrayObject::Pointer input, FloatArray::Pointer output, int outputFormat) {
 		this->MapVectorsThroughTable(input, output, outputFormat, -1, -1);
 	}
 	/*change real rgb (range 0.0 to 1.0)to unsigned char type (0,255)*/

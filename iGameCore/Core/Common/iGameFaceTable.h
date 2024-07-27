@@ -3,7 +3,7 @@
 
 #include "iGameObject.h"
 #include "iGameCellArray.h"
-#include "iGameIdList.h"
+#include "iGameElementArray.h"
 
 IGAME_NAMESPACE_BEGIN
 class FaceTable : public Object {
@@ -37,7 +37,7 @@ public:
             igIndex index_sum = this->Array[index]->GetId(i + 1); // 该面的顶点索引和
             if (sum == index_sum)                                 // 只有当顶点索引和相同时，才进行下一步检查
             {
-                this->Faces->GetCellAtId(idx, f);                 // 获取该面
+                this->Faces->GetCellIds(idx, f);                  // 获取该面
 
                 // 另一种方式，遍历size次，看有几个索引相同
                 int c = 0;
@@ -79,7 +79,7 @@ public:
 
         if (this->Array[index] == nullptr)
         {
-            this->Array[index] = IdList::New();
+            this->Array[index] = IdArray::New();
             this->Array[index]->Resize(12);
         }
 
@@ -89,7 +89,7 @@ public:
             //Error("sum exceeds the maximum int range!")
         }
         this->Array[index]->AddId(sum); 
-        this->Faces->InsertNextCell(face, size);
+        this->Faces->AddCellIds(face, size);
         this->NumberOfFaces++;
     }
 
@@ -112,7 +112,7 @@ protected:
         this->Size = newSize;
     }
 
-    std::vector<IdList::Pointer> Array;
+    std::vector<IdArray::Pointer> Array;
     igIndex Size;
 
     CellArray::Pointer Faces;

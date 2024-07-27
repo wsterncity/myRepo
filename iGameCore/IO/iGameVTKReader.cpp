@@ -11,8 +11,8 @@ bool VTKReader::Parsing()
 	/*iGameCellArray* cells = nullptr;*/
 	IntArray::Pointer Types;
 	IntArray::Pointer Cells;
-	DataArray::Pointer CellsId;
-	DataArray::Pointer CellsConnect;
+	ArrayObject::Pointer CellsId;
+	ArrayObject::Pointer CellsConnect;
 
 	ReadHeader();
 	// Read unstructured grid specific stuff

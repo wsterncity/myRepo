@@ -15,21 +15,20 @@ public:
     using ConstIterator = typename VectorType::const_iterator;
     using Reference = typename VectorType::reference;
     using ConstReference = typename VectorType::const_reference;
-    using size_type = typename VectorType::size_type;
 
     void Initialize() {
         this->VectorType::swap(std::vector<TElement>());
     }
 
-    void Resize(const size_type _Newsize) {
+    void Resize(const IGsize _Newsize) {
         this->VectorType::resize(_Newsize);
     }
 
-    void Resize(const size_type _Newsize, const TElement& _Element) {
+    void Resize(const IGsize _Newsize, const TElement& _Element) {
         this->VectorType::resize(_Newsize, _Element);
     }
 
-    void Reserve(const size_type _Newcapacity) {
+    void Reserve(const IGsize _Newcapacity) {
         this->VectorType::reserve(_Newcapacity);
     }
 
@@ -41,24 +40,31 @@ public:
         this->Resize(Size());
     }
 
-    void InsertToBack(TElement&& _Element) {
+    void AddElement(TElement&& _Element) {
         this->VectorType::push_back(_Element);
     }
-    void InsertToBack(const TElement& _Element) {
+    void AddElement(const TElement& _Element) {
         this->VectorType::push_back(_Element);
     }
 
-    Reference GetElement(const size_type _Pos) {
+    Reference ElementAt(const IGsize _Pos) {
         return this->VectorType::operator[](_Pos);
     }
-    ConstReference GetElement(const size_type _Pos) const {
+    ConstReference ElementAt(const IGsize _Pos) const {
         return this->VectorType::operator[](_Pos);
     }
 
-    void SetElement(const size_type _Pos, TElement&& _Element) {
+    Reference GetElement(const IGsize _Pos) {
+        return this->VectorType::operator[](_Pos);
+    }
+    ConstReference GetElement(const IGsize _Pos) const {
+        return this->VectorType::operator[](_Pos);
+    }
+
+    void SetElement(const IGsize _Pos, TElement&& _Element) {
         this->VectorType::operator[](_Pos) = _Element;
     }
-    void SetElement(const size_type _Pos, const TElement& _Element) {
+    void SetElement(const IGsize _Pos, const TElement& _Element) {
         this->VectorType::operator[](_Pos) = _Element;
     }
 
@@ -75,11 +81,11 @@ public:
         return this->VectorType::end();
     }
 
-    size_type GetNumberOfElements() const {
+    IGsize GetNumberOfElements() const {
         return this->VectorType::size();
     }
 
-    size_type Size() const {
+    IGsize Size() const {
         return this->VectorType::size();
     }
 
@@ -100,6 +106,68 @@ public:
 protected:
     StringArray() = default;
     ~StringArray() override = default;
+};
+
+class IdArray : public ElementArray<igIndex> {
+public:
+    I_OBJECT(IdArray);
+    static Pointer New() { return new IdArray; }
+    using SuperClass = ElementArray<igIndex>;
+    using Reference = typename SuperClass::Reference;
+    using ConstReference = typename SuperClass::ConstReference;
+
+    Reference GetId(const IGsize _Pos) {
+        return this->SuperClass::GetElement(_Pos);
+    }
+    ConstReference GetId(const IGsize _Pos) const {
+        return this->SuperClass::GetElement(_Pos);
+    }
+
+    void SetId(const IGsize _Pos, igIndex&& _Id) {
+        this->SuperClass::SetElement(_Pos, _Id);
+    }
+    void SetId(const IGsize _Pos, const igIndex& _Id) {
+        this->SuperClass::SetElement(_Pos, _Id);
+    }
+
+    void AddId(igIndex&& _Id) {
+        this->SuperClass::AddElement(_Id);
+    }
+    void AddId(const igIndex& _Id) {
+        this->SuperClass::AddElement(_Id);
+    }
+
+    IGsize SearchId(igIndex id) const
+    {
+        IGsize i;
+        for (i = 0; i < this->GetNumberOfIds(); i++)
+        {
+            if (this->GetId(i) == id)
+            {
+                return i;
+            }
+        }
+        return (-1);
+    }
+
+    void SetNumberOfIds(const IGsize _Newsize) {
+        this->SuperClass::Resize(_Newsize);
+    }
+
+    IGsize GetNumberOfIds() const {
+        return this->SuperClass::GetNumberOfElements();
+    }
+
+    Reference GetElement(const IGsize _Pos) = delete;
+    ConstReference GetElement(const IGsize _Pos) const = delete;
+    void SetElement(const IGsize _Pos, igIndex&& _Element) = delete;
+    void SetElement(const IGsize _Pos, const igIndex& _Element) = delete;
+    void AddElement(igIndex&& _Element) = delete;
+    void AddElement(const igIndex& _Element) = delete;
+    IGsize GetNumberOfElements() const = delete;
+protected:
+    IdArray() = default;
+    ~IdArray() override = default;
 };
 IGAME_NAMESPACE_END
 #endif

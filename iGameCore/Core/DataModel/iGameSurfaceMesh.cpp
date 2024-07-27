@@ -32,13 +32,12 @@ void SurfaceMesh::SetFaces(CellArray::Pointer faces)
 
 Line* SurfaceMesh::GetEdge(igIndex edgeId)
 {
-	igIndex ncells;
 	const igIndex* cell;
-	m_Edges->GetCellAtId(edgeId, ncells, cell);
+	int ncells = m_Edges->GetCellIds(edgeId, cell);
 
 	m_Edge->PointIds->Reset();
-	m_Edge->PointIds->InsertNextId(cell[0]);
-	m_Edge->PointIds->InsertNextId(cell[1]);
+	m_Edge->PointIds->AddId(cell[0]);
+	m_Edge->PointIds->AddId(cell[1]);
 	m_Edge->Points->Reset();
 	m_Edge->Points->AddPoint(this->GetPoint(cell[0]));
 	m_Edge->Points->AddPoint(this->GetPoint(cell[1]));
@@ -47,9 +46,8 @@ Line* SurfaceMesh::GetEdge(igIndex edgeId)
 
 Face* SurfaceMesh::GetFace(igIndex faceId)
 {
-	igIndex ncells;
 	const igIndex* cell;
-	m_Faces->GetCellAtId(faceId, ncells, cell);
+	int ncells = m_Faces->GetCellIds(faceId, cell);
 
 	Face* face = nullptr;
 	if (ncells == 3)
@@ -84,7 +82,7 @@ Face* SurfaceMesh::GetFace(igIndex faceId)
 	face->Points->Reset();
 
 	for (int i = 0; i < ncells; i++) {
-		face->PointIds->InsertNextId(cell[i]);
+		face->PointIds->AddId(cell[i]);
 		face->Points->AddPoint(this->GetPoint(cell[i]));
 	}
 
@@ -97,18 +95,18 @@ int SurfaceMesh::GetEdgePointIds(igIndex edgeId, igIndex* ptIds)
 	{
 		this->BuildEdges();
 	}
-	m_Edges->GetCellAtId(edgeId, ptIds);
+	m_Edges->GetCellIds(edgeId, ptIds);
 	return 2;
 }
 
 int SurfaceMesh::GetFacePointIds(igIndex faceId, igIndex* ptIds)
 {
-	return m_Faces->GetCellAtId(faceId, ptIds);
+	return m_Faces->GetCellIds(faceId, ptIds);
 }
 
 int SurfaceMesh::GetFaceEdgeIds(igIndex faceId, igIndex* edgeIds)
 {
-	return m_FaceEdges->GetCellAtId(faceId, edgeIds);
+	return m_FaceEdges->GetCellIds(faceId, edgeIds);
 }
 
 void SurfaceMesh::BuildEdges()
@@ -134,7 +132,7 @@ void SurfaceMesh::BuildEdges()
 			}
 			edgeIds[j] = idx;
 		}
-		m_FaceEdges->InsertNextCell(edgeIds, ncell);
+		m_FaceEdges->AddCellIds(edgeIds, ncell);
 	}
 	m_Edges = EdgeTable->GetOutput();
 }
@@ -155,17 +153,17 @@ void SurfaceMesh::BuildEdgeLinks()
 
 	m_EdgeLinks->Allocate(npts);
 	for (i = 0; i < nedges; i++) {
-		ncell = m_Edges->GetCellAtId(i, edge);
-		m_EdgeLinks->IncrementLinkCount(edge[0]);
-		m_EdgeLinks->IncrementLinkCount(edge[1]);
+		ncell = m_Edges->GetCellIds(i, edge);
+		m_EdgeLinks->IncrementLinkSize(edge[0]);
+		m_EdgeLinks->IncrementLinkSize(edge[1]);
 	}
 
 	m_EdgeLinks->AllocateLinks(npts);
 
 	for (i = 0; i < nedges; i++) {
-		ncell = m_Edges->GetCellAtId(i, edge);
-		m_EdgeLinks->AddCellReference(i, edge[0]);
-		m_EdgeLinks->AddCellReference(i, edge[1]);
+		ncell = m_Edges->GetCellIds(i, edge);
+		m_EdgeLinks->AddReference(i, edge[0]);
+		m_EdgeLinks->AddReference(i, edge[1]);
 	}
 }
 
@@ -184,17 +182,17 @@ void SurfaceMesh::BuildFaceLinks()
 
 	m_FaceLinks->Allocate(npts);
 	for (i = 0; i < nfaces; i++) {
-		ncell = m_Faces->GetCellAtId(i, face);
+		ncell = m_Faces->GetCellIds(i, face);
 		for (int j = 0; j < ncell; j++) {
-			m_FaceLinks->IncrementLinkCount(face[j]);
+			m_FaceLinks->IncrementLinkSize(face[j]);
 		}
 	}
 
 	m_FaceLinks->AllocateLinks(npts);
 	for (igIndex i = 0; i < nfaces; i++) {
-		ncell = m_Faces->GetCellAtId(i, face);
+		ncell = m_Faces->GetCellIds(i, face);
 		for (int j = 0; j < ncell; j++) {
-			m_FaceLinks->AddCellReference(i, face[j]);
+			m_FaceLinks->AddReference(i, face[j]);
 		}
 	}
 }
@@ -214,17 +212,17 @@ void SurfaceMesh::BuildFaceEdgeLinks()
 
 	m_FaceEdgeLinks->Allocate(nedges);
 	for (igIndex i = 0; i < nfaces; i++) {
-		ncell = m_Faces->GetCellAtId(i, face);
+		ncell = m_Faces->GetCellIds(i, face);
 		for (int j = 0; j < ncell; j++) {
-			m_FaceEdgeLinks->IncrementLinkCount(face[j]);
+			m_FaceEdgeLinks->IncrementLinkSize(face[j]);
 		}
 	}
 
 	m_FaceEdgeLinks->AllocateLinks(nedges);
 	for (igIndex i = 0; i < nfaces; i++) {
-		ncell = m_Faces->GetCellAtId(i, face);
+		ncell = m_Faces->GetCellIds(i, face);
 		for (int j = 0; j < ncell; j++) {
-			m_FaceEdgeLinks->AddCellReference(i, face[j]);
+			m_FaceEdgeLinks->AddReference(i, face[j]);
 		}
 	}
 }
@@ -279,14 +277,14 @@ void SurfaceMesh::Draw(Scene* scene)
 
 		m_LineVAO.bind();
 		glLineWidth(m_LineWidth);
-		glad_glDrawElements(GL_LINES, m_LineIndices->GetNumberOfValues(), GL_UNSIGNED_INT, 0);
+		glad_glDrawElements(GL_LINES, m_LineIndices->GetNumberOfIds(), GL_UNSIGNED_INT, 0);
 		m_LineVAO.release();
 	}
 	else if (m_ViewStyle == IG_SURFACE)
 	{
 		scene->GetShader(Scene::PATCH)->use();
 		m_TriangleVAO.bind();
-		glad_glDrawElements(GL_TRIANGLES, m_TriangleIndices->GetNumberOfValues(), GL_UNSIGNED_INT, 0);
+		glad_glDrawElements(GL_TRIANGLES, m_TriangleIndices->GetNumberOfIds(), GL_UNSIGNED_INT, 0);
 		m_TriangleVAO.release();
 	}
 	else if (m_ViewStyle == IG_SURFACE_WITH_EDGE)
@@ -304,12 +302,12 @@ void SurfaceMesh::Draw(Scene* scene)
 
 		m_LineVAO.bind();
 		glLineWidth(m_LineWidth);
-		glad_glDrawElements(GL_LINES, m_LineIndices->GetNumberOfValues(), GL_UNSIGNED_INT, 0);
+		glad_glDrawElements(GL_LINES, m_LineIndices->GetNumberOfIds(), GL_UNSIGNED_INT, 0);
 		m_LineVAO.release();
 
 		scene->GetShader(Scene::PATCH)->use();
 		m_TriangleVAO.bind();
-		glad_glDrawElements(GL_TRIANGLES, m_TriangleIndices->GetNumberOfValues(), GL_UNSIGNED_INT, 0);
+		glad_glDrawElements(GL_TRIANGLES, m_TriangleIndices->GetNumberOfIds(), GL_UNSIGNED_INT, 0);
 		m_TriangleVAO.release();
 	}
 }
@@ -340,7 +338,7 @@ void SurfaceMesh::ConvertToDrawableData()
 		m_Flag = true;
 	}
 
-	m_Positions = m_Points->ConvertToDataArray();
+	m_Positions = m_Points->ConvertToArray();
 	m_Positions->Modified();
 
 	//m_PointVAO.destroy();
@@ -359,19 +357,21 @@ void SurfaceMesh::ConvertToDrawableData()
 	{
 		this->BuildEdges();
 	}
-	m_LineIndices = this->GetEdges()->ConvertToDataArray();
+	m_LineIndices = this->GetEdges()->GetCellIdArray();
 
 	// set triangle indices
-	IndexArray::Pointer triangleIndices = IndexArray::New();
-	triangleIndices->SetNumberOfComponents(3);
-	igIndex i, ncell;
+	IdArray::Pointer triangleIndices = IdArray::New();
+	int i, ncell;
 	igIndex cell[32]{};
+	int a = this->GetNumberOfFaces();
 	for (i = 0; i < this->GetNumberOfFaces(); i++) {
 		ncell = this->GetFacePointIds(i, cell);
 		igIndex v0 = cell[0];
 		for (int j = 2; j < ncell; j++)
 		{
-			triangleIndices->InsertNextTuple3(v0, cell[j - 1], cell[j]);
+			triangleIndices->AddId(v0);
+			triangleIndices->AddId(cell[j - 1]);
+			triangleIndices->AddId(cell[j]);
 		}
 	}
 	m_TriangleIndices = triangleIndices;
@@ -396,14 +396,14 @@ void SurfaceMesh::ConvertToDrawableData()
 
 	GLAllocateGLBuffer(m_PositionVBO, 
 					   m_Positions->GetNumberOfValues() * sizeof(float), 
-					   m_Positions->GetRawPointer());
+					   m_Positions->RawPointer());
 
 	GLAllocateGLBuffer(m_LineEBO,
-					   m_LineIndices->GetNumberOfValues() * sizeof(igIndex),
-					   m_LineIndices->GetRawPointer());
+					   m_LineIndices->GetNumberOfIds() * sizeof(igIndex),
+					   m_LineIndices->RawPointer());
 
 	GLAllocateGLBuffer(m_TriangleEBO,
-					   m_TriangleIndices->GetNumberOfValues() * sizeof(igIndex),
-					   m_TriangleIndices->GetRawPointer());
+					   m_TriangleIndices->GetNumberOfIds() * sizeof(igIndex),
+					   m_TriangleIndices->RawPointer());
 }
 IGAME_NAMESPACE_END

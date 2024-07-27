@@ -2,9 +2,9 @@
 #define iGameCellArray_h
 
 #include "iGameObject.h"
-#include "iGameIdList.h"
-#include "iGameDataBuffer.h"
+#include "iGameElementArray.h"
 #include "iGameCell.h"
+#include "iGameFlatArray.h"
 
 IGAME_NAMESPACE_BEGIN
 class Tag : public Object{
@@ -53,236 +53,211 @@ public:
 	I_OBJECT(CellArray);
 	static Pointer New() { return new CellArray; }
 
-	void Initialize()
+	void Initialize() 
 	{
-		this->InitializeMemory();
-		this->NumberOfCells = 0;
-		this->DeletedMask->Reset();
+		m_Buffer->Initialize();
+		m_Offsets->Initialize();
+		m_Offsets->AddValue(0);
 	}
 
-	bool Allocate(igIndex sz, int strategy = 0)
+	void Reserve(const IGsize _Newsize)
 	{
-		return this->AllocateInternal(sz, 0);
+		m_Buffer->Reserve(_Newsize);
 	}
 
-	Cell* GetCell(igIndex cellId)
+	void Resize(const IGsize _Newsize)
 	{
-		assert(!this->IsDeleted(cellId));
-		igIndex begin = this->GetBeginOffset(cellId);
-		int size = this->GetCellSize(cellId);
-		igIndex* ptr = this->Buffer->Data + begin;
-		this->Cell->Initialize(size, ptr);
-		return this->Cell;
+		m_Buffer->Resize(_Newsize);
 	}
 
-	void GetCellAtId(igIndex cellId, igIndex& ncells, igIndex const*& cell)
+	void Reset()
 	{
-		assert(!this->IsDeleted(cellId));
-		ncells = this->GetCellSize(cellId);
-		cell = this->Buffer->Data + this->GetBeginOffset(cellId);
-	}
-	igIndex GetCellAtId(igIndex cellId, igIndex const*& cell)
-	{
-		assert(!this->IsDeleted(cellId));
-		cell = this->Buffer->Data + this->GetBeginOffset(cellId);
-		return this->GetCellSize(cellId);;
+		m_Buffer->Reset();
+		m_Offsets->Reset();
+		m_DeletedMask->Reset();
 	}
 
-	void GetCellAtId(igIndex cellId, igIndex& ncells, igIndex* cell)
+	void Squeeze()
 	{
-		assert(!this->IsDeleted(cellId));
-		ncells = this->GetCellSize(cellId);
-		igIndex* ptr = this->Buffer->Data + this->GetBeginOffset(cellId);
-		for (int i = 0; i < ncells; i++)
-		{
-			cell[i] = ptr[i];
-		}
+		m_Buffer->Squeeze();
+		m_Offsets->Squeeze();
 	}
-	igIndex GetCellAtId(igIndex cellId, igIndex* cell)
+
+	void SetNumberOfCells(const IGsize _Newsize)
+	{
+		m_NumberOfCells = _Newsize;
+	}
+
+	IGsize GetNumberOfCells() const noexcept
+	{
+		return m_NumberOfCells;
+	}
+	
+	int GetCellIds(const IGsize cellId, igIndex* cell)
 	{
 		assert(!this->IsDeleted(cellId));
-		igIndex ncells = this->GetCellSize(cellId);
-		igIndex* ptr = this->Buffer->Data + this->GetBeginOffset(cellId);
+		int ncells = this->GetCellSize(cellId);
+		igIndex* ptr = m_Buffer->RawPointer() + this->GetBeginOffset(cellId);
 		for (int i = 0; i < ncells; i++)
 		{
 			cell[i] = ptr[i];
 		}
 		return ncells;
 	}
+	int GetCellIds(const IGsize cellId, const igIndex*& cell)
+	{
+		assert(!this->IsDeleted(cellId));
+		cell = m_Buffer->RawPointer() + this->GetBeginOffset(cellId);
+		return this->GetCellSize(cellId);
+	}
 
-	void GetCellAtId(igIndex cellId, IdList::Pointer cell)
+	void GetCellIds(const IGsize cellId, IdArray::Pointer cell)
 	{
 		assert(!this->IsDeleted(cellId));
 		cell->Reset();
-		igIndex begin = this->GetBeginOffset(cellId);
+		IGuint begin = this->GetBeginOffset(cellId);
 		int size = this->GetCellSize(cellId);
-		igIndex* pos = this->Buffer->Data + begin;
+		igIndex* pos = m_Buffer->RawPointer() + begin;
 		for (int i = 0; i < size; i++) {
-			cell->InsertNextId(pos[i]);
+			cell->AddId(pos[i]);
 		}
 	}
 
-	void SetCell(igIndex cellId, igIndex* cell, int ncell) 
+	void SetCellIds(const IGsize cellId, igIndex* cell, int ncell)
 	{
 		assert(!this->IsDeleted(cellId));
 		assert(this->GetCellSize(cellId) == ncell);
-		igIndex begin = this->GetBeginOffset(cellId);
-		igIndex* ptr = this->Buffer->Data + begin;
+		IGuint begin = this->GetBeginOffset(cellId);
+		igIndex* ptr = m_Buffer->RawPointer() + begin;
 		for (int i = 0; i < ncell; i++) {
 			ptr[i] = cell[i];
 		}
 	}
 
-	igIndex InsertNextCell(igIndex* cell, int ncell) 
+	IGsize AddCellIds(igIndex* cell, int ncell) 
 	{
-		igIndex beginOffset = this->GetBeginOffset(this->NumberOfCells);
-		igIndex endOffset = beginOffset + ncell;
-		if (endOffset > this->Buffer->Size) {
-			igIndex newSize = std::max(endOffset, igIndex(beginOffset * 2));
-			this->Buffer->Resize(newSize);
+		if (ncell != 4) {
+			int a = 1;
+
+		}
+		IGuint beginOffset = this->GetBeginOffset(m_NumberOfCells);
+		IGuint endOffset = beginOffset + ncell;
+		if (endOffset > m_Buffer->GetNumberOfIds()) {
+			const IGsize newSize = std::max(endOffset, (beginOffset * 2));
+			m_Buffer->Resize(newSize);
 		}
 
-		igIndex* Data = this->Buffer->Data + beginOffset;
+		igIndex* ptr = m_Buffer->RawPointer() + beginOffset;
 		for (int i = 0; i < ncell; i++) {
-			Data[i] = cell[i];
+			ptr[i] = cell[i];
 		}
-		this->DeletedMask->AddTag();
-		if (UseOffset)
+		m_DeletedMask->AddTag();
+		if (m_UseOffsets)
 		{
-			this->Offset->AddId(endOffset);
+			m_Offsets->AddValue(endOffset);
 		}
 		else
 		{
-			if (NumberOfCells == 0)
+			if (m_NumberOfCells == 0)
 			{
-				NumberOfComponent = ncell;
+				m_FixedCellSize = ncell;
 			}
-			else if (NumberOfComponent != ncell)
+			else if (m_FixedCellSize != ncell)
 			{
-				for (int i = 0; i < NumberOfCells; i++)
+				for (int i = 0; i < m_NumberOfCells; i++)
 				{
-					this->Offset->AddId((i + 1) * NumberOfComponent);
+					m_Offsets->AddValue((i + 1) * m_FixedCellSize);
 				}
-				this->Offset->AddId(endOffset);
-				UseOffset = true;
+				m_Offsets->AddValue(endOffset);
+				m_UseOffsets = true;
 			}	
 		}
 
-		return this->NumberOfCells++;
+		return m_NumberOfCells++;
 	}
-
-	igIndex InsertNextCell2(igIndex val0, igIndex val1) {
+	IGsize AddCellId2(igIndex val0, igIndex val1) {
 		igIndex cell[2]{ val0,val1 };
-		return this->InsertNextCell(cell, 2);
+		return this->AddCellIds(cell, 2);
 	}
-	igIndex InsertNextCell3(igIndex val0, igIndex val1, igIndex val2) {
+	IGsize AddCellId3(igIndex val0, igIndex val1, igIndex val2) {
 		igIndex cell[3]{ val0,val1,val2 };
-		return this->InsertNextCell(cell, 3);
-	}
-	void DeleteCell(igIndex cellId) {
-		this->DeletedMask->MarkDeleted(cellId);
+		return this->AddCellIds(cell, 3);
 	}
 
-	bool IsDeleted(igIndex cellId) {
-		return this->DeletedMask->IsDeleted(cellId);
+	void DeleteCell(const IGsize cellId)
+	{
+		m_DeletedMask->MarkDeleted(cellId);
+	}
+
+	bool IsDeleted(const IGsize cellId) {
+		return m_DeletedMask->IsDeleted(cellId);
 	}
 
 	void GarbageCollection() {
 		igIndex i, j, k = 0, begin = 0;
-		igIndex* pos = this->Buffer->Data;
-		for (i = 0; i < this->NumberOfCells; i++) {
+		igIndex* pos = m_Buffer->RawPointer();
+		for (i = 0; i < m_NumberOfCells; i++) {
 			if (!IsDeleted(i)) {
-				igIndex size = this->GetCellSize(i);
-				igIndex* ptr = this->Buffer->Data + this->GetBeginOffset(i);
+				int size = this->GetCellSize(i);
+				igIndex* ptr = m_Buffer->RawPointer() + this->GetBeginOffset(i);
 				for (j = 0; j < size; j++) {
 					pos[j] = ptr[j];
 				}
 				pos += size;
 				begin += size;
-				if (NumberOfCells == -1)
+				if (m_UseOffsets)
 				{
-					this->Offset->SetId(k + 1, begin);
+					m_Offsets->SetValue(k + 1, begin);
 				}
 				k++;
 			}
 		}
-		this->Buffer->Resize(begin);
-		if (NumberOfCells == -1 || k == 0)
+		m_Buffer->Resize(begin);
+		if (m_UseOffsets || k == 0)
 		{
-			this->Offset->Resize(k + 1);
+			m_Offsets->Resize(k + 1);
 		}
-		this->DeletedMask->Init(k);
+		m_DeletedMask->Init(k);
 	}
 
-	IndexArray::Pointer ConvertToDataArray()
-	{
-		if (UseOffset)
-		{
-			return nullptr;
-		}
-		IndexArray::Pointer ConvertedArray = IndexArray::New();
-		ConvertedArray->SetArray(this->Buffer, NumberOfComponent, NumberOfCells * NumberOfComponent, this->Buffer->Size);
-		return ConvertedArray;
-	}
-
-	igIndex* GetRawPointer() { return this->Buffer->Data; }
-	igIndex* GetOffsetRawPointer() { return this->Offset->GetRawPointer(); }
-	DataBuffer<igIndex>::Pointer GetBuffer() { return this->Buffer; }
-	IdList::Pointer GetOffset() { return this->Offset; }
-	void SetNumberOfCells(igIndex number) { this->AllocateInternal(number, number); }
-	igIndex GetNumberOfCells() { return this->NumberOfCells; }
+	IdArray::Pointer GetCellIdArray() { return m_Buffer; }
+	UnsignedIntArray::Pointer GetOffset() { return m_Offsets; }
 
 protected:
 	CellArray() {
-		this->Buffer = DataBuffer<igIndex>::New();
-		this->DeletedMask = Tag::New();
-		this->Offset = IdList::New();
-		this->Offset->AddId(0);
+		m_Buffer = IdArray::New();
+		m_DeletedMask = Tag::New();
+		m_Offsets = UnsignedIntArray::New();
+		m_Offsets->AddValue(0);
 	};
 	~CellArray() override { }
 
-	int GetBeginOffset(igIndex cellId) const {
-		return UseOffset ? this->Offset->GetId(cellId) : NumberOfComponent * cellId;
+	IGuint GetBeginOffset(const IGsize cellId) const {
+		return m_UseOffsets ? 
+			m_Offsets->GetValue(cellId) : 
+			m_FixedCellSize * cellId;
 	}
 
-	int GetEndOffset(igIndex cellId) const {
-		return UseOffset ? this->Offset->GetId(cellId + 1) : NumberOfComponent * (cellId + 1);
+	IGuint GetEndOffset(const IGsize  cellId) const {
+		return m_UseOffsets ? 
+			m_Offsets->GetValue(cellId + 1) : 
+			m_FixedCellSize * (cellId + 1);
 	}
 
-	int GetCellSize(igIndex cellId) const {
-		return UseOffset ? this->Offset->GetId(cellId + 1) - this->Offset->GetId(cellId) : NumberOfComponent;
+	IGuint GetCellSize(const IGsize  cellId) const {
+		return m_UseOffsets ? 
+			m_Offsets->GetValue(cellId + 1) - m_Offsets->GetValue(cellId) : 
+			m_FixedCellSize;
 	}
 
-	void InitializeMemory()
-	{
-		this->Buffer->Initialize();
-		this->Offset->Initialize();
-	}
+	IdArray::Pointer m_Buffer{};
+	IGsize m_NumberOfCells{ 0 };
 
-	bool AllocateInternal(igIndex sz, igIndex numberOfCells)
-	{
-		if (sz > this->Buffer->Size)
-		{
-			this->InitializeMemory();
-			this->Offset->Allocate(1);
-			this->Offset->SetId(0, 0);
-			this->Buffer->Resize(sz);
-		}
-		this->NumberOfCells = numberOfCells;
-		return true;
-	}
+	UnsignedIntArray::Pointer m_Offsets{};
 
-	DataBuffer<igIndex>::Pointer Buffer{};
-	igIndex NumberOfCells{ 0 };
-	igIndex NumberOfComponent{ -1 };
-	IdList::Pointer Offset{};
-	Tag::Pointer DeletedMask{};
-	bool UseOffset{ false };
-
-	Cell::Pointer Cell{};
+	int m_FixedCellSize{ -1 };
+	bool m_UseOffsets{ false };
+	Tag::Pointer m_DeletedMask{};
 };
-
-
-
 IGAME_NAMESPACE_END
 #endif

@@ -4,7 +4,7 @@ IGAME_NAMESPACE_BEGIN
 bool MESHReader::Parsing()
 {
 	auto& left = this->IS;
-	auto right = left + m_Buffer->GetNumberOfValues() * m_Buffer->GetDataTypeSize();
+	auto right = left + m_Buffer->GetNumberOfValues();
 
 	CellArray::Pointer Lines = m_Data.GetLines();
 	CellArray::Pointer Faces = m_Data.GetFaces();
@@ -126,7 +126,7 @@ const char* MESHReader::ReadCells(const char* left, int CellNum, int Component, 
 
 		}
 		//std::cout << '\n';
-		Cells->InsertNextCell(cell.data(), Component);
+		Cells->AddCellIds(cell.data(), Component);
 		left = lineEnd + 1;
 	}
 	return left;

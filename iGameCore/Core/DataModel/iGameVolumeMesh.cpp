@@ -26,9 +26,8 @@ void VolumeMesh::SetVolumes(CellArray::Pointer volumes)
 
 Volume* VolumeMesh::GetVolume(igIndex volumeId)
 {
-	igIndex ncells;
 	const igIndex* cell;
-	m_Volumes->GetCellAtId(volumeId, ncells, cell);
+	int ncells = m_Volumes->GetCellIds(volumeId, cell);
 
 	Volume* volume = nullptr;
 	if (ncells == Tetra::NumberOfPoints)
@@ -68,7 +67,7 @@ Volume* VolumeMesh::GetVolume(igIndex volumeId)
 	volume->Points->Reset();
 
 	for (int i = 0; i < ncells; i++) {
-		volume->PointIds->InsertNextId(cell[0]);
+		volume->PointIds->AddId(cell[0]);
 		volume->Points->AddPoint(this->GetPoint(cell[0]));
 	}
 
@@ -77,7 +76,7 @@ Volume* VolumeMesh::GetVolume(igIndex volumeId)
 
 int VolumeMesh::GetVolumePointIds(igIndex volumeId, igIndex* ptIds)
 {
-	return m_Volumes->GetCellAtId(volumeId, ptIds);
+	return m_Volumes->GetCellIds(volumeId, ptIds);
 }
 
 
@@ -94,7 +93,7 @@ void VolumeMesh::BuildFaces()
 	for (i = 0; i < this->GetNumberOfVolumes(); i++)
 	{
 		Volume* vol = this->GetVolume(i);
-		ncell = m_Volumes->GetCellAtId(i, cell);
+		ncell = m_Volumes->GetCellIds(i, cell);
 		for (j = 0; j < vol->GetNumberOfFaces(); j++) // number of faces
 		{
 			const igIndex* index;
@@ -109,7 +108,7 @@ void VolumeMesh::BuildFaces()
 			}
 			faceIds[j] = idx;
 		}
-		m_VolumeFaces->InsertNextCell(faceIds, vol->GetNumberOfFaces());
+		m_VolumeFaces->AddCellIds(faceIds, vol->GetNumberOfFaces());
 	}
 
 	m_Faces = FaceTable->GetOutput();
@@ -131,17 +130,17 @@ void VolumeMesh::BuildVolumeLinks()
 
 	m_VolumeLinks->Allocate(npts);
 	for (i = 0; i < nvolumes; i++) {
-		ncell = m_Volumes->GetCellAtId(i, cell);
+		ncell = m_Volumes->GetCellIds(i, cell);
 		for (int j = 0; j < ncell; j++) {
-			m_VolumeLinks->IncrementLinkCount(cell[j]);
+			m_VolumeLinks->IncrementLinkSize(cell[j]);
 		}
 	}
 
 	m_VolumeLinks->AllocateLinks(npts);
 	for (i = 0; i < nvolumes; i++) {
-		ncell = m_Volumes->GetCellAtId(i, cell);
+		ncell = m_Volumes->GetCellIds(i, cell);
 		for (int j = 0; j < ncell; j++) {
-			m_VolumeLinks->AddCellReference(i, cell[j]);
+			m_VolumeLinks->AddReference(i, cell[j]);
 		}
 	}
 }
@@ -161,17 +160,17 @@ void VolumeMesh::BuildVolumeEdgeLinks()
 
 	m_VolumeEdgeLinks->Allocate(nedges);
 	for (i = 0; i < nvolumes; i++) {
-		ncell = m_VolumeEdges->GetCellAtId(i, cell);
+		ncell = m_VolumeEdges->GetCellIds(i, cell);
 		for (int j = 0; j < ncell; j++) {
-			m_VolumeEdgeLinks->IncrementLinkCount(cell[j]);
+			m_VolumeEdgeLinks->IncrementLinkSize(cell[j]);
 		}
 	}
 
 	m_VolumeEdgeLinks->AllocateLinks(nedges);
 	for (i = 0; i < nvolumes; i++) {
-		ncell = m_VolumeEdges->GetCellAtId(i, cell);
+		ncell = m_VolumeEdges->GetCellIds(i, cell);
 		for (int j = 0; j < ncell; j++) {
-			m_VolumeEdgeLinks->AddCellReference(i, cell[j]);
+			m_VolumeEdgeLinks->AddReference(i, cell[j]);
 		}
 	}
 }
@@ -191,17 +190,17 @@ void VolumeMesh::BuildVolumeFaceLinks()
 
 	m_VolumeFaceLinks->Allocate(nfaces);
 	for (i = 0; i < nvolumes; i++) {
-		ncell = m_VolumeFaces->GetCellAtId(i, cell);
+		ncell = m_VolumeFaces->GetCellIds(i, cell);
 		for (int j = 0; j < ncell; j++) {
-			m_VolumeFaceLinks->IncrementLinkCount(cell[j]);
+			m_VolumeFaceLinks->IncrementLinkSize(cell[j]);
 		}
 	}
 
 	m_VolumeFaceLinks->AllocateLinks(nfaces);
 	for (i = 0; i < nvolumes; i++) {
-		ncell = m_VolumeFaces->GetCellAtId(i, cell);
+		ncell = m_VolumeFaces->GetCellIds(i, cell);
 		for (int j = 0; j < ncell; j++) {
-			m_VolumeFaceLinks->AddCellReference(i, cell[j]);
+			m_VolumeFaceLinks->AddReference(i, cell[j]);
 		}
 	}
 }
@@ -256,14 +255,14 @@ void VolumeMesh::Draw(Scene* scene)
 
 		m_LineVAO.bind();
 		glLineWidth(m_LineWidth);
-		glad_glDrawElements(GL_LINES, m_LineIndices->GetNumberOfValues(), GL_UNSIGNED_INT, 0);
+		glad_glDrawElements(GL_LINES, m_LineIndices->GetNumberOfIds(), GL_UNSIGNED_INT, 0);
 		m_LineVAO.release();
 	}
 	else if (m_ViewStyle == IG_SURFACE)
 	{
 		scene->GetShader(Scene::PATCH)->use();
 		m_TriangleVAO.bind();
-		glad_glDrawElements(GL_TRIANGLES, m_TriangleIndices->GetNumberOfValues(), GL_UNSIGNED_INT, 0);
+		glad_glDrawElements(GL_TRIANGLES, m_TriangleIndices->GetNumberOfIds(), GL_UNSIGNED_INT, 0);
 		m_TriangleVAO.release();
 	}
 	else if (m_ViewStyle == IG_SURFACE_WITH_EDGE)
@@ -281,12 +280,12 @@ void VolumeMesh::Draw(Scene* scene)
 
 		m_LineVAO.bind();
 		glLineWidth(m_LineWidth);
-		glad_glDrawElements(GL_LINES, m_LineIndices->GetNumberOfValues(), GL_UNSIGNED_INT, 0);
+		glad_glDrawElements(GL_LINES, m_LineIndices->GetNumberOfIds(), GL_UNSIGNED_INT, 0);
 		m_LineVAO.release();
 
 		scene->GetShader(Scene::PATCH)->use();
 		m_TriangleVAO.bind();
-		glad_glDrawElements(GL_TRIANGLES, m_TriangleIndices->GetNumberOfValues(), GL_UNSIGNED_INT, 0);
+		glad_glDrawElements(GL_TRIANGLES, m_TriangleIndices->GetNumberOfIds(), GL_UNSIGNED_INT, 0);
 		m_TriangleVAO.release();
 	}
 }
@@ -317,7 +316,7 @@ void VolumeMesh::ConvertToDrawableData()
 		m_Flag = true;
 	}
 
-	m_Positions = m_Points->ConvertToDataArray();
+	m_Positions = m_Points->ConvertToArray();
 	m_Positions->Modified();
 
 	//m_PointVAO.destroy();
@@ -341,19 +340,20 @@ void VolumeMesh::ConvertToDrawableData()
 	{
 		this->BuildEdges();
 	}
-	m_LineIndices = this->GetEdges()->ConvertToDataArray();
+	m_LineIndices = this->GetEdges()->GetCellIdArray();
 
 	// set triangle indices
-	IndexArray::Pointer triangleIndices = IndexArray::New();
-	triangleIndices->SetNumberOfComponents(3);
-	igIndex i, ncell;
+	IdArray::Pointer triangleIndices = IdArray::New();
+	int i, ncell;
 	igIndex cell[32]{};
 	for (i = 0; i < this->GetNumberOfFaces(); i++) {
 		ncell = this->GetFacePointIds(i, cell);
 		igIndex v0 = cell[0];
 		for (int j = 2; j < ncell; j++)
 		{
-			triangleIndices->InsertNextTuple3(v0, cell[j - 1], cell[j]);
+			triangleIndices->AddId(v0);
+			triangleIndices->AddId(cell[j - 1]);
+			triangleIndices->AddId(cell[j]);
 		}
 	}
 	m_TriangleIndices = triangleIndices;
@@ -378,14 +378,14 @@ void VolumeMesh::ConvertToDrawableData()
 
 	GLAllocateGLBuffer(m_PositionVBO,
 		m_Positions->GetNumberOfValues() * sizeof(float),
-		m_Positions->GetRawPointer());
+		m_Positions->RawPointer());
 
 	GLAllocateGLBuffer(m_LineEBO,
-		m_LineIndices->GetNumberOfValues() * sizeof(igIndex),
-		m_LineIndices->GetRawPointer());
+		m_LineIndices->GetNumberOfIds() * sizeof(igIndex),
+		m_LineIndices->RawPointer());
 
 	GLAllocateGLBuffer(m_TriangleEBO,
-		m_TriangleIndices->GetNumberOfValues() * sizeof(igIndex),
-		m_TriangleIndices->GetRawPointer());
+		m_TriangleIndices->GetNumberOfIds() * sizeof(igIndex),
+		m_TriangleIndices->RawPointer());
 }
 IGAME_NAMESPACE_END

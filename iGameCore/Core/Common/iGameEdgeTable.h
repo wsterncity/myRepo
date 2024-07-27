@@ -46,7 +46,7 @@ public:
             for (j = 0; j < (i == Head.BlockNum - 1 ? (Head.Size - 1) % BLOCK_SIZE + 1 : BLOCK_SIZE); j++)
             {
                 igIndex idx = Data[j];
-                this->Edges->GetCellAtId(idx, e);
+                this->Edges->GetCellIds(idx, e);
                 if (sum == e->GetId(0) + e->GetId(1)) {
                     return idx;
                 }
@@ -102,7 +102,7 @@ public:
         Head.Size++;
 
         igIndex e[2]{ p1,p2 };
-        this->Edges->InsertNextCell(e, 2);
+        this->Edges->AddCellIds(e, 2);
         this->NumberOfEdges++;
     }
 
@@ -115,7 +115,7 @@ protected:
         this->Edges = CellArray::New();
         this->NumberOfEdges = 0;
         this->Mp.SetBlockSize(BLOCK_SIZE);
-        this->e = IdList::New();
+        this->e = IdArray::New();
     }
     ~EdgeTable() override = default;
 
@@ -181,7 +181,7 @@ protected:
     CellArray::Pointer Edges;
     igIndex NumberOfEdges;
 
-    IdList::Pointer e;
+    IdArray::Pointer e;
 };
 
 IGAME_NAMESPACE_END
