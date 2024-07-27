@@ -5,6 +5,7 @@
 #include "iGameThreadPool.h"
 #include "iGameSurfaceMesh.h"
 #include "iGameDataCollection.h"
+#include "iGameFlatArray.h"
 #include <algorithm>
 
 IGAME_NAMESPACE_BEGIN
@@ -53,11 +54,11 @@ public:
 	int ReadString(char result[256]);
 	int ReadString(std::string& str);
 	char* LowerCase(char* str, const size_t len = 256);
-	DataArray::Pointer ReadArray(const char* dataType, int numTuples, int numComp);
+	ArrayObject::Pointer ReadArray(const char* dataType, int numTuples, int numComp);
 
 	void UpdateReadProgress() {
 		if (!this->IS)return;
-		double progress = 1.0 * (this->IS - m_Buffer->GetRawPointer()) / m_Buffer->GetNumberOfValues();
+		double progress = 1.0 * (this->IS - m_Buffer->RawPointer()) / m_Buffer->GetNumberOfValues();
 		this->UpdateProgress(progress);
 	}
 

@@ -61,9 +61,9 @@ public:
 	int ReadPointCoordinates(Points::Pointer ps, int numPts);
 
 	const void TransferVtkCellToiGameCell(IntArray::Pointer, IntArray::Pointer);
-	const void TransferVtkCellToiGameCell(DataArray::Pointer, DataArray::Pointer, IntArray::Pointer VtkCellsType);
+	const void TransferVtkCellToiGameCell(ArrayObject::Pointer, ArrayObject::Pointer, IntArray::Pointer VtkCellsType);
 
-	static void TransferVtkCellToiGameCell(DataCollection& m_Data, DataArray::Pointer, DataArray::Pointer, DataArray::Pointer VtkCellsType);
+	static void TransferVtkCellToiGameCell(DataCollection& m_Data, ArrayObject::Pointer, ArrayObject::Pointer, ArrayObject::Pointer VtkCellsType);
 	int ReadPointData(int numPts);
 	int ReadCellData(int numCells);
 

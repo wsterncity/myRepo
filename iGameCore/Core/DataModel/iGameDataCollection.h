@@ -15,9 +15,8 @@ IGAME_NAMESPACE_BEGIN
 class DataCollection {
 public:
     Points::Pointer        Points{};
-    //AttributeData::Pointer PointData{};
-    //AttributeData::Pointer CellData{};
-    AttributeData::Pointer Data{};
+
+    PropertySet::Pointer Data{};
     StreamingData::Pointer Time_Data{};
 
     CellArray::Pointer Lines{};
@@ -38,11 +37,11 @@ public:
         }
         return Points;
     }
-    AttributeData::Pointer GetData()
+    PropertySet::Pointer GetData()
     {
         if (Data == nullptr)
         {
-            Data = AttributeData::New();
+            Data = PropertySet::New();
         }
         return Data;
     }
@@ -54,22 +53,6 @@ public:
         }
         return Time_Data;
     }
-    //AttributeData::Pointer GetPointData()
-    //{
-    //	if (PointData == nullptr)
-    //	{
-    //		PointData = AttributeData::New();
-    //	}
-    //	return PointData;
-    //}
-    //AttributeData::Pointer GetCellData()
-    //{
-    //	if (CellData == nullptr)
-    //	{
-    //		CellData = AttributeData::New();
-    //	}
-    //	return CellData;
-    //}
     CellArray::Pointer GetLines()
     {
         if (Lines == nullptr)
@@ -103,9 +86,9 @@ public:
     unsigned int GetNumberOfCells() { return GetNumberOfLines() + GetNumberOfFaces() + GetNumberOfVolumes(); }
 
     void AddPoint(Point p) { GetPoints()->AddPoint(p); }
-    void AddLine(igIndex* vhs, igIndex size = 2) { GetLines()->InsertNextCell(vhs, size);}
-    void AddFace(igIndex* vhs, igIndex size) { GetFaces()->InsertNextCell(vhs, size);}
-    void AddVolume(igIndex* vhs, igIndex size) { GetVolumes()->InsertNextCell(vhs, size);}
+    void AddLine(igIndex* vhs, igIndex size = 2) { GetLines()->AddCellIds(vhs, size);}
+    void AddFace(igIndex* vhs, igIndex size) { GetFaces()->AddCellIds(vhs, size);}
+    void AddVolume(igIndex* vhs, igIndex size) { GetVolumes()->AddCellIds(vhs, size);}
 };
 
 IGAME_NAMESPACE_END

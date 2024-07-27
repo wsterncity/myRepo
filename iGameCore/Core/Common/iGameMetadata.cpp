@@ -18,19 +18,19 @@ int Metadata::GetInt(const std::string& name) const
 	return value;
 }
 
-void Metadata::AddIntArray(const std::string& name, IntArray2::Pointer value)
+void Metadata::AddIntArray(const std::string& name, IntArray::Pointer value)
 {
 	AddEntry(name, value);
 }
 
-bool Metadata::GetIntArray(const std::string& name, IntArray2::Pointer& value) const
+bool Metadata::GetIntArray(const std::string& name, IntArray::Pointer& value) const
 {
 	return GetEntry(name, value);
 }
 
-IntArray2::Pointer Metadata::GetIntArray(const std::string& name) const
+IntArray::Pointer Metadata::GetIntArray(const std::string& name) const
 {
-	IntArray2::Pointer value;
+	IntArray::Pointer value;
 	if (GetEntry(name, value)) {
 		return value;
 	}
@@ -54,19 +54,19 @@ float Metadata::GetFloat(const std::string& name) const
 	return value;
 }
 
-void Metadata::AddFloatArray(const std::string& name, FloatArray2::Pointer value)
+void Metadata::AddFloatArray(const std::string& name, FloatArray::Pointer value)
 {
 	AddEntry(name, value);
 }
 
-bool Metadata::GetFloatArray(const std::string& name, FloatArray2::Pointer& value) const
+bool Metadata::GetFloatArray(const std::string& name, FloatArray::Pointer& value) const
 {
 	return GetEntry(name, value);
 }
 
-FloatArray2::Pointer Metadata::GetFloatArray(const std::string& name) const
+FloatArray::Pointer Metadata::GetFloatArray(const std::string& name) const
 {
-	FloatArray2::Pointer value;
+	FloatArray::Pointer value;
 	if (GetEntry(name, value)) {
 		return value;
 	}
@@ -90,19 +90,19 @@ double Metadata::GetDouble(const std::string& name) const
 	return value;
 }
 
-void Metadata::AddDoubleArray(const std::string& name, DoubleArray2::Pointer value)
+void Metadata::AddDoubleArray(const std::string& name, DoubleArray::Pointer value)
 {
 	AddEntry(name, value);
 }
 
-bool Metadata::GetDoubleArray(const std::string& name, DoubleArray2::Pointer& value) const
+bool Metadata::GetDoubleArray(const std::string& name, DoubleArray::Pointer& value) const
 {
 	return GetEntry(name, value);
 }
 
-DoubleArray2::Pointer Metadata::GetDoubleArray(const std::string& name) const
+DoubleArray::Pointer Metadata::GetDoubleArray(const std::string& name) const
 {
-	DoubleArray2::Pointer value;
+	DoubleArray::Pointer value;
 	if (GetEntry(name, value)) {
 		return value;
 	}

@@ -39,7 +39,7 @@ bool iGame::iGamePVDReader::Parsing() {
         if(existAttribute)
         {
             std::string fileName(existAttribute);
-            child_map[t]->InsertToBack(fileDir + fileName);
+            child_map[t]->AddElement(fileDir + fileName);
 
 //            std::string fileSuffix;
 //            const char* pos = strrchr(fileName.data(), '.');

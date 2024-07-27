@@ -12,7 +12,7 @@ public:
 
 	bool Parsing() override;
 
-	int ReadBinaryCells(int CellNum, DataArray::Pointer& CellsId, DataArray::Pointer& CellsConnect)
+	int ReadBinaryCells(int CellNum, ArrayObject::Pointer& CellsId, ArrayObject::Pointer& CellsConnect)
 	{
 		int offsetsSize{ 0 };
 		int connSize{ 0 };
@@ -77,13 +77,13 @@ public:
 				igError("Cell id error!");
 				return 0;
 			}
-			Cells->InsertNextValue(static_cast<double>(component));
+			Cells->AddValue(component);
 			for (j = 0; j < component; j++) {
 				if (!this->Read(&x)) {
 					igError("Cell id error!");
 					return 0;
 				}
-				Cells->InsertNextValue(static_cast<double>(x));
+				Cells->AddValue(x);
 			}
 		}
 		this->UpdateReadProgress();

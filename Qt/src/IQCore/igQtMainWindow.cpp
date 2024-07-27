@@ -346,12 +346,7 @@ void igQtMainWindow::ChangeScalarView()
 	int item1 = attributeViewIndexCombox->currentIndex();
 	int item2 = attributeViewDimCombox->currentIndex();
 	if (item1 < 0) return;
-	if (item2 < 0) {
-		this->rendererWidget->ChangeScalarView(item1, -1);
-	}
-	else {
-		this->rendererWidget->ChangeScalarView(item1, item2 - 1);
-	}
+	this->rendererWidget->ChangeScalarView(item1, item2 - 1);
 
 	static const char* name[3] = { "x", "y", "z" };
 	auto* current = rendererWidget->GetScene()->GetCurrentObject();
@@ -362,7 +357,7 @@ void igQtMainWindow::ChangeScalarView()
 		attributeViewDimCombox->setCurrentIndex(0);
 	}
 	else {
-		int num = current->GetAttributes()->GetAttribute(index - 1).array->GetNumberOfComponents();
+		int num = current->GetPropertySet()->GetProperty(index - 1).pointer->GetElementSize();
 		for (int i = 0; i < num; i++)
 		{
 			attributeViewDimCombox->addItem(name[i]);

@@ -2,8 +2,8 @@
 #define iGameDataObject_h
 
 #include "iGameObject.h"
-#include "iGameAttributeData.h"
 #include "iGameStreamingData.h"
+#include "iGamePropertySet.h"
 #include "iGameScalarsToColors.h"
 #include "iGameMetadata.h"
 
@@ -36,10 +36,10 @@ public:
 		return true;
 	}
 
-	void SetAttributes(AttributeData::Pointer p) { m_Attributes = p; }
-	void SetTimeFrames(StreamingData::Pointer p) { m_timeFrames = p; }
-	AttributeData* GetAttributes() { return m_Attributes.get(); }
 	StreamingData::Pointer GetTimeFrames() { return m_timeFrames; }
+	void SetTimeFrames(StreamingData::Pointer p) { m_timeFrames = p; }
+	void SetPropertySet(PropertySet::Pointer p) { m_Propertys = p; }
+	PropertySet* GetPropertySet() { return m_Propertys.get(); }
 	Metadata* GetMetadata() { return m_Metadata.get(); }
 
 	class SubDataObjectsHelper : public Object {
@@ -125,15 +125,15 @@ public:
 protected:
 	DataObject()
 	{
-		m_Attributes = AttributeData::New();
+		m_Propertys = PropertySet::New();
 		m_Metadata = Metadata::New();
 		m_UniqueId = GetIncrementDataObjectId();
 	}
 	~DataObject() override = default;
 
 	DataObjectId m_UniqueId{};
-	AttributeData::Pointer m_Attributes{};
 	StreamingData::Pointer m_timeFrames{};
+	PropertySet::Pointer m_Propertys{};
 	Metadata::Pointer m_Metadata{};
 
 	friend class SubDataObjectsHelper;

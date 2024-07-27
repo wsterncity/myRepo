@@ -57,7 +57,7 @@ bool iGame::iGameVTUReader::Parsing() {
         std::string scalarName = data ? data :  "Undefined Scalar";
         data = elem->Attribute("NumberOfComponents");
 
-        DataArray::Pointer  array;
+        ArrayObject::Pointer  array;
         const char* type = elem->Attribute("type");
 
         int scalarComponents = data ? mAtoi(data) : 1;
@@ -65,7 +65,7 @@ bool iGame::iGameVTUReader::Parsing() {
         if(data)
         {
             if(!strncmp(type, "Float32", 7)){
-                DataArray::Pointer arr = FloatArray::New();
+                FloatArray::Pointer arr = FloatArray::New();
 //                arr->SetNumberOfComponents(scalarComponents);
 
                 float* ps = new float[scalarComponents];
@@ -77,13 +77,13 @@ bool iGame::iGameVTUReader::Parsing() {
                         it = mAtof(token);
                         token = strtok_s(nullptr, " ", &nextToken);
                     }
-                    arr->InsertNextTuple(ps);
+                    arr->AddElement(ps);
                 }
                 array = arr;
                 delete[] ps;
 
             } else if(!strncmp(type, "Int64", 5)){
-                DataArray::Pointer arr = FloatArray::New();
+                FloatArray::Pointer arr = FloatArray::New();
                 float* ps = new float[scalarComponents];
                 token = strtok_s(const_cast<char*>(data), " ", &nextToken);
                 while (token != nullptr) {
@@ -93,7 +93,7 @@ bool iGame::iGameVTUReader::Parsing() {
                         it = mAtof(token);
                         token = strtok_s(nullptr, " ", &nextToken);
                     }
-                    arr->InsertNextTuple(ps);
+                    arr->AddElement(ps);
                 }
                 array = arr;
                 delete[] ps;
@@ -140,7 +140,7 @@ bool iGame::iGameVTUReader::Parsing() {
     elem = FindTargetItem(root, "Cells");
 
     //   find Cell connectivity;
-    DataArray::Pointer CellConnects = IntArray::New();
+    IntArray::Pointer CellConnects = IntArray::New();
 
 //    iGameLongLongArray* CellConnects = iGameLongLongArray::New();
     elem = FindTargetAttributeItem(elem, "DataArray", "Name", std::string("connectivity"));
@@ -152,15 +152,15 @@ bool iGame::iGameVTUReader::Parsing() {
         while(token)
         {
             conn = mAtoi(token);
-            CellConnects->InsertNextValue((float)conn);
+            CellConnects->AddValue(conn);
             token = strtok_s(nullptr, " ", &nextToken);
         }
     }
 
     //   find Cell offsets;
-    DataArray::Pointer CellOffsets = IntArray::New();
+    IntArray::Pointer CellOffsets = IntArray::New();
     //  Note that it need to add a zero index.
-    CellOffsets->InsertNextValue((float)0);
+    CellOffsets->AddValue(0);
 
     elem = FindTargetAttributeItem(elem, "DataArray", "Name", std::string("offsets"));
     if(elem)
@@ -171,13 +171,13 @@ bool iGame::iGameVTUReader::Parsing() {
         while(token)
         {
             offset = mAtoi(token);
-            CellOffsets->InsertNextValue((float)offset);
+            CellOffsets->AddValue(offset);
             token = strtok_s(nullptr, " ", &nextToken);
         }
     }
 
     //   find Cell types;
-    DataArray::Pointer CellTypes = IntArray::New();
+    IntArray::Pointer CellTypes = IntArray::New();
     elem = FindTargetAttributeItem(elem, "DataArray", "Name", std::string("types"));
     if(elem)
     {
@@ -187,7 +187,7 @@ bool iGame::iGameVTUReader::Parsing() {
         while(token)
         {
             type = mAtoi(token);
-            CellTypes->InsertNextValue((float)type);
+            CellTypes->AddValue(type);
             token = strtok_s(nullptr, " ", &nextToken);
         }
     }

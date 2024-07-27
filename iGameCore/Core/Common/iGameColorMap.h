@@ -1,7 +1,7 @@
 ﻿#ifndef iGameColorMap_h
 #define iGameColorMap_h
 
-#include "iGameDataArray.h"
+#include "iGameFlatArray.h"
 
 IGAME_NAMESPACE_BEGIN
 class ColorMap :public Object {
@@ -65,11 +65,11 @@ public:
 	}
 	/*update full colorbar,will update the data address rather than deeply copy*/
 	void UpdateColorMap(FloatArray::Pointer colorbar, FloatArray::Pointer colorrange) {
-		int colorbarsize = colorbar->GetNumberOfTuples();
-		int colorrangesize = colorrange->GetNumberOfTuples();
+		int colorbarsize = colorbar->GetNumberOfElements();
+		int colorrangesize = colorrange->GetNumberOfElements();
 		assert(colorbarsize == colorrangesize);
-		assert(colorbar->GetNumberOfComponents() == 3);
-		assert(colorrange->GetNumberOfComponents() == 1);
+		assert(colorbar->GetElementSize() == 3);
+		assert(colorrange->GetElementSize() == 1);
 		this->ColorBarSize = colorbarsize - 1;
 		UpdateColorBar(colorbar);
 		UpdateColorRange(colorrange);

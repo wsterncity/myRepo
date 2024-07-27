@@ -3,7 +3,7 @@
 
 #include "iGameObject.h"
 #include "iGamePoints.h"
-#include "iGameIdList.h"
+#include "iGameElementArray.h"
 #include "iGameCellType.h"
 
 IGAME_NAMESPACE_BEGIN
@@ -22,7 +22,7 @@ public:
 
 		for (int i = 0; i < npts; i++)
 		{
-			this->PointIds->InsertNextId(pts[i]);
+			this->PointIds->AddId(pts[i]);
 		}
 	}
 	//void Initialize(int npts, const igIndex* pts, Points* p) {
@@ -45,7 +45,7 @@ public:
 	virtual int IsLinear() { return 1; }
 
 	Points::Pointer GetPoints() { return this->Points; }
-	IdList::Pointer GetPointIds() { return this->PointIds; }
+	IdArray::Pointer GetPointIds() { return this->PointIds; }
 
 	int GetNumberOfPoints() { return this->PointIds->GetNumberOfIds(); }
 
@@ -63,13 +63,13 @@ public:
 	//Box3d GetBounds() { return this->Bounds; }
 
 	Points::Pointer Points{};
-	IdList::Pointer PointIds{};
+	IdArray::Pointer PointIds{};
 
 protected:
 	Cell() 
 	{
 		this->Points = Points::New();
-		this->PointIds = IdList::New();
+		this->PointIds = IdArray::New();
 	};
 	~Cell() override = default;
 

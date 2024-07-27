@@ -17,7 +17,7 @@
 IGAME_NAMESPACE_BEGIN
 using EntryValue = std::variant<unsigned char, char, unsigned short, short,
     unsigned int, int, unsigned long long, long long, float, double, bool, 
-    std::string, IntArray2::Pointer, FloatArray2::Pointer, DoubleArray2::Pointer,
+    std::string, IntArray::Pointer, FloatArray::Pointer, DoubleArray::Pointer,
     StringArray::Pointer, StreamingData::Pointer>;
 
 class Metadata : public Object{
@@ -29,25 +29,25 @@ public:
     bool GetInt(const std::string& name, int& value) const;
     int GetInt(const std::string& name) const;
 
-    void AddIntArray(const std::string& name, IntArray2::Pointer value);
-    bool GetIntArray(const std::string& name, IntArray2::Pointer& value) const;
-    IntArray2::Pointer GetIntArray(const std::string& name) const;
+    void AddIntArray(const std::string& name, IntArray::Pointer value);
+    bool GetIntArray(const std::string& name, IntArray::Pointer& value) const;
+    IntArray::Pointer GetIntArray(const std::string& name) const;
 
     void AddFloat(const std::string& name, float value);
     bool GetFloat(const std::string& name, float& value) const;
     float GetFloat(const std::string& name) const;
 
-    void AddFloatArray(const std::string& name, FloatArray2::Pointer value);
-    bool GetFloatArray(const std::string& name, FloatArray2::Pointer& value) const;
-    FloatArray2::Pointer GetFloatArray(const std::string& name) const;
+    void AddFloatArray(const std::string& name, FloatArray::Pointer value);
+    bool GetFloatArray(const std::string& name, FloatArray::Pointer& value) const;
+    FloatArray::Pointer GetFloatArray(const std::string& name) const;
 
     void AddDouble(const std::string& name, double value);
     bool GetDouble(const std::string& name, double& value) const;
     double GetDouble(const std::string& name) const;
 
-    void AddDoubleArray(const std::string& name, DoubleArray2::Pointer value);
-    bool GetDoubleArray(const std::string& name, DoubleArray2::Pointer& value) const;
-    DoubleArray2::Pointer GetDoubleArray(const std::string& name) const;
+    void AddDoubleArray(const std::string& name, DoubleArray::Pointer value);
+    bool GetDoubleArray(const std::string& name, DoubleArray::Pointer& value) const;
+    DoubleArray::Pointer GetDoubleArray(const std::string& name) const;
  
     void AddString(const std::string& name, const std::string& value);
     bool GetString(const std::string& name, std::string& value) const;
