@@ -62,6 +62,7 @@ void FontSet::RegisterWords(const wchar_t* text) {
 
         // Generate Texture
         GLTexture2d texture;
+        texture.create();
         texture.bind();
         texture.storage(1, GL_R8, font_width, font_rows);
         texture.subImage(0, 0, 0, font_width, font_rows, GL_RED,

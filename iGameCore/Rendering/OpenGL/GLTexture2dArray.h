@@ -8,10 +8,10 @@ IGAME_NAMESPACE_BEGIN
 class GLTexture2dArray : public GLObject<GLTexture2dArray> {
 private:
     friend class GLObject<GLTexture2dArray>;
-    static void create(GLsizei count, GLuint* handles) {
+    static void _create(GLsizei count, GLuint* handles) {
         glCreateTextures(GL_TEXTURE_2D_ARRAY, count, handles);
     }
-    static void destroy(GLsizei count, GLuint* handles) {
+    static void _destroy(GLsizei count, GLuint* handles) {
         glDeleteTextures(count, handles);
     }
 

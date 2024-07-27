@@ -32,14 +32,14 @@ GLShaderProgram* Scene::GenShader(IGenum type) {
                     GL_FRAGMENT_SHADER};
             sp = new GLShaderProgram;
             sp->addShaders({shader_vert, shader_frag});
-        }        
-        break;
+        } break;
         case NOLIGHT: {
             GLShader shader_vert = GLShader{
                     (std::string(ASSEST_DIR) + "/Shaders/shader.vert").c_str(),
                     GL_VERTEX_SHADER};
             GLShader shader_frag = GLShader{
-                    (std::string(ASSEST_DIR) + "/Shaders/shaderNoLight.frag").c_str(),
+                    (std::string(ASSEST_DIR) + "/Shaders/shaderNoLight.frag")
+                            .c_str(),
                     GL_FRAGMENT_SHADER};
             sp = new GLShaderProgram;
             sp->addShaders({shader_vert, shader_frag});
@@ -153,12 +153,12 @@ void Scene::InitOpenGL() {
     auto patchShader = this->GetShader(PATCH);
     mapUniformBlock(patchShader->programID(), "MVPMatrix", 0, m_MVPBlock);
     mapUniformBlock(patchShader->programID(), "UniformBufferObject", 1,
-        m_UBOBlock);
+                    m_UBOBlock);
 
     auto noLightShader = this->GetShader(NOLIGHT);
     mapUniformBlock(noLightShader->programID(), "MVPMatrix", 0, m_MVPBlock);
     mapUniformBlock(noLightShader->programID(), "UniformBufferObject", 1,
-        m_UBOBlock);
+                    m_UBOBlock);
 
     auto cullingShader = this->GetShader(CULLING);
     mapUniformBlock(cullingShader->programID(), "MVPMatrix", 0, m_MVPBlock);
@@ -191,10 +191,7 @@ void Scene::Draw() {
     DrawFrame();
 }
 
-void Scene::Update() 
-{
-    this->Draw();
-}
+void Scene::Update() { this->Draw(); }
 
 void Scene::Resize(int width, int height, int pixelRatio) {
     m_Camera->SetViewPort(width, height);
@@ -225,8 +222,7 @@ void Scene::UpdateUniformData() {
     m_UBO.viewPos = m_Camera->GetCamaraPos();
 }
 
-void Scene::UpdateUniformBuffer() 
-{
+void Scene::UpdateUniformBuffer() {
     // update mvp matrix
     glBindBuffer(GL_UNIFORM_BUFFER, m_MVPBlock);
     glBufferData(GL_UNIFORM_BUFFER, sizeof(MVPMatrix), &m_MVP, GL_STATIC_DRAW);
@@ -239,8 +235,7 @@ void Scene::UpdateUniformBuffer()
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 
-void Scene::DrawAxes() 
-{
+void Scene::DrawAxes() {
     glClear(GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
@@ -270,8 +265,7 @@ void Scene::DrawAxes()
     m_Axes->DrawXYZ(fontShader, textureUniform, colorUniform);
 }
 
-void Scene::ChangeViewStyle(IGenum mode)
-{
+void Scene::ChangeViewStyle(IGenum mode) {
     m_CurrentObject->SetViewStyle(mode);
 }
 
