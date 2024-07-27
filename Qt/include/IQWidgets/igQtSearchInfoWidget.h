@@ -5,7 +5,7 @@
 
 #pragma once
 #include <ui_SearchInfo.h>
-#include <iGameVectorD.h>
+#include <iGameVector.h>
 //namespace iGame {
 //	class iGameIntArray;
 //	class iGameFloatArray;

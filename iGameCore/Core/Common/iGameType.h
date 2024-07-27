@@ -16,6 +16,7 @@ inline constexpr const char* FILE_NAME = "FILE_NAME";
 inline constexpr const char* FILE_PATH = "FILE_PATH";
 inline constexpr const char* FILE_SUFFIX = "FILE_SUFFIX";
 inline constexpr const char* ATTRIBUTE_NAME_ARRAY = "ATTRIBUTE_NAME_ARRAY";
+inline constexpr const char* TIME_FRAME_ARRAY = "TIME_FRAME_ARRAY";
 
 // DataObjectType
 inline constexpr int IG_NONE = -1;

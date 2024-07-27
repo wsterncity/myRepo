@@ -29,7 +29,7 @@ public:
 		center /= npts;
 
 		Vector3f normal;
-		normal.SetZero();
+		normal.setZero();
 
 		for (int i = 0; i < npts - 1; i++) {
 			const Point& v0 = points->GetPoint(i);
@@ -40,7 +40,7 @@ public:
 		const Point& v1 = points->GetPoint(0);
 		normal += Triangle::ComputrNormal(center, v0, v1);
 
-		normal.Normalize();
+		normal.normalize();
 		return normal;
 	}
 

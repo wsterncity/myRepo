@@ -118,8 +118,7 @@ bool iGameXMLFileReader::CreateDataObject() {
     else if(numLines){
 
     }
-
-
+    if(!m_Data.GetTimeData()->GetArrays().empty())  m_Output->SetTimeFrames(m_Data.GetTimeData());
     return true;
 }
 

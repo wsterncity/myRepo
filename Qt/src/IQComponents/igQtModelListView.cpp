@@ -28,8 +28,10 @@ igQtModelListView::igQtModelListView(QWidget* parent) : QTreeView(parent) {
 		if (item) {
 			ReverseItemVisibility(item);
 			int id = GetObjectIdFromItem(item);
-			auto* obj = m_Manager->GetCurrentScene()->GetDataObject(id);
-			obj->SetVisibility(itemVisibleList[item]);
+
+            m_Manager->GetCurrentScene()->ChangeDataObjectVisibility(id, itemVisibleList[item]);
+			//auto* obj = m_Manager->GetCurrentScene()->GetDataObject(id);
+			//obj->SetVisibility(itemVisibleList[item]);
 
 			//this->set
 			Q_EMIT UpdateCurrentScene();
@@ -139,7 +141,7 @@ void igQtModelListView::UpdateCustomMenu(const QPoint& point)
 	}
 }
 
-int igQtModelListView::GetObjectIdFromItem(QStandardItem *item) 
+int igQtModelListView::GetObjectIdFromItem(QStandardItem *item)
 {
     return itemObjectIds.count(item) ? itemObjectIds[item] : -1;
 }

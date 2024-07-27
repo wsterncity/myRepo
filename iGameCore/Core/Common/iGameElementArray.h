@@ -92,37 +92,6 @@ protected:
     ~ElementArray() override = default;
 };
 
-
-class IntArray2 : public ElementArray<int> {
-public:
-    I_OBJECT(IntArray2);
-    static Pointer New() { return new IntArray2; }
-
-protected:
-    IntArray2() = default;
-    ~IntArray2() override = default;
-};
-
-class FloatArray2 : public ElementArray<float> {
-public:
-    I_OBJECT(FloatArray2);
-    static Pointer New() { return new FloatArray2; }
-
-protected:
-    FloatArray2() = default;
-    ~FloatArray2() override = default;
-};
-
-class DoubleArray2 : public ElementArray<double> {
-public:
-    I_OBJECT(DoubleArray2);
-    static Pointer New() { return new DoubleArray2; }
-
-protected:
-    DoubleArray2() = default;
-    ~DoubleArray2() override = default;
-};
-
 class StringArray : public ElementArray<std::string> {
 public:
     I_OBJECT(StringArray);

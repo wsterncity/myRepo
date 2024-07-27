@@ -389,7 +389,6 @@ void igQtMainWindow::updateViewStyleAndCloudPicture()
 	if (current)
 	{
 		// Update View Style
-//>>>>>>> 5c590c0b5220d077d84cdab81b6eed106d7d4de8
 		IGenum defaultViewStyle = current->GetViewStyle();
 		viewStyleCombox->setCurrentIndex(defaultViewStyle);
 
@@ -404,12 +403,8 @@ void igQtMainWindow::updateViewStyleAndCloudPicture()
             {
                 attributeViewIndexCombox->addItem(QString::fromStdString(nameArray->GetElement(i)));
             }
-            attributeViewIndexCombox->setCurrentIndex(current->GetAttributeIndex() + 1);
         }
-
-
-
-
+		attributeViewIndexCombox->setCurrentIndex(current->GetAttributeIndex() + 1);
 	}
 }
 

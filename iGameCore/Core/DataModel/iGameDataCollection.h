@@ -18,6 +18,7 @@ public:
     //AttributeData::Pointer PointData{};
     //AttributeData::Pointer CellData{};
     AttributeData::Pointer Data{};
+    StreamingData::Pointer Time_Data{};
 
     CellArray::Pointer Lines{};
 
@@ -44,6 +45,14 @@ public:
             Data = AttributeData::New();
         }
         return Data;
+    }
+    StreamingData::Pointer GetTimeData()
+    {
+        if (Time_Data == nullptr)
+        {
+            Time_Data = StreamingData::New();
+        }
+        return Time_Data;
     }
     //AttributeData::Pointer GetPointData()
     //{
