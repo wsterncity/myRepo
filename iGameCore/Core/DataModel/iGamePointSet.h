@@ -105,6 +105,16 @@ protected:
 		m_PointDeleteMarker->Initialize(this->GetNumberOfPoints());
 	}
 
+	void ComputeBoundingBox() override 
+	{
+		if (m_Bounding.isNull() || GetMTime() < m_Points->GetMTime()) {
+			m_Bounding.reset();
+			for (int i = 0; i < GetNumberOfPoints(); i++) {
+				m_Bounding.add(GetPoint(i));
+			}
+		}
+	}
+
 	Points::Pointer m_Points{};
 	DeleteMarker::Pointer m_PointDeleteMarker{};
 	bool m_InEditStatus{ false };
