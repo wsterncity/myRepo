@@ -12,12 +12,13 @@
 #include "iGameObject.h"
 #include "iGameElementArray.h"
 #include "iGameFlatArray.h"
+#include "iGameStreamingData.h"
 
 IGAME_NAMESPACE_BEGIN
 using EntryValue = std::variant<unsigned char, char, unsigned short, short,
     unsigned int, int, unsigned long long, long long, float, double, bool, 
     std::string, IntArray::Pointer, FloatArray::Pointer, DoubleArray::Pointer,
-    StringArray::Pointer>;
+    StringArray::Pointer, StreamingData::Pointer>;
 
 class Metadata : public Object{
 public:
@@ -55,6 +56,10 @@ public:
     void AddStringArray(const std::string& name, StringArray::Pointer value);
     bool GetStringArray(const std::string& name, StringArray::Pointer& value) const;
     StringArray::Pointer GetStringArray(const std::string& name) const;
+
+    void AddStreamingData(const std::string& name, StreamingData::Pointer value);
+    bool GetStreamingData(const std::string& name, StreamingData::Pointer value) const;
+    StreamingData::Pointer GetStreamingData(const std::string& name) const;
 
     bool AddSubMetadata(const std::string& name, Pointer sub_metadata);
     Pointer GetSubMetadata(const std::string& name);

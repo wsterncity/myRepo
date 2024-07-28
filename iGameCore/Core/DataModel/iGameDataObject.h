@@ -2,6 +2,7 @@
 #define iGameDataObject_h
 
 #include "iGameObject.h"
+#include "iGameStreamingData.h"
 #include "iGamePropertySet.h"
 #include "iGameScalarsToColors.h"
 #include "iGameMetadata.h"
@@ -35,6 +36,8 @@ public:
 		return true;
 	}
 
+	StreamingData::Pointer GetTimeFrames() { return m_timeFrames; }
+	void SetTimeFrames(StreamingData::Pointer p) { m_timeFrames = p; }
 	void SetPropertySet(PropertySet::Pointer p) { m_Propertys = p; }
 	PropertySet* GetPropertySet() { return m_Propertys.get(); }
 	Metadata* GetMetadata() { return m_Metadata.get(); }
@@ -129,6 +132,7 @@ protected:
 	~DataObject() override = default;
 
 	DataObjectId m_UniqueId{};
+	StreamingData::Pointer m_timeFrames{};
 	PropertySet::Pointer m_Propertys{};
 	Metadata::Pointer m_Metadata{};
 
@@ -161,12 +165,18 @@ public:
     int GetAttributeIndex();
     int GetAttributeDimension();
 
+    int GetTimeframeIndex();
+    void SwitchToCurrentTimeframe(int timeIndex);
+
+
 protected:
 	IGenum m_ViewStyle{ IG_NONE };
 	int m_AttributeIndex{ -1 };
 	int m_AttributeDimension{ -1 };
 	bool m_Visibility{ true };
 	bool m_Drawable{ false };
+
+    int m_CurrentTimeframeIndex{ -1 };
 };
 
 template<typename Functor, typename... Args>

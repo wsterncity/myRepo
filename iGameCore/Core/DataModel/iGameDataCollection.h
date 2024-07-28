@@ -17,6 +17,7 @@ public:
     Points::Pointer        Points{};
 
     PropertySet::Pointer Data{};
+    StreamingData::Pointer Time_Data{};
 
     CellArray::Pointer Lines{};
 
@@ -43,6 +44,14 @@ public:
             Data = PropertySet::New();
         }
         return Data;
+    }
+    StreamingData::Pointer GetTimeData()
+    {
+        if (Time_Data == nullptr)
+        {
+            Time_Data = StreamingData::New();
+        }
+        return Time_Data;
     }
     CellArray::Pointer GetLines()
     {

@@ -37,6 +37,17 @@ bool iGameXMLFileReader::Execute() {
         return false;
     }
     CreateDataObject();
+
+    int size = m_Output->GetPropertySet()->GetAllPropertys()->GetNumberOfElements();
+
+    if (size > 0) {
+        StringArray::Pointer attrbNameArray = StringArray::New();
+        for (int i = 0; i < size; i++) {
+            auto& data = m_Output->GetPropertySet()->GetProperty(i);
+            attrbNameArray->AddElement(data.pointer->GetName());
+        }
+        m_Output->GetMetadata()->AddStringArray(ATTRIBUTE_NAME_ARRAY, attrbNameArray);
+    }
     m_Output->SetName(m_FileName);
     SetOutput(0, m_Output);
     end = clock();
@@ -74,6 +85,7 @@ bool iGameXMLFileReader::CreateDataObject() {
         VolumeMesh::Pointer mesh = VolumeMesh::New();
         mesh->SetPoints(m_Data.GetPoints());
         mesh->SetVolumes(m_Data.GetVolumes());
+        mesh->SetPropertySet(m_Data.GetData());
         m_Output = mesh;
     }
 
@@ -82,6 +94,7 @@ bool iGameXMLFileReader::CreateDataObject() {
         SurfaceMesh::Pointer mesh = SurfaceMesh::New();
         mesh->SetPoints(m_Data.GetPoints());
         mesh->SetFaces(m_Data.GetFaces());
+        mesh->SetPropertySet(m_Data.GetData());
         m_Output = mesh;
     }
 
@@ -90,20 +103,22 @@ bool iGameXMLFileReader::CreateDataObject() {
         VolumeMesh::Pointer mesh = VolumeMesh::New();
         mesh->SetPoints(m_Data.GetPoints());
         mesh->SetVolumes(m_Data.GetVolumes());
+        mesh->SetPropertySet(m_Data.GetData());
         m_Output = mesh;
     }
+
         //  单独点集判断
     else if(numPoints){
         PointSet::Pointer pointSet = PointSet::New();
         pointSet->SetPoints(m_Data.GetPoints());
+        pointSet->SetPropertySet(m_Data.GetData());
         m_Output = pointSet;
     }
     //  单独边集判断
     else if(numLines){
 
     }
-
-
+    if(!m_Data.GetTimeData()->GetArrays().empty())  m_Output->SetTimeFrames(m_Data.GetTimeData());
     return true;
 }
 

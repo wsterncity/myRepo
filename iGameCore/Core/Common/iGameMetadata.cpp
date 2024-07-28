@@ -1,4 +1,5 @@
 #include "iGameMetadata.h"
+
 IGAME_NAMESPACE_BEGIN
 void Metadata::AddInt(const std::string& name, int value)
 {
@@ -170,5 +171,21 @@ void Metadata::RemoveEntry(const std::string& name)
 	if (entry_ptr != m_Entries.end()) {
 		m_Entries.erase(entry_ptr);
 	}
+}
+
+void Metadata::AddStreamingData(const std::string &name, StreamingData::Pointer value) {
+    AddEntry(name, value);
+}
+
+bool Metadata::GetStreamingData(const std::string &name, StreamingData::Pointer value) const {
+    return GetEntry(name, value);
+}
+
+StreamingData::Pointer Metadata::GetStreamingData(const std::string &name) const {
+    StreamingData::Pointer value;
+    if (GetEntry(name, value)) {
+        return value;
+    }
+    return nullptr;
 }
 IGAME_NAMESPACE_END

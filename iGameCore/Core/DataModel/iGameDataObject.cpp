@@ -177,4 +177,15 @@ void DataObject::SetVisibility(bool f)
     int DataObject::GetAttributeDimension() {
         return this->m_AttributeDimension;
     }
+
+    int DataObject::GetTimeframeIndex() {
+        return this->m_CurrentTimeframeIndex;
+    }
+
+    void DataObject::SwitchToCurrentTimeframe(int timeIndex) {
+        if(m_timeFrames == nullptr) igError("This operation cannot be performed in this file without time frames.");
+        if(m_timeFrames->GetArrays().size() <= timeIndex) igError("timeStep error");
+
+        m_CurrentTimeframeIndex = timeIndex;
+    }
 IGAME_NAMESPACE_END

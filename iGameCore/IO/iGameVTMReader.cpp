@@ -45,7 +45,7 @@ bool iGameVTMReader::Parsing() {
                     const char *fileEnd = fileName.data() + fileName.size();
                     fileSuffix = std::string(pos + 1, fileEnd);
                 }
-                std::cout << fileDir + std::string(existAttribute) << '\n';
+//                std::cout << fileDir + std::string(existAttribute) << '\n';
                 if(fileSuffix == "vts"){
                     iGameVTSReader::Pointer rd = iGameVTSReader::New();
                     rd->SetFilePath(fileDir + std::string(existAttribute));

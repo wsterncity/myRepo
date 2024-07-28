@@ -53,16 +53,6 @@ bool iGame::iGameVTSReader::Parsing() {
     int offset_idx = 0;
     if(data)
     {
-//        if(dataSet->GetPoints() == nullptr)
-//        {
-//            Points = iGamePoints::New();
-//            dataSet->SetPoints(Points);
-//        }
-//        else
-//        {
-//            Points = dataSet->GetPoints();
-//        }
-//        offset_idx = dataSet->GetNumberOfPoints();
         float p[3] = { 0 };
         char* nextToken;
         char* token = strtok_s(const_cast<char*>(data), " ", &nextToken);
@@ -78,19 +68,6 @@ bool iGame::iGameVTSReader::Parsing() {
     int CellNum = (x_dimension - 1) * (y_dimension - 1) * (z_dimension - 1);
 
     CellArray::Pointer volume = m_Data.GetVolumes();
-
-
-//    iGameCellArray<iGameHexahedron>* Hexahdrons;
-//    if(dataSet->GetHexahedrons() == nullptr)
-//    {
-//        Hexahdrons = iGameCellArray<iGameHexahedron>::New();
-//        dataSet->SetHexahedrons(Hexahdrons);
-//    }
-//    else
-//    {
-//        Hexahdrons = dataSet->GetHexahedrons();
-//    }
-//    Hexahdrons->Resize(dataSet->GetNumberOfHexahedrons() + CellNum);
 
     int xy_multi_dimensions = x_dimension * y_dimension;
     int xyz_multi_dimensions = x_dimension * y_dimension * z_dimension;
@@ -110,20 +87,41 @@ bool iGame::iGameVTSReader::Parsing() {
         }
     }
 
-
+    unsigned int pointNum =  Points->GetNumberOfPoints();
     // find Points' Scalar Data
-//    elem = FindTargetItem(root, "PointData");
-//    elem = elem->FirstChildElement("DataArray");
-//    //  use while loop to find point's multiple scala data.
-//    while(elem){
-//        data = elem->GetText();
-//        std::string scalarName = elem->Attribute("Name");
+    elem = FindTargetItem(root, "PointData");
+    elem = elem->FirstChildElement("DataArray");
+
+    //  use while loop to find point's multiple scala data.
+    while(elem){
+        data = elem->GetText();
+        ArrayObject::Pointer  array;
+        std::string scalarName = elem->Attribute("Name");
+        const char* type = elem->Attribute("type");
 //        int scalarComponents = mAtoi(elem->Attribute("NumberOfComponents"));
-//        iGamePointData* pointData;
-//        iGameFloatArray* ScalarData;
-//        if(data)
-//        {
-//
+        if(data)
+        {
+            if(!strncmp(type, "Float32", 7)){
+                FloatArray::Pointer arr = FloatArray::New();
+                float ps[3] = { 0 };
+                char* nextToken;
+                char* token = strtok_s(const_cast<char*>(data), " ", &nextToken);
+                while (token != nullptr) {
+                    for(float & i : ps) {
+                        i = mAtof(token);
+                        token = strtok_s(nullptr, " ", &nextToken);
+                    }
+                    arr->AddElement(ps);
+                }
+
+                array = arr;
+            }
+
+            if(array != nullptr){
+                array->SetName(scalarName);
+                m_Data.GetData()->AddScalars(IG_POINT, array);
+            }
+
 //            if(dataSet->GetPointData() == nullptr)
 //            {
 //                pointData = iGamePointData::New();
@@ -140,22 +138,13 @@ bool iGame::iGameVTSReader::Parsing() {
 //                ScalarData->SetNumberOfComponents(scalarComponents);
 //                pointData->AddScalars(ScalarData);
 //            }
-//            float ps[3] = { 0 };
-//            char* nextToken;
-//            char* token = strtok_s(const_cast<char*>(data), " ", &nextToken);
-//            while (token != nullptr) {
-//                for(float & i : ps) {
-//                    i = mAtof(token);
-//                    token = strtok_s(nullptr, " ", &nextToken);
-//                    ScalarData->AddValue(i);
-//                }
-//            }
-//
-//        }
-//
-//
-//        elem = elem->NextSiblingElement("DataArray");
-//    }
+
+
+        }
+
+
+        elem = elem->NextSiblingElement("DataArray");
+    }
     return true;
 }
 IGAME_NAMESPACE_END

@@ -139,7 +139,6 @@ void igQtFileLoader::OpenFile(const std::string& filePath)
 	//obj->GetMetadata()->AddStringArray(ATTRIBUTE_NAME_ARRAY, attrbNameArray);
 
 	m_SceneManager->GetCurrentScene()->AddDataObject(obj);
-
 	this->SaveCurrentFileToRecentFile(QString::fromStdString(filePath));
 	Q_EMIT AddFileToModelList(QString(filePath.substr(filePath.find_last_of('/') + 1).c_str()));
 	Q_EMIT FinishReading();

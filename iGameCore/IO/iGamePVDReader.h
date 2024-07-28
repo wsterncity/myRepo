@@ -25,7 +25,7 @@ protected:
     ~iGamePVDReader() = default;
 
 protected:
-    std::map<float, DataObject::Pointer> child_map;
+    DataObject::Pointer m_data_object{nullptr};
 };
 
 IGAME_NAMESPACE_END
