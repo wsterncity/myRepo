@@ -63,7 +63,7 @@ border:2px solid #EEF1F7
      <x>0</x>
      <y>0</y>
      <width>1200</width>
-     <height>27</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menua">
@@ -131,6 +131,17 @@ border:2px solid #EEF1F7
     <property name="title">
      <string>网格处理</string>
     </property>
+    <widget class="QMenu" name="menuTest">
+     <property name="title">
+      <string>Test</string>
+     </property>
+     <addaction name="action_test_01"/>
+     <addaction name="action_test_02"/>
+     <addaction name="action_test_03"/>
+     <addaction name="action_test_04"/>
+     <addaction name="action_test_05"/>
+     <addaction name="action_test_06"/>
+    </widget>
     <addaction name="action_EditMode"/>
     <addaction name="action_LaSmoothing"/>
     <addaction name="action_Simplification"/>
@@ -138,7 +149,7 @@ border:2px solid #EEF1F7
     <addaction name="action_Subdivision"/>
     <addaction name="action_Remeshing"/>
     <addaction name="action_Delaunay"/>
-    <addaction name="action_Test"/>
+    <addaction name="menuTest"/>
     <addaction name="action_TetSimplification"/>
    </widget>
    <widget class="QMenu" name="menu_help">
@@ -1148,14 +1159,39 @@ border:2px solid #EEF1F7
     <string>网格光顺</string>
    </property>
   </action>
-  <action name="action_Test">
-   <property name="text">
-    <string>Test</string>
-   </property>
-  </action>
   <action name="action_TetSimplification">
    <property name="text">
     <string>四面体简化</string>
+   </property>
+  </action>
+  <action name="action_test_01">
+   <property name="text">
+    <string>test_01</string>
+   </property>
+  </action>
+  <action name="action_test_02">
+   <property name="text">
+    <string>test_02</string>
+   </property>
+  </action>
+  <action name="action_test_03">
+   <property name="text">
+    <string>test_03</string>
+   </property>
+  </action>
+  <action name="action_test_04">
+   <property name="text">
+    <string>test_04</string>
+   </property>
+  </action>
+  <action name="action_test_05">
+   <property name="text">
+    <string>test_05</string>
+   </property>
+  </action>
+  <action name="action_test_06">
+   <property name="text">
+    <string>test_06</string>
    </property>
   </action>
  </widget>

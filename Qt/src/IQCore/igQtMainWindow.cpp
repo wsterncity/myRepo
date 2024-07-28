@@ -2,6 +2,9 @@
 // Created by m_ky on 2024/4/10.
 //
 
+#include <iGameFilterPoints.h>
+#include <iGameSurfaceMeshFilterTest.h>
+
 #include <IQCore/igQtMainWindow.h>
 #include <IQCore/igQtFileLoader.h>
 #include <IQWidgets/igQtModelDrawWidget.h>
@@ -212,11 +215,65 @@ void igQtMainWindow::initAllFilters() {
 	//	delete info;
 	//		});
 
-	//connect(ui->action_Test, &QAction::triggered, this, [&](bool checked) {
-	//	iGame::iGameInformationMap* info = iGame::iGameInformationMap::New();
-	//	iGame::iGameManager::Instance()->ExecuteAlgorithm(iGame::iGameTest::New(), info);
-	//	delete info;
-	//	});
+	connect(ui->action_test_01, &QAction::triggered, this, [&](bool checked) {
+		PointSet::Pointer points = PointSet::New();
+		Points::Pointer ps = Points::New();
+		
+		std::random_device rd;
+		std::mt19937 gen(rd());
+		std::uniform_real_distribution<> dis(0.0, 1.0);
+
+		double r = 1;
+		for (int i = 0; i < 1000000; i++) {
+			double u = dis(gen);
+			double v = dis(gen);
+			double w = dis(gen);
+
+			double theta = 2.0 * M_PI * u;
+			double phi = acos(2.0 * v - 1.0);
+			double rCubeRoot = std::cbrt(w);
+
+			double x = r * rCubeRoot * sin(phi) * cos(theta);
+			double y = r * rCubeRoot * sin(phi) * sin(theta);
+			double z = r * rCubeRoot * cos(phi);
+
+			ps->AddPoint( x, y, z );
+		}
+		points->SetPoints(ps);
+		points->SetName("undefined_PointSet");
+		rendererWidget->AddDataObject(points);
+		});
+
+	connect(ui->action_test_02, &QAction::triggered, this, [&](bool checked) {
+		FilterPoints::Pointer fp = FilterPoints::New();
+		fp->SetInput(rendererWidget->GetScene()->GetCurrentObject());
+		fp->SetFilterRate(0.5);
+		fp->Update();
+		rendererWidget->update();
+		});
+
+	connect(ui->action_test_03, &QAction::triggered, this, [&](bool checked) {
+		SurfaceMesh::Pointer mesh = SurfaceMesh::New();
+		Points::Pointer points = Points::New();
+		points->AddPoint(0, 0, 0);
+		points->AddPoint(1, 0, 0);
+		points->AddPoint(0, 1, 0);
+
+		CellArray::Pointer faces = CellArray::New();
+		faces->AddCellId3(0, 1, 2);
+
+		mesh->SetPoints(points);
+		mesh->SetFaces(faces);
+		mesh->SetName("undefined_mesh");
+		rendererWidget->AddDataObject(mesh);
+		});
+
+	connect(ui->action_test_04, &QAction::triggered, this, [&](bool checked) {
+		SurfaceMeshFilterTest::Pointer fp = SurfaceMeshFilterTest::New();
+		fp->SetInput(rendererWidget->GetScene()->GetCurrentObject());
+		fp->Update();
+		rendererWidget->update();
+		});
 }
 
 void igQtMainWindow::initAllDockWidgetConnectWithAction()
@@ -267,6 +324,9 @@ void igQtMainWindow::initAllMySignalConnections()
 	//connect(fileLoader, &igQtFileLoader::FinishReading, ui->widget_SearchInfo, &igQtSearchInfoWidget::updateDataProducer);
 
 	connect(fileLoader, &igQtFileLoader::AddFileToModelList, ui->modelTreeView, &igQtModelListView::AddModel);
+	connect(rendererWidget, &igQtRenderWidget::AddDataObjectToModelList, ui->modelTreeView, &igQtModelListView::AddModel);
+	connect(rendererWidget, &igQtRenderWidget::UpdateCurrentDataObject, this, &igQtMainWindow::updateCurrentDataObject);
+	
 	//connect(fileLoader, &igQtFileLoader::LoadAnimationFile, ui->widget_Animation, &igQtAnimationWidget::initAnimationComponents);
 
 	//connect(ui->widget_Animation, &igQtAnimationWidget::PlayAnimation_snap, rendererWidget, &igQtModelDrawWidget::PlayAnimation_snap);
@@ -393,9 +453,12 @@ void igQtMainWindow::updateViewStyleAndCloudPicture()
 
 		StringArray::Pointer nameArray =
 			current->GetMetadata()->GetStringArray(ATTRIBUTE_NAME_ARRAY);
-		for (int i = 0; i < nameArray->Size(); i++)
+		if (nameArray != nullptr)
 		{
-			attributeViewIndexCombox->addItem(QString::fromStdString(nameArray->GetElement(i)));
+			for (int i = 0; i < nameArray->Size(); i++)
+			{
+				attributeViewIndexCombox->addItem(QString::fromStdString(nameArray->GetElement(i)));
+			}
 		}
 		attributeViewIndexCombox->setCurrentIndex(current->GetAttributeIndex() + 1);
 	}

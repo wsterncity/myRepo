@@ -39,7 +39,6 @@ public:
         SHADERTYPE_COUNT
     };
 
-    // ��Actor�Լ�Mapperʹ�õĽӿ�
     MVPMatrix& MVP() { return this->m_MVP; }
     UniformBufferObject& UBO() { return this->m_UBO; }
     void UpdateUniformBuffer();
@@ -50,10 +49,8 @@ public:
     GLShaderProgram* GetShader(IGenum type);
     bool HasShader(IGenum type);
 
-    // ��Qtʹ�õĽӿ�
     void ChangeViewStyle(IGenum mode);
 
-    // ��Ⱦʹ�õĽӿ�
     void Draw();
     void Resize(int width, int height, int pixelRatio);
     void Update();

@@ -55,9 +55,7 @@ public:
 	}
 
 	Link& GetLink(const IGsize linkId) { return m_Buffer->ElementAt(linkId); }
-
 	int GetLinkSize(const IGsize linkId) { return m_Buffer->ElementAt(linkId).size; }
-
 	igIndex* GetLinkPointer(const IGsize linkId) { return m_Buffer->ElementAt(linkId).pointer; }
 	const igIndex* GetLinkPointer(const IGsize linkId) const { return m_Buffer->ElementAt(linkId).pointer; }
 
@@ -70,6 +68,17 @@ public:
 		return this->GetNumberOfLinks() - 1;
 	}
 
+	void SetLink(const IGsize linkId, igIndex* ids, int size)
+	{
+		if (linkId >= GetNumberOfLinks()) {
+			Resize(linkId + 1);
+		}
+		Link& link = GetLink(linkId);
+		link.size = link.capcity = size;
+		link.pointer = new igIndex[link.size];
+		memcpy(link.pointer, ids, static_cast<size_t>(size * sizeof(igIndex)));
+	}
+
 	void DeleteLink(const IGsize linkId) {
 		Link& link = this->GetLink(linkId);
 		link.size = link.capcity = 0;
@@ -78,6 +87,19 @@ public:
 			delete[] link.pointer;
 		}
 		link.pointer = nullptr;
+	}
+
+	void ReplaceReference(const IGsize linkId, const IGsize from, const IGsize to) 
+	{
+		Link& link = this->GetLink(linkId);
+
+		for (int i = 0; i < link.size; i++)
+		{
+			if (link.pointer[i] == from)
+			{
+				link.pointer[i] = to;
+			}
+		}
 	}
 
 	void RemoveReference(const IGsize cellId, const IGsize linkId)
@@ -98,7 +120,7 @@ public:
 		}
 	}
 
-	void AddReference(const IGsize cellId, const IGsize linkId)
+	void AddReference(const IGsize linkId, const IGsize cellId)
 	{
 		Link& link = this->GetLink(linkId);
 		if (link.size >= link.capcity) {
@@ -131,18 +153,21 @@ public:
 		}
 	}
 
-	void IncrementLinkSize(const IGsize linkId) { this->GetLink(linkId).size++; }
+	void IncrementLinkSize(const IGsize linkId) { this->GetLink(linkId).capcity++; }
 
 	void AllocateLinks(const IGsize n) {
 		for (int i = 0; i < n; ++i)
 		{
 			Link& link = GetLink(i);
-			link.pointer = new igIndex[link.size];
+			link.pointer = new igIndex[link.capcity];
 		}
 	}
 
 protected:
-	CellLinks() {};
+	CellLinks() 
+	{
+		m_Buffer = ElementArray<Link>::New();
+	};
 	~CellLinks() override {};
 
 	ElementArray<Link>::Pointer m_Buffer{};

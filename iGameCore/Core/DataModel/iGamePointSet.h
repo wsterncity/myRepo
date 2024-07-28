@@ -5,6 +5,7 @@
 #include "iGamePoints.h"
 #include "iGamePropertySet.h"
 #include "iGameDrawableObject.h"
+#include "iGameMarker.h"
 
 IGAME_NAMESPACE_BEGIN
 class PointSet : public DataObject {
@@ -12,13 +13,7 @@ public:
 	I_OBJECT(PointSet);
 	static Pointer New() { return new PointSet; }
 
-	igIndex GetNumberOfPoints() { return m_Points ? m_Points->GetNumberOfPoints() : 0;}
-
-	Points::Pointer GetPoints() { return m_Points; }
-
-	Point& GetPoint(igIndex ptId) { return m_Points->GetPoint(ptId); }
-
-	virtual void SetPoints(Points::Pointer points) 
+	void SetPoints(Points::Pointer points)
 	{
 		if (m_Points != points)
 		{
@@ -26,15 +21,68 @@ public:
 			this->Modified();
 		}
 	}
+	Points::Pointer GetPoints() { return m_Points; }
 
-	virtual void SetPoint(igIndex ptId, const Point& p) 
+	IGsize GetNumberOfPoints() { return m_Points ? m_Points->GetNumberOfPoints() : 0; }
+
+	Point& GetPoint(const IGsize ptId) { return m_Points->GetPoint(ptId); }
+
+	void SetPoint(const IGsize ptId, const Point& p) 
 	{
 		m_Points->SetPoint(ptId, p);
+		Modified();
 	}
 
-	virtual igIndex AddPoint(const Point& p) 
+	virtual IGsize AddPoint(const Point& p)
 	{
-		return m_Points->AddPoint(p);
+		if(!InEditStatus())
+		{
+			RequestEditStatus();
+		}
+		IGsize id = m_Points->AddPoint(p);
+		m_PointDeleteMarker->AddTag();
+		Modified();
+		return id;
+	}
+
+	virtual void RequestEditStatus() 
+	{
+		if (InEditStatus())
+		{
+			return;
+		}
+		RequestPointStatus();
+		MakeEditStatusOn();
+	}
+
+	virtual void DeletePoint(const IGsize ptId)
+	{
+		if(!InEditStatus())
+		{
+			RequestEditStatus();
+		}
+		m_PointDeleteMarker->MarkDeleted(ptId);
+	}
+
+	bool IsPointDeleted(const IGsize ptId) {
+		return m_PointDeleteMarker->IsDeleted(ptId);
+	}
+
+	virtual void GarbageCollection()
+	{
+		IGsize i, mapId = 0;
+		for (i = 0; i < GetNumberOfPoints(); i++) {
+			if (IsPointDeleted(i)) continue;
+			if (i != mapId) {
+				m_Points->SetPoint(mapId, m_Points->GetPoint(i));
+			}
+			mapId++;
+		}
+		m_Points->Resize(mapId);
+
+		m_PointDeleteMarker = nullptr;
+		Modified();
+		MakeEditStatusOff();
 	}
 
 protected:
@@ -42,9 +90,24 @@ protected:
 		m_Points = Points::New();
 		m_ViewStyle = IG_POINT;
 	}
-	~PointSet() override {}
+	~PointSet() override = default;
+
+	bool InEditStatus() { return m_InEditStatus; }
+	void MakeEditStatusOn() { m_InEditStatus = true; }
+	void MakeEditStatusOff() { m_InEditStatus = false; }
+
+	void RequestPointStatus() 
+	{
+		if (m_PointDeleteMarker == nullptr)
+		{
+			m_PointDeleteMarker = DeleteMarker::New();
+		}
+		m_PointDeleteMarker->Initialize(this->GetNumberOfPoints());
+	}
 
 	Points::Pointer m_Points{};
+	DeleteMarker::Pointer m_PointDeleteMarker{};
+	bool m_InEditStatus{ false };
 
 public:
 	void Draw(Scene*) override;

@@ -33,6 +33,10 @@ void PointSet::ConvertToDrawableData()
 	{
 		return;
 	}
+	//if (m_Positions)
+	//{
+	//	std::cout << m_Positions->GetMTime() << " " << this->GetMTime() << std::endl;
+	//}
 
 	m_Positions = m_Points->ConvertToArray();
 
@@ -53,6 +57,8 @@ void PointSet::ConvertToDrawableData()
 	m_PointVAO.vertexBuffer(GL_VBO_IDX_0, m_PositionVBO, 0, 3 * sizeof(float));
 	GLSetVertexAttrib(m_PointVAO, GL_LOCATION_IDX_0, GL_VBO_IDX_0, 3, GL_FLOAT,
 		GL_FALSE, 0);
+
+	m_Positions->Modified();
 }
 
 IGAME_NAMESPACE_END

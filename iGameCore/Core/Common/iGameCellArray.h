@@ -5,49 +5,9 @@
 #include "iGameElementArray.h"
 #include "iGameCell.h"
 #include "iGameFlatArray.h"
+#include "iGameMarker.h"
 
 IGAME_NAMESPACE_BEGIN
-class Tag : public Object{
-public:
-	I_OBJECT(Tag);
-	static Pointer New() { return new Tag; }
-	std::vector<uint8_t> DeletedTag;
-	igIndex Size{ 0 };
-
-	void Init(int taggedSize) {
-		if (taggedSize > 0) {
-			this->Reset();
-			this->Size = (static_cast<size_t>(taggedSize) + 7) / 8;
-			this->DeletedTag.resize(this->Size, 0);
-		}
-	}
-
-	void Reset() {
-		this->DeletedTag.clear();
-		this->Size = 0;
-	}
-
-	void AddTag() {
-		if (this->Size % 8 == 0)
-		{
-			this->DeletedTag.emplace_back(0);
-		}
-		this->Size++;
-	}
-
-	void MarkDeleted(igIndex id) noexcept {
-		this->DeletedTag[id / 8] |= (1 << (id % 8));
-	}
-
-	bool IsDeleted(igIndex id) const noexcept {
-		return (this->DeletedTag[id / 8] >> (id % 8)) & 1;
-	}
-
-protected:
-	Tag() {}
-	~Tag() override {}
-};
-
 class CellArray : public Object {
 public:
 	I_OBJECT(CellArray);
@@ -74,7 +34,7 @@ public:
 	{
 		m_Buffer->Reset();
 		m_Offsets->Reset();
-		m_DeletedMask->Reset();
+		m_DeleteMasker->Reset();
 	}
 
 	void Squeeze()
@@ -151,7 +111,7 @@ public:
 		for (int i = 0; i < ncell; i++) {
 			ptr[i] = cell[i];
 		}
-		m_DeletedMask->AddTag();
+		m_DeleteMasker->AddTag();
 		if (m_UseOffsets)
 		{
 			m_Offsets->AddValue(endOffset);
@@ -184,13 +144,25 @@ public:
 		return this->AddCellIds(cell, 3);
 	}
 
+	void ReplaceCellReference(const IGsize cellId, igIndex from, igIndex to) 
+	{
+		IGuint begin = this->GetBeginOffset(cellId);
+		int size = this->GetCellSize(cellId);
+		igIndex* pos = m_Buffer->RawPointer() + begin;
+		for (int i = 0; i < size; i++) {
+			if (pos[i] == from) {
+				pos[i] = to;
+			}
+		}
+	}
+
 	void DeleteCell(const IGsize cellId)
 	{
-		m_DeletedMask->MarkDeleted(cellId);
+		m_DeleteMasker->MarkDeleted(cellId);
 	}
 
 	bool IsDeleted(const IGsize cellId) {
-		return m_DeletedMask->IsDeleted(cellId);
+		return m_DeleteMasker->IsDeleted(cellId);
 	}
 
 	void GarbageCollection() {
@@ -217,7 +189,7 @@ public:
 		{
 			m_Offsets->Resize(k + 1);
 		}
-		m_DeletedMask->Init(k);
+		m_DeleteMasker->Resize(k);
 	}
 
 	IdArray::Pointer GetCellIdArray() { return m_Buffer; }
@@ -226,7 +198,7 @@ public:
 protected:
 	CellArray() {
 		m_Buffer = IdArray::New();
-		m_DeletedMask = Tag::New();
+		m_DeleteMasker = DeleteMarker::New();
 		m_Offsets = UnsignedIntArray::New();
 		m_Offsets->AddValue(0);
 	};
@@ -257,7 +229,7 @@ protected:
 
 	int m_FixedCellSize{ -1 };
 	bool m_UseOffsets{ false };
-	Tag::Pointer m_DeletedMask{};
+	DeleteMarker::Pointer m_DeleteMasker{};
 };
 IGAME_NAMESPACE_END
 #endif
