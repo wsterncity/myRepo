@@ -190,8 +190,8 @@ public:
 		}
 	}
 
-	inline double norm() const { return sqrt(this->SquaredNorm()); }
-	inline double length() const { return sqrt(this->SquaredLength()); }
+	inline double norm() const { return sqrt(this->squaredNorm()); }
+	inline double length() const { return sqrt(this->squaredLength()); }
 
 	inline double squaredNorm() const {
 		double ret = 0;

@@ -160,6 +160,7 @@ void igQtAnimationWidget::changeAnimationMode() {
 void igQtAnimationWidget::initAnimationComponents() {
     if(iGame::SceneManager::Instance()->GetCurrentScene()->GetCurrentObject()->GetTimeFrames() == nullptr)  return;
     auto timeArrays = iGame::SceneManager::Instance()->GetCurrentScene()->GetCurrentObject()->GetTimeFrames()->GetArrays();
+    if(timeArrays.empty()) return;
     std::vector<float> timeValues;
     timeValues.reserve(timeArrays.size());
     for(auto & timeArray : timeArrays) timeValues.push_back(timeArray.timeValue);

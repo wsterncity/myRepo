@@ -6,6 +6,7 @@
 #include "iGamePropertySet.h"
 #include "iGameScalarsToColors.h"
 #include "iGameMetadata.h"
+#include "iGameBoundingBox.h"
 
 #include "OpenGL/GLBuffer.h"
 #include "OpenGL/GLShader.h"
@@ -37,10 +38,14 @@ public:
 	}
 
 	StreamingData::Pointer GetTimeFrames();
-	void SetTimeFrames(StreamingData::Pointer p) { m_timeFrames = p; }
+	void SetTimeFrames(StreamingData::Pointer p) { m_TimeFrames = p; }
 	void SetPropertySet(PropertySet::Pointer p) { m_Propertys = p; }
 	PropertySet* GetPropertySet() { return m_Propertys.get(); }
 	Metadata* GetMetadata() { return m_Metadata.get(); }
+	const BoundingBox& GetBoundingBox() {
+		ComputeBoundingBox();
+		return m_Bounding; 
+	}
 
 	class SubDataObjectsHelper : public Object {
 	public:
@@ -137,10 +142,14 @@ protected:
 	}
 	~DataObject() override = default;
 
+	virtual void ComputeBoundingBox() {}
+
 	DataObjectId m_UniqueId{};
-	StreamingData::Pointer m_timeFrames{};
+	StreamingData::Pointer m_TimeFrames{};
 	PropertySet::Pointer m_Propertys{};
 	Metadata::Pointer m_Metadata{};
+
+	BoundingBox m_Bounding;
 
 	friend class SubDataObjectsHelper;
 	SmartPointer<SubDataObjectsHelper> m_SubDataObjectsHelper{};
@@ -173,7 +182,7 @@ public:
 
     int GetTimeframeIndex();
     void SwitchToCurrentTimeframe(int timeIndex);
-
+	
 
 protected:
 	IGenum m_ViewStyle{ IG_NONE };

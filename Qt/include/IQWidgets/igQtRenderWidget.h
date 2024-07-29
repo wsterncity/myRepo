@@ -25,6 +25,13 @@ public:
         return m_Scene.get();
     }
 
+    void AddDataObject(DataObject::Pointer obj)
+    {
+        m_Scene->AddDataObject(obj);
+        Q_EMIT AddDataObjectToModelList(QString::fromStdString(obj->GetName()));
+        update();
+    }
+
 protected:
     void initializeGL() override;
     void resizeGL(int w, int h) override;
@@ -67,4 +74,8 @@ protected:
          doneCurrent();
          update();
      }
+
+signals:
+    void AddDataObjectToModelList(QString model_name);
+    void UpdateCurrentDataObject();
 };

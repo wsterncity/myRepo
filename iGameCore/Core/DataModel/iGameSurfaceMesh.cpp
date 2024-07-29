@@ -30,7 +30,7 @@ void SurfaceMesh::SetFaces(CellArray::Pointer faces)
 	}
 }
 
-Line* SurfaceMesh::GetEdge(igIndex edgeId)
+Line* SurfaceMesh::GetEdge(const IGsize edgeId)
 {
 	const igIndex* cell;
 	int ncells = m_Edges->GetCellIds(edgeId, cell);
@@ -44,7 +44,7 @@ Line* SurfaceMesh::GetEdge(igIndex edgeId)
 	return m_Edge.get();
 }
 
-Face* SurfaceMesh::GetFace(igIndex faceId)
+Face* SurfaceMesh::GetFace(const IGsize faceId)
 {
 	const igIndex* cell;
 	int ncells = m_Faces->GetCellIds(faceId, cell);
@@ -89,7 +89,7 @@ Face* SurfaceMesh::GetFace(igIndex faceId)
 	return face;
 }
 
-int SurfaceMesh::GetEdgePointIds(igIndex edgeId, igIndex* ptIds)
+int SurfaceMesh::GetEdgePointIds(const IGsize edgeId, igIndex* ptIds)
 {
 	if (m_Edges == nullptr)
 	{
@@ -99,12 +99,12 @@ int SurfaceMesh::GetEdgePointIds(igIndex edgeId, igIndex* ptIds)
 	return 2;
 }
 
-int SurfaceMesh::GetFacePointIds(igIndex faceId, igIndex* ptIds)
+int SurfaceMesh::GetFacePointIds(const IGsize faceId, igIndex* ptIds)
 {
 	return m_Faces->GetCellIds(faceId, ptIds);
 }
 
-int SurfaceMesh::GetFaceEdgeIds(igIndex faceId, igIndex* edgeIds)
+int SurfaceMesh::GetFaceEdgeIds(const IGsize faceId, igIndex* edgeIds)
 {
 	return m_FaceEdges->GetCellIds(faceId, edgeIds);
 }
@@ -145,26 +145,25 @@ void SurfaceMesh::BuildEdgeLinks()
 	}
 
 	m_EdgeLinks = CellLinks::New();
-	igIndex npts = this->GetNumberOfPoints();
-	igIndex nedges = this->GetNumberOfEdges();
-	igIndex i, ncell;
-	igIndex edge[2]{};
-
+	IGsize npts = GetNumberOfPoints();
+	IGsize nedges = GetNumberOfEdges();
+	igIndex e[2]{};
 
 	m_EdgeLinks->Allocate(npts);
-	for (i = 0; i < nedges; i++) {
-		ncell = m_Edges->GetCellIds(i, edge);
-		m_EdgeLinks->IncrementLinkSize(edge[0]);
-		m_EdgeLinks->IncrementLinkSize(edge[1]);
+	for (int i = 0; i < nedges; i++) {
+		int size = m_Edges->GetCellIds(i, e);
+		m_EdgeLinks->IncrementLinkSize(e[0]);
+		m_EdgeLinks->IncrementLinkSize(e[1]);
 	}
 
 	m_EdgeLinks->AllocateLinks(npts);
 
-	for (i = 0; i < nedges; i++) {
-		ncell = m_Edges->GetCellIds(i, edge);
-		m_EdgeLinks->AddReference(i, edge[0]);
-		m_EdgeLinks->AddReference(i, edge[1]);
+	for (int i = 0; i < nedges; i++) {
+		int size = m_Edges->GetCellIds(i, e);
+		m_EdgeLinks->AddReference(e[0], i);
+		m_EdgeLinks->AddReference(e[1], i);
 	}
+	m_EdgeLinks->Modified();
 }
 
 void SurfaceMesh::BuildFaceLinks()
@@ -175,26 +174,26 @@ void SurfaceMesh::BuildFaceLinks()
 	}
 
 	m_FaceLinks = CellLinks::New();
-	igIndex npts = this->GetNumberOfPoints();
-	igIndex nfaces = this->GetNumberOfFaces();
-	igIndex i, ncell;
+	IGsize npts = GetNumberOfPoints();
+	IGsize nfaces = GetNumberOfFaces();
 	igIndex face[32]{};
 
 	m_FaceLinks->Allocate(npts);
-	for (i = 0; i < nfaces; i++) {
-		ncell = m_Faces->GetCellIds(i, face);
-		for (int j = 0; j < ncell; j++) {
+	for (int i = 0; i < nfaces; i++) {
+		int size = m_Faces->GetCellIds(i, face);
+		for (int j = 0; j < size; j++) {
 			m_FaceLinks->IncrementLinkSize(face[j]);
 		}
 	}
 
 	m_FaceLinks->AllocateLinks(npts);
-	for (igIndex i = 0; i < nfaces; i++) {
-		ncell = m_Faces->GetCellIds(i, face);
-		for (int j = 0; j < ncell; j++) {
-			m_FaceLinks->AddReference(i, face[j]);
+	for (int i = 0; i < nfaces; i++) {
+		int size = m_Faces->GetCellIds(i, face);
+		for (int j = 0; j < size; j++) {
+			m_FaceLinks->AddReference(face[j], i);
 		}
 	}
+	m_FaceLinks->Modified();
 }
 
 void SurfaceMesh::BuildFaceEdgeLinks()
@@ -205,26 +204,116 @@ void SurfaceMesh::BuildFaceEdgeLinks()
 	}
 
 	m_FaceEdgeLinks = CellLinks::New();
-	igIndex nedges = this->GetNumberOfEdges();
-	igIndex nfaces = this->GetNumberOfFaces();
-	igIndex i, ncell;
+	IGsize nedges = GetNumberOfEdges();
+	IGsize nfaces = GetNumberOfFaces();
 	igIndex face[32]{};
 
 	m_FaceEdgeLinks->Allocate(nedges);
-	for (igIndex i = 0; i < nfaces; i++) {
-		ncell = m_Faces->GetCellIds(i, face);
-		for (int j = 0; j < ncell; j++) {
+	for (int i = 0; i < nfaces; i++) {
+		int size = m_FaceEdges->GetCellIds(i, face);
+		for (int j = 0; j < size; j++) {
 			m_FaceEdgeLinks->IncrementLinkSize(face[j]);
 		}
 	}
 
 	m_FaceEdgeLinks->AllocateLinks(nedges);
-	for (igIndex i = 0; i < nfaces; i++) {
-		ncell = m_Faces->GetCellIds(i, face);
-		for (int j = 0; j < ncell; j++) {
-			m_FaceEdgeLinks->AddReference(i, face[j]);
+	for (int i = 0; i < nfaces; i++) {
+		int size = m_FaceEdges->GetCellIds(i, face);
+		for (int j = 0; j < size; j++) {
+			m_FaceEdgeLinks->AddReference(face[j], i);
 		}
 	}
+}
+
+int SurfaceMesh::GetPointToOneRingPoints(const IGsize ptId, igIndex* ptIds) {
+	assert(ptId < GetNumberOfPoints() && "ptId too large");
+	auto& link = m_EdgeLinks->GetLink(ptId);
+	igIndex e[2]{};
+	for (int i = 0; i < link.size; i++) {
+		GetEdgePointIds(link.pointer[i], e);
+		ptIds[i] = e[0] - ptId + e[1];
+		assert(e[0] == ptId || e[1] == ptId);
+	}
+	return link.size;
+}
+int SurfaceMesh::GetPointToNeighborEdges(const IGsize ptId, igIndex* edgeIds) {
+	assert(ptId < GetNumberOfPoints() && "ptId too large");
+	auto& link = m_EdgeLinks->GetLink(ptId);
+	for (int i = 0; i < link.size; i++) {
+		edgeIds[i] = link.pointer[i];
+	}
+	return link.size;
+}
+int SurfaceMesh::GetPointToNeighborFaces(const IGsize ptId, igIndex* faceIds) {
+	assert(ptId < GetNumberOfPoints() && "ptId too large");
+	auto& link = m_FaceLinks->GetLink(ptId);
+	for (int i = 0; i < link.size; i++) {
+		faceIds[i] = link.pointer[i];
+	}
+	return link.size;
+}
+int SurfaceMesh::GetEdgeToNeighborFaces(const IGsize edgeId, igIndex* faceIds) {
+	assert(edgeId < GetNumberOfEdges() && "edgeId too large");
+	auto& link = m_FaceEdgeLinks->GetLink(edgeId);
+	for (int i = 0; i < link.size; i++) {
+		faceIds[i] = link.pointer[i];
+	}
+	return link.size;
+}
+int SurfaceMesh::GetEdgeToOneRingFaces(const IGsize edgeId, igIndex* faceIds) {
+	assert(edgeId < GetNumberOfEdges() && "edgeId too large");
+	igIndex e[2]{};
+	GetEdgePointIds(edgeId, e);
+	std::set<igIndex> st;
+	for (int i = 0; i < 2; i++) {
+		auto& link = m_FaceLinks->GetLink(e[i]);
+		for (int j = 0; j < link.size; j++) {
+			st.insert(link.pointer[j]);
+		}
+	}
+	int i = 0;
+	for (auto& fid : st) {
+		faceIds[i++] = fid;
+	}
+	return i;
+}
+int SurfaceMesh::GetFaceToNeighborFaces(const IGsize faceId, igIndex* faceIds) {
+	assert(faceId < GetNumberOfFaces() && "faceId too large");
+	igIndex edgeIds[32]{};
+	int size = GetFaceEdgeIds(faceId, edgeIds);
+	std::set<igIndex> st;
+	for (int i = 0; i < size; i++) {
+		auto& link = m_FaceEdgeLinks->GetLink(edgeIds[i]);
+		for (int j = 0; j < link.size; j++) {
+			st.insert(link.pointer[j]);
+		}
+	}
+	int i = 0;
+	for (auto& fid : st) {
+		if (fid != faceId) {
+			faceIds[i++] = fid;
+		}
+	}
+	return i;
+}
+int SurfaceMesh::GetFaceToOneRingFaces(const IGsize faceId, igIndex* faceIds) {
+	assert(faceId < GetNumberOfFaces() && "faceId too large");
+	igIndex ptIds[32]{};
+	int size = GetFacePointIds(faceId, ptIds);
+	std::set<igIndex> st;
+	for (int i = 0; i < size; i++) {
+		auto& link = m_FaceLinks->GetLink(ptIds[i]);
+		for (int j = 0; j < link.size; j++) {
+			st.insert(link.pointer[j]);
+		}
+	}
+	int i = 0;
+	for (auto& fid : st) {
+		if (fid != faceId) {
+			faceIds[i++] = fid;
+		}
+	}
+	return i;
 }
 
 void SurfaceMesh::Draw(Scene* scene)
@@ -341,6 +430,7 @@ void SurfaceMesh::ConvertToDrawableData()
 	m_Positions = m_Points->ConvertToArray();
 	m_Positions->Modified();
 
+	//std::cout << m_Positions->GetMTime() << "  " << GetMTime() << std::endl;
 	//m_PointVAO.destroy();
 	//m_LineVAO.destroy();
 	//m_TriangleVAO.destroy();

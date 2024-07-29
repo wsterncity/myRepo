@@ -190,11 +190,8 @@ void igQtModelListView::AddModel(QString modelName) {
 	if(curObj->HasSubDataObject()){
 		int index = 0;
 		for(auto it = curObj->SubBegin(); it != curObj->SubEnd(); it ++){
-			auto subObj = it->second;
-
+			auto& subObj = it->second;
 			std::string name = subObj->GetName();
-//			std::string name = "block_";
-//			name.append(std::to_string(index++));
 			AddChildToItem(newModel, QString::fromStdString(name), subObj->GetDataObjectId());
 		}
 	}

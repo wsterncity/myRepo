@@ -192,16 +192,16 @@ void DataObject::SetVisibility(bool f)
     }
 
     void DataObject::SwitchToCurrentTimeframe(int timeIndex) {
-        if(m_timeFrames == nullptr) igError("This operation cannot be performed in this file without time frames.");
-        if(m_timeFrames->GetArrays().size() <= timeIndex) igError("timeStep error");
+        if(m_TimeFrames == nullptr) igError("This operation cannot be performed in this file without time frames.");
+        if(m_TimeFrames->GetArrays().size() <= timeIndex) igError("timeStep error");
 
         m_CurrentTimeframeIndex = timeIndex;
     }
 
     StreamingData::Pointer DataObject::GetTimeFrames() {
-        if(m_timeFrames == nullptr) m_timeFrames = StreamingData::New();
+        if(m_TimeFrames == nullptr) m_TimeFrames = StreamingData::New();
 
-        return m_timeFrames;
+        return m_TimeFrames;
     }
 
 
