@@ -46,6 +46,15 @@ void DataObject::RemoveSubDataObject(DataObjectId id)
 	return m_SubDataObjectsHelper->RemoveSubDataObject(id);
 }
 
+void DataObject::ClearSubDataObject() {
+    if (m_SubDataObjectsHelper == nullptr)
+    {
+        return;
+    }
+
+    return m_SubDataObjectsHelper->ClearSubDataObject();
+}
+
 bool DataObject::HasSubDataObject() noexcept
 {
 	if (m_SubDataObjectsHelper == nullptr)
@@ -188,4 +197,12 @@ void DataObject::SetVisibility(bool f)
 
         m_CurrentTimeframeIndex = timeIndex;
     }
+
+    StreamingData::Pointer DataObject::GetTimeFrames() {
+        if(m_timeFrames == nullptr) m_timeFrames = StreamingData::New();
+
+        return m_timeFrames;
+    }
+
+
 IGAME_NAMESPACE_END

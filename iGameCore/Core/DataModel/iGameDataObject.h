@@ -36,7 +36,7 @@ public:
 		return true;
 	}
 
-	StreamingData::Pointer GetTimeFrames() { return m_timeFrames; }
+	StreamingData::Pointer GetTimeFrames();
 	void SetTimeFrames(StreamingData::Pointer p) { m_timeFrames = p; }
 	void SetPropertySet(PropertySet::Pointer p) { m_Propertys = p; }
 	PropertySet* GetPropertySet() { return m_Propertys.get(); }
@@ -79,6 +79,11 @@ public:
 			this->Modified();
 		}
 
+        void ClearSubDataObject(){
+            m_SubDataObjects.clear();
+            this->Modified();
+        }
+
 		bool HasSubDataObject() noexcept {
 			return m_SubDataObjects.size() != 0;
 		}
@@ -113,6 +118,7 @@ public:
 	DataObject::Pointer GetSubDataObject(DataObjectId id);
 	DataObjectId AddSubDataObject(DataObject::Pointer obj); 
 	void RemoveSubDataObject(DataObjectId id);
+    void ClearSubDataObject();
 	bool HasSubDataObject() noexcept;
 	int GetNumberOfSubDataObjects() noexcept;
 	SubIterator SubBegin();

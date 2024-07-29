@@ -9,6 +9,10 @@
 #include <QAbstractButton>
 
 #include <qdebug.h>
+
+#include <iGameFileIO.h>
+#include <iGameSceneManager.h>
+
 /**
  * @class   igQtAnimationWidget
  * @brief   igQtAnimationWidget's brief
@@ -108,7 +112,19 @@ igQtAnimationWidget::igQtAnimationWidget(QWidget *parent) : QWidget(parent), ui(
 }
 
 void igQtAnimationWidget::playAnimation_snap(int keyframe_idx){
-    Q_EMIT PlayAnimation_snap(keyframe_idx);
+    using namespace iGame;
+    auto currentObject = SceneManager::Instance()->GetCurrentScene()->GetCurrentObject();
+    if(currentObject == nullptr || SceneManager::Instance()->GetCurrentScene()->GetCurrentObject()->GetTimeFrames() ==
+                                           nullptr)  return;
+    auto frameSubFiles = currentObject->GetTimeFrames()->GetTargetTimeFrame(keyframe_idx).SubFileNames;
+    currentObject->ClearSubDataObject();
+    for(int i = 0; i < frameSubFiles->Size(); i ++){
+        currentObject->GetSubDataObject(1);
+        DataObject::Pointer sub = FileIO::ReadFile(frameSubFiles->GetElement(i));
+        currentObject->AddSubDataObject(sub);
+    }
+
+    Q_EMIT UpdateScene();
 }
 
 void igQtAnimationWidget::playAnimation_interpolate(int keyframe_0, float t){
@@ -141,7 +157,12 @@ void igQtAnimationWidget::changeAnimationMode() {
     }
 }
 
-void igQtAnimationWidget::initAnimationComponents(std::vector<float> &timeValues) {
+void igQtAnimationWidget::initAnimationComponents() {
+    if(iGame::SceneManager::Instance()->GetCurrentScene()->GetCurrentObject()->GetTimeFrames() == nullptr)  return;
+    auto timeArrays = iGame::SceneManager::Instance()->GetCurrentScene()->GetCurrentObject()->GetTimeFrames()->GetArrays();
+    std::vector<float> timeValues;
+    timeValues.reserve(timeArrays.size());
+    for(auto & timeArray : timeArrays) timeValues.push_back(timeArray.timeValue);
     VcrController->initController(static_cast<int>(timeValues.size()), 1);
     ui->treeWidget_snap->initAnimationTreeWidget(timeValues);
     ui->treeWidget_interpolate->initAnimationTreeWidget(timeValues);

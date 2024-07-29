@@ -17,14 +17,14 @@ public:
         float timeValue{-1};
         StringArray::Pointer SubFileNames{nullptr};
 
-        TimeFrame(){}
+        TimeFrame()= default;
 
         TimeFrame(float _t,  StringArray::Pointer f_names) : timeValue(_t), SubFileNames(f_names){}
     };
 
     static Pointer New() { return new StreamingData; }
 
-    void AddTimeStep(float timeVal, StringArray::Pointer f_names)
+    void AddTimeStep(float timeVal, const StringArray::Pointer& f_names)
     {
         m_Data.emplace_back(timeVal, f_names);
     }
