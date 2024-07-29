@@ -41,30 +41,8 @@ bool iGame::iGamePVDReader::Parsing() {
             std::string fileName(existAttribute);
             child_map[t]->AddElement(fileDir + fileName);
 
-//            std::string fileSuffix;
-//            const char* pos = strrchr(fileName.data(), '.');
-//            if (pos != nullptr) {
-//                const char *fileEnd = fileName.data() + fileName.size();
-//                fileSuffix = std::string(pos + 1, fileEnd);
-//            }
-//            if(fileSuffix == "vts"){
-//                iGameVTSReader::Pointer rd = iGameVTSReader::New();
-//                rd->SetFilePath(fileDir + std::string(existAttribute));
-//                rd->Update();
-//                newObj = rd->GetOutput();
-//            }
-//            else if(fileSuffix == "vtu"){
-//                iGameVTUReader::Pointer rd = iGameVTUReader::New();
-//                rd->SetFilePath(fileDir + std::string(existAttribute));
-//                rd->Update();
-//                newObj = rd->GetOutput();
-//            }
         }
-//        if(!child_map.count(t))
-//        {
-//            child_map[t] = DataObject::New();
-//        }
-//        child_map[t]->AddSubDataObject(newObj);
+//        if(!cht]->AddSubDataObject(newObj);
         elem = elem->NextSiblingElement("DataSet");
     }
 

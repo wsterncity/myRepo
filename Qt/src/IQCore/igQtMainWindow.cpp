@@ -15,10 +15,10 @@
 #include <IQComponents/igQtFilterDialogDockWidget.h>
 #include <IQComponents/igQtProgressBarWidget.h>
 #include <IQWidgets/igQtTensorWidget.h>
+#include "iGameFileIO.h"
 
 
-
-igQtMainWindow::igQtMainWindow(QWidget* parent) : 
+igQtMainWindow::igQtMainWindow(QWidget* parent) :
 	QMainWindow(parent), 
 	ui(new Ui::MainWindow)
 {
@@ -324,14 +324,37 @@ void igQtMainWindow::initAllMySignalConnections()
 	//	});
 	//connect(fileLoader, &igQtFileLoader::FinishReading, ui->widget_SearchInfo, &igQtSearchInfoWidget::updateDataProducer);
 
-	connect(fileLoader, &igQtFileLoader::AddFileToModelList, ui->modelTreeView, &igQtModelListView::AddModel);
-	connect(rendererWidget, &igQtRenderWidget::AddDataObjectToModelList, ui->modelTreeView, &igQtModelListView::AddModel);
+//	connect(fileLoader, &igQtFileLoader::AddFileToModelList, ui->modelTreeView, &igQtModelListView::AddModel);
+//	connect(rendererWidget, &igQtRenderWidget::AddDataObjectToModelList, ui->modelTreeView, &igQtModelListView::AddModel);
 	connect(rendererWidget, &igQtRenderWidget::UpdateCurrentDataObject, this, &igQtMainWindow::updateCurrentDataObject);
 	
 	//connect(fileLoader, &igQtFileLoader::LoadAnimationFile, ui->widget_Animation, &igQtAnimationWidget::initAnimationComponents);
 
 	connect(ui->widget_Animation, &igQtAnimationWidget::UpdateScene, this, &igQtMainWindow::updateCurrentSceneWidget);
+//	connect(ui->widget_Animation, &igQtAnimationWidget::UpdateScene, ui->modelTreeView, &igQtModelListView::UpdateModelList);
 	//connect(ui->widget_Animation, &igQtAnimationWidget::PlayAnimation_interpolate, rendererWidget, &igQtModelDrawWidget::PlayAnimation_interpolate);
+//	connect(ui->widget_Animation, &igQtAnimationWidget::PlayAnimation_snap, this, [&](int keyframe){
+//		using namespace iGame;
+//		auto currentObject = SceneManager::Instance()->GetCurrentScene()->GetCurrentObject();
+//		if(currentObject == nullptr || currentObject->GetTimeFrames()->GetArrays().empty())  return;
+//		auto& frameSubFiles = currentObject->GetTimeFrames()->GetTargetTimeFrame(keyframe).SubFileNames;
+//		rendererWidget->makeCurrent();
+//		if(frameSubFiles->Size() > 1){
+//			currentObject->ClearSubDataObject();
+//			for(int i = 0; i < frameSubFiles->Size(); i ++){
+//				DataObject::Pointer sub = FileIO::ReadFile(frameSubFiles->GetElement(i));
+//				currentObject->AddSubDataObject(sub);
+//			}
+//		}
+//		else {
+//			SceneManager::Instance()->GetCurrentScene()->RemoveCurrentDataObject();
+//			currentObject = FileIO::ReadFile(frameSubFiles->GetElement(0));
+//			currentObject->SetTimeFrames(currentObject->GetTimeFrames());
+//			SceneManager::Instance()->GetCurrentScene()->AddDataObject(currentObject);
+//		}
+//		currentObject->SwitchToCurrentTimeframe(keyframe);
+//		rendererWidget->doneCurrent();
+//	});
 
 	//connect(ui->widget_FlowField, &igQtStreamTracerWidget::sendstreams, rendererWidget, &igQtModelDrawWidget::DrawStreamline);
 	//connect(ui->widget_FlowField, &igQtStreamTracerWidget::updatestreams, rendererWidget, &igQtModelDrawWidget::UpdateStreamline);

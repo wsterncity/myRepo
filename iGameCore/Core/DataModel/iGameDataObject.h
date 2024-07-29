@@ -145,14 +145,14 @@ protected:
 	virtual void ComputeBoundingBox() {}
 
 	DataObjectId m_UniqueId{};
-	StreamingData::Pointer m_TimeFrames{};
-	PropertySet::Pointer m_Propertys{};
-	Metadata::Pointer m_Metadata{};
+	StreamingData::Pointer m_TimeFrames{nullptr};
+	PropertySet::Pointer m_Propertys{nullptr};
+	Metadata::Pointer m_Metadata{nullptr};
 
-	BoundingBox m_Bounding;
+	BoundingBox m_Bounding{};
 
 	friend class SubDataObjectsHelper;
-	SmartPointer<SubDataObjectsHelper> m_SubDataObjectsHelper{};
+	SmartPointer<SubDataObjectsHelper> m_SubDataObjectsHelper{nullptr};
 	DataObject* m_Parent{ nullptr };
 
 	template<typename Functor, typename... Args>

@@ -82,6 +82,9 @@ public slots:
     /* Insert into treeview in the target index. Inserts item after the specified index. */
 	void InsertObject(int idx, const QString& modelName);
 
+	/* Update Model list from Scene Manager  */
+	void UpdateModelList();
+
 	void DeleteCurrentFile();
 
 	void ChangeSelected2NextItem();

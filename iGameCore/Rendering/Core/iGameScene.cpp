@@ -187,8 +187,8 @@ void Scene::Draw() {
     glClearColor(m_BackgroundColor.r, m_BackgroundColor.g, m_BackgroundColor.b,
                  1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
     DrawFrame();
+
 }
 
 void Scene::Update() { this->Draw(); }
