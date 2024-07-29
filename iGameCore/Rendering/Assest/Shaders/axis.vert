@@ -14,7 +14,6 @@ out vec3 fragNormal;
 
 void main() {
     gl_Position = proj * view * model * vec4(inPosition, 1.0);
-//    gl_Position = proj  * model * vec4(inPosition, 1.0);
     fragPosition = vec3(model * vec4(inPosition, 1.0));
     fragColor = inColor;
     fragNormal = mat3(transpose(inverse(model))) * inNormal;

@@ -4,7 +4,7 @@ layout(std140) uniform MVPMatrix {
 //layout(std140, binding = 0) uniform MVPMatrix {
     mat4 model;
     mat4 normal;// transpose(inverse(model))
-    mat4 mvp;// proj * view * model
+    mat4 viewporj;// proj * view
 } mvp;
 layout(std140) uniform UniformBufferObject {
 //layout(std140, binding = 1) uniform UniformBufferObject {
@@ -32,7 +32,7 @@ void main() {
     plane[5] = vec4(0.0, 0.5, 0.0, 0.0);
 
 
-    gl_Position = mvp.mvp * vec4(inPosition, 1.0);
+    gl_Position = mvp.viewporj * mvp.model * vec4(inPosition, 1.0);
     gl_ClipDistance[0] = dot(plane[0], vec4(inPosition, 1.0));
     gl_ClipDistance[1] = dot(plane[1], vec4(inPosition, 1.0));
     gl_ClipDistance[2] = dot(plane[2], vec4(inPosition, 1.0));

@@ -36,6 +36,9 @@ public:
 public:
     // GLenum internal_format: https://registry.khronos.org/OpenGL-Refpages/gl4/html/glTexImage2D.xhtml
     // Sized Internal Format: GL_R8, GL_RG8, GL_RGB8, GL_RGBA8
+    // Sized Internal Format: GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT24
+    // Sized Internal Format: GL_DEPTH32F_STENCIL8, GL_DEPTH24_STENCIL8
+    // Sized Internal Format: GL_STENCIL_INDEX8
     void storage(unsigned mip_levels, GLenum internal_format, unsigned width,
                  unsigned height) const {
         glTextureStorage2D(handle, mip_levels, internal_format, width, height);
@@ -43,7 +46,7 @@ public:
 
     // GLenum format: GL_RED, GL_RG, GL_RGB, GL_RGBA
     // Base Internal Format: GL_RED, GL_RG, GL_RGB, GL_RGBA
-    // GLenum type:GL_UNSIGNED_BYTE
+    // GLenum type:GL_UNSIGNED_BYTE, GL_FLOAT
     void subImage(unsigned mip_level, unsigned xoffset, unsigned yoffset,
                   unsigned width, unsigned height, GLenum format, GLenum type,
                   const void* pixels) {
@@ -71,6 +74,7 @@ public:
     }
 
     void bind() const { glBindTexture(GL_TEXTURE_2D, handle); }
+    void release() const { glBindTexture(GL_TEXTURE_2D, 0); }
 };
 
 IGAME_NAMESPACE_END

@@ -93,7 +93,7 @@ std::string FileIO::GetFileTypeAsString(IGenum type)
 	}
 }
 
-DataObject::Pointer FileIO::ReadFile(const std::string &file_name) 
+DataObject::Pointer FileIO::ReadFile(const std::string &file_name)
 {
 	IGenum fileType = GetFileType(file_name);
     std::string out;

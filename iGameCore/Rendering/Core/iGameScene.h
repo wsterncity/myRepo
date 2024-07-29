@@ -5,6 +5,8 @@
 #ifndef OPENIGAME_SCENCE_H
 #define OPENIGAME_SCENCE_H
 
+#include "OpenGL/GLFramebuffer.h"
+#include "OpenGL/GLIndirectCommand.h"
 #include "OpenGL/GLShader.h"
 #include "iGameAxes.h"
 #include "iGameCamera.h"
@@ -21,7 +23,7 @@ public:
     struct MVPMatrix {
         alignas(16) igm::mat4 model;
         alignas(16) igm::mat4 normal;
-        alignas(16) igm::mat4 mvp;
+        alignas(16) igm::mat4 viewporj;
     };
     struct UniformBufferObject {
         alignas(16) igm::vec3 viewPos;
@@ -34,8 +36,9 @@ public:
         PURECOLOR,
         AXES,
         FONT,
-        CULLING,
-        CULLINGCOMPUTE,
+        DEPTHREDUCE,
+        MESHLETCULL,
+        SCREEN,
         SHADERTYPE_COUNT
     };
 
@@ -124,13 +127,13 @@ public:
         if (visibility) {
             m_VisibleModelsCount++;
             if (m_VisibleModelsCount == 1) {
-//                for (int i = 0; i < triangleInfo.positionSize / 3; i++) {
-//                    igm::vec3 point = {triangleInfo.positions[i * 3 + 0],
-//                                       triangleInfo.positions[i * 3 + 1],
-//                                       triangleInfo.positions[i * 3 + 2]};
-//                    min = igm::min(min, point);
-//                    max = igm::max(max, point);
-//                }
+                //                for (int i = 0; i < triangleInfo.positionSize / 3; i++) {
+                //                    igm::vec3 point = {triangleInfo.positions[i * 3 + 0],
+                //                                       triangleInfo.positions[i * 3 + 1],
+                //                                       triangleInfo.positions[i * 3 + 2]};
+                //                    min = igm::min(min, point);
+                //                    max = igm::max(max, point);
+                //                }
                 auto center =
                         igm::vec3{0.293951035f, 21.5820999f, 0.193099976f};
                 float radius = 114.204018f;
@@ -159,6 +162,27 @@ public:
         return m_Models;
     }
 
+    void RefreshHZBTexture() {
+        //GetShader(Scene::DEPTHREDUCE)->use();
+        //for (int level = 0; level < m_HZBLevels - 1; ++level) {
+        //    glBindImageTexture(0, level == 0 ? depthTexture : hzbTexture,
+        //                       level == 0 ? 0 : level - 1, GL_FALSE, 0,
+        //                       GL_READ_ONLY, GL_R32F);
+        //    glBindImageTexture(1, hzbTexture, level, GL_FALSE, 0, GL_WRITE_ONLY,
+        //                       GL_R32F);
+        //
+        //    int w = width >> (level + 1);
+        //    int h = height >> (level + 1);
+        //    glDispatchCompute((w + 7) / 8, (h + 7) / 8, 1);
+        //    glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+        //}
+
+        //for (int i = 0; i < levels; i++) {
+        //    texture.subImage(i, 0, 0, width >> i, height >> i,
+        //                     GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+        //}
+    };
+
 protected:
     Scene();
     ~Scene() override;
@@ -166,6 +190,9 @@ protected:
     void InitOpenGL();
     void InitFont();
     void InitAxes();
+
+    void ResizeFrameBuffer();
+    void ResizeHZBTexture();
 
     void UpdateUniformData();
     void DrawFrame();
@@ -187,8 +214,15 @@ protected:
     uint32_t m_VisibleModelsCount = 0;
     igm::vec4 m_FirstModelCenter{0.0f, 0.0f, 0.0f, 1.0f};
 
-    unsigned int m_MVPBlock, m_UBOBlock;
+    GLBuffer m_MVPBlock, m_UBOBlock;
     std::map<IGenum, std::unique_ptr<GLShaderProgram>> m_ShaderPrograms;
+
+    GLVertexArray m_ScreenQuadVAO;
+    GLBuffer m_ScreenQuadVBO;
+    GLFramebuffer m_Framebuffer, m_FramebufferMultisampled;
+    GLTexture2d m_ColorTexture, m_DepthTexture;
+    GLTexture2d m_HZBTexture;
+    uint32_t m_HZBLevels;
 
     friend class Interactor;
 };

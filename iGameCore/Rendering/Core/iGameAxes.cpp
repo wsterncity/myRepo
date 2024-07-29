@@ -2,23 +2,21 @@
 
 IGAME_NAMESPACE_BEGIN
 
-Axes::Axes() 
-{ 
+Axes::Axes() {
     m_TriangleVAO.create();
-    m_PositionVBO.create(); 
+    m_PositionVBO.create();
     m_ColorVBO.create();
     m_TriangleEBO.create();
 
     m_FontVAO.create();
-    m_TextureCoordVBO.create(); 
-    m_WorldCoordVBO.create(); 
+    m_TextureCoordVBO.create();
+    m_WorldCoordVBO.create();
     m_FontTextureEBO.create();
 
-    initialize(); 
+    initialize();
 }
 
-Axes::~Axes()
-{
+Axes::~Axes() {
     m_TriangleVAO.destroy();
     m_PositionVBO.destroy();
     m_ColorVBO.destroy();
@@ -43,16 +41,16 @@ void Axes::DrawXYZ(const GLShaderProgram* shader, const GLUniform texture,
     m_FontVAO.bind();
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-    shader->setUniform(texture, FontSet::Instance().GetTextureHandle(L'x'));
+    shader->setUniform(texture, FontSet::Instance().GetTextureHandle(L'X'));
     shader->setUniform(color, igm::vec3{1.0f, 0.0f, 0.0f});
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
-    shader->setUniform(texture, FontSet::Instance().GetTextureHandle(L'y'));
+    shader->setUniform(texture, FontSet::Instance().GetTextureHandle(L'Y'));
     shader->setUniform(color, igm::vec3{0.0f, 1.0f, 0.0f});
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT,
                    (void*) (6 * sizeof(GLuint)));
 
-    shader->setUniform(texture, FontSet::Instance().GetTextureHandle(L'z'));
+    shader->setUniform(texture, FontSet::Instance().GetTextureHandle(L'Z'));
     shader->setUniform(color, igm::vec3{0.0f, 0.0f, 1.0f});
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT,
                    (void*) (12 * sizeof(GLuint)));
@@ -138,10 +136,18 @@ void Axes::initialize() {
     // generate axis VBO data
     std::vector<igm::vec3> vertices;
     std::vector<igm::vec3> colors;
-    std::vector<uint32_t> triangleIndices{8,  9,  12, 9,  10, 12, 10, 11, 12,
-                                          11, 8,  12, 21, 22, 25, 22, 23, 25,
-                                          23, 24, 25, 24, 21, 25, 34, 35, 38,
-                                          35, 36, 38, 36, 37, 38, 37, 34, 38, 0, 1, 5, 0, 5, 4, 1, 2, 6, 1, 6, 5, 2, 3, 7, 2, 7, 6, 3, 0, 4, 3, 4, 7, 8, 9, 10, 8, 10, 11, 13, 14, 18, 13, 18, 17, 14, 15, 19, 14, 19, 18, 15, 16, 20, 15, 20, 19, 16, 13, 17, 16, 17, 20, 21, 22, 23, 21, 23, 24, 26, 27, 31, 26, 31, 30, 27, 28, 32, 27, 32, 31, 28, 29, 33, 28, 33, 32, 29, 26, 30, 29, 30, 33, 34, 35, 36, 34, 36, 37, 39, 40, 41, 39, 41, 42, 41, 42, 46, 41, 46, 45, 45, 46, 43, 45, 43, 44, 43, 44, 40, 43, 40, 39, 39, 42, 46, 39, 46, 43, 40, 41, 45, 40, 45, 44, };
+    std::vector<uint32_t> triangleIndices{
+            8,  9,  12, 9,  10, 12, 10, 11, 12, 11, 8,  12, 21, 22, 25, 22, 23,
+            25, 23, 24, 25, 24, 21, 25, 34, 35, 38, 35, 36, 38, 36, 37, 38, 37,
+            34, 38, 0,  1,  5,  0,  5,  4,  1,  2,  6,  1,  6,  5,  2,  3,  7,
+            2,  7,  6,  3,  0,  4,  3,  4,  7,  8,  9,  10, 8,  10, 11, 13, 14,
+            18, 13, 18, 17, 14, 15, 19, 14, 19, 18, 15, 16, 20, 15, 20, 19, 16,
+            13, 17, 16, 17, 20, 21, 22, 23, 21, 23, 24, 26, 27, 31, 26, 31, 30,
+            27, 28, 32, 27, 32, 31, 28, 29, 33, 28, 33, 32, 29, 26, 30, 29, 30,
+            33, 34, 35, 36, 34, 36, 37, 39, 40, 41, 39, 41, 42, 41, 42, 46, 41,
+            46, 45, 45, 46, 43, 45, 43, 44, 43, 44, 40, 43, 40, 39, 39, 42, 46,
+            39, 46, 43, 40, 41, 45, 40, 45, 44,
+    };
     requestData(vertices, colors);
     m_PositionVBO.allocate(vertices.size() * sizeof(igm::vec3), vertices.data(),
                            GL_STATIC_DRAW);
