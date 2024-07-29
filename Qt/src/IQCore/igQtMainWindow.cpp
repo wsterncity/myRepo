@@ -2,6 +2,9 @@
 // Created by m_ky on 2024/4/10.
 //
 
+#include <iGameFilterPoints.h>
+#include <iGameSurfaceMeshFilterTest.h>
+
 #include <IQCore/igQtMainWindow.h>
 #include <IQCore/igQtFileLoader.h>
 #include <IQWidgets/igQtModelDrawWidget.h>
@@ -12,10 +15,10 @@
 #include <IQComponents/igQtFilterDialogDockWidget.h>
 #include <IQComponents/igQtProgressBarWidget.h>
 #include <IQWidgets/igQtTensorWidget.h>
+#include "iGameFileIO.h"
 
 
-
-igQtMainWindow::igQtMainWindow(QWidget* parent) : 
+igQtMainWindow::igQtMainWindow(QWidget* parent) :
 	QMainWindow(parent), 
 	ui(new Ui::MainWindow)
 {
@@ -212,11 +215,65 @@ void igQtMainWindow::initAllFilters() {
 	//	delete info;
 	//		});
 
-	//connect(ui->action_Test, &QAction::triggered, this, [&](bool checked) {
-	//	iGame::iGameInformationMap* info = iGame::iGameInformationMap::New();
-	//	iGame::iGameManager::Instance()->ExecuteAlgorithm(iGame::iGameTest::New(), info);
-	//	delete info;
-	//	});
+	connect(ui->action_test_01, &QAction::triggered, this, [&](bool checked) {
+		PointSet::Pointer points = PointSet::New();
+		Points::Pointer ps = Points::New();
+		
+		std::random_device rd;
+		std::mt19937 gen(rd());
+		std::uniform_real_distribution<> dis(0.0, 1.0);
+
+		double r = 1;
+		for (int i = 0; i < 1000000; i++) {
+			double u = dis(gen);
+			double v = dis(gen);
+			double w = dis(gen);
+
+			double theta = 2.0 * M_PI * u;
+			double phi = acos(2.0 * v - 1.0);
+			double rCubeRoot = std::cbrt(w);
+
+			double x = r * rCubeRoot * sin(phi) * cos(theta);
+			double y = r * rCubeRoot * sin(phi) * sin(theta);
+			double z = r * rCubeRoot * cos(phi);
+
+			ps->AddPoint( x, y, z );
+		}
+		points->SetPoints(ps);
+		points->SetName("undefined_PointSet");
+		rendererWidget->AddDataObject(points);
+		});
+
+	connect(ui->action_test_02, &QAction::triggered, this, [&](bool checked) {
+		FilterPoints::Pointer fp = FilterPoints::New();
+		fp->SetInput(rendererWidget->GetScene()->GetCurrentObject());
+		fp->SetFilterRate(0.5);
+		fp->Update();
+		rendererWidget->update();
+		});
+
+	connect(ui->action_test_03, &QAction::triggered, this, [&](bool checked) {
+		SurfaceMesh::Pointer mesh = SurfaceMesh::New();
+		Points::Pointer points = Points::New();
+		points->AddPoint(0, 0, 0);
+		points->AddPoint(1, 0, 0);
+		points->AddPoint(0, 1, 0);
+
+		CellArray::Pointer faces = CellArray::New();
+		faces->AddCellId3(0, 1, 2);
+
+		mesh->SetPoints(points);
+		mesh->SetFaces(faces);
+		mesh->SetName("undefined_mesh");
+		rendererWidget->AddDataObject(mesh);
+		});
+
+	connect(ui->action_test_04, &QAction::triggered, this, [&](bool checked) {
+		SurfaceMeshFilterTest::Pointer fp = SurfaceMeshFilterTest::New();
+		fp->SetInput(rendererWidget->GetScene()->GetCurrentObject());
+		fp->Update();
+		rendererWidget->update();
+		});
 }
 
 void igQtMainWindow::initAllDockWidgetConnectWithAction()
@@ -225,9 +282,9 @@ void igQtMainWindow::initAllDockWidgetConnectWithAction()
 	//	ui->dockWidget_SearchInfo->show();
 	//	});
 	//connect(ui->action_IsShowColorBar, &QAction::triggered, this, &igQtMainWindow::updateColorBarShow);
-	//connect(ui->action_ExportAnimation, &QAction::triggered, this, [&](bool checked) {
-	//	ui->dockWidget_Animation->show();
-	//	});
+	connect(ui->action_ExportAnimation, &QAction::triggered, this, [&](bool checked) {
+		ui->dockWidget_Animation->show();
+		});
 	//connect(ui->action_Scalar, &QAction::triggered, this, [&](bool checked) {
 	//	ui->dockWidget_ScalarField->show();
 	//	});
@@ -257,6 +314,7 @@ void igQtMainWindow::initAllMySignalConnections()
 	connect(fileLoader, &igQtFileLoader::FinishReading, this, &igQtMainWindow::updateRecentFilePaths);
 	connect(fileLoader, &igQtFileLoader::FinishReading, this, &igQtMainWindow::updateViewStyleAndCloudPicture);
 	connect(fileLoader, &igQtFileLoader::FinishReading, this, &igQtMainWindow::updateCurrentSceneWidget);
+	connect(fileLoader, &igQtFileLoader::FinishReading, ui->widget_Animation, &igQtAnimationWidget::initAnimationComponents);
     connect(fileLoader, &igQtFileLoader::EmitMakeCurrent, rendererWidget,&igQtRenderWidget::MakeCurrent);
     connect(fileLoader, &igQtFileLoader::EmitDoneCurrent, rendererWidget,&igQtRenderWidget::DoneCurrent);
 
@@ -266,11 +324,37 @@ void igQtMainWindow::initAllMySignalConnections()
 	//	});
 	//connect(fileLoader, &igQtFileLoader::FinishReading, ui->widget_SearchInfo, &igQtSearchInfoWidget::updateDataProducer);
 
-	connect(fileLoader, &igQtFileLoader::AddFileToModelList, ui->modelTreeView, &igQtModelListView::AddModel);
+//	connect(fileLoader, &igQtFileLoader::AddFileToModelList, ui->modelTreeView, &igQtModelListView::AddModel);
+//	connect(rendererWidget, &igQtRenderWidget::AddDataObjectToModelList, ui->modelTreeView, &igQtModelListView::AddModel);
+	connect(rendererWidget, &igQtRenderWidget::UpdateCurrentDataObject, this, &igQtMainWindow::updateCurrentDataObject);
+	
 	//connect(fileLoader, &igQtFileLoader::LoadAnimationFile, ui->widget_Animation, &igQtAnimationWidget::initAnimationComponents);
 
-	//connect(ui->widget_Animation, &igQtAnimationWidget::PlayAnimation_snap, rendererWidget, &igQtModelDrawWidget::PlayAnimation_snap);
+	connect(ui->widget_Animation, &igQtAnimationWidget::UpdateScene, this, &igQtMainWindow::updateCurrentSceneWidget);
+//	connect(ui->widget_Animation, &igQtAnimationWidget::UpdateScene, ui->modelTreeView, &igQtModelListView::UpdateModelList);
 	//connect(ui->widget_Animation, &igQtAnimationWidget::PlayAnimation_interpolate, rendererWidget, &igQtModelDrawWidget::PlayAnimation_interpolate);
+//	connect(ui->widget_Animation, &igQtAnimationWidget::PlayAnimation_snap, this, [&](int keyframe){
+//		using namespace iGame;
+//		auto currentObject = SceneManager::Instance()->GetCurrentScene()->GetCurrentObject();
+//		if(currentObject == nullptr || currentObject->GetTimeFrames()->GetArrays().empty())  return;
+//		auto& frameSubFiles = currentObject->GetTimeFrames()->GetTargetTimeFrame(keyframe).SubFileNames;
+//		rendererWidget->makeCurrent();
+//		if(frameSubFiles->Size() > 1){
+//			currentObject->ClearSubDataObject();
+//			for(int i = 0; i < frameSubFiles->Size(); i ++){
+//				DataObject::Pointer sub = FileIO::ReadFile(frameSubFiles->GetElement(i));
+//				currentObject->AddSubDataObject(sub);
+//			}
+//		}
+//		else {
+//			SceneManager::Instance()->GetCurrentScene()->RemoveCurrentDataObject();
+//			currentObject = FileIO::ReadFile(frameSubFiles->GetElement(0));
+//			currentObject->SetTimeFrames(currentObject->GetTimeFrames());
+//			SceneManager::Instance()->GetCurrentScene()->AddDataObject(currentObject);
+//		}
+//		currentObject->SwitchToCurrentTimeframe(keyframe);
+//		rendererWidget->doneCurrent();
+//	});
 
 	//connect(ui->widget_FlowField, &igQtStreamTracerWidget::sendstreams, rendererWidget, &igQtModelDrawWidget::DrawStreamline);
 	//connect(ui->widget_FlowField, &igQtStreamTracerWidget::updatestreams, rendererWidget, &igQtModelDrawWidget::UpdateStreamline);
@@ -393,12 +477,13 @@ void igQtMainWindow::updateViewStyleAndCloudPicture()
 
 		StringArray::Pointer nameArray =
 			current->GetMetadata()->GetStringArray(ATTRIBUTE_NAME_ARRAY);
-		if(nameArray != nullptr){
-            for (int i = 0; i < nameArray->Size(); i++)
-            {
-                attributeViewIndexCombox->addItem(QString::fromStdString(nameArray->GetElement(i)));
-            }
-        }
+		if (nameArray != nullptr)
+		{
+			for (int i = 0; i < nameArray->Size(); i++)
+			{
+				attributeViewIndexCombox->addItem(QString::fromStdString(nameArray->GetElement(i)));
+			}
+		}
 		attributeViewIndexCombox->setCurrentIndex(current->GetAttributeIndex() + 1);
 	}
 }

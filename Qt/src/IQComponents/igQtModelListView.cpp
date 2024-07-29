@@ -107,6 +107,32 @@ igQtModelListView::igQtModelListView(QWidget* parent) : QTreeView(parent) {
 	contextMenu->addAction(action_Extract);
 	contextMenu->addAction(action_AddPlane);
 }
+void igQtModelListView::UpdateModelList()
+{
+//	QStandardItem* rootItem = model->invisibleRootItem();
+//	QStandardItem* newModel = new QStandardItem(QIcon(":/Ticon/Icons/Eyeball.svg"), modelName);
+//	rootItem->appendRow(newModel);
+//	this->setCurrentIndex(newModel->index());
+//	auto curObj = m_Manager->GetCurrentScene()->GetCurrentObject();
+//	itemObjectIds[newModel] = curObj->GetDataObjectId();
+//	currentObjectIdx = curObj->GetDataObjectId();
+
+//	if(curObj->HasSubDataObject()){
+//		int index = 0;
+//		for(auto it = curObj->SubBegin(); it != curObj->SubEnd(); it ++){
+//			auto& subObj = it->second;
+//			std::string name = subObj->GetName();
+//			AddChildToItem(newModel, QString::fromStdString(name), subObj->GetDataObjectId());
+//		}
+//	}
+	auto& modelList  = m_Manager->GetCurrentScene()->GetModelList();
+	for(auto& [mId, obj] : modelList)
+	{
+
+	}
+}
+
+
 void igQtModelListView::ShowAllModel()
 {
 	for (auto it = itemObjectIds.begin(); it != itemObjectIds.end(); ++it) {
@@ -190,11 +216,8 @@ void igQtModelListView::AddModel(QString modelName) {
 	if(curObj->HasSubDataObject()){
 		int index = 0;
 		for(auto it = curObj->SubBegin(); it != curObj->SubEnd(); it ++){
-			auto subObj = it->second;
-
+			auto& subObj = it->second;
 			std::string name = subObj->GetName();
-//			std::string name = "block_";
-//			name.append(std::to_string(index++));
 			AddChildToItem(newModel, QString::fromStdString(name), subObj->GetDataObjectId());
 		}
 	}

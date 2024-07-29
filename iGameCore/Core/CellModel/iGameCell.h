@@ -25,16 +25,6 @@ public:
 			this->PointIds->AddId(pts[i]);
 		}
 	}
-	//void Initialize(int npts, const igIndex* pts, Points* p) {
-	//	this->PointIds->Reset();
-	//	this->Points->Reset();
-
-	//	for (int i = 0; i < npts; i++)
-	//	{
-	//		this->PointIds->InsertNextId(pts[i]);
-	//		this->Points->AddPoint(p->GetPoint(pts[i]));
-	//	}
-	//}
 
 	virtual int GetCellType() = 0;
 

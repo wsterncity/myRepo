@@ -46,6 +46,15 @@ void DataObject::RemoveSubDataObject(DataObjectId id)
 	return m_SubDataObjectsHelper->RemoveSubDataObject(id);
 }
 
+void DataObject::ClearSubDataObject() {
+    if (m_SubDataObjectsHelper == nullptr)
+    {
+        return;
+    }
+
+    return m_SubDataObjectsHelper->ClearSubDataObject();
+}
+
 bool DataObject::HasSubDataObject() noexcept
 {
 	if (m_SubDataObjectsHelper == nullptr)
@@ -183,9 +192,17 @@ void DataObject::SetVisibility(bool f)
     }
 
     void DataObject::SwitchToCurrentTimeframe(int timeIndex) {
-        if(m_timeFrames == nullptr) igError("This operation cannot be performed in this file without time frames.");
-        if(m_timeFrames->GetArrays().size() <= timeIndex) igError("timeStep error");
+        if(m_TimeFrames == nullptr) igError("This operation cannot be performed in this file without time frames.");
+        if(m_TimeFrames->GetArrays().size() <= timeIndex) igError("timeStep error");
 
         m_CurrentTimeframeIndex = timeIndex;
     }
+
+    StreamingData::Pointer DataObject::GetTimeFrames() {
+//        if(m_TimeFrames == nullptr) m_TimeFrames = StreamingData::New();
+
+        return m_TimeFrames;
+    }
+
+
 IGAME_NAMESPACE_END

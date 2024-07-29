@@ -27,7 +27,7 @@ public:
     };
     struct UniformBufferObject {
         alignas(16) igm::vec3 viewPos;
-        alignas(4) int useColor{0};
+        alignas(4) int useColor{ 0 };
     };
 
     enum ShaderType {
@@ -42,7 +42,6 @@ public:
         SHADERTYPE_COUNT
     };
 
-    // ??Actor???Mapper??????
     MVPMatrix& MVP() { return this->m_MVP; }
     UniformBufferObject& UBO() { return this->m_UBO; }
     void UpdateUniformBuffer();
@@ -53,10 +52,8 @@ public:
     GLShaderProgram* GetShader(IGenum type);
     bool HasShader(IGenum type);
 
-    // ??Qt??????
     void ChangeViewStyle(IGenum mode);
 
-    // ?????????
     void Draw();
     void Resize(int width, int height, int pixelRatio);
     void Update();
@@ -89,7 +86,7 @@ public:
     }
 
     bool UpdateCurrentDataObject(int index) {
-        for (auto& [id, obj]: m_Models) {
+        for (auto& [id, obj] : m_Models) {
             if (id == index) {
                 m_CurrentObjectId = id;
                 m_CurrentObject = obj.get();
@@ -108,7 +105,7 @@ public:
     }
 
     DataObject* GetDataObject(int index) {
-        for (auto& [id, obj]: m_Models) {
+        for (auto& [id, obj] : m_Models) {
             if (id == index) { return obj.get(); }
             if (obj->HasSubDataObject()) {
                 auto subObj = obj->GetSubDataObject(index);
@@ -127,22 +124,15 @@ public:
         if (visibility) {
             m_VisibleModelsCount++;
             if (m_VisibleModelsCount == 1) {
-                //                for (int i = 0; i < triangleInfo.positionSize / 3; i++) {
-                //                    igm::vec3 point = {triangleInfo.positions[i * 3 + 0],
-                //                                       triangleInfo.positions[i * 3 + 1],
-                //                                       triangleInfo.positions[i * 3 + 2]};
-                //                    min = igm::min(min, point);
-                //                    max = igm::max(max, point);
-                //                }
-                auto center =
-                        igm::vec3{0.293951035f, 21.5820999f, 0.193099976f};
-                float radius = 114.204018f;
+                Vector3f center = obj->GetBoundingBox().center();
+                float radius = obj->GetBoundingBox().diag() / 2;
 
-                m_FirstModelCenter = igm::vec4{center, radius};
-                m_Camera->SetCamaraPos(center.x, center.y,
-                                       center.z + 2.0f * radius);
+                m_FirstModelCenter = igm::vec4{ center[0],center[1],center[2], radius };
+                m_Camera->SetCamaraPos(center[0], center[1],
+                    center[2] + 2.0f * radius);
             }
-        } else {
+        }
+        else {
             m_VisibleModelsCount--;
         }
     }
@@ -152,7 +142,7 @@ public:
         glDepthFunc(GL_LESS);
         glViewport(0, 0, m_Camera->GetViewPort().x, m_Camera->GetViewPort().y);
 
-        for (auto& [id, obj]: m_Models) {
+        for (auto& [id, obj] : m_Models) {
             obj->ConvertToDrawableData();
             obj->Draw(this);
         }
@@ -199,8 +189,8 @@ protected:
     void DrawAxes();
 
     std::map<DataObjectId, DataObject::Pointer> m_Models;
-    DataObjectId m_CurrentObjectId{0};
-    DataObject* m_CurrentObject{nullptr};
+    DataObjectId m_CurrentObjectId{ 0 };
+    DataObject* m_CurrentObject{ nullptr };
 
     Camera::Pointer m_Camera{};
     Light::Pointer m_Light{};
@@ -212,7 +202,7 @@ protected:
     igm::vec3 m_BackgroundColor{};
 
     uint32_t m_VisibleModelsCount = 0;
-    igm::vec4 m_FirstModelCenter{0.0f, 0.0f, 0.0f, 1.0f};
+    igm::vec4 m_FirstModelCenter{ 0.0f, 0.0f, 0.0f, 1.0f };
 
     GLBuffer m_MVPBlock, m_UBOBlock;
     std::map<IGenum, std::unique_ptr<GLShaderProgram>> m_ShaderPrograms;

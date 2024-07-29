@@ -6,6 +6,7 @@
 #include "iGamePropertySet.h"
 #include "iGameScalarsToColors.h"
 #include "iGameMetadata.h"
+#include "iGameBoundingBox.h"
 
 #include "OpenGL/GLBuffer.h"
 #include "OpenGL/GLShader.h"
@@ -36,11 +37,15 @@ public:
 		return true;
 	}
 
-	StreamingData::Pointer GetTimeFrames() { return m_timeFrames; }
-	void SetTimeFrames(StreamingData::Pointer p) { m_timeFrames = p; }
+	StreamingData::Pointer GetTimeFrames();
+	void SetTimeFrames(StreamingData::Pointer p) { m_TimeFrames = p; }
 	void SetPropertySet(PropertySet::Pointer p) { m_Propertys = p; }
 	PropertySet* GetPropertySet() { return m_Propertys.get(); }
 	Metadata* GetMetadata() { return m_Metadata.get(); }
+	const BoundingBox& GetBoundingBox() {
+		ComputeBoundingBox();
+		return m_Bounding; 
+	}
 
 	class SubDataObjectsHelper : public Object {
 	public:
@@ -79,6 +84,11 @@ public:
 			this->Modified();
 		}
 
+        void ClearSubDataObject(){
+            m_SubDataObjects.clear();
+            this->Modified();
+        }
+
 		bool HasSubDataObject() noexcept {
 			return m_SubDataObjects.size() != 0;
 		}
@@ -113,6 +123,7 @@ public:
 	DataObject::Pointer GetSubDataObject(DataObjectId id);
 	DataObjectId AddSubDataObject(DataObject::Pointer obj); 
 	void RemoveSubDataObject(DataObjectId id);
+    void ClearSubDataObject();
 	bool HasSubDataObject() noexcept;
 	int GetNumberOfSubDataObjects() noexcept;
 	SubIterator SubBegin();
@@ -131,13 +142,17 @@ protected:
 	}
 	~DataObject() override = default;
 
+	virtual void ComputeBoundingBox() {}
+
 	DataObjectId m_UniqueId{};
-	StreamingData::Pointer m_timeFrames{};
-	PropertySet::Pointer m_Propertys{};
-	Metadata::Pointer m_Metadata{};
+	StreamingData::Pointer m_TimeFrames{nullptr};
+	PropertySet::Pointer m_Propertys{nullptr};
+	Metadata::Pointer m_Metadata{nullptr};
+
+	BoundingBox m_Bounding{};
 
 	friend class SubDataObjectsHelper;
-	SmartPointer<SubDataObjectsHelper> m_SubDataObjectsHelper{};
+	SmartPointer<SubDataObjectsHelper> m_SubDataObjectsHelper{nullptr};
 	DataObject* m_Parent{ nullptr };
 
 	template<typename Functor, typename... Args>
@@ -167,7 +182,7 @@ public:
 
     int GetTimeframeIndex();
     void SwitchToCurrentTimeframe(int timeIndex);
-
+	
 
 protected:
 	IGenum m_ViewStyle{ IG_NONE };
