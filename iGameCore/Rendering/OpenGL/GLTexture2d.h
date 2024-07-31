@@ -20,6 +20,18 @@ private:
     GLTexture2d(GLuint handle) : GLObject<GLTexture2d>{handle} {}
 
 public:
+    static void copyImageSubData(const GLTexture2d& source, GLenum srcTarget,
+                                 GLint srcLevel, GLint srcX, GLint srcY,
+                                 GLint srcZ, const GLTexture2d& destination,
+                                 GLenum dstTarget, GLint dstLevel, GLint dstX,
+                                 GLint dstY, GLint dstZ, GLsizei srcWidth,
+                                 GLsizei srcHeight, GLsizei srcDepth) {
+        glCopyImageSubData(source.handle, srcTarget, srcLevel, srcX, srcY, srcZ,
+                           destination.handle, dstTarget, dstLevel, dstX, dstY,
+                           dstZ, srcWidth, srcHeight, srcDepth);
+    }
+
+public:
     GLTexture2d() = default;
     static GLTexture2d view(GLenum target, const GLTexture2d& original,
                             GLenum internal_format, unsigned first_mip_level,
@@ -35,17 +47,16 @@ public:
 
 public:
     // GLenum internal_format: https://registry.khronos.org/OpenGL-Refpages/gl4/html/glTexImage2D.xhtml
-    // Sized Internal Format: GL_R8, GL_RG8, GL_RGB8, GL_RGBA8
-    // Sized Internal Format: GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT24
-    // Sized Internal Format: GL_DEPTH32F_STENCIL8, GL_DEPTH24_STENCIL8
-    // Sized Internal Format: GL_STENCIL_INDEX8
+    // GLenum internal_format(Sized Internal Format): GL_R8, GL_RG8, GL_RGB8, GL_RGBA8
+    // GLenum internal_format(Sized Internal Format): GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT24
+    // GLenum internal_format(Sized Internal Format): GL_DEPTH32F_STENCIL8, GL_DEPTH24_STENCIL8
+    // GLenum internal_format(Sized Internal Format): GL_STENCIL_INDEX8
     void storage(unsigned mip_levels, GLenum internal_format, unsigned width,
                  unsigned height) const {
         glTextureStorage2D(handle, mip_levels, internal_format, width, height);
     }
 
-    // GLenum format: GL_RED, GL_RG, GL_RGB, GL_RGBA
-    // Base Internal Format: GL_RED, GL_RG, GL_RGB, GL_RGBA
+    // GLenum format(Base Internal Format): GL_RED, GL_RG, GL_RGB, GL_RGBA
     // GLenum type:GL_UNSIGNED_BYTE, GL_FLOAT
     void subImage(unsigned mip_level, unsigned xoffset, unsigned yoffset,
                   unsigned width, unsigned height, GLenum format, GLenum type,
@@ -75,6 +86,12 @@ public:
 
     void bind() const { glBindTexture(GL_TEXTURE_2D, handle); }
     void release() const { glBindTexture(GL_TEXTURE_2D, 0); }
+
+    void bindImage(unsigned int binding_index, unsigned int mip_level,
+                   bool layered, int layer, GLenum access, GLenum format) {
+        glBindImageTexture(binding_index, handle, mip_level, layered, layer,
+                           access, format);
+    }
 };
 
 IGAME_NAMESPACE_END

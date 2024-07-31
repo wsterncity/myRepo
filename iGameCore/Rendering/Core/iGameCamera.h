@@ -59,6 +59,9 @@ public:
     static Pointer New() { return new Viewer; }
 
 public:
+    float GetNearPlane() { return nearPlane; };
+    float GetFarPlane() { return farPlane; };
+
     igm::mat4 GetProjectionMatrix() {
         return igm::perspective(static_cast<float>(igm::radians(fov)),
                                 aspect<float>(), nearPlane, farPlane);
