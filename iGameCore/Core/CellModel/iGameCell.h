@@ -44,7 +44,7 @@ public:
 	virtual int GetNumberOfFaces() = 0;
 
 	igIndex GetPointId(int ptId) { return this->PointIds->GetId(ptId); }
-	Point& GetPoint(int ptId) { return this->Points->GetPoint(ptId); }
+	// Point& GetPoint(int ptId) { return this->Points->GetPoint(ptId); }
 	const Point& GetPoint(int ptId) const { return this->Points->GetPoint(ptId); }
 
 	virtual Cell* GetEdge(int edgeId) = 0;

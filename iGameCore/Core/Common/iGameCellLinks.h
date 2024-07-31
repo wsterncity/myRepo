@@ -102,7 +102,7 @@ public:
 		}
 	}
 
-	void RemoveReference(const IGsize cellId, const IGsize linkId)
+	void RemoveReference(const IGsize linkId, const IGsize cellId)
 	{
 		Link& link = this->GetLink(linkId);
 

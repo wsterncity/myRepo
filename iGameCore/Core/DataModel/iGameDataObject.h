@@ -1,7 +1,6 @@
 #ifndef iGameDataObject_h
 #define iGameDataObject_h
 
-#include "iGameObject.h"
 #include "iGameStreamingData.h"
 #include "iGamePropertySet.h"
 #include "iGameScalarsToColors.h"
@@ -15,6 +14,7 @@
 
 IGAME_NAMESPACE_BEGIN
 class Scene;
+
 class DataObject : public Object {
 public:
 	I_OBJECT(DataObject);
@@ -133,6 +133,7 @@ protected:
 		m_Propertys = PropertySet::New();
 		m_Metadata = Metadata::New();
 		m_UniqueId = GetIncrementDataObjectId();
+		m_BoundingHelper = Object::New();
 	}
 	~DataObject() override = default;
 
@@ -143,7 +144,8 @@ protected:
 	PropertySet::Pointer m_Propertys{};
 	Metadata::Pointer m_Metadata{};
 
-	BoundingBox m_Bounding;
+	BoundingBox m_Bounding{};
+	Object::Pointer m_BoundingHelper{};
 
 	friend class SubDataObjectsHelper;
 	SmartPointer<SubDataObjectsHelper> m_SubDataObjectsHelper{};

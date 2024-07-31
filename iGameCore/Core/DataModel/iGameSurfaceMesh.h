@@ -18,8 +18,8 @@ public:
 	I_OBJECT(SurfaceMesh);
 	static Pointer New() { return new SurfaceMesh; }
 
-	igIndex GetNumberOfEdges();
-	igIndex GetNumberOfFaces();
+	IGsize GetNumberOfEdges() const noexcept;
+	IGsize GetNumberOfFaces() const noexcept;
 	
 	CellArray* GetEdges();
 	CellArray* GetFaces();
@@ -46,323 +46,30 @@ public:
 	int GetFaceToNeighborFaces(const IGsize faceId, igIndex* faceIds);
 	int GetFaceToOneRingFaces(const IGsize faceId, igIndex* faceIds);
 
-	void RequestEditStatus() override
-	{
-		if (InEditStatus())
-		{
-			return;
-		}
-		RequestPointStatus();
-		RequestEdgeStatus();
-		RequestFaceStatus();
-		MakeEditStatusOn();
-	}
+	igIndex GetEdgeIdFormPointIds(const IGsize ptId1, const IGsize ptId2);
+	igIndex GetFaceIdFormPointIds(igIndex* ids, int size);
 
-	igIndex GetEdgeIdFormPointIds(const IGsize ptId1, const IGsize ptId2)
-	{
-		igIndex edgeIds[64]{}, e[2]{};
-		int size = GetPointToNeighborEdges(ptId1, edgeIds);
-		for (int i = 0; i < size; i++)
-		{
-			GetEdgePointIds(edgeIds[i], e);
-			if (ptId1 + ptId2 == e[0] + e[1]) {
-				return edgeIds[i];
-			}
-		}
-		return (-1);
-	}
-	igIndex GetFaceIdFormPointIds(igIndex* ids, int size)
-	{
-		IGsize sum = 0;
-		for (int i = 0; i < size; i++) {
-			if (ids[i] >= this->GetNumberOfPoints()) {
-				return (-1);
-			}
-			sum += ids[i];
-		}
+	void RequestEditStatus() override;
+	void GarbageCollection() override;
+	bool IsEdgeDeleted(const IGsize edgeId);
+	bool IsFaceDeleted(const IGsize faceId);
 
-		igIndex faceIds[64]{}, ptIds[32]{};
-		int size1 = GetPointToNeighborFaces(ids[0], faceIds);
-		for (int i = 0; i < size1; i++)
-		{
-			if (size != GetFacePointIds(faceIds[i], ptIds)) continue;
-			IGsize index_sum = 0;
-			for (int j = 0; j < size; j++)
-			{
-				index_sum += ptIds[j];
-			}
-			if (sum == index_sum)
-			{
-				int count = 0;
-				for (int j = 0; j < size; j++) {
-					for (int k = 0; k < size; k++) {
-						if (ids[j] == ptIds[k]) {
-							count++;
-							break;
-						}
-					}
-				}
-				if (count == size) return faceIds[i];
-			}
-		}
-		return (-1);
-	}
+	IGsize AddPoint(const Point& p) override;
+	virtual IGsize AddEdge(const IGsize ptId1, const IGsize ptId2);
+	virtual IGsize AddFace(igIndex* ptIds, int size);
 
-	IGsize AddPoint(const Point& p) override
-	{
-		if (!InEditStatus())
-		{
-			RequestEditStatus();
-		}
-		IGsize ptId = m_Points->AddPoint(p);
-		
-		m_EdgeLinks->AddLink();
-		m_FaceLinks->AddLink();
+	void DeletePoint(const IGsize ptId) override;
+	virtual void DeleteEdge(const IGsize edgeId);
+	virtual void DeleteFace(const IGsize faceId);
 
-		m_PointDeleteMarker->AddTag();
-		Modified();
-		return ptId;
-	}
-	IGsize AddEdge(const IGsize ptId1, const IGsize ptId2)
-	{
-		igIndex edgeId = GetEdgeIdFormPointIds(ptId1, ptId2);
-		if (edgeId == -1) {
-			edgeId = GetNumberOfEdges();
-			m_Edges->AddCellId2(ptId1, ptId2);
-			m_EdgeLinks->AddReference(ptId1, edgeId);
-			m_EdgeLinks->AddReference(ptId2, edgeId);
-			m_FaceEdgeLinks->AddLink();
-			m_EdgeDeleteMarker->AddTag();
-			Modified();
-		}
-		return edgeId;
-	}
-	IGsize AddFace(igIndex* ptIds, int size) 
-	{
-		igIndex edgeIds[64]{};
-		for (int i = 0; i < size; i++) {
-			edgeIds[i] = AddEdge(ptIds[i], ptIds[(i + 1) % size]);
-		}
-		igIndex faceId = GetFaceIdFormPointIds(ptIds, size);
-		if (faceId == -1) {
-			faceId = GetNumberOfFaces();
-			m_Faces->AddCellIds(ptIds, size);
-			m_FaceEdges->AddCellIds(edgeIds, size);
-			for (int i = 0; i < size; i++) {
-				m_FaceLinks->AddReference(ptIds[i], faceId);
-				m_FaceEdgeLinks->AddReference(edgeIds[i], faceId);
-			}
-
-			m_FaceDeleteMarker->AddTag();
-			Modified();
-		}
-
-		return faceId;
-	}
-
-	void DeletePoint(const IGsize ptId) override 
-	{
-		if (!InEditStatus())
-		{
-			RequestEditStatus();
-		}
-		if (IsPointDeleted(ptId)) 
-		{
-			return;
-		}
-		igIndex edgeIds[64]{};
-		int size = GetPointToNeighborEdges(ptId, edgeIds);
-		for (int i = 0; i < size; i++) {
-			DeleteEdge(edgeIds[i]);
-		}
-		m_EdgeLinks->DeleteLink(ptId);
-		m_FaceLinks->DeleteLink(ptId);
-		m_PointDeleteMarker->MarkDeleted(ptId);
-	}
-	void DeleteEdge(const IGsize edgeId) {
-		if (!InEditStatus())
-		{
-			RequestEditStatus();
-		}
-		if (IsEdgeDeleted(edgeId))
-		{
-			return;
-		}
-		igIndex faceIds[64]{}, e[2]{};
-		int size = GetEdgeToNeighborFaces(edgeId, faceIds);
-		GetEdgePointIds(edgeId, e);
-		for (int i = 0; i < 2; i++) {
-			m_EdgeLinks->RemoveReference(edgeId, e[i]);
-		}
-		for (int i = 0; i < size; i++) {
-			DeleteFace(faceIds[i]);
-		}
-		m_FaceEdgeLinks->DeleteLink(edgeId);
-		m_EdgeDeleteMarker->MarkDeleted(edgeId);
-	}
-	void DeleteFace(const IGsize faceId) {
-		if (!InEditStatus())
-		{
-			RequestEditStatus();
-		}
-		if (IsFaceDeleted(faceId))
-		{
-			return;
-		}
-		igIndex ptIds[64]{}, edgeIds[64]{};
-		int size = GetFacePointIds(faceId, ptIds);
-		GetFaceEdgeIds(faceId, edgeIds);
-		for (int i = 0; i < size; i++) {
-			m_FaceLinks->RemoveReference(faceId, ptIds[i]);
-			m_FaceEdgeLinks->RemoveReference(faceId, edgeIds[i]);
-		}
-		m_FaceDeleteMarker->MarkDeleted(faceId);
-	}
-
-	void GarbageCollection() override
-	{
-		IGsize i, mappedPtId = 0, mappedEdgeId = 0;
-		igIndex ptIds[32]{}, edgeIds[32]{}, e[2]{};
-		CellArray::Pointer newEdges = CellArray::New();
-		CellArray::Pointer newFaces = CellArray::New();
-		CellArray::Pointer newFaceEdges = CellArray::New();
-
-		IGsize npts = GetNumberOfPoints();
-		IGsize nedges = GetNumberOfEdges();
-		IGsize nfaces = GetNumberOfFaces();
-
-		std::vector<igIndex> ptMap(npts);
-		std::vector<igIndex> edgeMap(nedges);
-
-		for (i = 0; i < npts; i++) {
-			if (IsPointDeleted(i)) continue;
-			if (i != mappedPtId) {
-				m_Points->SetPoint(mappedPtId, m_Points->GetPoint(i));
-			}
-			ptMap[i] = mappedPtId;
-			mappedPtId++;
-		}
-		m_Points->Resize(mappedPtId);
-
-		for (i = 0; i < nedges; i++) {
-			if (IsEdgeDeleted(i)) continue;
-			m_Edges->GetCellIds(i, e);
-			for (int j = 0; j < 2; j++) {
-				e[j] = ptMap[e[j]];
-			}
-			newEdges->AddCellIds(e, 2);
-			edgeMap[i] = mappedEdgeId;
-			mappedEdgeId++;
-		}
-		
-		for (i = 0; i < nfaces; i++) {
-			if (IsFaceDeleted(i)) continue;
-			m_FaceEdges->GetCellIds(i, edgeIds);
-			int size = m_Faces->GetCellIds(i, ptIds);
-			for (int j = 0; j < size; j++) {
-				ptIds[j] = ptMap[ptIds[j]];
-				edgeIds[j] = edgeMap[edgeIds[j]];
-			}
-			newFaces->AddCellIds(ptIds, size);
-			newFaceEdges->AddCellIds(edgeIds, size);
-		}
-
-		m_Edges = newEdges;
-		m_Faces = newFaces;
-		m_FaceEdges = newFaceEdges;
-		m_EdgeLinks = nullptr;
-		m_FaceLinks = nullptr;
-		m_FaceEdgeLinks = nullptr;
-		m_PointDeleteMarker = nullptr;
-		m_EdgeDeleteMarker = nullptr;
-		m_FaceDeleteMarker = nullptr;
-		Modified();
-		MakeEditStatusOff();
-	}
-
-	bool IsEdgeDeleted(const IGsize edgeId) {
-		return m_EdgeDeleteMarker->IsDeleted(edgeId);
-	}
-	bool IsFaceDeleted(const IGsize faceId) {
-		return m_FaceDeleteMarker->IsDeleted(faceId);
-	}
-
-	void ReplacePointReference(const IGsize fromPtId, const IGsize toPtId)
-	{
-		assert(fromPtId < GetNumberOfPoints() && "ptId too large");
-		assert(toPtId < GetNumberOfPoints() && "ptId too large");
-		if (fromPtId == toPtId)
-		{
-			return;
-		}
-		if (!InEditStatus())
-		{
-			RequestEditStatus();
-		}
-		igIndex edgeIds[64]{}, faceIds[64]{};
-		int size1 = GetPointToNeighborEdges(fromPtId, edgeIds);
-		int size2 = GetPointToNeighborFaces(fromPtId, faceIds);
-		for (int i = 0; i < size1; i++) {
-			m_Edges->ReplaceCellReference(edgeIds[i], fromPtId, toPtId);
-		}
-		for (int i = 0; i < size2; i++) {
-			m_Faces->ReplaceCellReference(faceIds[i], fromPtId, toPtId);
-		}
-
-		auto& link1 = m_EdgeLinks->GetLink(fromPtId);
-		m_EdgeLinks->SetLink(toPtId, link1.pointer, link1.size);
-
-		auto& link2 = m_FaceLinks->GetLink(fromPtId);
-		m_FaceLinks->SetLink(toPtId, link2.pointer, link2.size);
-	}
+	void ReplacePointReference(const IGsize fromPtId, const IGsize toPtId);
 
 protected:
-	SurfaceMesh() 
-	{
-		m_ViewStyle = IG_SURFACE;
-	};
-	~SurfaceMesh() override {};
+	SurfaceMesh();
+	~SurfaceMesh() override = default;
 
-	void RequestEdgeStatus()
-	{
-		if (m_Edges == nullptr || 
-			(m_Edges->GetMTime() < m_Faces->GetMTime()))
-		{
-			BuildEdges();
-			
-		}
-		if (m_EdgeLinks == nullptr ||
-			(m_EdgeLinks->GetMTime() < m_Edges->GetMTime()))
-		{
-			BuildEdgeLinks();
-		}
-
-		if (m_EdgeDeleteMarker == nullptr)
-		{
-			m_EdgeDeleteMarker = DeleteMarker::New();
-		}
-		m_EdgeDeleteMarker->Initialize(this->GetNumberOfEdges());
-	}
-
-	void RequestFaceStatus()
-	{
-		if (m_FaceEdgeLinks == nullptr || 
-			(m_FaceEdgeLinks->GetMTime() < m_FaceEdges->GetMTime()))
-		{
-			BuildFaceEdgeLinks();
-		}
-		if (m_FaceLinks == nullptr || 
-			(m_FaceLinks->GetMTime() < m_Faces->GetMTime()))
-		{
-			BuildFaceLinks();
-		}
-
-		if (m_FaceDeleteMarker == nullptr)
-		{
-			m_FaceDeleteMarker = DeleteMarker::New();
-		}
-		m_FaceDeleteMarker->Initialize(this->GetNumberOfFaces());
-	}
+	void RequestEdgeStatus();
+	void RequestFaceStatus();
 
 	DeleteMarker::Pointer m_EdgeDeleteMarker{};
 	DeleteMarker::Pointer m_FaceDeleteMarker{};
@@ -481,6 +188,8 @@ public:
 			newPositions->SetElementSize(3);
 			newColors->SetElementSize(3);
 
+			//std::cout << this->GetNumberOfFaces() << std::endl;
+			//std::cout << colors->GetNumberOfElements() << std::endl;
 			float color[3]{};
 			for (int i = 0; i < this->GetNumberOfFaces(); i++)
 			{
