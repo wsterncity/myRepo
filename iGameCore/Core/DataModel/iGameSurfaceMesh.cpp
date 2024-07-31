@@ -575,10 +575,7 @@ SurfaceMesh::SurfaceMesh()
 {
 	m_ViewStyle = IG_SURFACE;
 };
-
-        return;
-    }
-
+void SurfaceMesh::Draw(Scene* scene) {
     if (!m_Visibility) { return; }
 
     // update uniform buffer
