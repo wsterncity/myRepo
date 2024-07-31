@@ -1,0 +1,54 @@
+#version 460
+
+layout (local_size_x = 256) in;
+
+// Camera buffer
+layout(std140, binding = 0) uniform MVPMatrix {
+    mat4 model;
+    mat4 normal;
+    mat4 viewproj;
+} mvp;
+
+// Meshlets Buffer
+struct MeshletData {
+    vec4 spherebounds;
+    vec4 extents;
+};
+layout(std430, binding = 1) buffer MeshletsBuffer {
+    MeshletData meshlets[];
+};
+
+// Indirect command buffer
+struct DrawElementsIndirectCommand {
+    uint count;
+    uint primCount;
+    uint firstIndex;
+    uint baseVertex;
+    uint baseInstance;
+};
+layout(std430, binding = 2) buffer DrawCommandBuffer {
+    DrawElementsIndirectCommand commands[];
+};
+
+// Function to perform occlusion culling
+bool IsVisible(MeshletData meshlet) {
+    if (meshlet.spherebounds.x >= 0) return true;
+    else return false;
+}
+
+void main() {
+    uint id = gl_GlobalInvocationID.x;
+    if (id >= meshlets.length()) {
+        return;// Prevent out-of-bounds access
+    }
+
+    MeshletData meshlet = meshlets[id];
+
+    if (IsVisible(meshlet)) {
+        // Write a draw command if the meshlet is visible
+        commands[id].primCount = 1;// Adjust according to your needs
+    } else {
+        // Set draw command count to 0 if the meshlet is not visible
+        commands[id].primCount = 0;
+    }
+}

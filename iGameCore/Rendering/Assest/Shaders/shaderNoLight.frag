@@ -4,7 +4,7 @@
 layout(std140) uniform MVPMatrix {
     mat4 model;
     mat4 normal;// transpose(inverse(model))
-    mat4 mvp;// proj * view * model
+    mat4 viewporj;// proj * view
 } mvp;
 //layout(std140, binding = 1) uniform UniformBufferObject {
 layout(std140) uniform UniformBufferObject {

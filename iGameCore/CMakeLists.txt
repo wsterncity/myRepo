@@ -25,6 +25,7 @@ message("moudule : ${CMAKE_CURRENT_SOURCE_DIR}")
 target_link_libraries(${MODULE_NAME} PUBLIC
         gladLib
         freetype
+        meshoptimizer
         tinyXML
 )
 

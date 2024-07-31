@@ -16,7 +16,7 @@ public:
     igQtAnimationWidget(QWidget* parent = nullptr);
 
 public slots:
-    void initAnimationComponents(std::vector<float>& timeValues);
+    void initAnimationComponents();
 
 private slots:
     void playAnimation_snap(int keyframe_idx);
@@ -27,6 +27,8 @@ private slots:
 
 
 signals:
+    void UpdateScene();
+
     void PlayAnimation_snap(int keyframe_idx);
 
     void PlayAnimation_interpolate(int keyframe_0, float t);

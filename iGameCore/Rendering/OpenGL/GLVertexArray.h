@@ -77,10 +77,10 @@ inline void GLAllocateGLBuffer(GLBuffer& vbo, size_t size, const void* data) {
 }
 
 inline void GLSetVertexAttrib(GLVertexArray& VAO, GLVertexAttribute attribute,
-    GLuint binding_index, int size, GLenum type,
-    GLboolean normalized, unsigned int offset) {
+                              GLuint vbo_binding_index, int size, GLenum type,
+                              GLboolean normalized, unsigned int offset) {
     VAO.enableAttrib(attribute);
-    VAO.attribBinding(attribute, binding_index);
+    VAO.attribBinding(attribute, vbo_binding_index);
     VAO.attribFormat(attribute, size, type, normalized, offset);
 }
 

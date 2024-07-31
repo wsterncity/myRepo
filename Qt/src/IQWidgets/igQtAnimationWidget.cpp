@@ -9,6 +9,10 @@
 #include <QAbstractButton>
 
 #include <qdebug.h>
+
+#include <iGameFileIO.h>
+#include <iGameSceneManager.h>
+
 /**
  * @class   igQtAnimationWidget
  * @brief   igQtAnimationWidget's brief
@@ -19,18 +23,18 @@ igQtAnimationWidget::igQtAnimationWidget(QWidget *parent) : QWidget(parent), ui(
 
     connect(VcrController, &igQtAnimationVcrController::timeStepChanged_snap, this, &igQtAnimationWidget::playAnimation_snap);
     connect(VcrController, &igQtAnimationVcrController::timeStepChanged_interpolate, this, &igQtAnimationWidget::playAnimation_interpolate);
-    connect(VcrController, &igQtAnimationVcrController::updateAnimationComponentsTimeStap, ui->treeWidget_snap, &igQtAnimationTreeWidget_snap::updateCurrentKeyframe);
-    connect(VcrController, &igQtAnimationVcrController::updateAnimationComponentsTimeStap, ui->treeWidget_interpolate, &igQtAnimationTreeWidget_interpolate::updateCurrentKeyframe);
-    connect(VcrController, &igQtAnimationVcrController::updateAnimationComponentsTimeStap, ui->SliderAnimationTrack, &QSlider::setValue);
+//    connect(VcrController, &igQtAnimationVcrController::updateAnimationComponentsTimeStap, ui->treeWidget_snap, &igQtAnimationTreeWidget_snap::updateCurrentKeyframe);
+//    connect(VcrController, &igQtAnimationVcrController::updateAnimationComponentsTimeStap, ui->treeWidget_interpolate, &igQtAnimationTreeWidget_interpolate::updateCurrentKeyframe);
+//    connect(VcrController, &igQtAnimationVcrController::updateAnimationComponentsTimeStap, ui->SliderAnimationTrack, &QSlider::setValue);
     connect(VcrController, &igQtAnimationVcrController::finishPlaying, this, &igQtAnimationWidget::btnPlay_finishLoop);
     connect(ui->btnFirstFrame, &QPushButton::clicked, VcrController, &igQtAnimationVcrController::onFirstFrame);
     connect(ui->btnLastFrame, &QPushButton::clicked, VcrController, &igQtAnimationVcrController::onLastFrame);
     connect(ui->btnPreviousFrame, &QPushButton::clicked, VcrController, &igQtAnimationVcrController::onPreviousFrame);
     connect(ui->btnNextFrame, &QPushButton::clicked, VcrController, &igQtAnimationVcrController::onNextFrame);
-    connect(ui->treeWidget_snap, &igQtAnimationTreeWidget_snap::keyframedChanged, VcrController, &igQtAnimationVcrController::updateCurrentKeyframe);
-    connect(ui->treeWidget_interpolate, &igQtAnimationTreeWidget_interpolate::keyframedChanged, VcrController, &igQtAnimationVcrController::updateCurrentKeyframe);
-    connect(ui->treeWidget_interpolate, &igQtAnimationTreeWidget_interpolate::updateVcrControllerInterpolateData, VcrController, &igQtAnimationVcrController::updateInterpolate);
-    connect(ui->treeWidget_interpolate, &igQtAnimationTreeWidget_interpolate::updateComponentsKeyframeSum, this, &igQtAnimationWidget::updateAnimationComponentsKeyframeSum);
+//    connect(ui->treeWidget_snap, &igQtAnimationTreeWidget_snap::keyframedChanged, VcrController, &igQtAnimationVcrController::updateCurrentKeyframe);
+//    connect(ui->treeWidget_interpolate, &igQtAnimationTreeWidget_interpolate::keyframedChanged, VcrController, &igQtAnimationVcrController::updateCurrentKeyframe);
+//    connect(ui->treeWidget_interpolate, &igQtAnimationTreeWidget_interpolate::updateVcrControllerInterpolateData, VcrController, &igQtAnimationVcrController::updateInterpolate);
+//    connect(ui->treeWidget_interpolate, &igQtAnimationTreeWidget_interpolate::updateComponentsKeyframeSum, this, &igQtAnimationWidget::updateAnimationComponentsKeyframeSum);
     connect(ui->rbtnSnapTimeMode, SIGNAL(toggled(bool)), this, SLOT(changeAnimationMode()));
 
 
@@ -108,7 +112,25 @@ igQtAnimationWidget::igQtAnimationWidget(QWidget *parent) : QWidget(parent), ui(
 }
 
 void igQtAnimationWidget::playAnimation_snap(int keyframe_idx){
-    Q_EMIT PlayAnimation_snap(keyframe_idx);
+    using namespace iGame;
+    auto currentObject = SceneManager::Instance()->GetCurrentScene()->GetCurrentObject();
+    if(currentObject == nullptr || currentObject->GetTimeFrames()->GetArrays().empty())  return;
+    auto& frameSubFiles = currentObject->GetTimeFrames()->GetTargetTimeFrame(keyframe_idx).SubFileNames;
+    if(frameSubFiles->Size() > 1){
+        currentObject->ClearSubDataObject();
+        for(int i = 0; i < frameSubFiles->Size(); i ++){
+            auto sub = FileIO::ReadFile(frameSubFiles->GetElement(i));
+            currentObject->AddSubDataObject(sub);
+        }
+    }
+    else if(frameSubFiles->Size() == 1){
+        auto newDataObject = FileIO::ReadFile(frameSubFiles->GetElement(0));
+        newDataObject->SetTimeFrames(currentObject->GetTimeFrames());
+        SceneManager::Instance()->GetCurrentScene()->RemoveCurrentDataObject();
+        SceneManager::Instance()->GetCurrentScene()->AddDataObject(newDataObject);
+        newDataObject->SwitchToCurrentTimeframe(keyframe_idx);
+    }
+    Q_EMIT UpdateScene();
 }
 
 void igQtAnimationWidget::playAnimation_interpolate(int keyframe_0, float t){
@@ -141,7 +163,13 @@ void igQtAnimationWidget::changeAnimationMode() {
     }
 }
 
-void igQtAnimationWidget::initAnimationComponents(std::vector<float> &timeValues) {
+void igQtAnimationWidget::initAnimationComponents() {
+    if(iGame::SceneManager::Instance()->GetCurrentScene()->GetCurrentObject()->GetTimeFrames() == nullptr)  return;
+    auto timeArrays = iGame::SceneManager::Instance()->GetCurrentScene()->GetCurrentObject()->GetTimeFrames()->GetArrays();
+    if(timeArrays.empty()) return;
+    std::vector<float> timeValues;
+    timeValues.reserve(timeArrays.size());
+    for(auto & timeArray : timeArrays) timeValues.push_back(timeArray.timeValue);
     VcrController->initController(static_cast<int>(timeValues.size()), 1);
     ui->treeWidget_snap->initAnimationTreeWidget(timeValues);
     ui->treeWidget_interpolate->initAnimationTreeWidget(timeValues);

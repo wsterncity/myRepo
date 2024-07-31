@@ -37,7 +37,7 @@ public:
 		return true;
 	}
 
-	StreamingData::Pointer GetTimeFrames() { return m_TimeFrames; }
+	StreamingData::Pointer GetTimeFrames();
 	void SetTimeFrames(StreamingData::Pointer p) { m_TimeFrames = p; }
 	void SetPropertySet(PropertySet::Pointer p) { m_Propertys = p; }
 	PropertySet* GetPropertySet() { return m_Propertys.get(); }
@@ -84,6 +84,11 @@ public:
 			this->Modified();
 		}
 
+        void ClearSubDataObject(){
+            m_SubDataObjects.clear();
+            this->Modified();
+        }
+
 		bool HasSubDataObject() noexcept {
 			return m_SubDataObjects.size() != 0;
 		}
@@ -118,6 +123,7 @@ public:
 	DataObject::Pointer GetSubDataObject(DataObjectId id);
 	DataObjectId AddSubDataObject(DataObject::Pointer obj); 
 	void RemoveSubDataObject(DataObjectId id);
+    void ClearSubDataObject();
 	bool HasSubDataObject() noexcept;
 	int GetNumberOfSubDataObjects() noexcept;
 	SubIterator SubBegin();
@@ -140,15 +146,15 @@ protected:
 	virtual void ComputeBoundingBox() {}
 
 	DataObjectId m_UniqueId{};
-	StreamingData::Pointer m_TimeFrames{};
-	PropertySet::Pointer m_Propertys{};
-	Metadata::Pointer m_Metadata{};
+	StreamingData::Pointer m_TimeFrames{nullptr};
+	PropertySet::Pointer m_Propertys{nullptr};
+	Metadata::Pointer m_Metadata{nullptr};
 
 	BoundingBox m_Bounding{};
 	Object::Pointer m_BoundingHelper{};
 
 	friend class SubDataObjectsHelper;
-	SmartPointer<SubDataObjectsHelper> m_SubDataObjectsHelper{};
+	SmartPointer<SubDataObjectsHelper> m_SubDataObjectsHelper{nullptr};
 	DataObject* m_Parent{ nullptr };
 
 	template<typename Functor, typename... Args>

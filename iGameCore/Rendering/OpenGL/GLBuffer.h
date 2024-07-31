@@ -34,6 +34,9 @@ public:
         glNamedBufferStorage(handle, size, data, flags);
     }
 
+    // GLbitfield access: GL_MAP_READ_BIT, GL_MAP_WRITE_BIT
+    // GLbitfield access: GL_MAP_INVALIDATE_RANGE_BIT, GL_MAP_INVALIDATE_BUFFER_BIT
+    // GLbitfield access: GL_MAP_FLUSH_EXPLICIT_BIT, GL_MAP_UNSYNCHRONIZED_BIT
     void* mapRange(size_t offset, size_t length, GLbitfield access) const {
         return glMapNamedBufferRange(handle, offset, length, access);
     }
@@ -67,7 +70,6 @@ static inline const unsigned int GL_VBO_IDX_0{0};
 static inline const unsigned int GL_VBO_IDX_1{1};
 static inline const unsigned int GL_VBO_IDX_2{2};
 static inline const unsigned int GL_VBO_IDX_3{3};
-
 
 
 IGAME_NAMESPACE_END

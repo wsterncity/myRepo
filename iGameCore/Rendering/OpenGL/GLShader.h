@@ -125,6 +125,13 @@ public:
                                   mat4.data());
     }
 
+    void mapUniformBlock(const char* uniformBlockName,
+                         uint32_t uniformBlockBinding, GLBuffer& m_UBOBlock) {
+        GLuint blockIndex = glGetUniformBlockIndex(handle, uniformBlockName);
+        glUniformBlockBinding(handle, blockIndex, uniformBlockBinding);
+        m_UBOBlock.bindBase(GL_UNIFORM_BUFFER, uniformBlockBinding);
+    }
+
     GLVertexAttribute getAttribLocation(const char* const name) {
         int location = glGetAttribLocation(handle, name);
         assert(location != -1);
