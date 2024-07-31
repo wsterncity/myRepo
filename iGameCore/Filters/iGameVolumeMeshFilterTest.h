@@ -1,42 +1,39 @@
-#ifndef SurfaceMeshFilterTest_h
-#define SurfaceMeshFilterTest_h
+#ifndef VolumeMeshFilterTest_h
+#define VolumeMeshFilterTest_h
 
 #include "iGameFilter.h"
-#include "iGameSurfaceMesh.h"
+#include "iGameVolumeMesh.h"
 #include <random>
 
 IGAME_NAMESPACE_BEGIN
-class SurfaceMeshFilterTest : public Filter {
+class VolumeMeshFilterTest : public Filter {
 public:
-	I_OBJECT(SurfaceMeshFilterTest);
-	static Pointer New() { return new SurfaceMeshFilterTest; }
+	I_OBJECT(VolumeMeshFilterTest);
+	static Pointer New() { return new VolumeMeshFilterTest; }
 
 
 protected:
-	SurfaceMeshFilterTest()
+	VolumeMeshFilterTest()
 	{
 		SetNumberOfInputs(1);
 		SetNumberOfOutputs(1);
 	}
-	~SurfaceMeshFilterTest() override = default;
+	~VolumeMeshFilterTest() override = default;
 
-	SurfaceMesh::Pointer m_Mesh{};
+	VolumeMesh::Pointer m_Mesh{};
 
 	bool Execute() override
 	{ 
-		m_Mesh = DynamicCast<SurfaceMesh>(GetInput(0));
+		m_Mesh = DynamicCast<VolumeMesh>(GetInput(0));
 		if (m_Mesh == nullptr)
 		{
 			return false;
 		}
-		std::random_device rd;
-		std::mt19937 gen(rd());
-		std::uniform_real_distribution<> dis(0.0, 1.0);
 	
-		//AddFaceTest();
 		//DeletePointTest();
 		//DeleteEdgeTest();
-		DeleteFaceTest();
+		//DeleteFaceTest();
+		DeleteVolumeTest();
 
 		SetOutput(0, m_Mesh);
 		return true;
@@ -48,12 +45,34 @@ protected:
 		m_Mesh->AddFace(face, 3);
 	}
 
+	void DeleteVolumeTest() {
+		std::cout << "-----------------------------------------" << std::endl;
+		std::cout << "before" << std::endl;
+		std::cout << "point number: " << m_Mesh->GetNumberOfPoints() << std::endl;
+		std::cout << "edge number: " << m_Mesh->GetNumberOfEdges() << std::endl;
+		std::cout << "face number: " << m_Mesh->GetNumberOfFaces() << std::endl;
+		std::cout << "cell number: " << m_Mesh->GetNumberOfVolumes() << std::endl;
+
+		m_Mesh->RequestEditStatus();
+		for (int i = 0; i < m_Mesh->GetNumberOfVolumes() / 2; i++) {
+			m_Mesh->DeleteVolume(i);
+		}
+		m_Mesh->GarbageCollection();
+
+		std::cout << "after" << std::endl;
+		std::cout << "point number: " << m_Mesh->GetNumberOfPoints() << std::endl;
+		std::cout << "edge number: " << m_Mesh->GetNumberOfEdges() << std::endl;
+		std::cout << "face number: " << m_Mesh->GetNumberOfFaces() << std::endl;
+		std::cout << "cell number: " << m_Mesh->GetNumberOfVolumes() << std::endl;
+	}
+
 	void DeleteFaceTest() {
 		std::cout << "-----------------------------------------" << std::endl;
 		std::cout << "before" << std::endl;
 		std::cout << "point number: " << m_Mesh->GetNumberOfPoints() << std::endl;
 		std::cout << "edge number: " << m_Mesh->GetNumberOfEdges() << std::endl;
 		std::cout << "face number: " << m_Mesh->GetNumberOfFaces() << std::endl;
+		std::cout << "cell number: " << m_Mesh->GetNumberOfVolumes() << std::endl;
 
 		m_Mesh->RequestEditStatus();
 		for (int i = 0; i < m_Mesh->GetNumberOfFaces()/2; i++) {
@@ -65,6 +84,7 @@ protected:
 		std::cout << "point number: " << m_Mesh->GetNumberOfPoints() << std::endl;
 		std::cout << "edge number: " << m_Mesh->GetNumberOfEdges() << std::endl;
 		std::cout << "face number: " << m_Mesh->GetNumberOfFaces() << std::endl;
+		std::cout << "cell number: " << m_Mesh->GetNumberOfVolumes() << std::endl;
 	}
 
 	void DeletePointTest() {
@@ -73,6 +93,7 @@ protected:
 		std::cout << "point number: " << m_Mesh->GetNumberOfPoints() << std::endl;
 		std::cout << "edge number: " << m_Mesh->GetNumberOfEdges() << std::endl;
 		std::cout << "face number: " << m_Mesh->GetNumberOfFaces() << std::endl;
+		std::cout << "cell number: " << m_Mesh->GetNumberOfVolumes() << std::endl;
 
 		m_Mesh->RequestEditStatus();
 		for (int i = 0; i < m_Mesh->GetNumberOfPoints()/2; i++) {
@@ -84,6 +105,7 @@ protected:
 		std::cout << "point number: " << m_Mesh->GetNumberOfPoints() << std::endl;
 		std::cout << "edge number: " << m_Mesh->GetNumberOfEdges() << std::endl;
 		std::cout << "face number: " << m_Mesh->GetNumberOfFaces() << std::endl;
+		std::cout << "cell number: " << m_Mesh->GetNumberOfVolumes() << std::endl;
 	}
 
 	void DeleteEdgeTest() {
@@ -92,6 +114,7 @@ protected:
 		std::cout << "point number: " << m_Mesh->GetNumberOfPoints() << std::endl;
 		std::cout << "edge number: " << m_Mesh->GetNumberOfEdges() << std::endl;
 		std::cout << "face number: " << m_Mesh->GetNumberOfFaces() << std::endl;
+		std::cout << "cell number: " << m_Mesh->GetNumberOfVolumes() << std::endl;
 
 		m_Mesh->RequestEditStatus();
 		for (int i = 0; i < m_Mesh->GetNumberOfEdges() / 2; i++) {
@@ -103,6 +126,7 @@ protected:
 		std::cout << "point number: " << m_Mesh->GetNumberOfPoints() << std::endl;
 		std::cout << "edge number: " << m_Mesh->GetNumberOfEdges() << std::endl;
 		std::cout << "face number: " << m_Mesh->GetNumberOfFaces() << std::endl;
+		std::cout << "cell number: " << m_Mesh->GetNumberOfVolumes() << std::endl;
 	}
 };
 IGAME_NAMESPACE_END

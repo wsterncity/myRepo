@@ -4,6 +4,7 @@
 
 #include <iGameFilterPoints.h>
 #include <iGameSurfaceMeshFilterTest.h>
+#include <iGameVolumeMeshFilterTest.h>
 
 #include <IQCore/igQtMainWindow.h>
 #include <IQCore/igQtFileLoader.h>
@@ -270,6 +271,13 @@ void igQtMainWindow::initAllFilters() {
 
 	connect(ui->action_test_04, &QAction::triggered, this, [&](bool checked) {
 		SurfaceMeshFilterTest::Pointer fp = SurfaceMeshFilterTest::New();
+		fp->SetInput(rendererWidget->GetScene()->GetCurrentObject());
+		fp->Update();
+		rendererWidget->update();
+		});
+
+	connect(ui->action_test_05, &QAction::triggered, this, [&](bool checked) {
+		VolumeMeshFilterTest::Pointer fp = VolumeMeshFilterTest::New();
 		fp->SetInput(rendererWidget->GetScene()->GetCurrentObject());
 		fp->Update();
 		rendererWidget->update();

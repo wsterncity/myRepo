@@ -14,28 +14,51 @@ public:
 	I_OBJECT(VolumeMesh);
 	static Pointer New() { return new VolumeMesh; }
 
-	igIndex GetNumberOfVolumes();
+	IGsize GetNumberOfVolumes() const noexcept;
 	
 	CellArray* GetVolumes();
-
 	void SetVolumes(CellArray::Pointer volumes);
 
-	Volume* GetVolume(igIndex volumeId);
+	Volume* GetVolume(const IGsize volumeId);
+	int GetVolumePointIds(const IGsize volumeId, igIndex* ptIds);
+	int GetVolumeEdgeIds(const IGsize volumeId, igIndex* edgeIds);
+	int GetVolumeFaceIds(const IGsize volumeId, igIndex* faceIds);
 
-	int GetVolumePointIds(igIndex volumeId, igIndex* ptIds);
-
-	void BuildFaces();
-
+	void BuildFaceAndEdges();
 	void BuildVolumeLinks();
-
 	void BuildVolumeEdgeLinks();
-
 	void BuildVolumeFaceLinks();
 
+	int GetPointToNeighborVolumes(const IGsize ptId, igIndex* volumeIds);
+	int GetEdgeToNeighborVolumes(const IGsize edgeId, igIndex* volumeIds);
+	int GetFaceToNeighborVolumes(const IGsize faceId, igIndex* volumeIds);
+	int GetVolumeToNeighborVolumesWithPoint(const IGsize volumeId, igIndex* volumeIds);
+	int GetVolumeToNeighborVolumesWithEdge(const IGsize volumeId, igIndex* volumeIds);
+	int GetVolumeToNeighborVolumesWithFace(const IGsize volumeId, igIndex* volumeIds);
+
+	igIndex GetVolumeIdFormPointIds(igIndex* ids, int size);
+
+	void RequestEditStatus() override;
+	void GarbageCollection() override;
+	bool IsVolumeDeleted(const IGsize volumeId);
+
+	IGsize AddPoint(const Point& p) override;
+	IGsize AddEdge(const IGsize ptId1, const IGsize ptId2) override;
+	IGsize AddFace(igIndex* ptIds, int size) override;
+
+	void DeletePoint(const IGsize ptId) override;
+	void DeleteEdge(const IGsize edgeId) override;
+	void DeleteFace(const IGsize faceId) override;
+	void DeleteVolume(const IGsize volumeId);
 
 protected:
-	VolumeMesh() {};
-	~VolumeMesh() override {};
+	VolumeMesh();
+	~VolumeMesh() override = default;
+
+	void RequestFaceStatus();
+	void RequestVolumeStatus();
+
+	DeleteMarker::Pointer m_VolumeDeleteMarker{};
 
 	CellArray::Pointer m_Volumes{};         // The point set of volumes
 	CellLinks::Pointer m_VolumeLinks{};     // The adjacent volumes of points

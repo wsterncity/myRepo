@@ -25,12 +25,11 @@ public:
 
 	IGsize GetNumberOfPoints() { return m_Points ? m_Points->GetNumberOfPoints() : 0; }
 
-	Point& GetPoint(const IGsize ptId) { return m_Points->GetPoint(ptId); }
+	const Point& GetPoint(const IGsize ptId) const { return m_Points->GetPoint(ptId); }
 
 	void SetPoint(const IGsize ptId, const Point& p) 
 	{
 		m_Points->SetPoint(ptId, p);
-		Modified();
 	}
 
 	virtual IGsize AddPoint(const Point& p)
@@ -41,7 +40,6 @@ public:
 		}
 		IGsize id = m_Points->AddPoint(p);
 		m_PointDeleteMarker->AddTag();
-		Modified();
 		return id;
 	}
 
@@ -85,16 +83,16 @@ public:
 		MakeEditStatusOff();
 	}
 
+	bool InEditStatus() { return m_InEditStatus; }
+	void MakeEditStatusOn() { m_InEditStatus = true; }
+	void MakeEditStatusOff() { m_InEditStatus = false; }
+
 protected:
 	PointSet() { 
 		m_Points = Points::New();
 		m_ViewStyle = IG_POINT;
 	}
 	~PointSet() override = default;
-
-	bool InEditStatus() { return m_InEditStatus; }
-	void MakeEditStatusOn() { m_InEditStatus = true; }
-	void MakeEditStatusOff() { m_InEditStatus = false; }
 
 	void RequestPointStatus() 
 	{
@@ -107,11 +105,13 @@ protected:
 
 	void ComputeBoundingBox() override 
 	{
-		if (m_Bounding.isNull() || GetMTime() < m_Points->GetMTime()) {
+		// std::cout << m_BoundingHelper->GetMTime() << " " << m_Points->GetMTime() << std::endl;
+		if (m_Bounding.isNull() || m_BoundingHelper->GetMTime() < m_Points->GetMTime()) {
 			m_Bounding.reset();
 			for (int i = 0; i < GetNumberOfPoints(); i++) {
 				m_Bounding.add(GetPoint(i));
 			}
+			m_BoundingHelper->Modified();
 		}
 	}
 

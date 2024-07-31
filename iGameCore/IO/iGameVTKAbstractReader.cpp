@@ -907,6 +907,21 @@ const void VTKAbstractReader::TransferVtkCellToiGameCell(IntArray::Pointer VtkCe
 			break;
 		case iGame::VTKAbstractReader::TRIQUADRATIC_PYRAMID:
 			break;
+		case iGame::VTKAbstractReader::POLYHEDRON://42
+		{
+			igIndex index = 0;
+			igIndex realvhs[256];
+			igIndex realsize = 0;
+			while (index < size)
+			{
+				realsize = vhs[index++];
+				for (igIndex id = 0; id < realsize; id++) {
+					realvhs[id] = vhs[index++];
+				}
+				Faces->AddCellIds(realvhs, realsize);
+			}
+		}
+		break;
 		default:
 			break;
 		}
@@ -1038,6 +1053,21 @@ const void VTKAbstractReader::TransferVtkCellToiGameCell(ArrayObject::Pointer Ce
 			break;
 		case iGame::VTKAbstractReader::TRIQUADRATIC_PYRAMID:
 			break;
+		case iGame::VTKAbstractReader::POLYHEDRON://42
+		{
+			igIndex index = 0;
+			igIndex realvhs[256];
+			igIndex realsize = 0;
+			while (index < size)
+			{
+				realsize = vhs[index++];
+				for (igIndex id = 0; id < realsize; id++) {
+					realvhs[id] = vhs[index++];
+				}
+				Faces->AddCellIds(realvhs, realsize);
+			}
+		}
+		break;
 		default:
 			break;
 		}
@@ -1172,6 +1202,21 @@ void VTKAbstractReader::TransferVtkCellToiGameCell(DataCollection &m_Data, Array
 				break;
 			case iGame::VTKAbstractReader::TRIQUADRATIC_PYRAMID:
 				break;
+			case iGame::VTKAbstractReader::POLYHEDRON://42
+			{
+				igIndex index = 0;
+				igIndex realvhs[256];
+				igIndex realsize = 0;
+				while (index < size)
+				{
+					realsize = vhs[index++];
+					for (igIndex id = 0; id < realsize; id++) {
+						realvhs[id] = vhs[index++];
+					}
+					Faces->AddCellIds(realvhs, realsize);
+				}
+			}
+			break;
 			default:
 				break;
 		}

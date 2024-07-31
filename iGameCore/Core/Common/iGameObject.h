@@ -21,10 +21,12 @@
 IGAME_NAMESPACE_BEGIN
 class Command;
 class ObserverInternal;
+
 class Object : public AbstractObject {
 public:
 	I_OBJECT(Object);
 	static Pointer New() { return new Object; }
+
 	using CommandPointer = SmartPointer<Command>;
 
 	unsigned long AddObserver(unsigned long event, CommandPointer cmd, float priority = 0.0f);

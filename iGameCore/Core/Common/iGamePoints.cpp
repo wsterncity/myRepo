@@ -36,52 +36,62 @@ void Points::GetPoint(const IGsize ptId, Vector3f& p)
 {
 	m_Buffer->GetElement(ptId, p.pointer());
 }
-Point& Points::GetPoint(const IGsize ptId)
+//Point& Points::GetPoint(const IGsize ptId)
+//{
+//	float* ptr = m_Buffer->RawPointer() + ptId * 3;
+//	Point* p = reinterpret_cast<Point*>(ptr);
+//	return *p;
+//}
+const Point& Points::GetPoint(const IGsize ptId) const
 {
 	float* ptr = m_Buffer->RawPointer() + ptId * 3;
 	Point* p = reinterpret_cast<Point*>(ptr);
 	return *p;
 }
-const Point& Points::GetPoint(const IGsize ptId) const
-{
-	return this->GetPoint(ptId);
-}
 
 void Points::SetPoint(const IGsize ptId, const Vector3d& p)
 {
+	Modified();
 	Vector3f pp(p);
 	m_Buffer->SetElement(ptId, pp);
 }
 void Points::SetPoint(const IGsize ptId, const Vector3f& p)
 {
+	Modified();
 	m_Buffer->SetElement(ptId, p.pointer());
 }
 void Points::SetPoint(const IGsize ptId, float x, float y, float z)
 {
+	Modified();
 	Vector3f p(x, y, z);
 	m_Buffer->SetElement(ptId, p);
 }
 
 IGsize Points::AddPoint(const Vector3d& p)
 {
+	Modified();
 	Vector3f pp(p);
 	return m_Buffer->AddElement(pp);
 }
 IGsize Points::AddPoint(const Vector3f& p)
 {
+	Modified();
 	return m_Buffer->AddElement(p);
 }
 IGsize Points::AddPoint(float x, float y, float z)
 {
+	Modified();
 	Vector3f p(x, y, z);
 	return m_Buffer->AddElement(p);
 }
 IGsize Points::AddPoint(float p[3])
 {
+	Modified();
 	return m_Buffer->AddElement(p);
 }
 IGsize Points::AddPoint(double p[3])
 {
+	Modified();
 	float pp[3]{ (float)p[0], (float)p[1] ,(float)p[2] };
 	return m_Buffer->AddElement(pp);
 }
