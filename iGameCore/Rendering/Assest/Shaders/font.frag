@@ -1,4 +1,4 @@
-#version 450 core
+#version 410 core
 #extension GL_ARB_bindless_texture : require
 
 in vec2 fragTexCoord;
