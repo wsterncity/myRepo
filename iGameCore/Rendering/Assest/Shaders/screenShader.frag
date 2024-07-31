@@ -20,7 +20,8 @@ void main()
 {
     outColor = texture(sampler2D(screenTexture), fragTexCoord);
 
-    // float depth = texture(sampler2D(screenTexture), fragTexCoord).r;
-    // float linearDepth = LinearizeDepth(depth) / far;
-    // outColor = vec4(vec3(linearDepth), 1.0);
+    //    float level = 1.0;
+    //    float depth = textureLod(sampler2D(screenTexture), fragTexCoord, level).r;
+    //    float linearDepth = LinearizeDepth(depth) / far;
+    //    outColor = vec4(vec3(linearDepth), 1.0);
 }

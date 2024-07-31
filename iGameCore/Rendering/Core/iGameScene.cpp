@@ -12,6 +12,8 @@ Scene::Scene() {
     InitOpenGL();
     InitFont();
     InitAxes();
+
+    GLCheckError();
 }
 Scene::~Scene() {}
 
@@ -142,47 +144,57 @@ void Scene::InitOpenGL() {
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     // allocate memory
-    m_MVPBlock.create();
-    m_MVPBlock.allocate(sizeof(MVPMatrix), nullptr, GL_STATIC_DRAW);
-    m_UBOBlock.create();
-    m_UBOBlock.allocate(sizeof(UniformBufferObject), nullptr, GL_STATIC_DRAW);
+    {
+        m_MVPBlock.create();
+        m_MVPBlock.allocate(sizeof(MVPMatrix), nullptr, GL_STATIC_DRAW);
+        m_UBOBlock.create();
+        m_UBOBlock.allocate(sizeof(UniformBufferObject), nullptr,
+                            GL_STATIC_DRAW);
 
-    auto patchShader = this->GetShader(PATCH);
-    patchShader->mapUniformBlock("MVPMatrix", 0, m_MVPBlock);
-    patchShader->mapUniformBlock("UniformBufferObject", 1, m_UBOBlock);
+        auto patchShader = this->GetShader(PATCH);
+        patchShader->mapUniformBlock("MVPMatrix", 0, m_MVPBlock);
+        patchShader->mapUniformBlock("UniformBufferObject", 1, m_UBOBlock);
 
-    auto noLightShader = this->GetShader(NOLIGHT);
-    noLightShader->mapUniformBlock("MVPMatrix", 0, m_MVPBlock);
-    noLightShader->mapUniformBlock("UniformBufferObject", 1, m_UBOBlock);
+        auto noLightShader = this->GetShader(NOLIGHT);
+        noLightShader->mapUniformBlock("MVPMatrix", 0, m_MVPBlock);
+        noLightShader->mapUniformBlock("UniformBufferObject", 1, m_UBOBlock);
 
-    auto cullComputeShader = this->GetShader(MESHLETCULL);
-    cullComputeShader->mapUniformBlock("MVPMatrix", 0, m_MVPBlock);
+        auto cullComputeShader = this->GetShader(MESHLETCULL);
+        cullComputeShader->mapUniformBlock("MVPMatrix", 0, m_MVPBlock);
+    }
+
+    // init screen quad VAO
+    {
+        m_ScreenQuadVAO.create();
+        m_ScreenQuadVBO.create();
+
+        float quadVertices[] = {// positions   // texCoords
+                                -1.0f, 1.0f, 0.0f, 1.0f,  -1.0f, -1.0f,
+                                0.0f,  0.0f, 1.0f, -1.0f, 1.0f,  0.0f,
+                                -1.0f, 1.0f, 0.0f, 1.0f,  1.0f,  -1.0f,
+                                1.0f,  0.0f, 1.0f, 1.0f,  1.0f,  1.0f};
+        m_ScreenQuadVBO.allocate(sizeof(quadVertices), quadVertices,
+                                 GL_STATIC_DRAW);
+
+        // bind VBO to VAO
+        m_ScreenQuadVAO.vertexBuffer(GL_VBO_IDX_0, m_ScreenQuadVBO, 0,
+                                     4 * sizeof(float));
+        // position
+        GLSetVertexAttrib(m_ScreenQuadVAO, GL_LOCATION_IDX_0, GL_VBO_IDX_0, 2,
+                          GL_FLOAT, GL_FALSE, 0);
+        // texture coord
+        GLSetVertexAttrib(m_ScreenQuadVAO, GL_LOCATION_IDX_1, GL_VBO_IDX_0, 2,
+                          GL_FLOAT, GL_FALSE, 2 * sizeof(float));
+    }
 
     m_UBO.useColor = false;
 
+    // init drawculldata buffer
+    m_DrawCullData.create();
+    m_DrawCullData.allocate(sizeof(DrawCullData), nullptr, GL_DYNAMIC_DRAW);
+
     // init framebuffer
     ResizeFrameBuffer();
-
-    // init screen quad VAO
-    m_ScreenQuadVAO.create();
-    m_ScreenQuadVBO.create();
-
-    float quadVertices[] = {// positions   // texCoords
-                            -1.0f, 1.0f,  0.0f, 1.0f, -1.0f, -1.0f, 0.0f, 0.0f,
-                            1.0f,  -1.0f, 1.0f, 0.0f, -1.0f, 1.0f,  0.0f, 1.0f,
-                            1.0f,  -1.0f, 1.0f, 0.0f, 1.0f,  1.0f,  1.0f, 1.0f};
-    m_ScreenQuadVBO.allocate(sizeof(quadVertices), quadVertices,
-                             GL_STATIC_DRAW);
-
-    // bind VBO to VAO
-    m_ScreenQuadVAO.vertexBuffer(GL_VBO_IDX_0, m_ScreenQuadVBO, 0,
-                                 4 * sizeof(float));
-    // position
-    GLSetVertexAttrib(m_ScreenQuadVAO, GL_LOCATION_IDX_0, GL_VBO_IDX_0, 2,
-                      GL_FLOAT, GL_FALSE, 0);
-    // texture coord
-    GLSetVertexAttrib(m_ScreenQuadVAO, GL_LOCATION_IDX_1, GL_VBO_IDX_0, 2,
-                      GL_FLOAT, GL_FALSE, 2 * sizeof(float));
 }
 void Scene::InitFont() {
     const wchar_t* text = L"XYZ";
@@ -219,8 +231,6 @@ void Scene::ResizeFrameBuffer() {
         colorTexture.create();
         colorTexture.bind();
         colorTexture.storage(samples, GL_RGB8, width, height, GL_TRUE);
-        colorTexture.parameteri(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        colorTexture.parameteri(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         colorTexture.getTextureHandle().makeResident();
         fbo.texture(GL_COLOR_ATTACHMENT0, colorTexture, 0);
 
@@ -229,8 +239,6 @@ void Scene::ResizeFrameBuffer() {
         depthTexture.bind();
         depthTexture.storage(samples, GL_DEPTH_COMPONENT32F, width, height,
                              GL_TRUE);
-        depthTexture.parameteri(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        depthTexture.parameteri(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         depthTexture.getTextureHandle().makeResident();
         fbo.texture(GL_DEPTH_ATTACHMENT, depthTexture, 0);
 
@@ -286,21 +294,28 @@ void Scene::ResizeHZBTexture() {
     uint32_t width = m_Camera->GetViewPort().x;
     uint32_t height = m_Camera->GetViewPort().y;
 
-    unsigned int levels = 1 + static_cast<unsigned int>(std::floor(
-                                      std::log2(std::max(width, height))));
-    m_HZBLevels = levels;
+    //auto previousPow2 = [](uint32_t v) {
+    //    uint32_t r = 1;
+    //    while (r * 2 < v) r *= 2;
+    //    return r;
+    //};
+    m_DepthPyramidWidth = width;
+    m_DepthPyramidHeight = height;
+    m_DepthPyramidLevels = 1 + static_cast<unsigned int>(std::floor(
+                                       std::log2(std::max(width, height))));
 
     GLTexture2d texture;
     texture.create();
     texture.bind();
-    texture.storage(levels, GL_DEPTH_COMPONENT32F, width, height);
+    texture.storage(m_DepthPyramidLevels, GL_R32F, width, height);
     texture.parameteri(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     texture.parameteri(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     texture.parameteri(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     texture.parameteri(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    texture.getTextureHandle().makeResident();
     texture.release();
 
-    m_HZBTexture = std::move(texture);
+    m_DepthPyramid = std::move(texture);
 }
 
 void Scene::Draw() {
@@ -324,13 +339,12 @@ void Scene::Draw() {
 
     // blit multisampled buffer(s) to normal colorbuffer of intermediate FBO.
     {
-        m_FramebufferMultisampled.bind(GL_READ_FRAMEBUFFER);
-        m_Framebuffer.bind(GL_DRAW_FRAMEBUFFER);
-        glBlitFramebuffer(0, 0, width, height, 0, 0, width, height,
-                          GL_COLOR_BUFFER_BIT, GL_NEAREST);
-        glBlitFramebuffer(0, 0, width, height, 0, 0, width, height,
-                          GL_DEPTH_BUFFER_BIT, GL_NEAREST);
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        GLFramebuffer::blit(m_FramebufferMultisampled, m_Framebuffer, 0, 0,
+                            width, height, 0, 0, width, height,
+                            GL_COLOR_BUFFER_BIT, GL_LINEAR);
+        GLFramebuffer::blit(m_FramebufferMultisampled, m_Framebuffer, 0, 0,
+                            width, height, 0, 0, width, height,
+                            GL_DEPTH_BUFFER_BIT, GL_NEAREST);
     }
 
     // render to screen
@@ -348,12 +362,17 @@ void Scene::Draw() {
         GLUniform textureUniform = shader->getUniformLocation("screenTexture");
         shader->setUniform(textureUniform, m_ColorTexture.getTextureHandle());
         //shader->setUniform(textureUniform, m_DepthTexture.getTextureHandle());
+        //shader->setUniform(textureUniform, m_DepthPyramid.getTextureHandle());
         m_ScreenQuadVAO.bind();
         glDrawArrays(GL_TRIANGLES, 0, 6);
         m_ScreenQuadVAO.release();
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
+
+    RefreshHZBTexture();
+
+    GLCheckError();
 }
 
 void Scene::Update() { this->Draw(); }

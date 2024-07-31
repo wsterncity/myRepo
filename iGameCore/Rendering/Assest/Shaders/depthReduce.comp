@@ -1,23 +1,53 @@
-#version 450
+#version 460
+#extension GL_ARB_bindless_texture : require
 
 layout(local_size_x = 16, local_size_y = 16) in;
 
-layout(binding = 0) uniform sampler2D depthTexture;
-layout(binding = 1, rgba32f) uniform image2D hzbTexture;
+uniform uvec2 inImage;
+layout(binding = 0, r32f) uniform writeonly image2D outImage;
+
+uniform uvec2 inImageSize;
+uniform uint level;
 
 void main() {
-    ivec2 texelCoord = ivec2(gl_GlobalInvocationID.xy);
-    vec2 texelSize = vec2(1.0) / imageSize(hzbTexture).xy;
+    uvec2 pos = gl_GlobalInvocationID.xy;
+    if (pos.x * 2 >= inImageSize.x || pos.y * 2 >= inImageSize.y) return;
 
-    // 采样四个像素
-    float d0 = texelFetch(depthTexture, texelCoord * 2, 0).r;
-    float d1 = texelFetch(depthTexture, texelCoord * 2 + ivec2(1, 0), 0).r;
-    float d2 = texelFetch(depthTexture, texelCoord * 2 + ivec2(0, 1), 0).r;
-    float d3 = texelFetch(depthTexture, texelCoord * 2 + ivec2(1, 1), 0).r;
+    uvec2 pos_0 = pos * 2 + uvec2(0, 0);
+    uvec2 pos_1 = pos * 2 + uvec2(0, 1);
+    uvec2 pos_2 = pos * 2 + uvec2(1, 0);
+    uvec2 pos_3 = pos * 2 + uvec2(1, 1);
 
-    // 计算最小深度值
-    float minDepth = min(min(d0, d1), min(d2, d3));
+    float preLevel = float(level - 1);
+    float depth_0 = textureLod(sampler2D(inImage), (vec2(pos_0) + vec2(0.5)) / vec2(inImageSize), preLevel).r;
+    float depth_1 = textureLod(sampler2D(inImage), (vec2(pos_1) + vec2(0.5)) / vec2(inImageSize), preLevel).r;
+    float depth_2 = textureLod(sampler2D(inImage), (vec2(pos_2) + vec2(0.5)) / vec2(inImageSize), preLevel).r;
+    float depth_3 = textureLod(sampler2D(inImage), (vec2(pos_3) + vec2(0.5)) / vec2(inImageSize), preLevel).r;
 
-    // 存储结果到当前mip层
-    imageStore(hzbTexture, texelCoord, vec4(minDepth));
+    // depth range: 0.0 -> 1.0(most depth)
+    float maxDepth = max(max(depth_0, depth_1), max(depth_2, depth_3));
+    imageStore(outImage, ivec2(pos), vec4(maxDepth));
 }
+
+
+//#version 460
+//#extension GL_ARB_bindless_texture : require
+//
+//layout(local_size_x = 16, local_size_y = 16) in;
+//
+//uniform uvec2 inImage;
+//layout(binding = 0, r32f) uniform writeonly image2D outImage;
+//
+//uniform uvec2 inImageSize;
+//uniform uint level;
+//
+//void main() {
+//    uvec2 pos = gl_GlobalInvocationID.xy;
+//
+//    float preLevel = float(level - 1);
+//    float depth = textureLod(sampler2D(inImage), (vec2(pos) + vec2(0.5)) / vec2(inImageSize), preLevel).r;
+//
+//    imageStore(outImage, ivec2(pos), vec4(depth));
+//}
+
+

@@ -260,13 +260,16 @@ void SurfaceMesh::Draw(Scene* scene) {
     bool debug = false;
     if (debug) {
         // compute culling
-        scene->GetShader(Scene::MESHLETCULL)->use();
+        auto shader = scene->GetShader(Scene::MESHLETCULL);
+        shader->use();
         m_Meshlets->MeshletsBuffer().bindBase(GL_SHADER_STORAGE_BUFFER, 1);
         m_Meshlets->DrawCommandBuffer().bindBase(GL_SHADER_STORAGE_BUFFER, 2);
+        scene->GetDrawCullDataBuffer().bindBase(GL_UNIFORM_BUFFER, 3);
+        shader->setUniform(shader->getUniformLocation("depthPyramid"),
+                           scene->DepthPyramidTexture().getTextureHandle());
 
-        glDispatchCompute(
-                static_cast<uint32_t>((m_Meshlets->MeshletsCount() / 256) + 1),
-                1, 1);
+        auto count = m_Meshlets->MeshletsCount();
+        glDispatchCompute(((count + 255) / 256), 1, 1);
         glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_COMMAND_BARRIER_BIT);
 
         // 打印或检查 readBackCommands 数据以验证计算着色器的输出
@@ -276,14 +279,22 @@ void SurfaceMesh::Draw(Scene* scene) {
                 0,
                 readBackCommands.size() * sizeof(DrawElementsIndirectCommand),
                 readBackCommands.data());
+        int cnt0 = 0;
+        int cnt1 = 0;
         for (const auto& cmd: readBackCommands) {
+            if (cmd.primCount == 0) {
+                cnt0++;
+            } else {
+                cnt1++;
+            }
             //std::cout << "count: " << cmd.count << std::endl;
             //std::cout << "primCount: " << cmd.primCount << std::endl;
             //std::cout << "firstIndex: " << cmd.firstIndex << std::endl;
             //std::cout << "baseVertex: " << cmd.baseVertex << std::endl;
             //std::cout << "baseInstance: " << cmd.baseInstance << std::endl;
         }
-        //std::cout << std::endl;
+        std::cout << "visible meshlet: " << cnt1 << std::endl;
+        std::cout << "unvisible meshlet: " << cnt0 << std::endl;
 
         // draw
         if (m_UseColor) {
