@@ -53,6 +53,8 @@ public:
 		CUBIC_LINE = 35,
 		QUADRATIC_POLYGON = 36,
 		TRIQUADRATIC_PYRAMID = 37,
+
+		POLYHEDRON = 42,
 	};
 
 	const int vtkLegacyReaderMajorVersion = 5;

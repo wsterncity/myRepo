@@ -96,10 +96,6 @@ public:
 
 	IGsize AddCellIds(igIndex* cell, int ncell) 
 	{
-		if (ncell != 4) {
-			int a = 1;
-
-		}
 		IGuint beginOffset = this->GetBeginOffset(m_NumberOfCells);
 		IGuint endOffset = beginOffset + ncell;
 		if (endOffset > m_Buffer->GetNumberOfIds()) {

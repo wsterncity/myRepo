@@ -15,10 +15,10 @@ private:
     }
 
 public:
-    static void copySubData(const GLBuffer& source, const GLBuffer& target,
+    static void copySubData(const GLBuffer& source, const GLBuffer& destination,
                             size_t read_offset, size_t write_offset,
                             size_t size) {
-        glCopyNamedBufferSubData(source.handle, target.handle, read_offset,
+        glCopyNamedBufferSubData(source.handle, destination.handle, read_offset,
                                  write_offset, size);
     }
 

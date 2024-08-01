@@ -5,13 +5,20 @@
 
 #pragma once
 
-#include "iGameSceneManager.h"
-#include "iGameInteractor.h"
+#include <iGameSmartPointer.h>
 
 #include <IQCore/igQtExportModule.h>
 #include <QOpenGLContext>
 #include <QOpenGLExtraFunctions>
 #include <QOpenGLWidget>
+
+namespace iGame
+{
+    class Scene;
+    class DataObject;
+
+    class Interactor;
+} // namespace iGame
 
 using namespace iGame;
 
@@ -20,17 +27,10 @@ class IG_QT_MODULE_EXPORT igQtRenderWidget : public QOpenGLWidget {
 public:
     igQtRenderWidget(QWidget* parent = nullptr);
     ~igQtRenderWidget() override;
+    using a = SmartPointer<Interactor>;
+    Scene* GetScene();
 
-    Scene* GetScene() {
-        return m_Scene.get();
-    }
-
-    void AddDataObject(DataObject::Pointer obj)
-    {
-        m_Scene->AddDataObject(obj);
-        Q_EMIT AddDataObjectToModelList(QString::fromStdString(obj->GetName()));
-        update();
-    }
+    void AddDataObject(SmartPointer<DataObject> obj);
 
 protected:
     void initializeGL() override;
@@ -42,9 +42,8 @@ protected:
     void mouseMoveEvent(QMouseEvent* event) override;
     void wheelEvent(QWheelEvent* event) override;
 
-
-    Scene::Pointer m_Scene;
-    Interactor::Pointer m_Interactor;
+    SmartPointer<Scene> m_Scene;
+    SmartPointer<Interactor> m_Interactor;
 
  public slots:
      void MakeCurrent()
@@ -56,26 +55,10 @@ protected:
          doneCurrent();
      }
 
-     void ChangeViewStyle(int index)
-     {
-         if (m_Scene->GetCurrentObject())
-         {
-             m_Scene->GetCurrentObject()->SetViewStyleOfModel(index);
-         }
-         update();
-     }
-     void ChangeScalarView(int index, int dim = -1)
-     {
-         makeCurrent();
-         if (m_Scene->GetCurrentObject())
-         {
-             m_Scene->GetCurrentObject()->ViewCloudPictureOfModel(index - 1, dim);
-         }
-         doneCurrent();
-         update();
-     }
+     void ChangeViewStyle(int index);
+     void ChangeScalarView(int index, int dim = -1);
 
-signals:
+ signals:
     void AddDataObjectToModelList(QString model_name);
     void UpdateCurrentDataObject();
 };
