@@ -84,6 +84,17 @@ public:
                 glGetImageHandleARB(handle, level, layered, layer, format));
     }
 
+    // GLenum texture: GL_TEXTURE1 - GL_TEXTURE15
+    // GL_TEXTURE0 is reserved to prevent other binding operations from being performed after a texture unit is activated.
+    void active(GLenum texture) {
+        if (texture == GL_TEXTURE0) {
+            throw std::runtime_error("GL_TEXTURE0 is reserved.");
+        }
+        glActiveTexture(texture);
+        glBindTexture(GL_TEXTURE_2D, handle);
+        glActiveTexture(GL_TEXTURE0);
+    };
+
     void bind() const { glBindTexture(GL_TEXTURE_2D, handle); }
     void release() const { glBindTexture(GL_TEXTURE_2D, 0); }
 

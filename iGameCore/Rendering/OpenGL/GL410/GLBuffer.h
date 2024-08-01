@@ -40,10 +40,9 @@ public:
     }
 
     void storage(size_t size, const void* data, GLbitfield flags) {
-        std::cerr << "You called the GLBuffer::storage function on the "
-                     "__APPLE__ "
-                     "platform. This function is currently not supported."
-                  << std::endl;
+        throw std::runtime_error(
+                "You called the GLBuffer::storage function on the opengl410. "
+                "This function is currently not supported.");
         //glNamedBufferStorage(handle, size, data, flags);
     }
 

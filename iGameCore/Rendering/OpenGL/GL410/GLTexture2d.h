@@ -1,8 +1,6 @@
 #pragma once
 
-#include "GLImageHandle.h"
 #include "GLObject.h"
-#include "GLTextureHandle.h"
 
 IGAME_NAMESPACE_BEGIN
 
@@ -26,10 +24,9 @@ public:
                                  GLenum dstTarget, GLint dstLevel, GLint dstX,
                                  GLint dstY, GLint dstZ, GLsizei srcWidth,
                                  GLsizei srcHeight, GLsizei srcDepth) {
-        std::cout << "You called the GLTexture2d::copyImageSubData function on "
-                     "the __APPLE__ "
-                     "platform. This function is currently not supported."
-                  << std::endl;
+        throw std::runtime_error(
+                "You called the GLTexture2d::copyImageSubData function on the "
+                "opengl410. This function is currently not supported.");
         //glCopyImageSubData(source.handle, srcTarget, srcLevel, srcX, srcY, srcZ,
         //                   destination.handle, dstTarget, dstLevel, dstX, dstY,
         //                   dstZ, srcWidth, srcHeight, srcDepth);
@@ -41,10 +38,9 @@ public:
                             GLenum internal_format, unsigned first_mip_level,
                             unsigned mip_level_count, unsigned first_layer,
                             unsigned layer_count) {
-        std::cout
-                << "You called the GLTexture2d::view function on the __APPLE__ "
-                   "platform. This function is currently not supported."
-                << std::endl;
+        throw std::runtime_error(
+                "You called the GLTexture2d::view function on the opengl410. "
+                "This function is currently not supported.");
         //GLuint handle;
         //glGenTextures(1, &handle);
         //glTextureView(handle, target, original, internal_format,
@@ -85,12 +81,10 @@ public:
                 type = GL_FLOAT;
                 break;
             default:
-                std::cerr << "You called the GLTexture2d::storage function on "
-                             "the "
-                             "__APPLE__ platform, but the internal_format you "
-                             "provided was not enumerated."
-                          << std::endl;
-                break;
+                throw std::runtime_error(
+                        "ou called the GLTexture2d::storage function on the "
+                        "opengl410. but the internal_format you provided was "
+                        "not enumerated.");
         }
 
         // 分配存储空间
@@ -128,26 +122,25 @@ public:
         glBindTexture(GL_TEXTURE_2D, 0);
     }
 
-    // glUniformHandleui64ARB(glGetUniformLocation(shaderProgram,"tex0"), TextureHandle);
-    GLTextureHandle getTextureHandle() const {
-        return GLTextureHandle(glGetTextureHandleARB(handle));
-    }
-
-    GLImageHandle getImageHandle(unsigned level, bool layered, unsigned layer,
-                                 GLenum format) const {
-        return GLImageHandle(
-                glGetImageHandleARB(handle, level, layered, layer, format));
-    }
+    // GLenum texture: GL_TEXTURE1 - GL_TEXTURE15
+    // GL_TEXTURE0 is reserved to prevent other binding operations from being performed after a texture unit is activated.
+    void active(GLenum texture) {
+        if (texture == GL_TEXTURE0) {
+            throw std::runtime_error("GL_TEXTURE0 is reserved.");
+        }
+        glActiveTexture(texture);
+        glBindTexture(GL_TEXTURE_2D, handle);
+        glActiveTexture(GL_TEXTURE0);
+    };
 
     void bind() const { glBindTexture(GL_TEXTURE_2D, handle); }
     void release() const { glBindTexture(GL_TEXTURE_2D, 0); }
 
     void bindImage(unsigned int binding_index, unsigned int mip_level,
                    bool layered, int layer, GLenum access, GLenum format) {
-        std::cout << "You called the GLTexture2d::bindImage function on the "
-                     "__APPLE__ "
-                     "platform. This function is currently not supported."
-                  << std::endl;
+        throw std::runtime_error(
+                "You called the GLTexture2d::bindImage function on the "
+                "opengl410. This function is currently not supported.");
         //glBindImageTexture(binding_index, handle, mip_level, layered, layer,
         //                   access, format);
     }

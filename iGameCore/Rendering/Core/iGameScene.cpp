@@ -244,8 +244,6 @@ void Scene::ResizeFrameBuffer() {
         GLCheckError();
         colorTexture.storage(samples, GL_RGB8, width, height, GL_TRUE);
         GLCheckError();
-        colorTexture.getTextureHandle().makeResident();
-        GLCheckError();
         fbo.texture(GL_COLOR_ATTACHMENT0, colorTexture, 0);
         GLCheckError();
 
@@ -254,7 +252,6 @@ void Scene::ResizeFrameBuffer() {
         depthTexture.bind();
         depthTexture.storage(samples, GL_DEPTH_COMPONENT32F, width, height,
                              GL_TRUE);
-        depthTexture.getTextureHandle().makeResident();
         fbo.texture(GL_DEPTH_ATTACHMENT, depthTexture, 0);
         GLCheckError();
 
@@ -287,8 +284,6 @@ void Scene::ResizeFrameBuffer() {
         GLCheckError();
         colorTexture.parameteri(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         GLCheckError();
-        colorTexture.getTextureHandle().makeResident();
-        GLCheckError();
         fbo.texture(GL_COLOR_ATTACHMENT0, colorTexture, 0);
         GLCheckError();
 
@@ -298,7 +293,6 @@ void Scene::ResizeFrameBuffer() {
         depthTexture.storage(1, GL_DEPTH_COMPONENT32F, width, height);
         depthTexture.parameteri(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         depthTexture.parameteri(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        depthTexture.getTextureHandle().makeResident();
         fbo.texture(GL_DEPTH_ATTACHMENT, depthTexture, 0);
         GLCheckError();
 
@@ -322,11 +316,6 @@ void Scene::ResizeHZBTexture() {
     uint32_t width = m_Camera->GetViewPort().x;
     uint32_t height = m_Camera->GetViewPort().y;
 
-    //auto previousPow2 = [](uint32_t v) {
-    //    uint32_t r = 1;
-    //    while (r * 2 < v) r *= 2;
-    //    return r;
-    //};
     m_DepthPyramidWidth = width;
     m_DepthPyramidHeight = height;
     m_DepthPyramidLevels = 1 + static_cast<unsigned int>(std::floor(
@@ -340,9 +329,7 @@ void Scene::ResizeHZBTexture() {
     texture.parameteri(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     texture.parameteri(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     texture.parameteri(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    texture.getTextureHandle().makeResident();
     texture.release();
-
     m_DepthPyramid = std::move(texture);
 }
 
@@ -390,7 +377,8 @@ void Scene::Draw() {
         shader->use();
 
         GLUniform textureUniform = shader->getUniformLocation("screenTexture");
-        shader->setUniform(textureUniform, m_ColorTexture.getTextureHandle());
+        m_ColorTexture.active(GL_TEXTURE1);
+        shader->setUniform(textureUniform, 1);
         //shader->setUniform(textureUniform, m_DepthTexture.getTextureHandle());
         //shader->setUniform(textureUniform, m_DepthPyramid.getTextureHandle());
         m_ScreenQuadVAO.bind();
@@ -401,7 +389,7 @@ void Scene::Draw() {
     }
     GLCheckError();
 #ifndef __APPLE__
-    //RefreshHZBTexture();
+    RefreshHZBTexture();
 #endif
 
     GLCheckError();
@@ -475,7 +463,7 @@ void Scene::DrawAxes() {
 
     m_Axes->Update(mvp, {0, 0, 200, 200});
 
-    GLUniform textureUniform = fontShader->getUniformLocation("textureHandle");
+    GLUniform textureUniform = fontShader->getUniformLocation("fontTexture");
     GLUniform colorUniform = fontShader->getUniformLocation("textColor");
     m_Axes->DrawXYZ(fontShader, textureUniform, colorUniform);
 }

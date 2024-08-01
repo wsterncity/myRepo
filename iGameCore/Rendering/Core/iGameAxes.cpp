@@ -47,16 +47,23 @@ void Axes::DrawXYZ(const GLShaderProgram* shader, const GLUniform texture,
     m_FontVAO.bind();
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-    shader->setUniform(texture, FontSet::Instance().GetTextureHandle(L'X'));
+    auto& textureX = FontSet::Instance().GetTexture(L'X');
+    textureX.active(GL_TEXTURE1);
+    auto& textureY = FontSet::Instance().GetTexture(L'Y');
+    textureY.active(GL_TEXTURE2);
+    auto& textureZ = FontSet::Instance().GetTexture(L'Z');
+    textureZ.active(GL_TEXTURE3);
+
+    shader->setUniform(texture, 1);
     shader->setUniform(color, igm::vec3{1.0f, 0.0f, 0.0f});
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
-    shader->setUniform(texture, FontSet::Instance().GetTextureHandle(L'Y'));
+    shader->setUniform(texture, 2);
     shader->setUniform(color, igm::vec3{0.0f, 1.0f, 0.0f});
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT,
                    (void*) (6 * sizeof(GLuint)));
 
-    shader->setUniform(texture, FontSet::Instance().GetTextureHandle(L'Z'));
+    shader->setUniform(texture, 3);
     shader->setUniform(color, igm::vec3{0.0f, 0.0f, 1.0f});
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT,
                    (void*) (12 * sizeof(GLuint)));

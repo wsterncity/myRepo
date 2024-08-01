@@ -19,8 +19,8 @@ public:
     // GLenum internal_format: GL_RGBA8
     void storage(unsigned mip_levels, GLenum internal_format, unsigned width,
                  unsigned height, unsigned depth) const {
-        std::cerr << "GLTexture2dArray::storage function is not implemented."
-                  << std::endl;
+        throw std::runtime_error(
+                "GLTexture2dArray::storage function is not implemented.");
         //glTextureStorage3D(handle, mip_levels, internal_format, width, height,
         //                   depth);
     }
