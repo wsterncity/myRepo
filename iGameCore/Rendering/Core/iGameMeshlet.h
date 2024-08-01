@@ -24,11 +24,11 @@ public:
     void BuildMeshlet(const float* vertex_positions, size_t vertex_count,
                       const int* indices, size_t index_count);
 
-    const size_t MeshletsCount() const;
+    size_t MeshletsCount();
     const unsigned int* GetMeshletIndices() const;
-    const size_t GetMeshletIndexCount() const;
-    const GLBuffer& MeshletsBuffer() const;
-    const GLBuffer& DrawCommandBuffer() const;
+    size_t GetMeshletIndexCount();
+    GLBuffer& MeshletsBuffer();
+    GLBuffer& DrawCommandBuffer();
 
 private:
     const size_t m_MaxVertices = 64;

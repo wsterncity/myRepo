@@ -12,27 +12,27 @@ IGAME_NAMESPACE_BEGIN
 class Scene;
 class DrawableObject {
 public:
-	DrawableObject(){}
-	virtual ~DrawableObject() {}
+    DrawableObject() {}
+    virtual ~DrawableObject() {}
 
-	virtual void Draw(Scene*) = 0;
-	virtual void ConvertToRenderableData() = 0;
+    virtual void Draw(Scene*) = 0;
+    virtual void ConvertToRenderableData() = 0;
 
-	static void GLRequestContext() {
+    static void GLRequestContext() {}
 
-	}
+    static void GLAllocateGLBuffer(GLBuffer& vbo, size_t size,
+                                   const void* data) {
+        IGAME_NAMESPACE::GLAllocateGLBuffer(vbo, size, data);
+    }
 
-	static void GLAllocateGLBuffer(GLBuffer& vbo, size_t size, const void* data) {
-		vbo.allocate(size, data, GL_STATIC_DRAW);
-	}
-
-	static void GLSetVertexAttrib(GLVertexArray& VAO, GLVertexAttribute attribute,
-		GLuint binding_index, int size, GLenum type,
-		GLboolean normalized, unsigned int offset) {
-		VAO.enableAttrib(attribute);
-		VAO.attribBinding(attribute, binding_index);
-		VAO.attribFormat(attribute, size, type, normalized, offset);
-	}
+    static void GLSetVertexAttrib(GLVertexArray& VAO,
+                                  GLVertexAttribute attribute,
+                                  GLuint vbo_binding_index, int size,
+                                  GLenum type, GLboolean normalized,
+                                  unsigned int offset) {
+        IGAME_NAMESPACE::GLSetVertexAttrib(VAO, attribute, vbo_binding_index,
+                                           size, type, normalized, offset);
+    }
 };
 IGAME_NAMESPACE_END
 #endif

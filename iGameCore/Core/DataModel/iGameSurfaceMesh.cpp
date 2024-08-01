@@ -3,13 +3,11 @@
 
 IGAME_NAMESPACE_BEGIN
 
-IGsize SurfaceMesh::GetNumberOfEdges() const noexcept
-{
-	return m_Edges ? m_Edges->GetNumberOfCells() : 0;
+IGsize SurfaceMesh::GetNumberOfEdges() const noexcept {
+    return m_Edges ? m_Edges->GetNumberOfCells() : 0;
 }
-IGsize SurfaceMesh::GetNumberOfFaces() const noexcept
-{
-	return m_Faces ? m_Faces->GetNumberOfCells() : 0;
+IGsize SurfaceMesh::GetNumberOfFaces() const noexcept {
+    return m_Faces ? m_Faces->GetNumberOfCells() : 0;
 }
 
 CellArray* SurfaceMesh::GetEdges() { return m_Edges ? m_Edges.get() : nullptr; }
@@ -79,31 +77,28 @@ int SurfaceMesh::GetFaceEdgeIds(const IGsize faceId, igIndex* edgeIds) {
     return m_FaceEdges->GetCellIds(faceId, edgeIds);
 }
 
-void SurfaceMesh::BuildEdges()
-{
-	EdgeTable::Pointer EdgeTable = EdgeTable::New();
-	IGsize nfaces = GetNumberOfFaces();
-	igIndex edgeIds[32]{}, face[32]{};
+void SurfaceMesh::BuildEdges() {
+    EdgeTable::Pointer EdgeTable = EdgeTable::New();
+    IGsize nfaces = GetNumberOfFaces();
+    igIndex edgeIds[32]{}, face[32]{};
 
-	m_FaceEdges = CellArray::New();
-	EdgeTable->Initialize(GetNumberOfPoints());
+    m_FaceEdges = CellArray::New();
+    EdgeTable->Initialize(GetNumberOfPoints());
 
-	for (IGsize i = 0; i < nfaces; i++)
-	{
-		int size = this->GetFacePointIds(i, face);
-		for (int j = 0; j < size; j++)
-		{
-			igIndex idx;
-			if ((idx = EdgeTable->IsEdge(face[j], face[(j + 1) % size])) == -1)
-			{
-				idx = EdgeTable->GetNumberOfEdges();
-				EdgeTable->InsertEdge(face[j], face[(j + 1) % size]);
-			}
-			edgeIds[j] = idx;
-		}
-		m_FaceEdges->AddCellIds(edgeIds, size);
-	}
-	m_Edges = EdgeTable->GetOutput();
+    for (IGsize i = 0; i < nfaces; i++) {
+        int size = this->GetFacePointIds(i, face);
+        for (int j = 0; j < size; j++) {
+            igIndex idx;
+            if ((idx = EdgeTable->IsEdge(face[j], face[(j + 1) % size])) ==
+                -1) {
+                idx = EdgeTable->GetNumberOfEdges();
+                EdgeTable->InsertEdge(face[j], face[(j + 1) % size]);
+            }
+            edgeIds[j] = idx;
+        }
+        m_FaceEdges->AddCellIds(edgeIds, size);
+    }
+    m_Edges = EdgeTable->GetOutput();
 }
 
 void SurfaceMesh::BuildEdgeLinks() {
@@ -245,60 +240,45 @@ int SurfaceMesh::GetFaceToNeighborFaces(const IGsize faceId, igIndex* faceIds) {
     return i;
 }
 int SurfaceMesh::GetFaceToOneRingFaces(const IGsize faceId, igIndex* faceIds) {
-	assert(faceId < GetNumberOfFaces() && "faceId too large");
-	igIndex ptIds[32]{};
-	int size = GetFacePointIds(faceId, ptIds);
-	std::set<igIndex> st;
-	for (int i = 0; i < size; i++) {
-		auto& link = m_FaceLinks->GetLink(ptIds[i]);
-		for (int j = 0; j < link.size; j++) {
-			st.insert(link.pointer[j]);
-		}
-	}
-	int i = 0;
-	for (auto& fid : st) {
-		if (fid != faceId) {
-			faceIds[i++] = fid;
-		}
-	}
-	return i;
+    assert(faceId < GetNumberOfFaces() && "faceId too large");
+    igIndex ptIds[32]{};
+    int size = GetFacePointIds(faceId, ptIds);
+    std::set<igIndex> st;
+    for (int i = 0; i < size; i++) {
+        auto& link = m_FaceLinks->GetLink(ptIds[i]);
+        for (int j = 0; j < link.size; j++) { st.insert(link.pointer[j]); }
+    }
+    int i = 0;
+    for (auto& fid: st) {
+        if (fid != faceId) { faceIds[i++] = fid; }
+    }
+    return i;
 }
 
-igIndex SurfaceMesh::GetEdgeIdFormPointIds(const IGsize ptId1, const IGsize ptId2)
-{
+igIndex SurfaceMesh::GetEdgeIdFormPointIds(const IGsize ptId1,
+                                           const IGsize ptId2) {
     igIndex edgeIds[64]{}, e[2]{};
     int size = GetPointToNeighborEdges(ptId1, edgeIds);
-    for (int i = 0; i < size; i++)
-    {
+    for (int i = 0; i < size; i++) {
         GetEdgePointIds(edgeIds[i], e);
-        if (ptId1 + ptId2 == e[0] + e[1]) {
-            return edgeIds[i];
-        }
+        if (ptId1 + ptId2 == e[0] + e[1]) { return edgeIds[i]; }
     }
     return (-1);
 }
-igIndex SurfaceMesh::GetFaceIdFormPointIds(igIndex* ids, int size)
-{
+igIndex SurfaceMesh::GetFaceIdFormPointIds(igIndex* ids, int size) {
     IGsize sum = 0;
     for (int i = 0; i < size; i++) {
-        if (ids[i] >= this->GetNumberOfPoints()) {
-            return (-1);
-        }
+        if (ids[i] >= this->GetNumberOfPoints()) { return (-1); }
         sum += ids[i];
     }
 
     igIndex faceIds[64]{}, ptIds[32]{};
     int size1 = GetPointToNeighborFaces(ids[0], faceIds);
-    for (int i = 0; i < size1; i++)
-    {
+    for (int i = 0; i < size1; i++) {
         if (size != GetFacePointIds(faceIds[i], ptIds)) continue;
         IGsize index_sum = 0;
-        for (int j = 0; j < size; j++)
-        {
-            index_sum += ptIds[j];
-        }
-        if (sum == index_sum)
-        {
+        for (int j = 0; j < size; j++) { index_sum += ptIds[j]; }
+        if (sum == index_sum) {
             int count = 0;
             for (int j = 0; j < size; j++) {
                 for (int k = 0; k < size; k++) {
@@ -314,59 +294,45 @@ igIndex SurfaceMesh::GetFaceIdFormPointIds(igIndex* ids, int size)
     return (-1);
 }
 
-void SurfaceMesh::RequestEditStatus()
-{
-    if (InEditStatus())
-    {
-        return;
-    }
+void SurfaceMesh::RequestEditStatus() {
+    if (InEditStatus()) { return; }
     RequestPointStatus();
     RequestEdgeStatus();
     RequestFaceStatus();
     MakeEditStatusOn();
 }
-void SurfaceMesh::RequestEdgeStatus()
-{
-    if (m_Edges == nullptr ||
-        (m_Edges->GetMTime() < m_Faces->GetMTime()))
-    {
+void SurfaceMesh::RequestEdgeStatus() {
+    if (m_Edges == nullptr || (m_Edges->GetMTime() < m_Faces->GetMTime())) {
         BuildEdges();
     }
     if (m_EdgeLinks == nullptr ||
-        (m_EdgeLinks->GetMTime() < m_Edges->GetMTime()))
-    {
+        (m_EdgeLinks->GetMTime() < m_Edges->GetMTime())) {
         BuildEdgeLinks();
     }
 
-    if (m_EdgeDeleteMarker == nullptr)
-    {
+    if (m_EdgeDeleteMarker == nullptr) {
         m_EdgeDeleteMarker = DeleteMarker::New();
     }
     m_EdgeDeleteMarker->Initialize(GetNumberOfEdges());
 }
 
-void SurfaceMesh::RequestFaceStatus()
-{
+void SurfaceMesh::RequestFaceStatus() {
     if (m_FaceEdgeLinks == nullptr ||
-        (m_FaceEdgeLinks->GetMTime() < m_FaceEdges->GetMTime()))
-    {
+        (m_FaceEdgeLinks->GetMTime() < m_FaceEdges->GetMTime())) {
         BuildFaceEdgeLinks();
     }
     if (m_FaceLinks == nullptr ||
-        (m_FaceLinks->GetMTime() < m_Faces->GetMTime()))
-    {
+        (m_FaceLinks->GetMTime() < m_Faces->GetMTime())) {
         BuildFaceLinks();
     }
 
-    if (m_FaceDeleteMarker == nullptr)
-    {
+    if (m_FaceDeleteMarker == nullptr) {
         m_FaceDeleteMarker = DeleteMarker::New();
     }
     m_FaceDeleteMarker->Initialize(GetNumberOfFaces());
 }
 
-void SurfaceMesh::GarbageCollection()
-{
+void SurfaceMesh::GarbageCollection() {
     IGsize i, mappedPtId = 0, mappedEdgeId = 0;
     igIndex ptIds[32]{}, edgeIds[32]{}, e[2]{};
     CellArray::Pointer newEdges = CellArray::New();
@@ -393,9 +359,7 @@ void SurfaceMesh::GarbageCollection()
     for (i = 0; i < nedges; i++) {
         if (IsEdgeDeleted(i)) continue;
         m_Edges->GetCellIds(i, e);
-        for (int j = 0; j < 2; j++) {
-            e[j] = ptMap[e[j]];
-        }
+        for (int j = 0; j < 2; j++) { e[j] = ptMap[e[j]]; }
         newEdges->AddCellIds(e, 2);
         edgeMap[i] = mappedEdgeId;
         mappedEdgeId++;
@@ -433,12 +397,8 @@ bool SurfaceMesh::IsFaceDeleted(const IGsize faceId) {
     return m_FaceDeleteMarker->IsDeleted(faceId);
 }
 
-IGsize SurfaceMesh::AddPoint(const Point& p)
-{
-    if (!InEditStatus())
-    {
-        RequestEditStatus();
-    }
+IGsize SurfaceMesh::AddPoint(const Point& p) {
+    if (!InEditStatus()) { RequestEditStatus(); }
     IGsize ptId = m_Points->AddPoint(p);
 
     m_EdgeLinks->AddLink();
@@ -447,8 +407,7 @@ IGsize SurfaceMesh::AddPoint(const Point& p)
     m_PointDeleteMarker->AddTag();
     return ptId;
 }
-IGsize SurfaceMesh::AddEdge(const IGsize ptId1, const IGsize ptId2)
-{
+IGsize SurfaceMesh::AddEdge(const IGsize ptId1, const IGsize ptId2) {
     igIndex edgeId = GetEdgeIdFormPointIds(ptId1, ptId2);
     if (edgeId == -1) {
         edgeId = GetNumberOfEdges();
@@ -460,8 +419,7 @@ IGsize SurfaceMesh::AddEdge(const IGsize ptId1, const IGsize ptId2)
     }
     return edgeId;
 }
-IGsize SurfaceMesh::AddFace(igIndex* ptIds, int size)
-{
+IGsize SurfaceMesh::AddFace(igIndex* ptIds, int size) {
     igIndex edgeIds[64]{};
     for (int i = 0; i < size; i++) {
         edgeIds[i] = AddEdge(ptIds[i], ptIds[(i + 1) % size]);
@@ -482,56 +440,30 @@ IGsize SurfaceMesh::AddFace(igIndex* ptIds, int size)
     return faceId;
 }
 
-void SurfaceMesh::DeletePoint(const IGsize ptId)
-{
-    if (!InEditStatus())
-    {
-        RequestEditStatus();
-    }
-    if (IsPointDeleted(ptId))
-    {
-        return;
-    }
+void SurfaceMesh::DeletePoint(const IGsize ptId) {
+    if (!InEditStatus()) { RequestEditStatus(); }
+    if (IsPointDeleted(ptId)) { return; }
     igIndex edgeIds[64]{};
     int size = GetPointToNeighborEdges(ptId, edgeIds);
-    for (int i = 0; i < size; i++) {
-        DeleteEdge(edgeIds[i]);
-    }
+    for (int i = 0; i < size; i++) { DeleteEdge(edgeIds[i]); }
     m_EdgeLinks->DeleteLink(ptId);
     m_FaceLinks->DeleteLink(ptId);
     m_PointDeleteMarker->MarkDeleted(ptId);
 }
 void SurfaceMesh::DeleteEdge(const IGsize edgeId) {
-    if (!InEditStatus())
-    {
-        RequestEditStatus();
-    }
-    if (IsEdgeDeleted(edgeId))
-    {
-        return;
-    }
+    if (!InEditStatus()) { RequestEditStatus(); }
+    if (IsEdgeDeleted(edgeId)) { return; }
     igIndex faceIds[64]{}, e[2]{};
     int size = GetEdgeToNeighborFaces(edgeId, faceIds);
     GetEdgePointIds(edgeId, e);
-    for (int i = 0; i < 2; i++) {
-        m_EdgeLinks->RemoveReference(e[i], edgeId);
-    }
-    for (int i = 0; i < size; i++) {
-        DeleteFace(faceIds[i]);
-    }
+    for (int i = 0; i < 2; i++) { m_EdgeLinks->RemoveReference(e[i], edgeId); }
+    for (int i = 0; i < size; i++) { DeleteFace(faceIds[i]); }
     m_FaceEdgeLinks->DeleteLink(edgeId);
     m_EdgeDeleteMarker->MarkDeleted(edgeId);
 }
-void SurfaceMesh::DeleteFace(const IGsize faceId)
-{
-    if (!InEditStatus())
-    {
-        RequestEditStatus();
-    }
-    if (IsFaceDeleted(faceId))
-    {
-        return;
-    }
+void SurfaceMesh::DeleteFace(const IGsize faceId) {
+    if (!InEditStatus()) { RequestEditStatus(); }
+    if (IsFaceDeleted(faceId)) { return; }
     igIndex ptIds[64]{}, edgeIds[64]{};
     int size = GetFacePointIds(faceId, ptIds);
     GetFaceEdgeIds(faceId, edgeIds);
@@ -542,18 +474,12 @@ void SurfaceMesh::DeleteFace(const IGsize faceId)
     m_FaceDeleteMarker->MarkDeleted(faceId);
 }
 
-void SurfaceMesh::ReplacePointReference(const IGsize fromPtId, const IGsize toPtId)
-{
+void SurfaceMesh::ReplacePointReference(const IGsize fromPtId,
+                                        const IGsize toPtId) {
     assert(fromPtId < GetNumberOfPoints() && "ptId too large");
     assert(toPtId < GetNumberOfPoints() && "ptId too large");
-    if (fromPtId == toPtId)
-    {
-        return;
-    }
-    if (!InEditStatus())
-    {
-        RequestEditStatus();
-    }
+    if (fromPtId == toPtId) { return; }
+    if (!InEditStatus()) { RequestEditStatus(); }
     igIndex edgeIds[64]{}, faceIds[64]{};
     int size1 = GetPointToNeighborEdges(fromPtId, edgeIds);
     int size2 = GetPointToNeighborFaces(fromPtId, faceIds);
@@ -571,10 +497,7 @@ void SurfaceMesh::ReplacePointReference(const IGsize fromPtId, const IGsize toPt
     m_FaceLinks->SetLink(toPtId, link2.pointer, link2.size);
 }
 
-SurfaceMesh::SurfaceMesh()
-{
-    m_ViewStyle = IG_SURFACE;
-};
+SurfaceMesh::SurfaceMesh() { m_ViewStyle = IG_SURFACE; };
 
 void SurfaceMesh::Draw(Scene* scene) {
     bool debug = false;
@@ -582,11 +505,18 @@ void SurfaceMesh::Draw(Scene* scene) {
         // compute culling
         auto shader = scene->GetShader(Scene::MESHLETCULL);
         shader->use();
-        m_Meshlets->MeshletsBuffer().bindBase(GL_SHADER_STORAGE_BUFFER, 1);
-        m_Meshlets->DrawCommandBuffer().bindBase(GL_SHADER_STORAGE_BUFFER, 2);
-        scene->GetDrawCullDataBuffer().bindBase(GL_UNIFORM_BUFFER, 3);
-        shader->setUniform(shader->getUniformLocation("depthPyramid"),
-                           scene->DepthPyramidTexture().getTextureHandle());
+
+        m_Meshlets->MeshletsBuffer().target(GL_SHADER_STORAGE_BUFFER);
+        m_Meshlets->MeshletsBuffer().bindBase(1);
+
+        m_Meshlets->DrawCommandBuffer().target(GL_SHADER_STORAGE_BUFFER);
+        m_Meshlets->DrawCommandBuffer().bindBase(2);
+
+        scene->GetDrawCullDataBuffer().target(GL_UNIFORM_BUFFER);
+        scene->GetDrawCullDataBuffer().bindBase(3);
+
+        //shader->setUniform(shader->getUniformLocation("depthPyramid"),
+        //                   scene->DepthPyramidTexture().getTextureHandle());
 
         auto count = m_Meshlets->MeshletsCount();
         glDispatchCompute(((count + 255) / 256), 1, 1);
@@ -626,7 +556,8 @@ void SurfaceMesh::Draw(Scene* scene) {
 
         scene->GetShader(Scene::PATCH)->use();
         m_TriangleVAO.bind();
-        m_Meshlets->DrawCommandBuffer().bind(GL_DRAW_INDIRECT_BUFFER);
+        m_Meshlets->DrawCommandBuffer().target(GL_DRAW_INDIRECT_BUFFER);
+        m_Meshlets->DrawCommandBuffer().bind();
         glMultiDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, nullptr,
                                     m_Meshlets->MeshletsCount(), 0);
         m_TriangleVAO.release();
@@ -713,16 +644,26 @@ void SurfaceMesh::ConvertToDrawableData() {
         m_LineVAO.create();
         m_TriangleVAO.create();
         m_PositionVBO.create();
+        m_PositionVBO.target(GL_ARRAY_BUFFER);
         m_ColorVBO.create();
+        m_ColorVBO.target(GL_ARRAY_BUFFER);
         m_NormalVBO.create();
+        m_NormalVBO.target(GL_ARRAY_BUFFER);
         m_TextureVBO.create();
+        m_TextureVBO.target(GL_ARRAY_BUFFER);
         m_PointEBO.create();
+        m_PointEBO.target(GL_ELEMENT_ARRAY_BUFFER);
         m_LineEBO.create();
+        m_LineEBO.target(GL_ELEMENT_ARRAY_BUFFER);
         m_TriangleEBO.create();
+        m_TriangleEBO.target(GL_ELEMENT_ARRAY_BUFFER);
 
         m_CellVAO.create();
         m_CellPositionVBO.create();
+        m_CellPositionVBO.target(GL_ARRAY_BUFFER);
         m_CellColorVBO.create();
+        m_CellColorVBO.target(GL_ARRAY_BUFFER);
+
         m_Flag = true;
     }
 
