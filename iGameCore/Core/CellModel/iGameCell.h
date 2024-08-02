@@ -3,7 +3,7 @@
 
 #include "iGameObject.h"
 #include "iGamePoints.h"
-#include "iGameElementArray.h"
+#include "iGameIdArray.h"
 #include "iGameCellType.h"
 
 IGAME_NAMESPACE_BEGIN

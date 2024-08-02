@@ -2,7 +2,7 @@
 
 ### 框架结构
 
-<img src="C:\Users\root\AppData\Roaming\Typora\typora-user-images\image-20240729152419670.png" alt="image-20240729152419670" style="zoom:75%;" align = "left"/>
+<img src=".\Resources\Images\image-20240729152419670.png" alt="image-20240729152419670" style="zoom:75%;" align = "left"/>
 
 1. iGameCore目录下是核心模块，包括数据结构、算法、渲染等子模块；Qt目录下是前端页面模块
 2. CellModel目录包含基本的元素对象类，如Triangle、Quad、Tetra等，需要继承自Cell对象
@@ -16,20 +16,24 @@
 
 1. 文件名使用 iGame+名称
 2. 类名不使用 iGame前缀，使用驼峰命名法，首字母大写
-3. 如果继承自Object，函数名使用驼峰命名法，首字母大写，如果像Vector等对象，函数名首字母小写
+3. 函数名使用驼峰命名法，如果继承自Object，首字母大写，如果像Vector等对象，函数名首字母小写
 4. 成员变量使用 m_名称（驼峰命名法，首字母大写）
 
-<img src="C:\Users\root\AppData\Roaming\Typora\typora-user-images\image-20240729165349742.png" alt="image-20240729165349742" style="zoom:50%;" align = "left"/>
+<img src=".\Resources\Images\image-20240729165349742.png" alt="image-20240729165349742" style="zoom:50%;" align = "left"/>
 
 ## 简化类图
 
-![image-20240729191223991](C:\Users\root\AppData\Roaming\Typora\typora-user-images\image-20240729191223991.png)
+<img src=".\Resources\Images\image-20240802170101351.png" alt="image-20240802170101351" style="zoom:80%;" />
+
+<img src=".\Resources\Images\image-20240802170121931.png" alt="image-20240802170121931" style="zoom:80%;" />
 
 ## 架构设计
 
-<img src="C:\Users\root\AppData\Roaming\Typora\typora-user-images\image-20240729154609637.png" alt="image-20240729154609637" style="zoom: 50%;" />
+<img src=".\Resources\Images\image-20240802170152717.png" alt="image-20240802170152717" style="zoom:50%;" />
 
 ####Scene
+
+
 
 Scene场景包含了需要渲染的各类信息和渲染对象，有光源、摄像机、背景、Shader、交互器、数据对象列表。需要在OpenGL的上下文中进行渲染，默认会调用DataObject的ConvertToDrawableData和Draw进行绘制。成员变量有：
 
@@ -92,11 +96,13 @@ Object是整个框架的基类，管理对象的生命周期、时间戳等，�
    protected:
    	DataObject() {}
    	~DataObject() override = default;
+   	
+   	A m_A;
    };
    IGAME_NAMESPACE_END
    #endif
    ```
-
+   
    
 
 #### DataObject
@@ -109,7 +115,7 @@ DataObject是最基本的数据对象，所有可渲染的数据对象都需要�
 4. m_BoundingBox和m_BoundingHelper：保存数据对象的包围盒
 5. m_SubDataObjectsHelper：管理所有的子数据节点，如果该对象是分支数据节点的话，最好该对象的类型就是DataObject或者专门用于管理子数据节点的对象（还未定义）
 6. m_Parent：指向父数据节点的指针
-7. 与渲染相关的成员：m_Visibility（可见性）、m_Drawable（是否可渲染）
+7. 与渲染相关的成员：m_Visibility（可见性）、m_Drawable（是否可渲染）等
 
 ####PointSet
 
@@ -121,9 +127,8 @@ PointSet继承自DataObject，用于管理所有的点集，有快速查找某�
 
 成员函数(部分)：
 
-> void RequestEditStatus()：在删除点前需要调用，会生成并初始化m_PointDeleteMarker
->
-> void GarbageCollection()：在操作完成后调用，清除伪删除的元素
+1. void RequestEditStatus()：在删除点前需要调用，会生成并初始化m_PointDeleteMarker
+2. void GarbageCollection()：在操作完成后调用，清除伪删除的元素
 
 #### SurfaceMesh
 
@@ -168,7 +173,7 @@ void GarbageCollection();  // 回收删除的数据
 
 当前网格结构的继承关系：
 
-<img src="C:\Users\root\AppData\Roaming\Typora\typora-user-images\image-20240729155402114.png" alt="image-20240729155402114" style="zoom:80%;" />
+<img src=".\Resources\Images\image-20240729155402114.png" alt="image-20240729155402114" style="zoom:80%;" />
 
 ### 如何实现自己的数据结构
 
@@ -198,7 +203,7 @@ protected:
 	SourceData() { }
 	~SourceData() override = default;
 	
-	ComputeBoundingBox() override {
+	void ComputeBoundingBox() override {
 	  ...
 	}
 	
@@ -235,7 +240,7 @@ Filter是所有算法的基类，控制算法的输入输出、算法的执行�
 
 算法处理流程如下图所示：
 
-<img src="C:\Users\root\AppData\Roaming\Typora\typora-user-images\image-20240729192157602.png" alt="image-20240729192157602" style="zoom:50%;" />
+<img src=".\Resources\Images\image-20240729192157602.png" alt="image-20240729192157602" style="zoom:50%;" />
 
 ### 如何实现自己的算法
 
@@ -269,17 +274,6 @@ public:
 		m_FilterRate = value;
 	}
 
-protected:
-	FilterPoints()
-	{
-		SetNumberOfInputs(1);
-		SetNumberOfOutputs(1);
-	}
-	~FilterPoints() override = default;
-
-	PointSet::Pointer m_PointSet{};
-	double m_FilterRate{ 0.5 };
-
 	bool Execute() override 
 	{ 
 		m_PointSet = DynamicCast<PointSet>(GetInput(0)); // 向下类型转换
@@ -303,6 +297,17 @@ protected:
 		SetOutput(0, m_PointSet); // 设置输出数据
 		return true;
 	}
+
+protected:
+	FilterPoints()
+	{
+		SetNumberOfInputs(1);
+		SetNumberOfOutputs(1);
+	}
+	~FilterPoints() override = default;
+
+	PointSet::Pointer m_PointSet{};
+	double m_FilterRate{ 0.5 };
 };
 IGAME_NAMESPACE_END
 #endif

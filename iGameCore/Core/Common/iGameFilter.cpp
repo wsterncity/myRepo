@@ -8,11 +8,6 @@ Filter::Filter()
     m_Outputs = DataObjectArray::New();
 }
 
-void Filter::Update()
-{
-    this->Execute();
-}
-
 int Filter::GetNumberOfInputs() const
 {
     return m_Inputs->Size();
@@ -99,22 +94,18 @@ DataObject::Pointer Filter::GetNamedOutput(const std::string& name)
 
 void Filter::UpdateProgress(double amount)
 {
-    amount = this->ProgressShift + this->ProgressScale * amount;
+    amount = m_ProgressShift + m_ProgressScale * amount;
 
     amount = std::min(1.0, amount);
     amount = std::max(0.0, amount);
 
-    this->Progress = amount;
-    //if (this->ProgressObserver)
-    //{
-    //    this->ProgressObserver->UpdateProgress(amount);
-    //}
+    m_Progress = amount;
 }
 
-void Filter::ResetProgressShiftScale()
+void Filter::ResetProgress() 
 {
-    this->ProgressShift = this->Progress;
-    this->ProgressScale = 1 - this->Progress;
+    m_ProgressShift = m_Progress;
+    m_ProgressScale = 1 - m_Progress;
 }
 
 void Filter::SetNumberOfInputs(int n)

@@ -16,8 +16,6 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
     # set(QT_CMAKE_PATH "D:/Qt/5.14.2/msvc2017_64/lib/cmake")
     # set(CMAKE_PREFIX_PATH "D:/Qt/5.14.2/msvc2017_64/lib/cmake")
     # set(CMAKE_PREFIX_PATH "E:/Software/Visualsoft/Qt/Qt5.14.2/5.14.2/msvc2017_64/lib/cmake")
-    # set(QT_CMAKE_PATH "D:/Software/Qt/5.14.2/msvc2017_64/lib/cmake")
-    # set(CMAKE_PREFIX_PATH "D:/Software/Qt/5.14.2/msvc2017_64/lib/cmake")
     # set(QT_CMAKE_PATH "D:/dev/Qt5.5.3/6.5.3/msvc2019_64/lib/cmake")
     # set(CMAKE_PREFIX_PATH "D:/dev/Qt5.5.3/6.5.3/msvc2019_64/lib/cmake")
     #以UTF-8格式进行编译

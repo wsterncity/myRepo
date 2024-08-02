@@ -22,7 +22,7 @@
 igQtFileLoader::igQtFileLoader(QObject* parent) : QObject(parent) 
 {
 	InitRecentFilePaths();
-
+    m_SceneManager = SceneManager::Instance();
 }
 
 igQtFileLoader::~igQtFileLoader() {

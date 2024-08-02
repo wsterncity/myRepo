@@ -10,23 +10,34 @@ public:
     I_OBJECT(ArrayObject);
     //static Pointer New() { return new ArrayObject; }
 
+    // Get the number of elements
     virtual IGsize GetNumberOfElements() const = 0;
+
+    // Get the number of values
     virtual IGsize GetNumberOfValues() const = 0;
+
+    // Set the size of the element
     virtual void SetElementSize(const int _Newsize) = 0;
+
+    // Get the size of the element
     virtual int GetElementSize() = 0;
 
+    // Get value at index _Pos. Return double type.
     virtual double GetValue(const IGsize _Pos) = 0;
+
+    // Set value at index _Pos.
     virtual void SetValue(IGsize _Pos, double value) = 0;
 
+    // Get element at index _Pos.
     virtual void GetElement(const IGsize _Pos, float* _Element) = 0;
     virtual void GetElement(const IGsize _Pos, double* _Element) = 0;
     virtual void GetElement(const IGsize _Pos, std::vector<float>& _Element) = 0;
     virtual void GetElement(const IGsize _Pos, std::vector<double>& _Element) = 0;
 
-    virtual IGenum GetArrayType() {
-        return IG_ARRAY_OBJECT;
-    }
+    // Get the type of array.
+    virtual IGenum GetArrayType() { return IG_ARRAY_OBJECT; }
 
+    // Type down-cast, which is a subclass of ArrayObject
     template<typename _Ty>
     SmartPointer<_Ty> DownCast() {
         return DynamicCast<_Ty>(this);
