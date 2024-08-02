@@ -1,7 +1,6 @@
 #pragma once
 
 #include "GLObject.h"
-#include "GLTextureHandle.h"
 
 IGAME_NAMESPACE_BEGIN
 
@@ -41,10 +40,6 @@ public:
         glBindTexture(GL_TEXTURE_2D_ARRAY, handle);
         glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
         glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
-    }
-
-    GLTextureHandle getTextureHandle() const {
-        return GLTextureHandle(glGetTextureHandleARB(handle));
     }
 
     void bind() const { glBindTexture(GL_TEXTURE_2D_ARRAY, handle); }

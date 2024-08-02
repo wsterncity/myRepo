@@ -270,6 +270,15 @@ public:
         T length = this->length();
         return {x / length, y / length};
     }
+
+    /**
+    * Computes the dot product with another vector.
+    * @param other The vector to compute the dot product with.
+    * @return The dot product.
+    */
+    [[nodiscard]] T dot(const vec& other) const {
+        return x * other.x + y * other.y;
+    }
 };
 
 /**
@@ -299,6 +308,15 @@ vec<2, T> min(const vec<2, T>& v1, const vec<2, T>& v2);
 */
 template<typename T>
 vec<2, T> max(const vec<2, T>& v1, const vec<2, T>& v2);
+
+/**
+* Computes the dot product of two vectors.
+* @param v1 The first vector.
+* @param v2 The second vector.
+* @return The dot product.
+*/
+template<typename T>
+T dot(const vec<2, T>& v1, const vec<2, T>& v2);
 
 } // namespace igm
 

@@ -194,6 +194,35 @@ public:
     }
 
     /**
+    * @brief Matrix-vector multiplication operator for mat<4, 4, T> and vec<4, T>.
+    *
+    * This operator multiplies a 4x4 matrix by a 4-dimensional vector. The resulting
+    * vector is computed as follows:
+    *
+    * result[0] = (m[0][0] * v[0]) + (m[1][0] * v[1]) + (m[2][0] * v[2]) + (m[3][0] * v[3])
+    * result[1] = (m[0][1] * v[0]) + (m[1][1] * v[1]) + (m[2][1] * v[2]) + (m[3][1] * v[3])
+    * result[2] = (m[0][2] * v[0]) + (m[1][2] * v[1]) + (m[2][2] * v[2]) + (m[3][2] * v[3])
+    * result[3] = (m[0][3] * v[0]) + (m[1][3] * v[1]) + (m[2][3] * v[2]) + (m[3][3] * v[3])
+    *
+    * where m is the matrix and v is the vector.
+    *
+    * @param v The vec<4, T> object to multiply.
+    * @return Resultant vec<4, T> object after matrix-vector multiplication.
+    */
+    template<typename T>
+    vec<4, T> operator*(const vec<4, T>& v) const {
+        return vec<4, T>(value[0][0] * v[0] + value[1][0] * v[1] +
+                                 value[2][0] * v[2] + value[3][0] * v[3],
+                         value[0][1] * v[0] + value[1][1] * v[1] +
+                                 value[2][1] * v[2] + value[3][1] * v[3],
+                         value[0][2] * v[0] + value[1][2] * v[1] +
+                                 value[2][2] * v[2] + value[3][2] * v[3],
+                         value[0][3] * v[0] + value[1][3] * v[1] +
+                                 value[2][3] * v[2] + value[3][3] * v[3]);
+    }
+
+
+    /**
     * @brief Vector multiplication operator for mat<4, 4, T>.
     * Multiplies a mat<4, 4, T> with a vec4 (as column vector).
     * @param v The vector to multiply.

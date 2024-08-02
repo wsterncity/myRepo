@@ -31,7 +31,7 @@ public:
     };
 
     struct DrawCullData {
-        igm::mat4 view;
+        igm::mat4 modelview;
         float P00, P11, znear, zfar; // symmetric projection parameters
         float frustum[4]; // data for left/right/top/bottom frustum planes
         float pyramidWidth, pyramidHeight; // depth pyramid size in texels
@@ -143,6 +143,7 @@ public:
                         igm::vec4{center[0], center[1], center[2], radius};
                 m_Camera->SetCamaraPos(center[0], center[1],
                                        center[2] + 2.0f * radius);
+                m_Camera->SetCamaraPos(0.293951, 21.5821, 228.601);
             }
         } else {
             m_VisibleModelsCount--;
@@ -165,35 +166,8 @@ public:
     std::map<DataObjectId, DataObject::Pointer>& GetModelList() {
         return m_Models;
     }
-    
-    void RefreshHZBTexture() {
-        //uint32_t width = m_Camera->GetViewPort().x;
-        //uint32_t height = m_Camera->GetViewPort().y;
-        //
-        //int level = 2;
-        //
-        //GLTexture2d::copyImageSubData(m_DepthTexture, GL_TEXTURE_2D, 0, 0, 0, 0,
-        //                              m_HZBTexture, GL_TEXTURE_2D, level, 0, 0,
-        //                              0, width >> level, height >> level, 1);
-        //
-        //glBindTexture(GL_TEXTURE_2D, m_HZBTexture);
-        //
-        //std::vector<float> mipLevelData((width) * (height));
-        //glGetTexImage(GL_TEXTURE_2D, level, GL_RED, GL_FLOAT,
-        //              mipLevelData.data());
-        //
-        //int cnt = 0;
-        //std::cout << (width >> level) * (height >> level) << std::endl;
-        //for (int i = 0; i < (width >> level) * (height >> level); ++i) {
-        //    if (mipLevelData[i] < 1.0f) {
-        //        cnt++;
-        //        //std::cout << mipLevelData[i] << std::endl;
-        //        //std::cout << i << std::endl;
-        //    }
-        //}
-        //std::cout << cnt << std::endl;
-        //glBindTexture(GL_TEXTURE_2D, 0);
 
+    void RefreshHizTexture() {
         // copy level 0
         GLTexture2d::copyImageSubData(m_DepthTexture, GL_TEXTURE_2D, 0, 0, 0, 0,
                                       m_DepthPyramid, GL_TEXTURE_2D, 0, 0, 0, 0,
@@ -226,71 +200,6 @@ public:
                               1);
             glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
         }
-
-        //unsigned int level = 0;
-        //
-        //uint32_t width = m_DepthPyramidWidth >> level;
-        //uint32_t height = m_DepthPyramidHeight >> level;
-        //if (width < 1) width = 1;
-        //if (height < 1) height = 1;
-        //
-        //glBindTexture(GL_TEXTURE_2D, m_DepthPyramid);
-        //std::vector<float> mipLevelData(width * height);
-        //glGetTexImage(GL_TEXTURE_2D, level, GL_RED, GL_FLOAT,
-        //              mipLevelData.data());
-        //
-        //int cnt = 0;
-        //std::cout << width << std::endl;
-        //std::cout << height << std::endl;
-        //std::cout << width * height << std::endl;
-        //for (int i = 0; i < width * height; ++i) {
-        //    if (mipLevelData[i] < 1.0f) {
-        //        cnt++;
-        //        if (cnt == 1) std::cout << mipLevelData[i] << std::endl;
-        //        //std::cout << i << std::endl;
-        //    }
-        //}
-        //std::cout << cnt << std::endl;
-        //std::cout << "\n\n\n\n" << std::endl;
-        //glBindTexture(GL_TEXTURE_2D, 0);
-
-        //uint32_t width = m_Camera->GetViewPort().x;
-        //uint32_t height = m_Camera->GetViewPort().y;
-        //
-        //unsigned int levels = 1 + static_cast<unsigned int>(std::floor(
-        //                                  std::log2(std::max(width, height))));
-        //
-        //levels = 2;
-        //unsigned int level = 0;
-        //
-        //auto shader = GetShader(DEPTHREDUCE);
-        //shader->use();
-        //shader->setUniform(shader->getUniformLocation("inImage"),
-        //                   m_DepthTexture.getTextureHandle());
-        //shader->setUniform(shader->getUniformLocation("inImageSize"),
-        //                   igm::uvec2{width, height});
-        ////shader->setUniform(shader->getUniformLocation("level"), level);
-        //m_HZBTexture.bindImage(0, level, GL_FALSE, 0, GL_WRITE_ONLY, GL_R32F);
-        //
-        //width = width << 1;
-        //height = height << 1;
-        //glDispatchCompute((width + 15) / 16, (height + 15) / 16, 1);
-        //glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
-
-        //for (unsigned int level = 1; level < levels; ++level) {
-        //    auto shader = GetShader(DEPTHREDUCE);
-        //    shader->use();
-        //    shader->setUniform(shader->getUniformLocation("inImage"),
-        //                       m_DepthTexture.getTextureHandle());
-        //    shader->setUniform(shader->getUniformLocation("imageSize"),
-        //                       igm::uvec2{width, height});
-        //
-        //    int groupX = (width >> (level + 1) + 15) / 16;
-        //    int groupY = (height >> (level + 1) + 15) / 16;
-        //
-        //    glDispatchCompute(groupX, groupY, 1);
-        //    glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
-        //}
     };
 
     GLTexture2d& DepthPyramidTexture() { return m_DepthPyramid; }
@@ -308,7 +217,7 @@ public:
                 normalizePlane(projectionT[3] + projectionT[1]); // y + w < 0
 
         DrawCullData cullData = {};
-        cullData.view = m_Camera->GetViewMatrix();
+        cullData.modelview = m_Camera->GetViewMatrix() * m_ModelRotate;
         cullData.P00 = projection[0][0];
         cullData.P11 = projection[1][1];
         cullData.znear = m_Camera->GetNearPlane();
@@ -319,6 +228,121 @@ public:
         cullData.frustum[3] = frustumY.z;
         cullData.pyramidWidth = static_cast<float>(m_DepthPyramidWidth);
         cullData.pyramidHeight = static_cast<float>(m_DepthPyramidHeight);
+
+        //std::cout << "amadio: " << std::endl;
+        //{
+        //    auto sphereBounds = igm::vec4{2.26758385f, 19.6720943f, 3.01321363f,
+        //                                  26.9144592f};
+        //    //auto sphereBounds = igm::vec4{0.0230077654f, 0.719376027f,
+        //    //                              0.0456265621f, 0.917246699f};
+        //    auto center = cullData.modelview * igm::vec4{sphereBounds.x,
+        //                                                 sphereBounds.y,
+        //                                                 sphereBounds.z, 1.0f};
+        //    float radius = sphereBounds.w;
+        //
+        //    auto C = center;
+        //    auto r = radius;
+        //    auto P00 = cullData.P00;
+        //    auto P11 = cullData.P11;
+        //
+        //    std::cout << "origin z: " << C.z << std::endl;
+        //    auto z_buffer = (1 / -C.z - 1 / cullData.znear) /
+        //                    (1 / cullData.zfar - 1 / cullData.znear);
+        //    std::cout << "z-buffer: " << z_buffer << std::endl;
+        //    auto z_linear = (2 * cullData.znear * cullData.zfar) /
+        //                    (cullData.znear + cullData.zfar -
+        //                     (z_buffer * 2.0f - 1.0f) *
+        //                             (cullData.zfar - cullData.znear));
+        //    std::cout << "z_linear: " << z_linear << std::endl;
+        //
+        //    //igm::vec2 cx = -C.xz;
+        //    igm::vec2 cx = -igm::vec2{C.x, C.z};
+        //    igm::vec2 vx = igm::vec2(sqrt(dot(cx, cx) - r * r), r);
+        //    igm::vec2 minx = igm::mat2(vx.x, vx.y, -vx.y, vx.x) * cx;
+        //    igm::vec2 maxx = igm::mat2(vx.x, -vx.y, vx.y, vx.x) * cx;
+        //
+        //    //igm::vec2 cy = -C.yz;
+        //    igm::vec2 cy = -igm::vec2{C.y, C.z};
+        //    igm::vec2 vy = igm::vec2(sqrt(dot(cy, cy) - r * r), r);
+        //    igm::vec2 miny = igm::mat2(vy.x, vy.y, -vy.y, vy.x) * cy;
+        //    igm::vec2 maxy = igm::mat2(vy.x, -vy.y, vy.y, vy.x) * cy;
+        //
+        //    auto aabb = igm::vec4(minx.x / minx.y * P00, miny.x / miny.y * P11,
+        //                          maxx.x / maxx.y * P00, maxy.x / maxy.y * P11);
+        //    aabb = igm::vec4{aabb.x, aabb.w, aabb.z, aabb.y} *
+        //                   igm::vec4(0.5f, -0.5f, 0.5f, -0.5f) +
+        //           igm::vec4(0.5f); // clip space -> uv space
+        //
+        //    std::cout << "aabb: " << aabb << std::endl;
+        //    auto aabb_width = aabb.z - aabb.x;
+        //    auto aabb_height = aabb.w - aabb.y;
+        //    std::cout << "aabb(width, height): "
+        //              << igm::vec2{aabb_width, aabb_height} << std::endl;
+        //    auto aabb_width_pixel = aabb_width * cullData.pyramidWidth;
+        //    auto aabb_height_pixel = aabb_height * cullData.pyramidHeight;
+        //    std::cout << "aabb(width, height): "
+        //              << igm::vec2{aabb_width_pixel, aabb_height_pixel}
+        //              << std::endl;
+        //    unsigned int level = static_cast<unsigned int>(std::floor(
+        //            std::log2(std::max(aabb_width_pixel, aabb_height_pixel))));
+        //    std::cout << level << std::endl;
+        //}
+        //std::cout << "bunny: " << std::endl;
+        //{
+        //    auto sphereBounds = igm::vec4{-0.0403442159f, 0.0356687158f,
+        //                                  -0.10301578f, 0.203350931f};
+        //    auto center = cullData.modelview * igm::vec4{sphereBounds.x,
+        //                                                 sphereBounds.y,
+        //                                                 sphereBounds.z, 1.0f};
+        //    float radius = sphereBounds.w;
+        //
+        //    auto C = center;
+        //    auto r = radius;
+        //    auto P00 = cullData.P00;
+        //    auto P11 = cullData.P11;
+        //
+        //    std::cout << "origin z: " << C.z << std::endl;
+        //    auto z_buffer = (1 / -C.z - 1 / cullData.znear) /
+        //                    (1 / cullData.zfar - 1 / cullData.znear);
+        //    std::cout << "z-buffer: " << z_buffer << std::endl;
+        //    auto z_linear = (2 * cullData.znear * cullData.zfar) /
+        //                    (cullData.znear + cullData.zfar -
+        //                     (z_buffer * 2.0f - 1.0f) *
+        //                             (cullData.zfar - cullData.znear));
+        //    std::cout << "z_linear: " << z_linear << std::endl;
+        //
+        //    //igm::vec2 cx = -C.xz;
+        //    igm::vec2 cx = -igm::vec2{C.x, C.z};
+        //    igm::vec2 vx = igm::vec2(sqrt(dot(cx, cx) - r * r), r);
+        //    igm::vec2 minx = igm::mat2(vx.x, vx.y, -vx.y, vx.x) * cx;
+        //    igm::vec2 maxx = igm::mat2(vx.x, -vx.y, vx.y, vx.x) * cx;
+        //
+        //    //igm::vec2 cy = -C.yz;
+        //    igm::vec2 cy = -igm::vec2{C.y, C.z};
+        //    igm::vec2 vy = igm::vec2(sqrt(dot(cy, cy) - r * r), r);
+        //    igm::vec2 miny = igm::mat2(vy.x, vy.y, -vy.y, vy.x) * cy;
+        //    igm::vec2 maxy = igm::mat2(vy.x, -vy.y, vy.y, vy.x) * cy;
+        //
+        //    auto aabb = igm::vec4(minx.x / minx.y * P00, miny.x / miny.y * P11,
+        //                          maxx.x / maxx.y * P00, maxy.x / maxy.y * P11);
+        //    aabb = igm::vec4{aabb.x, aabb.w, aabb.z, aabb.y} *
+        //                   igm::vec4(0.5f, -0.5f, 0.5f, -0.5f) +
+        //           igm::vec4(0.5f); // clip space -> uv space
+        //
+        //    std::cout << "aabb: " << aabb << std::endl;
+        //    auto aabb_width = aabb.z - aabb.x;
+        //    auto aabb_height = aabb.w - aabb.y;
+        //    std::cout << "aabb(width, height): "
+        //              << igm::vec2{aabb_width, aabb_height} << std::endl;
+        //    auto aabb_width_pixel = aabb_width * cullData.pyramidWidth;
+        //    auto aabb_height_pixel = aabb_height * cullData.pyramidHeight;
+        //    std::cout << "aabb(width, height): "
+        //              << igm::vec2{aabb_width_pixel, aabb_height_pixel}
+        //              << std::endl;
+        //    unsigned int level = static_cast<unsigned int>(std::floor(
+        //            std::log2(std::max(aabb_width_pixel, aabb_height_pixel))));
+        //    std::cout << level << std::endl;
+        //}
 
         m_DrawCullData.subData(0, sizeof(DrawCullData), &cullData);
 

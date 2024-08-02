@@ -515,8 +515,8 @@ void SurfaceMesh::Draw(Scene* scene) {
         scene->GetDrawCullDataBuffer().target(GL_UNIFORM_BUFFER);
         scene->GetDrawCullDataBuffer().bindBase(3);
 
-        //shader->setUniform(shader->getUniformLocation("depthPyramid"),
-        //                   scene->DepthPyramidTexture().getTextureHandle());
+        shader->setUniform(shader->getUniformLocation("depthPyramid"),
+                           scene->DepthPyramidTexture().getTextureHandle());
 
         auto count = m_Meshlets->MeshletsCount();
         glDispatchCompute(((count + 255) / 256), 1, 1);

@@ -10,13 +10,8 @@ Scene::Scene() {
     m_BackgroundColor = {0.5f, 0.5f, 0.5f};
 
     InitOpenGL();
-    GLCheckError();
     InitFont();
-    GLCheckError();
     InitAxes();
-    GLCheckError();
-
-    GLCheckError();
 }
 Scene::~Scene() {}
 
@@ -199,10 +194,9 @@ void Scene::InitOpenGL() {
     m_DrawCullData.create();
     m_DrawCullData.target(GL_UNIFORM_BUFFER);
     m_DrawCullData.allocate(sizeof(DrawCullData), nullptr, GL_DYNAMIC_DRAW);
-    GLCheckError();
+
     // init framebuffer
     ResizeFrameBuffer();
-    GLCheckError();
 }
 void Scene::InitFont() {
     const wchar_t* text = L"XYZ";
@@ -235,17 +229,12 @@ void Scene::ResizeFrameBuffer() {
         fbo.create();
         fbo.target(GL_FRAMEBUFFER);
         fbo.bind();
-        GLCheckError();
 
         GLTexture2dMultisample colorTexture;
         colorTexture.create();
-        GLCheckError();
         colorTexture.bind();
-        GLCheckError();
         colorTexture.storage(samples, GL_RGB8, width, height, GL_TRUE);
-        GLCheckError();
         fbo.texture(GL_COLOR_ATTACHMENT0, colorTexture, 0);
-        GLCheckError();
 
         GLTexture2dMultisample depthTexture;
         depthTexture.create();
@@ -253,7 +242,6 @@ void Scene::ResizeFrameBuffer() {
         depthTexture.storage(samples, GL_DEPTH_COMPONENT32F, width, height,
                              GL_TRUE);
         fbo.texture(GL_DEPTH_ATTACHMENT, depthTexture, 0);
-        GLCheckError();
 
         fbo.release();
 
@@ -263,7 +251,6 @@ void Scene::ResizeFrameBuffer() {
             std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!"
                       << std::endl;
     }
-    GLCheckError();
 
     // second post-processing framebuffer(resolve)
     {
@@ -271,21 +258,14 @@ void Scene::ResizeFrameBuffer() {
         fbo.create();
         fbo.target(GL_FRAMEBUFFER);
         fbo.bind();
-        GLCheckError();
 
         GLTexture2d colorTexture;
         colorTexture.create();
-        GLCheckError();
         colorTexture.bind();
-        GLCheckError();
         colorTexture.storage(1, GL_RGB8, width, height);
-        GLCheckError();
         colorTexture.parameteri(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        GLCheckError();
         colorTexture.parameteri(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        GLCheckError();
         fbo.texture(GL_COLOR_ATTACHMENT0, colorTexture, 0);
-        GLCheckError();
 
         GLTexture2d depthTexture;
         depthTexture.create();
@@ -294,7 +274,6 @@ void Scene::ResizeFrameBuffer() {
         depthTexture.parameteri(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         depthTexture.parameteri(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         fbo.texture(GL_DEPTH_ATTACHMENT, depthTexture, 0);
-        GLCheckError();
 
         fbo.release();
 
@@ -306,7 +285,6 @@ void Scene::ResizeFrameBuffer() {
             std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!"
                       << std::endl;
     }
-    GLCheckError();
 
 #ifndef __APPLE__
     ResizeHZBTexture();
@@ -327,17 +305,19 @@ void Scene::ResizeHZBTexture() {
     texture.storage(m_DepthPyramidLevels, GL_R32F, width, height);
     texture.parameteri(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     texture.parameteri(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    texture.parameteri(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    texture.parameteri(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    texture.parameteri(GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+    texture.parameteri(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     texture.release();
+
     m_DepthPyramid = std::move(texture);
+    m_DepthPyramid.getTextureHandle().makeResident();
 }
 
 void Scene::Draw() {
     // save default framebuffer, because it is not 0 in Qt
     GLint defaultFramebuffer = 0;
     glGetIntegerv(GL_FRAMEBUFFER_BINDING, &defaultFramebuffer);
-    GLCheckError();
+
     auto width = m_Camera->GetViewPort().x;
     auto height = m_Camera->GetViewPort().y;
 
@@ -347,13 +327,11 @@ void Scene::Draw() {
         glClearColor(m_BackgroundColor.r, m_BackgroundColor.g,
                      m_BackgroundColor.b, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        GLCheckError();
         DrawFrame();
-        GLCheckError();
         m_FramebufferMultisampled.release();
         //return;
     }
-    GLCheckError();
+
     // blit multisampled buffer(s) to normal colorbuffer of intermediate FBO.
     {
         GLFramebuffer::blit(m_FramebufferMultisampled, m_Framebuffer, 0, 0,
@@ -363,13 +341,11 @@ void Scene::Draw() {
                             width, height, 0, 0, width, height,
                             GL_DEPTH_BUFFER_BIT, GL_NEAREST);
     }
-    GLCheckError();
+
     // render to screen
     {
         glBindFramebuffer(GL_FRAMEBUFFER, defaultFramebuffer);
         glViewport(0, 0, width, height);
-        glClearColor(m_BackgroundColor.r, m_BackgroundColor.g,
-                     m_BackgroundColor.b, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
         glDisable(GL_DEPTH_TEST);
 
@@ -378,21 +354,20 @@ void Scene::Draw() {
 
         GLUniform textureUniform = shader->getUniformLocation("screenTexture");
         m_ColorTexture.active(GL_TEXTURE1);
+        m_DepthTexture.active(GL_TEXTURE2);
+        m_DepthPyramid.active(GL_TEXTURE3);
         shader->setUniform(textureUniform, 1);
-        //shader->setUniform(textureUniform, m_DepthTexture.getTextureHandle());
-        //shader->setUniform(textureUniform, m_DepthPyramid.getTextureHandle());
+
         m_ScreenQuadVAO.bind();
         glDrawArrays(GL_TRIANGLES, 0, 6);
         m_ScreenQuadVAO.release();
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
-    GLCheckError();
-#ifndef __APPLE__
-    RefreshHZBTexture();
-#endif
 
-    GLCheckError();
+#ifndef __APPLE__
+    RefreshHizTexture();
+#endif
 }
 
 void Scene::Update() { this->Draw(); }
@@ -406,12 +381,9 @@ void Scene::Resize(int width, int height, int pixelRatio) {
 void Scene::DrawFrame() {
     // update ubo data in CPU
     UpdateUniformData();
-    GLCheckError();
 
     DrawModels();
-    GLCheckError();
     DrawAxes();
-    GLCheckError();
 }
 
 void Scene::UpdateUniformData() {

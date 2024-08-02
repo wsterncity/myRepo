@@ -65,10 +65,19 @@ public:
                             format, type, pixels);
     }
 
-    // GLenum pname: GL_TEXTURE_WRAP_S, GL_TEXTURE_WRAP_T, GL_TEXTURE_MIN_FILTER, GL_TEXTURE_MAG_FILTER
-    // GLint param: GL_CLAMP_TO_EDGE, GL_MIRRORED_REPEAT, GL_NEAREST, GL_LINEAR
+    // GLenum pname: GL_TEXTURE_WRAP_S, GL_TEXTURE_WRAP_T
+    // GLint param: GL_REPEAT, GL_MIRRORED_REPEAT, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_BORDER
+    // -------------------------------------------------------------------------
+    // GLenum pname: GL_TEXTURE_MIN_FILTER, GL_TEXTURE_MAG_FILTER
+    // GLint param: GL_NEAREST, GL_LINEAR
+    // GLint param(GL_TEXTURE_MIN_FILTER): GL_NEAREST_MIPMAP_NEAREST, GL_LINEAR_MIPMAP_NEAREST
+    // GLint param(GL_TEXTURE_MIN_FILTER): GL_NEAREST_MIPMAP_LINEAR, GL_LINEAR_MIPMAP_LINEAR
     void parameteri(GLenum pname, GLint param) {
         glTextureParameteri(handle, pname, param);
+    }
+    // GLenum pname: GL_TEXTURE_BORDER_COLOR
+    void parameterfv(GLenum pname, const GLfloat* params) {
+        glTextureParameterfv(handle, pname, params);
     }
 
     void generateMipmap() { glGenerateTextureMipmap(handle); }
