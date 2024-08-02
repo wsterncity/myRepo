@@ -11,11 +11,6 @@ class Cell : public Object {
 public:
 	I_OBJECT(Cell);
 
-	void Reset() {
-		this->PointIds->Reset();
-		this->Points->Reset();
-	}
-
 	void Initialize(int npts, const igIndex* pts) {
 		this->PointIds->Reset();
 		this->Points->Reset();
@@ -25,6 +20,11 @@ public:
 			this->PointIds->AddId(pts[i]);
 		}
 	}
+
+	void Reset() {
+        this->PointIds->Reset();
+        this->Points->Reset();
+    }
 
 	virtual int GetCellType() = 0;
 
@@ -50,8 +50,6 @@ public:
 	virtual Cell* GetEdge(int edgeId) = 0;
 	virtual Cell* GetFace(int faceId) = 0;
 
-	//Box3d GetBounds() { return this->Bounds; }
-
 	Points::Pointer Points{};
 	IdArray::Pointer PointIds{};
 
@@ -62,8 +60,6 @@ protected:
 		this->PointIds = IdArray::New();
 	};
 	~Cell() override = default;
-
-	//Box3d Bounds;
 };
 IGAME_NAMESPACE_END
 #endif

@@ -54,7 +54,7 @@ public:
         this->VectorType::push_back(_Element);
     }
 
-    // Return element's reference at index _Pos
+    // Return element's reference by index _Pos
     Reference ElementAt(const IGsize _Pos) {
         return this->VectorType::operator[](_Pos);
     }
@@ -62,7 +62,7 @@ public:
         return this->VectorType::operator[](_Pos);
     }
 
-    // Get element at index _Pos
+    // Get element by index _Pos
     Reference GetElement(const IGsize _Pos) {
         return this->VectorType::operator[](_Pos);
     }
@@ -70,7 +70,7 @@ public:
         return this->VectorType::operator[](_Pos);
     }
 
-    // Set element at index _Pos
+    // Set element by index _Pos
     void SetElement(const IGsize _Pos, TElement&& _Element) {
         this->VectorType::operator[](_Pos) = _Element;
     }

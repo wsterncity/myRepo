@@ -1,12 +1,6 @@
 #ifndef iGameMetadata_h
 #define iGameMetadata_h
 
-//#include <cstring>
-//#include <map>
-//#include <memory>
-//#include <string>
-//#include <vector>
-
 #include <variant>
 
 #include "iGameObject.h"
@@ -21,6 +15,7 @@ using EntryValue = std::variant<unsigned char, char, unsigned short, short,
     std::string, IntArray::Pointer, FloatArray::Pointer, DoubleArray::Pointer,
     StringArray::Pointer, StreamingData::Pointer>;
 
+// Metadata is used to store basic information
 class Metadata : public Object{
 public:
     I_OBJECT(Metadata);

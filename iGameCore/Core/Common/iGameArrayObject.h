@@ -22,13 +22,13 @@ public:
     // Get the size of the element
     virtual int GetElementSize() = 0;
 
-    // Get value at index _Pos. Return double type.
+    // Get value by index _Pos. Return double type.
     virtual double GetValue(const IGsize _Pos) = 0;
 
-    // Set value at index _Pos.
+    // Set value by index _Pos.
     virtual void SetValue(IGsize _Pos, double value) = 0;
 
-    // Get element at index _Pos.
+    // Get element by index _Pos.
     virtual void GetElement(const IGsize _Pos, float* _Element) = 0;
     virtual void GetElement(const IGsize _Pos, double* _Element) = 0;
     virtual void GetElement(const IGsize _Pos, std::vector<float>& _Element) = 0;

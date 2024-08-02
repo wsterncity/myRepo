@@ -10,7 +10,6 @@
 #include "iGameFileIO.h"
 #include "iGameScene.h"
 #include "iGamePointSet.h"
-#include "iGameDrawableObject.h"
 
 #include <IQCore/igQtFileLoader.h>
 #include <QCoreApplication.h>

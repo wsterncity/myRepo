@@ -5,72 +5,50 @@
 #include "iGameElementArray.h"
 
 IGAME_NAMESPACE_BEGIN
+// Property set stores all property data, like scalar, vector etc
 class PropertySet : public Object {
 public:
     I_OBJECT(PropertySet);
     static Pointer New() { return new PropertySet; }
 
-    struct Property {
+    struct Property 
+    {
         ArrayObject::Pointer pointer{};
         IGenum type{ IG_NONE };
         IGenum attachmentType{ IG_NONE };
         bool isDeleted{ false };
     };
 
-    IGsize AddScalars(IGenum attachmentType, ArrayObject::Pointer attr)
-    {
-        return this->AddProperty(IG_SCALAR, attachmentType, attr);
-    }
+    // Add a scalar property to array back.
+    IGsize AddScalar(IGenum attachmentType, ArrayObject::Pointer attr);
 
-    IGsize AddProperty(IGenum type, IGenum attachmentType, ArrayObject::Pointer attr)
-    {
-        if (!attr)
-        {
-            return -1;
-        }
+    // Add a scalar property to array back.
+    IGsize AddVector(IGenum attachmentType, ArrayObject::Pointer attr);
 
-        m_Buffer->AddElement(Property{ attr, type, attachmentType, false });
-        return m_Buffer->GetNumberOfElements() - 1;
-    }
+    // Add a property to array back.
+    // @param type: The type of property
+    // @param attachmentType: Which element is attached to, such as point,cell
+    // @param attr: The pointer of property array
+    IGsize AddProperty(IGenum type, IGenum attachmentType,
+                       ArrayObject::Pointer attr);
 
-    Property& GetProperty(const IGsize index) { return m_Buffer->ElementAt(index); }
-    const Property& GetProperty(const IGsize index) const { return m_Buffer->ElementAt(index); }
+    // Get a property by index
+    Property& GetProperty(const IGsize index);
+    const Property& GetProperty(const IGsize index) const;
 
-    ArrayObject* GetArrayPointer(IGenum type, IGenum attachmentType, const std::string& name)
-    {
-        for (int i = 0; i < m_Buffer->GetNumberOfElements(); i++)
-        {
-            auto& p = GetProperty(i);
-            if (p.isDeleted) continue;
-            if (p.attachmentType == attachmentType && p.pointer->GetName() == name)
-            {
-                return p.pointer.get();
-            }
-        }
-        return nullptr;
-    }
+    // Get pointer of a property by type,attachmentType and name.
+    ArrayObject* GetArrayPointer(IGenum type, IGenum attachmentType,
+                                 const std::string& name);
 
-    void DeleteProperty(const IGsize index)
-    {
-        if (index < 0 || index >= m_Buffer->GetNumberOfElements())
-        {
-            return;
-        }
-        auto& p = GetProperty(index);
-        p.isDeleted = true;
-        p.pointer = nullptr;
-    }
+    // Delete a property by index
+    void DeleteProperty(const IGsize index);
 
-    ElementArray<Property>::Pointer GetAllPropertys() {
-        return m_Buffer;
-    }
+    // Get all propertys
+    ElementArray<Property>::Pointer GetAllPropertys();
 
 protected:
-    PropertySet() 
-    {
-        m_Buffer = ElementArray<Property>::New();
-    }
-    ~PropertySet() override {}
+    PropertySet();
+    ~PropertySet() override = default;
 
     ElementArray<Property>::Pointer m_Buffer{};
 };

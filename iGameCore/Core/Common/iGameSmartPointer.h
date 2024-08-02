@@ -16,20 +16,9 @@ public:
     template <typename T>
     using EnableIfConvertible = typename std::enable_if<std::is_convertible_v<T*, TObjectType*>>;
 
-    /** Default-constructor  */
     constexpr SmartPointer() noexcept = default;
-
-    /** Copy constructor  */
-    SmartPointer(const SmartPointer& p) noexcept
-        : m_Pointer(p.m_Pointer)
-    {
-        this->Register();
-    }
-
-    /** Constructor for implicit conversion from nullptr */
     constexpr SmartPointer(std::nullptr_t) noexcept {}
 
-    /** constructor with implicit conversion of pointer type */
     template <typename T, typename = typename EnableIfConvertible<T>::type>
     SmartPointer(const SmartPointer<T>& p) noexcept
         : m_Pointer(p.m_Pointer)
@@ -37,14 +26,21 @@ public:
         this->Register();
     }
 
-    /** Move constructor */
+    // Copy constructor
+    SmartPointer(const SmartPointer& p) noexcept 
+        : m_Pointer(p.m_Pointer) 
+    {
+        this->Register();
+    }
+
+    // Move constructor
     SmartPointer(SmartPointer<ObjectType>&& p) noexcept
         : m_Pointer(p.m_Pointer)
     {
         p.m_Pointer = nullptr;
     }
 
-    /** move constructor with implicit conversion of pointer type */
+    // move constructor with implicit conversion of pointer type
     template <typename T, typename = typename EnableIfConvertible<T>::type>
     SmartPointer(SmartPointer<T>&& p) noexcept
         : m_Pointer(p.m_Pointer)
@@ -52,39 +48,37 @@ public:
         p.m_Pointer = nullptr;
     }
 
-    /** Constructor to pointer p  */
+    // Constructor to pointer p
     SmartPointer(ObjectType* p) noexcept
         : m_Pointer(p)
     {
         this->Register();
     }
 
-    /** Destructor  */
+    // Destructor
     ~SmartPointer() { this->UnRegister(); }
 
-    /** Overload operator ->  */
+    // Overload operator
     ObjectType* operator->() const noexcept { return m_Pointer; }
 
     ObjectType& operator*() const noexcept { return *m_Pointer; }
 
     explicit operator bool() const noexcept { return m_Pointer != nullptr; }
 
-    /** Return pointer to object.  */
+    // Return pointer to object
     operator ObjectType* () const noexcept { return m_Pointer; }
 
-    /** Test if the pointer is not NULL. */
     bool IsNotNull() const noexcept
     {
         return m_Pointer != nullptr;
     }
 
-    /** Test if the pointer is NULL. */
     bool IsNull() const noexcept
     {
         return m_Pointer == nullptr;
     }
 
-    /** Access function to pointer. */
+    // Access function to pointer.
     ObjectType* GetPointer() const noexcept
     {
         return m_Pointer;
@@ -117,7 +111,7 @@ public:
     }
 
 private:
-    /** The pointer to the object referred to by this smart pointer. */
+    // The pointer to the object referred to by this smart pointer.
     ObjectType* m_Pointer{ nullptr };
 
     template <typename T>
