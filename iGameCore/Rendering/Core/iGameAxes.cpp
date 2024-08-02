@@ -5,13 +5,19 @@ IGAME_NAMESPACE_BEGIN
 Axes::Axes() {
     m_TriangleVAO.create();
     m_PositionVBO.create();
+    m_PositionVBO.target(GL_ARRAY_BUFFER);
     m_ColorVBO.create();
+    m_ColorVBO.target(GL_ARRAY_BUFFER);
     m_TriangleEBO.create();
+    m_TriangleEBO.target(GL_ELEMENT_ARRAY_BUFFER);
 
     m_FontVAO.create();
     m_TextureCoordVBO.create();
+    m_TextureCoordVBO.target(GL_ARRAY_BUFFER);
     m_WorldCoordVBO.create();
+    m_WorldCoordVBO.target(GL_ARRAY_BUFFER);
     m_FontTextureEBO.create();
+    m_FontTextureEBO.target(GL_ELEMENT_ARRAY_BUFFER);
 
     initialize();
 }
@@ -41,16 +47,23 @@ void Axes::DrawXYZ(const GLShaderProgram* shader, const GLUniform texture,
     m_FontVAO.bind();
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-    shader->setUniform(texture, FontSet::Instance().GetTextureHandle(L'X'));
+    auto& textureX = FontSet::Instance().GetTexture(L'X');
+    textureX.active(GL_TEXTURE1);
+    auto& textureY = FontSet::Instance().GetTexture(L'Y');
+    textureY.active(GL_TEXTURE2);
+    auto& textureZ = FontSet::Instance().GetTexture(L'Z');
+    textureZ.active(GL_TEXTURE3);
+
+    shader->setUniform(texture, 1);
     shader->setUniform(color, igm::vec3{1.0f, 0.0f, 0.0f});
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
-    shader->setUniform(texture, FontSet::Instance().GetTextureHandle(L'Y'));
+    shader->setUniform(texture, 2);
     shader->setUniform(color, igm::vec3{0.0f, 1.0f, 0.0f});
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT,
                    (void*) (6 * sizeof(GLuint)));
 
-    shader->setUniform(texture, FontSet::Instance().GetTextureHandle(L'Z'));
+    shader->setUniform(texture, 3);
     shader->setUniform(color, igm::vec3{0.0f, 0.0f, 1.0f});
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT,
                    (void*) (12 * sizeof(GLuint)));
@@ -129,10 +142,6 @@ igm::mat4 Axes::ProjMatrix() {
 }
 
 void Axes::initialize() {
-    m_PositionVBO.bind(GL_ARRAY_BUFFER);
-    m_ColorVBO.bind(GL_ARRAY_BUFFER);
-    m_TriangleEBO.bind(GL_ELEMENT_ARRAY_BUFFER);
-
     // generate axis VBO data
     std::vector<igm::vec3> vertices;
     std::vector<igm::vec3> colors;
@@ -166,10 +175,6 @@ void Axes::initialize() {
     m_TriangleVAO.elementBuffer(m_TriangleEBO);
 
     // billboard
-    m_TextureCoordVBO.bind(GL_ARRAY_BUFFER);
-    m_WorldCoordVBO.bind(GL_ARRAY_BUFFER);
-    m_FontTextureEBO.bind(GL_ELEMENT_ARRAY_BUFFER);
-
     Viewport[0] = 0;
     Viewport[1] = 0;
     Viewport[2] = 200;

@@ -19,11 +19,11 @@ public:
     I_OBJECT(SurfaceMesh);
     static Pointer New() { return new SurfaceMesh; }
 
-	IGsize GetNumberOfEdges() const noexcept;
-	IGsize GetNumberOfFaces() const noexcept;
-	
-	CellArray* GetEdges();
-	CellArray* GetFaces();
+    IGsize GetNumberOfEdges() const noexcept;
+    IGsize GetNumberOfFaces() const noexcept;
+
+    CellArray* GetEdges();
+    CellArray* GetFaces();
 
     void SetFaces(CellArray::Pointer faces);
 
@@ -47,30 +47,30 @@ public:
     int GetFaceToNeighborFaces(const IGsize faceId, igIndex* faceIds);
     int GetFaceToOneRingFaces(const IGsize faceId, igIndex* faceIds);
 
-	igIndex GetEdgeIdFormPointIds(const IGsize ptId1, const IGsize ptId2);
-	igIndex GetFaceIdFormPointIds(igIndex* ids, int size);
+    igIndex GetEdgeIdFormPointIds(const IGsize ptId1, const IGsize ptId2);
+    igIndex GetFaceIdFormPointIds(igIndex* ids, int size);
 
-	void RequestEditStatus() override;
-	void GarbageCollection() override;
-	bool IsEdgeDeleted(const IGsize edgeId);
-	bool IsFaceDeleted(const IGsize faceId);
+    void RequestEditStatus() override;
+    void GarbageCollection() override;
+    bool IsEdgeDeleted(const IGsize edgeId);
+    bool IsFaceDeleted(const IGsize faceId);
 
-	IGsize AddPoint(const Point& p) override;
-	virtual IGsize AddEdge(const IGsize ptId1, const IGsize ptId2);
-	virtual IGsize AddFace(igIndex* ptIds, int size);
+    IGsize AddPoint(const Point& p) override;
+    virtual IGsize AddEdge(const IGsize ptId1, const IGsize ptId2);
+    virtual IGsize AddFace(igIndex* ptIds, int size);
 
-	void DeletePoint(const IGsize ptId) override;
-	virtual void DeleteEdge(const IGsize edgeId);
-	virtual void DeleteFace(const IGsize faceId);
+    void DeletePoint(const IGsize ptId) override;
+    virtual void DeleteEdge(const IGsize edgeId);
+    virtual void DeleteFace(const IGsize faceId);
 
-	void ReplacePointReference(const IGsize fromPtId, const IGsize toPtId);
+    void ReplacePointReference(const IGsize fromPtId, const IGsize toPtId);
 
 protected:
-	SurfaceMesh();
-	~SurfaceMesh() override = default;
+    SurfaceMesh();
+    ~SurfaceMesh() override = default;
 
-	void RequestEdgeStatus();
-	void RequestFaceStatus();
+    void RequestEdgeStatus();
+    void RequestFaceStatus();
 
     DeleteMarker::Pointer m_EdgeDeleteMarker{};
     DeleteMarker::Pointer m_FaceDeleteMarker{};
@@ -178,15 +178,14 @@ public:
             newPositions->SetElementSize(3);
             newColors->SetElementSize(3);
 
-			//std::cout << this->GetNumberOfFaces() << std::endl;
-			//std::cout << colors->GetNumberOfElements() << std::endl;
-			float color[3]{};
-			for (int i = 0; i < this->GetNumberOfFaces(); i++)
-			{
-				Face* face = this->GetFace(i);
-				for (int j = 2; j < face->GetCellSize(); j++) {
-					auto& p0 = face->Points->GetPoint(0);
-					newPositions->AddElement3(p0[0], p0[1], p0[2]);
+            //std::cout << this->GetNumberOfFaces() << std::endl;
+            //std::cout << colors->GetNumberOfElements() << std::endl;
+            float color[3]{};
+            for (int i = 0; i < this->GetNumberOfFaces(); i++) {
+                Face* face = this->GetFace(i);
+                for (int j = 2; j < face->GetCellSize(); j++) {
+                    auto& p0 = face->Points->GetPoint(0);
+                    newPositions->AddElement3(p0[0], p0[1], p0[2]);
 
                     auto& p1 = face->Points->GetPoint(j - 1);
                     newPositions->AddElement3(p1[0], p1[1], p1[2]);

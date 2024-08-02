@@ -10,8 +10,11 @@ Scene::Scene() {
     m_BackgroundColor = {0.5f, 0.5f, 0.5f};
 
     InitOpenGL();
+    GLCheckError();
     InitFont();
+    GLCheckError();
     InitAxes();
+    GLCheckError();
 
     GLCheckError();
 }
@@ -146,8 +149,10 @@ void Scene::InitOpenGL() {
     // allocate memory
     {
         m_MVPBlock.create();
+        m_MVPBlock.target(GL_UNIFORM_BUFFER);
         m_MVPBlock.allocate(sizeof(MVPMatrix), nullptr, GL_STATIC_DRAW);
         m_UBOBlock.create();
+        m_UBOBlock.target(GL_UNIFORM_BUFFER);
         m_UBOBlock.allocate(sizeof(UniformBufferObject), nullptr,
                             GL_STATIC_DRAW);
 
@@ -167,6 +172,7 @@ void Scene::InitOpenGL() {
     {
         m_ScreenQuadVAO.create();
         m_ScreenQuadVBO.create();
+        m_ScreenQuadVBO.target(GL_ARRAY_BUFFER);
 
         float quadVertices[] = {// positions   // texCoords
                                 -1.0f, 1.0f, 0.0f, 1.0f,  -1.0f, -1.0f,
@@ -191,10 +197,12 @@ void Scene::InitOpenGL() {
 
     // init drawculldata buffer
     m_DrawCullData.create();
+    m_DrawCullData.target(GL_UNIFORM_BUFFER);
     m_DrawCullData.allocate(sizeof(DrawCullData), nullptr, GL_DYNAMIC_DRAW);
-
+    GLCheckError();
     // init framebuffer
     ResizeFrameBuffer();
+    GLCheckError();
 }
 void Scene::InitFont() {
     const wchar_t* text = L"XYZ";
@@ -225,47 +233,59 @@ void Scene::ResizeFrameBuffer() {
     {
         GLFramebuffer fbo;
         fbo.create();
-        fbo.bind(GL_FRAMEBUFFER);
+        fbo.target(GL_FRAMEBUFFER);
+        fbo.bind();
+        GLCheckError();
 
         GLTexture2dMultisample colorTexture;
         colorTexture.create();
+        GLCheckError();
         colorTexture.bind();
+        GLCheckError();
         colorTexture.storage(samples, GL_RGB8, width, height, GL_TRUE);
-        colorTexture.getTextureHandle().makeResident();
+        GLCheckError();
         fbo.texture(GL_COLOR_ATTACHMENT0, colorTexture, 0);
+        GLCheckError();
 
         GLTexture2dMultisample depthTexture;
         depthTexture.create();
         depthTexture.bind();
         depthTexture.storage(samples, GL_DEPTH_COMPONENT32F, width, height,
                              GL_TRUE);
-        depthTexture.getTextureHandle().makeResident();
         fbo.texture(GL_DEPTH_ATTACHMENT, depthTexture, 0);
+        GLCheckError();
 
-        fbo.release(GL_FRAMEBUFFER);
+        fbo.release();
 
         m_FramebufferMultisampled = std::move(fbo);
 
-        if (m_FramebufferMultisampled.checkStatus(GL_FRAMEBUFFER) !=
-            GL_FRAMEBUFFER_COMPLETE)
+        if (m_FramebufferMultisampled.checkStatus() != GL_FRAMEBUFFER_COMPLETE)
             std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!"
                       << std::endl;
     }
+    GLCheckError();
 
     // second post-processing framebuffer(resolve)
     {
         GLFramebuffer fbo;
         fbo.create();
-        fbo.bind(GL_FRAMEBUFFER);
+        fbo.target(GL_FRAMEBUFFER);
+        fbo.bind();
+        GLCheckError();
 
         GLTexture2d colorTexture;
         colorTexture.create();
+        GLCheckError();
         colorTexture.bind();
+        GLCheckError();
         colorTexture.storage(1, GL_RGB8, width, height);
+        GLCheckError();
         colorTexture.parameteri(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        GLCheckError();
         colorTexture.parameteri(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        colorTexture.getTextureHandle().makeResident();
+        GLCheckError();
         fbo.texture(GL_COLOR_ATTACHMENT0, colorTexture, 0);
+        GLCheckError();
 
         GLTexture2d depthTexture;
         depthTexture.create();
@@ -273,32 +293,29 @@ void Scene::ResizeFrameBuffer() {
         depthTexture.storage(1, GL_DEPTH_COMPONENT32F, width, height);
         depthTexture.parameteri(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         depthTexture.parameteri(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        depthTexture.getTextureHandle().makeResident();
         fbo.texture(GL_DEPTH_ATTACHMENT, depthTexture, 0);
+        GLCheckError();
 
-        fbo.release(GL_FRAMEBUFFER);
+        fbo.release();
 
         m_Framebuffer = std::move(fbo);
         m_ColorTexture = std::move(colorTexture);
         m_DepthTexture = std::move(depthTexture);
 
-        if (m_Framebuffer.checkStatus(GL_FRAMEBUFFER) !=
-            GL_FRAMEBUFFER_COMPLETE)
+        if (m_Framebuffer.checkStatus() != GL_FRAMEBUFFER_COMPLETE)
             std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!"
                       << std::endl;
     }
+    GLCheckError();
 
+#ifndef __APPLE__
     ResizeHZBTexture();
+#endif
 }
 void Scene::ResizeHZBTexture() {
     uint32_t width = m_Camera->GetViewPort().x;
     uint32_t height = m_Camera->GetViewPort().y;
 
-    //auto previousPow2 = [](uint32_t v) {
-    //    uint32_t r = 1;
-    //    while (r * 2 < v) r *= 2;
-    //    return r;
-    //};
     m_DepthPyramidWidth = width;
     m_DepthPyramidHeight = height;
     m_DepthPyramidLevels = 1 + static_cast<unsigned int>(std::floor(
@@ -312,9 +329,7 @@ void Scene::ResizeHZBTexture() {
     texture.parameteri(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     texture.parameteri(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     texture.parameteri(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    texture.getTextureHandle().makeResident();
     texture.release();
-
     m_DepthPyramid = std::move(texture);
 }
 
@@ -322,21 +337,23 @@ void Scene::Draw() {
     // save default framebuffer, because it is not 0 in Qt
     GLint defaultFramebuffer = 0;
     glGetIntegerv(GL_FRAMEBUFFER_BINDING, &defaultFramebuffer);
-
+    GLCheckError();
     auto width = m_Camera->GetViewPort().x;
     auto height = m_Camera->GetViewPort().y;
 
     // render to framebuffer
     {
-        m_FramebufferMultisampled.bind(GL_FRAMEBUFFER);
+        m_FramebufferMultisampled.bind();
         glClearColor(m_BackgroundColor.r, m_BackgroundColor.g,
                      m_BackgroundColor.b, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        GLCheckError();
         DrawFrame();
-        m_FramebufferMultisampled.release(GL_FRAMEBUFFER);
+        GLCheckError();
+        m_FramebufferMultisampled.release();
         //return;
     }
-
+    GLCheckError();
     // blit multisampled buffer(s) to normal colorbuffer of intermediate FBO.
     {
         GLFramebuffer::blit(m_FramebufferMultisampled, m_Framebuffer, 0, 0,
@@ -346,7 +363,7 @@ void Scene::Draw() {
                             width, height, 0, 0, width, height,
                             GL_DEPTH_BUFFER_BIT, GL_NEAREST);
     }
-
+    GLCheckError();
     // render to screen
     {
         glBindFramebuffer(GL_FRAMEBUFFER, defaultFramebuffer);
@@ -360,7 +377,8 @@ void Scene::Draw() {
         shader->use();
 
         GLUniform textureUniform = shader->getUniformLocation("screenTexture");
-        shader->setUniform(textureUniform, m_ColorTexture.getTextureHandle());
+        m_ColorTexture.active(GL_TEXTURE1);
+        shader->setUniform(textureUniform, 1);
         //shader->setUniform(textureUniform, m_DepthTexture.getTextureHandle());
         //shader->setUniform(textureUniform, m_DepthPyramid.getTextureHandle());
         m_ScreenQuadVAO.bind();
@@ -369,8 +387,10 @@ void Scene::Draw() {
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
-
+    GLCheckError();
+#ifndef __APPLE__
     RefreshHZBTexture();
+#endif
 
     GLCheckError();
 }
@@ -386,9 +406,12 @@ void Scene::Resize(int width, int height, int pixelRatio) {
 void Scene::DrawFrame() {
     // update ubo data in CPU
     UpdateUniformData();
+    GLCheckError();
 
     DrawModels();
+    GLCheckError();
     DrawAxes();
+    GLCheckError();
 }
 
 void Scene::UpdateUniformData() {
@@ -409,11 +432,9 @@ void Scene::UpdateUniformData() {
 
 void Scene::UpdateUniformBuffer() {
     // update mvp matrix
-    m_MVPBlock.bind(GL_UNIFORM_BUFFER);
     m_MVPBlock.subData(0, sizeof(MVPMatrix), &m_MVP);
 
     // update other ubo
-    m_UBOBlock.bind(GL_UNIFORM_BUFFER);
     m_UBOBlock.subData(0, sizeof(UniformBufferObject), &m_UBO);
 }
 
@@ -442,7 +463,7 @@ void Scene::DrawAxes() {
 
     m_Axes->Update(mvp, {0, 0, 200, 200});
 
-    GLUniform textureUniform = fontShader->getUniformLocation("textureHandle");
+    GLUniform textureUniform = fontShader->getUniformLocation("fontTexture");
     GLUniform colorUniform = fontShader->getUniformLocation("textColor");
     m_Axes->DrawXYZ(fontShader, textureUniform, colorUniform);
 }

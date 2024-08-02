@@ -24,7 +24,7 @@ void main() {
     float depth_2 = textureLod(sampler2D(inImage), (vec2(pos_2) + vec2(0.5)) / vec2(inImageSize), preLevel).r;
     float depth_3 = textureLod(sampler2D(inImage), (vec2(pos_3) + vec2(0.5)) / vec2(inImageSize), preLevel).r;
 
-    // depth range: 0.0 -> 1.0(most depth)
+    // depth range: 0.0(near plane) -> 1.0(far plane)
     float maxDepth = max(max(depth_0, depth_1), max(depth_2, depth_3));
     imageStore(outImage, ivec2(pos), vec4(maxDepth));
 }

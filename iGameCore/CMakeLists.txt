@@ -30,4 +30,4 @@ target_link_libraries(${MODULE_NAME} PUBLIC
 )
 
 target_link_libraries(${PROJECT_NAME} PUBLIC ${MODULE_NAME})
-target_compile_definitions(${MODULE_NAME} PRIVATE ASSEST_DIR="${CMAKE_CURRENT_SOURCE_DIR}/Rendering/Assest")
+target_compile_definitions(${MODULE_NAME} PRIVATE ASSEST_DIR="${CMAKE_CURRENT_SOURCE_DIR}/Rendering/Assests")

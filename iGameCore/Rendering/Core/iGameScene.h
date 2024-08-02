@@ -156,14 +156,16 @@ public:
 
         for (auto& [id, obj]: m_Models) {
             obj->ConvertToDrawableData();
+            GLCheckError();
             obj->Draw(this);
+            GLCheckError();
         }
     }
 
     std::map<DataObjectId, DataObject::Pointer>& GetModelList() {
         return m_Models;
     }
-
+    
     void RefreshHZBTexture() {
         //uint32_t width = m_Camera->GetViewPort().x;
         //uint32_t height = m_Camera->GetViewPort().y;
