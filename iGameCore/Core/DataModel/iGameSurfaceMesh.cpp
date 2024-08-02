@@ -501,6 +501,7 @@ SurfaceMesh::SurfaceMesh() { m_ViewStyle = IG_SURFACE; };
 
 void SurfaceMesh::Draw(Scene* scene) {
     bool debug = false;
+    // TODO: Two-phase occlusion culling
     if (debug) {
         // compute culling
         auto shader = scene->GetShader(Scene::MESHLETCULL);

@@ -204,6 +204,7 @@ public:
 
     GLTexture2d& DepthPyramidTexture() { return m_DepthPyramid; }
 
+    // TODO: slove z-buffer Accuracy issues
     GLBuffer& GetDrawCullDataBuffer() {
         igm::mat4 projection = m_Camera->GetProjectionMatrix();
         igm::mat4 projectionT = projection.transpose();
