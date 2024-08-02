@@ -32,9 +32,9 @@ public:
     // Set face array
     void SetFaces(CellArray::Pointer faces);
 
-    // Get edge by index edgeId
+    // Get edge cell by index edgeId
     Line* GetEdge(const IGsize edgeId);
-    // Get face by index faceId
+    // Get face cell by index faceId
     Face* GetFace(const IGsize faceId);
 
     // Get edge's point index. Return PointIds size
@@ -53,24 +53,24 @@ public:
     // Construct the adjacent faces of the edges
     void BuildFaceEdgeLinks();
 
-    // Get all points within one ring of a point
+    // Get all points within one ring of a point. Return the size of indices.
     int GetPointToOneRingPoints(const IGsize ptId, igIndex* ptIds);
-    // Get all neighboring edges of a point
+    // Get all neighboring edges of a point. Return the size of indices.
     int GetPointToNeighborEdges(const IGsize ptId, igIndex* edgeIds);
-    // Get all neighboring faces of a point
+    // Get all neighboring faces of a point. Return the size of indices.
     int GetPointToNeighborFaces(const IGsize ptId, igIndex* faceIds);
-    // Get all neighboring faces of a edge (shared edge).
+    // Get all neighboring faces of a edge (shared edge). Return the size of indices.
     int GetEdgeToNeighborFaces(const IGsize edgeId, igIndex* faceIds);
-    // Get all faces within one ring of a edge (shared point).
+    // Get all faces within one ring of a edge (shared point). Return the size of indices.
     int GetEdgeToOneRingFaces(const IGsize edgeId, igIndex* faceIds);
-    // Get all neighboring faces of a face (shared edge).
+    // Get all neighboring faces of a face (shared edge). Return the size of indices.
     int GetFaceToNeighborFaces(const IGsize faceId, igIndex* faceIds);
-    // Get all faces within one ring of a face (shared point).
+    // Get all faces within one ring of a face (shared point). Return the size of indices.
     int GetFaceToOneRingFaces(const IGsize faceId, igIndex* faceIds);
 
-    // Get edge index according to two point index. If don't, Return index -1
+    // Get edge index according to two point index. If don't, return index -1
     igIndex GetEdgeIdFormPointIds(const IGsize ptId1, const IGsize ptId2);
-    // Get face index according to sequence. If don't, Return index -1
+    // Get face index according to sequence. If don't, return index -1
     igIndex GetFaceIdFormPointIds(igIndex* ids, int size);
 
     // Request data edit state, only in this state,
