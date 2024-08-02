@@ -14,7 +14,7 @@ class TiXmlDocument;
 class TiXmlElement;
 IGAME_NAMESPACE_BEGIN
 
-class iGameXMLFileReader : public Filter{
+class iGameXMLFileReader : public Filter {
 public:
     I_OBJECT(iGameXMLFileReader)
 public:
@@ -24,6 +24,7 @@ public:
     virtual bool CreateDataObject();
     virtual bool Parsing() = 0;
 
+    bool Execute() override;
 
 protected:
     std::string m_FilePath;
@@ -40,8 +41,7 @@ protected:
     TiXmlElement* FindTargetAttributeItem(TiXmlElement* root, const char* itemName,
                                           const char* attributeName, const std::string& attributeData);
 
-    bool Execute() override;
-
+    
     DataCollection m_Data;
 
 protected:

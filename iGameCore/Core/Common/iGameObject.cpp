@@ -2,6 +2,7 @@
 #include "iGameCommand.h"
 
 IGAME_NAMESPACE_BEGIN
+/*
 class Observer {
 public:
 	Observer() {}
@@ -466,11 +467,11 @@ bool Object::InvokeEvent(const char* event, void* callData)
 {
 	return this->InvokeEvent(Command::GetEventIdFromString(event), callData);
 }
-
+*/
 void Object::Modified()
 {
 	m_MTime.Modified();
-	this->InvokeEvent(Command::ModifiedEvent);
+	//this->InvokeEvent(Command::ModifiedEvent);
 }
 
 

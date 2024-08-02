@@ -14,38 +14,69 @@ public:
 	I_OBJECT(VolumeMesh);
 	static Pointer New() { return new VolumeMesh; }
 
+	// Get the number of all volumes
 	IGsize GetNumberOfVolumes() const noexcept;
 	
+	// Get/Set volume array
 	CellArray* GetVolumes();
 	void SetVolumes(CellArray::Pointer volumes);
 
+	// Get edge cell by index volumeId
 	Volume* GetVolume(const IGsize volumeId);
+
+	// Get volume's point index. Return PointIds size
 	int GetVolumePointIds(const IGsize volumeId, igIndex* ptIds);
+    // Get volume's edge index. Return EdgeIds size
 	int GetVolumeEdgeIds(const IGsize volumeId, igIndex* edgeIds);
+    // Get volume's face index. Return FaceIds size
 	int GetVolumeFaceIds(const IGsize volumeId, igIndex* faceIds);
 
-	void BuildFaceAndEdges();
+	// Construct all the faces and add the face index to VolumeFaces
+	void BuildFaces();
+    // Construct all the faces and edges. Add the face index to VolumeFaces.
+	// Add the edge index to VolumeEdges,
+    void BuildFacesAndEdges();
+    // Construct the adjacent volumes of the points
 	void BuildVolumeLinks();
+    // Construct the adjacent volumes of the edges
 	void BuildVolumeEdgeLinks();
+    // Construct the adjacent volumes of the faces
 	void BuildVolumeFaceLinks();
 
+	// Get all neighboring volumes of a point. Return the size of indices.
 	int GetPointToNeighborVolumes(const IGsize ptId, igIndex* volumeIds);
+    // Get all neighboring volumes of a edge. Return the size of indices.
 	int GetEdgeToNeighborVolumes(const IGsize edgeId, igIndex* volumeIds);
+    // Get all neighboring volumes of a face. Return the size of indices.
 	int GetFaceToNeighborVolumes(const IGsize faceId, igIndex* volumeIds);
+    // Get all neighboring volumes of a volume (Shared point). Return the size of indices.
 	int GetVolumeToNeighborVolumesWithPoint(const IGsize volumeId, igIndex* volumeIds);
+    // Get all neighboring volumes of a volume (Shared edge). Return the size of indices.
 	int GetVolumeToNeighborVolumesWithEdge(const IGsize volumeId, igIndex* volumeIds);
+    // Get all neighboring volumes of a volume (Shared face). Return the size of indices.
 	int GetVolumeToNeighborVolumesWithFace(const IGsize volumeId, igIndex* volumeIds);
 
+	// Get volume index according to sequence. If don't, return index -1
 	igIndex GetVolumeIdFormPointIds(igIndex* ids, int size);
 
+	// Request data edit state, only in this state,
+    // can perform the adding and delete operation.
+    // Adding operations also can be done via GetVolumes().
 	void RequestEditStatus() override;
+
+    // Garbage collection to free memory that has been removed.
+    // This function must be called if the topology changes.
 	void GarbageCollection() override;
+
+	// Whether volume is deleted or not
 	bool IsVolumeDeleted(const IGsize volumeId);
 
+	// Add element, necessarily called after RequestEditStatus()
 	IGsize AddPoint(const Point& p) override;
 	IGsize AddEdge(const IGsize ptId1, const IGsize ptId2) override;
 	IGsize AddFace(igIndex* ptIds, int size) override;
 
+	// Delete element, necessarily called after RequestEditStatus()
 	void DeletePoint(const IGsize ptId) override;
 	void DeleteEdge(const IGsize edgeId) override;
 	void DeleteFace(const IGsize faceId) override;

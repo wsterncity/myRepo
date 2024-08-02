@@ -89,9 +89,35 @@ int VolumeMesh::GetVolumeFaceIds(const IGsize volumeId, igIndex* faceIds)
 	return m_VolumeFaces->GetCellIds(volumeId, faceIds);
 }
 
+void VolumeMesh::BuildFaces() {
+    FaceTable::Pointer FaceTable = FaceTable::New();
+    igIndex cell[64]{}, faceIds[64]{}, edgeIds[64]{}, face[64]{}, edge[2]{};
 
-void VolumeMesh::BuildFaceAndEdges()
-{
+    m_VolumeFaces = CellArray::New();
+
+    for (IGsize i = 0; i < this->GetNumberOfVolumes(); i++) {
+        Volume* vol = this->GetVolume(i);
+        int size = m_Volumes->GetCellIds(i, cell);
+        for (int j = 0; j < vol->GetNumberOfFaces(); j++) // number of faces
+        {
+            const igIndex* index;
+            int size = vol->GetFacePoints(
+                    j, index); // this face's number of points
+            for (int k = 0; k < size; k++) { face[k] = cell[index[k]]; }
+            igIndex idx;
+            if ((idx = FaceTable->IsFace(face, size)) == -1) {
+                idx = FaceTable->GetNumberOfFaces();
+                FaceTable->InsertFace(face, size);
+            }
+            faceIds[j] = idx;
+        }
+        m_VolumeFaces->AddCellIds(faceIds, vol->GetNumberOfFaces());
+    }
+
+    m_Faces = FaceTable->GetOutput();
+}
+
+void VolumeMesh::BuildFacesAndEdges() {
 	FaceTable::Pointer FaceTable = FaceTable::New();
 	EdgeTable::Pointer EdgeTable = EdgeTable::New();
 	igIndex cell[64]{}, faceIds[64]{}, edgeIds[64]{}, face[64]{}, edge[2]{};
@@ -137,6 +163,7 @@ void VolumeMesh::BuildFaceAndEdges()
 	}
 
 	m_Faces = FaceTable->GetOutput();
+    m_Edges = EdgeTable->GetOutput();
 }
 
 void VolumeMesh::BuildVolumeLinks()
@@ -621,7 +648,7 @@ void VolumeMesh::RequestFaceStatus()
 	if (m_Faces == nullptr ||
 		(m_Faces->GetMTime() < m_Volumes->GetMTime()))
 	{
-		BuildFaceAndEdges();
+		BuildFacesAndEdges();
 	}
 
 	if (m_FaceEdgeLinks == nullptr ||
@@ -809,7 +836,7 @@ void VolumeMesh::ConvertToDrawableData()
 
 	if (this->GetFaces() == nullptr)
 	{
-		this->BuildFaceAndEdges();
+		this->BuildFacesAndEdges();
 	}
 
 	// set line indices
@@ -864,5 +891,120 @@ void VolumeMesh::ConvertToDrawableData()
 	GLAllocateGLBuffer(m_TriangleEBO,
 		m_TriangleIndices->GetNumberOfIds() * sizeof(igIndex),
 		m_TriangleIndices->RawPointer());
+}
+
+void VolumeMesh::ViewCloudPicture(int index, int demension) {
+    if (index == -1) {
+        m_UseColor = false;
+        m_ViewAttribute = nullptr;
+        m_ViewDemension = -1;
+        m_ColorWithCell = false;
+        return;
+    }
+    auto& attr = this->GetPropertySet()->GetProperty(index);
+    if (!attr.isDeleted) {
+        if (attr.attachmentType == IG_POINT)
+            this->SetAttributeWithPointData(attr.pointer, demension);
+        else if (attr.attachmentType == IG_CELL)
+            this->SetAttributeWithCellData(attr.pointer, demension);
+    }
+}
+
+void VolumeMesh::SetAttributeWithPointData(ArrayObject::Pointer attr,
+                               igIndex i) {
+    if (m_ViewAttribute != attr || m_ViewDemension != i) {
+        m_ViewAttribute = attr;
+        m_ViewDemension = i;
+        m_UseColor = true;
+        m_ColorWithCell = false;
+        ScalarsToColors::Pointer mapper = ScalarsToColors::New();
+
+        if (i == -1) {
+            mapper->InitRange(attr);
+        } else {
+            mapper->InitRange(attr, i);
+        }
+
+        m_Colors = mapper->MapScalars(attr, i);
+        if (m_Colors == nullptr) { return; }
+
+        GLAllocateGLBuffer(m_ColorVBO,
+                           m_Colors->GetNumberOfValues() * sizeof(float),
+                           m_Colors->RawPointer());
+
+        m_PointVAO.vertexBuffer(GL_VBO_IDX_1, m_ColorVBO, 0, 3 * sizeof(float));
+        GLSetVertexAttrib(m_PointVAO, GL_LOCATION_IDX_1, GL_VBO_IDX_1, 3,
+                          GL_FLOAT, GL_FALSE, 0);
+
+        m_LineVAO.vertexBuffer(GL_VBO_IDX_1, m_ColorVBO, 0, 3 * sizeof(float));
+        GLSetVertexAttrib(m_LineVAO, GL_LOCATION_IDX_1, GL_VBO_IDX_1, 3,
+                          GL_FLOAT, GL_FALSE, 0);
+
+
+        m_TriangleVAO.vertexBuffer(GL_VBO_IDX_1, m_ColorVBO, 0,
+                                   3 * sizeof(float));
+        GLSetVertexAttrib(m_TriangleVAO, GL_LOCATION_IDX_1, GL_VBO_IDX_1, 3,
+                          GL_FLOAT, GL_FALSE, 0);
+    }
+}
+
+void VolumeMesh::SetAttributeWithCellData(ArrayObject::Pointer attr,
+                                          igIndex i) 
+{
+    if (m_ViewAttribute != attr || m_ViewDemension != i) {
+        m_ViewAttribute = attr;
+        m_ViewDemension = i;
+        m_UseColor = true;
+        m_ColorWithCell = true;
+        ScalarsToColors::Pointer mapper = ScalarsToColors::New();
+
+        if (i == -1) {
+            mapper->InitRange(attr);
+        } else {
+            mapper->InitRange(attr, i);
+        }
+
+        FloatArray::Pointer colors = mapper->MapScalars(attr, i);
+        if (colors == nullptr) { return; }
+
+        FloatArray::Pointer newPositions = FloatArray::New();
+        FloatArray::Pointer newColors = FloatArray::New();
+        newPositions->SetElementSize(3);
+        newColors->SetElementSize(3);
+
+        float color[3]{};
+        for (int i = 0; i < this->GetNumberOfFaces(); i++) {
+            Face* face = this->GetFace(i);
+            auto& p0 = face->Points->GetPoint(0);
+            newPositions->AddElement3(p0[0], p0[1], p0[2]);
+
+            auto& p1 = face->Points->GetPoint(1);
+            newPositions->AddElement3(p1[0], p1[1], p1[2]);
+
+            auto& p2 = face->Points->GetPoint(2);
+            newPositions->AddElement3(p2[0], p2[1], p2[2]);
+
+            colors->GetElement(i, color);
+            newColors->AddElement3(color[0], color[1], color[2]);
+            newColors->AddElement3(color[0], color[1], color[2]);
+            newColors->AddElement3(color[0], color[1], color[2]);
+        }
+
+        GLAllocateGLBuffer(m_CellPositionVBO,
+                           newPositions->GetNumberOfValues() * sizeof(float),
+                           newPositions->RawPointer());
+        GLAllocateGLBuffer(m_CellColorVBO,
+                           newColors->GetNumberOfValues() * sizeof(float),
+                           newColors->RawPointer());
+
+        m_CellVAO.vertexBuffer(GL_VBO_IDX_0, m_CellPositionVBO, 0,
+                               3 * sizeof(float));
+        GLSetVertexAttrib(m_CellVAO, GL_LOCATION_IDX_0, GL_VBO_IDX_0, 3,
+                          GL_FLOAT, GL_FALSE, 0);
+        m_CellVAO.vertexBuffer(GL_VBO_IDX_1, m_CellColorVBO, 0,
+                               3 * sizeof(float));
+        GLSetVertexAttrib(m_CellVAO, GL_LOCATION_IDX_1, GL_VBO_IDX_1, 3,
+                          GL_FLOAT, GL_FALSE, 0);
+    }
 }
 IGAME_NAMESPACE_END

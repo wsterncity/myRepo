@@ -11,6 +11,18 @@ public:
 	I_OBJECT(VolumeMeshFilterTest);
 	static Pointer New() { return new VolumeMeshFilterTest; }
 
+	bool Execute() override {
+        m_Mesh = DynamicCast<VolumeMesh>(GetInput(0));
+        if (m_Mesh == nullptr) { return false; }
+
+        //DeletePointTest();
+        //DeleteEdgeTest();
+        //DeleteFaceTest();
+        DeleteVolumeTest();
+
+        SetOutput(0, m_Mesh);
+        return true;
+    }
 
 protected:
 	VolumeMeshFilterTest()
@@ -21,23 +33,6 @@ protected:
 	~VolumeMeshFilterTest() override = default;
 
 	VolumeMesh::Pointer m_Mesh{};
-
-	bool Execute() override
-	{ 
-		m_Mesh = DynamicCast<VolumeMesh>(GetInput(0));
-		if (m_Mesh == nullptr)
-		{
-			return false;
-		}
-	
-		//DeletePointTest();
-		//DeleteEdgeTest();
-		//DeleteFaceTest();
-		DeleteVolumeTest();
-
-		SetOutput(0, m_Mesh);
-		return true;
-	}
 
 	void AddFaceTest() {
 		int id = m_Mesh->AddPoint(Point(1, 1, 0));

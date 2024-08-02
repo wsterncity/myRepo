@@ -15,7 +15,6 @@ Scene::Pointer SceneManager::NewScene() {
     Scene::Pointer scene = Scene::New();
     m_Scenes.push_back(scene);
     m_CurrentScene = scene;
-    this->InvokeEvent(Command::ChangeSceneEvent);
     return scene;
 }
 
@@ -37,7 +36,6 @@ void SceneManager::MakeCurrentScene(int id)
 {
     if (id < 0 || id >= m_Scenes.size() || m_Scenes[id] == nullptr) { return; }
     m_CurrentScene = m_Scenes[id];
-    this->InvokeEvent(Command::ChangeSceneEvent);
 }
 
 void SceneManager::MakeCurrentScene(Scene::Pointer p) 
@@ -50,6 +48,5 @@ void SceneManager::MakeCurrentScene(Scene::Pointer p)
         }
     }
     m_CurrentScene = nullptr;
-    this->InvokeEvent(Command::ChangeSceneEvent);
 }
 IGAME_NAMESPACE_END

@@ -249,7 +249,7 @@ void igQtMainWindow::initAllFilters() {
 		FilterPoints::Pointer fp = FilterPoints::New();
 		fp->SetInput(rendererWidget->GetScene()->GetCurrentObject());
 		fp->SetFilterRate(0.5);
-		fp->Update();
+        fp->Execute();
 		rendererWidget->update();
 		});
 
@@ -272,14 +272,14 @@ void igQtMainWindow::initAllFilters() {
 	connect(ui->action_test_04, &QAction::triggered, this, [&](bool checked) {
 		SurfaceMeshFilterTest::Pointer fp = SurfaceMeshFilterTest::New();
 		fp->SetInput(rendererWidget->GetScene()->GetCurrentObject());
-		fp->Update();
+		fp->Execute();
 		rendererWidget->update();
 		});
 
 	connect(ui->action_test_05, &QAction::triggered, this, [&](bool checked) {
 		VolumeMeshFilterTest::Pointer fp = VolumeMeshFilterTest::New();
 		fp->SetInput(rendererWidget->GetScene()->GetCurrentObject());
-		fp->Update();
+        fp->Execute();
 		rendererWidget->update();
 		});
 }

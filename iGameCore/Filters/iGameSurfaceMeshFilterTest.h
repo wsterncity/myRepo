@@ -11,6 +11,21 @@ public:
 	I_OBJECT(SurfaceMeshFilterTest);
 	static Pointer New() { return new SurfaceMeshFilterTest; }
 
+	bool Execute() override {
+        m_Mesh = DynamicCast<SurfaceMesh>(GetInput(0));
+        if (m_Mesh == nullptr) { return false; }
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_real_distribution<> dis(0.0, 1.0);
+
+        //AddFaceTest();
+        //DeletePointTest();
+        //DeleteEdgeTest();
+        DeleteFaceTest();
+
+        SetOutput(0, m_Mesh);
+        return true;
+    }
 
 protected:
 	SurfaceMeshFilterTest()
@@ -21,26 +36,6 @@ protected:
 	~SurfaceMeshFilterTest() override = default;
 
 	SurfaceMesh::Pointer m_Mesh{};
-
-	bool Execute() override
-	{ 
-		m_Mesh = DynamicCast<SurfaceMesh>(GetInput(0));
-		if (m_Mesh == nullptr)
-		{
-			return false;
-		}
-		std::random_device rd;
-		std::mt19937 gen(rd());
-		std::uniform_real_distribution<> dis(0.0, 1.0);
-	
-		//AddFaceTest();
-		//DeletePointTest();
-		//DeleteEdgeTest();
-		DeleteFaceTest();
-
-		SetOutput(0, m_Mesh);
-		return true;
-	}
 
 	void AddFaceTest() {
 		int id = m_Mesh->AddPoint(Point(1, 1, 0));

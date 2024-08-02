@@ -17,158 +17,70 @@ public:
 		igIndex* pointer{nullptr};
 	};
 
-	void Allocate(const IGsize numLinks, int ext = 0) {
-		this->Initialize();
-		this->Resize(numLinks);
-	}
+	void Allocate(const IGsize numLinks, int ext = 0);
+	
+	// Free all memory and initialize the array
+	void Initialize();
 
-	void Initialize() {
-		m_Buffer->Initialize();
-	}
+    // Reallocate memory, and the old memory is preserved. The array 
+	// size will not change. '_Newsize' is the number of links.
+	void Reserve(const IGsize _Newsize);
 
-	void Reserve(const IGsize _Newsize)
-	{
-		m_Buffer->Reserve(_Newsize);
-	}
+	// Reallocate memory, and the old memory is preserved. The array 
+	// size will change. '_Newsize' is the number of links.
+	void Resize(const IGsize _Newsize);
 
-	void Resize(const IGsize _Newsize)
-	{
-		m_Buffer->Resize(_Newsize);
-	}
+	// Set the number of links. The array size will change. 
+	// '_Newsize' is the number of links.
+	void SetNumberOfLinks(const IGsize _Newsize);
 
-	void SetNumberOfLinks(const IGsize _Newsize) {
-		this->Resize(_Newsize);
-	}
+	// Get the number of links. 
+	IGsize GetNumberOfLinks() const noexcept;
 
-	IGsize GetNumberOfLinks() const noexcept {
-		return m_Buffer->GetNumberOfElements();
-	}
+	// Reset the array size, and the old memory will not change.
+    void Reset();
 
-	void Squeeze()
-	{
-		m_Buffer->Squeeze();
-	}
+	// Free up extra memory.
+    void Squeeze();
 
-	void Reset()
-	{
-		m_Buffer->Reset();
-	}
+	// Get the neighbor sequence of link at linkId.
+	Link& GetLink(const IGsize linkId);
+    // Get the neighbor sequence's size of link at linkId.
+    int GetLinkSize(const IGsize linkId);
+    // Get the neighbor sequence's pointer of link at linkId.
+    igIndex* GetLinkPointer(const IGsize linkId);
+    const igIndex* GetLinkPointer(const IGsize linkId) const;
 
-	Link& GetLink(const IGsize linkId) { return m_Buffer->ElementAt(linkId); }
-	int GetLinkSize(const IGsize linkId) { return m_Buffer->ElementAt(linkId).size; }
-	igIndex* GetLinkPointer(const IGsize linkId) { return m_Buffer->ElementAt(linkId).pointer; }
-	const igIndex* GetLinkPointer(const IGsize linkId) const { return m_Buffer->ElementAt(linkId).pointer; }
+	// Add new empty sequence. Will allocate memory according to size.
+	IGsize AddLink(uint8_t size = 0);
 
-	IGsize AddLink(uint8_t size = 0) {
-		m_Buffer->AddElement(Link{ 0,0,nullptr });
-		if (size > 0)
-		{
-			this->ResizeLink(this->GetNumberOfLinks() - 1, size);
-		}
-		return this->GetNumberOfLinks() - 1;
-	}
+	// Set the new sequence of link at linkId.
+	void SetLink(const IGsize linkId, igIndex* ids, int size);
 
-	void SetLink(const IGsize linkId, igIndex* ids, int size)
-	{
-		if (linkId >= GetNumberOfLinks()) {
-			Resize(linkId + 1);
-		}
-		Link& link = GetLink(linkId);
-		link.size = link.capcity = size;
-		link.pointer = new igIndex[link.size];
-		memcpy(link.pointer, ids, static_cast<size_t>(size * sizeof(igIndex)));
-	}
+	// Delete link at linkId.
+	void DeleteLink(const IGsize linkId);
 
-	void DeleteLink(const IGsize linkId) {
-		Link& link = this->GetLink(linkId);
-		link.size = link.capcity = 0;
-		if (link.pointer)
-		{
-			delete[] link.pointer;
-		}
-		link.pointer = nullptr;
-	}
+	// Replace one index of link at linkId.
+	void ReplaceReference(const IGsize linkId, const IGsize from,
+                          const IGsize to);
 
-	void ReplaceReference(const IGsize linkId, const IGsize from, const IGsize to) 
-	{
-		Link& link = this->GetLink(linkId);
+    // Remove one index of link at linkId.
+	void RemoveReference(const IGsize linkId, const IGsize cellId);
 
-		for (int i = 0; i < link.size; i++)
-		{
-			if (link.pointer[i] == from)
-			{
-				link.pointer[i] = to;
-			}
-		}
-	}
+	// Add one index of link at linkId.
+	void AddReference(const IGsize linkId, const IGsize cellId);
 
-	void RemoveReference(const IGsize linkId, const IGsize cellId)
-	{
-		Link& link = this->GetLink(linkId);
 
-		for (int i = 0; i < link.size; i++)
-		{
-			if (link.pointer[i] == cellId)
-			{
-				for (int j = i; j < (link.size - 1); j++)
-				{
-					link.pointer[j] = link.pointer[j + 1];
-				}
-				link.size--;
-				break;
-			}
-		}
-	}
+	void ResizeLink(const IGsize linkId, uint8_t _Newsize);
 
-	void AddReference(const IGsize linkId, const IGsize cellId)
-	{
-		Link& link = this->GetLink(linkId);
-		if (link.size >= link.capcity) {
-			this->ResizeLink(linkId, 2 * link.size + 1);
-		}
-		link.pointer[link.size++] = cellId;
-	}
+	// Increase the seuqence's size of link at linkId.
+	void IncrementLinkSize(const IGsize linkId);
 
-	void ResizeLink(const IGsize linkId, uint8_t _Newsize)
-	{
-		Link& link = this->GetLink(linkId);
-		igIndex* cells = nullptr;
-
-		if ((cells = new igIndex[_Newsize]) == nullptr) {
-			return;
-		}
-
-		memcpy(cells, link.pointer, static_cast<size_t>(
-			_Newsize < link.size ? _Newsize : link.size) * sizeof(igIndex));
-
-		if (link.pointer)
-		{
-			delete[] link.pointer;
-		}
-		
-		link.pointer = cells;
-		link.capcity = _Newsize;
-		if (link.size > link.capcity) {
-			link.size = link.capcity;
-		}
-	}
-
-	void IncrementLinkSize(const IGsize linkId) { this->GetLink(linkId).capcity++; }
-
-	void AllocateLinks(const IGsize n) {
-		for (int i = 0; i < n; ++i)
-		{
-			Link& link = GetLink(i);
-			link.pointer = new igIndex[link.capcity];
-		}
-	}
+	void AllocateLinks(const IGsize n);
 
 protected:
-	CellLinks() 
-	{
-		m_Buffer = ElementArray<Link>::New();
-	};
-	~CellLinks() override {};
+	CellLinks();
+	~CellLinks() override = default;
 
 	ElementArray<Link>::Pointer m_Buffer{};
 };

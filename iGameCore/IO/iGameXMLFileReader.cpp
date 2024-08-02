@@ -9,6 +9,7 @@
 
 #include "iGameXMLFileReader.h"
 #include "iGameVolumeMesh.h"
+#include "iGameStringArray.h"
 #include <tinyxml.h>
 
 IGAME_NAMESPACE_BEGIN
