@@ -107,11 +107,18 @@ IGsize CellArray::AddCellIds(igIndex* cell, int ncell) {
 
     return m_NumberOfCells++;
 }
+
+IGsize CellArray::AddCellIds(IdArray::Pointer ids) {
+    if (ids == nullptr) return IGsize(-1);
+    return AddCellIds(ids->RawPointer(), ids->GetNumberOfIds());
+}
+
 IGsize CellArray::AddCellId2(igIndex val0, igIndex val1) {
     igIndex cell[2]{val0, val1};
     return this->AddCellIds(cell, 2);
 }
-IGsize CellArray::AddCellId3(igIndex val0, igIndex val1, igIndex val2) {
+IGsize CellArray::AddCellId3(igIndex val0, igIndex val1, igIndex val2) 
+{
     igIndex cell[3]{val0, val1, val2};
     return this->AddCellIds(cell, 3);
 }

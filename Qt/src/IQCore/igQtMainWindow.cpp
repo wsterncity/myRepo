@@ -3,6 +3,7 @@
 //
 
 #include <iGameFilterPoints.h>
+#include <iGameDataSource.h>
 #include <iGameSurfaceMeshFilterTest.h>
 #include <iGameVolumeMeshFilterTest.h>
 
@@ -282,6 +283,37 @@ void igQtMainWindow::initAllFilters() {
         fp->Execute();
 		rendererWidget->update();
 		});
+
+	connect(ui->action_test_06, &QAction::triggered, this, [&](bool checked) {
+        LineSource::Pointer source = LineSource::New();
+        Points::Pointer points = Points::New();
+        FloatArray::Pointer colors = FloatArray::New();
+        CellArray::Pointer polylines = CellArray::New();
+        CellArray::Pointer lines = CellArray::New();
+        IdArray::Pointer pl = IdArray::New();
+        for (int i = 0; i < 10; ++i) {
+            float theta = 2 * M_PI * i / 10;
+            float x = std::cos(theta);
+            float y = std::sin(theta);
+            IGsize ptId = points->AddPoint(Point{ x, y, 0.0f});
+            colors->AddValue((x + y) / 2);
+            pl->AddId(ptId);
+        }
+        polylines->AddCellIds(pl);
+
+		IGsize ptId0 = points->AddPoint(Point{0, 0, 0});
+		IGsize ptId1 = points->AddPoint(Point{0, 0, 1});
+        colors->AddValue(0.3);
+        colors->AddValue(0.4);
+        lines->AddCellId2(ptId0, ptId1);
+
+        source->SetPoints(points);
+        source->SetColors(colors);
+        source->SetLines(lines);
+        source->SetPolyLines(polylines);
+        source->SetName("undefined_line_source");
+        rendererWidget->AddDataObject(source);
+    });
 }
 
 void igQtMainWindow::initAllDockWidgetConnectWithAction()

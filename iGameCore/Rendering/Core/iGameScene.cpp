@@ -208,12 +208,12 @@ void Scene::ChangeDataObjectVisibility(int index, bool visibility) {
         if (m_VisibleModelsCount == 1) {
             Vector3f center = obj->GetBoundingBox().center();
             float radius = obj->GetBoundingBox().diag() / 2;
-
+            
             m_FirstModelCenter =
                     igm::vec4{center[0], center[1], center[2], radius};
             m_Camera->SetCamaraPos(center[0], center[1],
                                    center[2] + 2.0f * radius);
-            m_Camera->SetCamaraPos(0.293951, 21.5821, 228.601);
+            //m_Camera->SetCamaraPos(0.293951, 21.5821, 228.601);
         }
     } else {
         m_VisibleModelsCount--;

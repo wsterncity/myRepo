@@ -56,6 +56,7 @@ public:
 	// Add cell's index sequence.
     // @Return: the index of cell.
     IGsize AddCellIds(igIndex* cell, int ncell);
+    IGsize AddCellIds(IdArray::Pointer ids);
     IGsize AddCellId2(igIndex val0, igIndex val1);
     IGsize AddCellId3(igIndex val0, igIndex val1, igIndex val2);
 
