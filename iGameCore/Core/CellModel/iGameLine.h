@@ -8,16 +8,13 @@ class Line : public Cell {
 public:
 	I_OBJECT(Line);
 	static Pointer New() { return new Line; }
-	static constexpr int CELL_TYPE = IG_LINE;
-	static constexpr int CELL_SIZE = 2;
 
-	int GetCellType() override { return IG_LINE; }
-	int GetCellSize() override { return 2; }
-	int GetCellDimension() override { return 1; }
-	int GetNumberOfEdges() override { return 0; }
-	int GetNumberOfFaces() override { return 0; }
-	Cell* GetEdge(int) override { return nullptr; }
-	Cell* GetFace(int) override { return nullptr; }
+	IGenum GetCellType() const noexcept override { return IG_LINE; }
+    int GetCellSize() const noexcept override { return 2; }
+    int GetNumberOfEdges() override { return 0; }
+    int GetNumberOfFaces() override { return 0; }
+	Cell* GetEdge(const int) override { return nullptr; }
+    Cell* GetFace(const int) override { return nullptr; }
 
 protected:
 	Line()

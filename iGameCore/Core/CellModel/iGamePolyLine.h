@@ -9,18 +9,15 @@ public:
     I_OBJECT(PolyLine);
     static Pointer New() { return new PolyLine; }
 
-	int GetCellType() override { return IG_POLY_LINE; }
-	int GetCellDimension() override { return 1; }
-	int GetNumberOfEdges() override { return 0; }
-	int GetNumberOfFaces() override { return 0; }
-	Cell* GetEdge(int) override { return nullptr; }
-	Cell* GetFace(int) override { return nullptr; }
+	IGenum GetCellType() const noexcept override { return IG_POLY_LINE; }
+    int GetCellSize() const noexcept override { return 2; }
+    int GetNumberOfEdges() override { return 0; }
+    int GetNumberOfFaces() override { return 0; }
+    Cell* GetEdge(const int) override { return nullptr; }
+    Cell* GetFace(const int) override { return nullptr; }
 
 protected:
-    PolyLine()
-	{
-
-	}
+    PolyLine() {}
     ~PolyLine() override = default;
 };
 IGAME_NAMESPACE_END

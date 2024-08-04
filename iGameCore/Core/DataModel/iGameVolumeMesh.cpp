@@ -100,9 +100,8 @@ void VolumeMesh::BuildFaces() {
         int size = m_Volumes->GetCellIds(i, cell);
         for (int j = 0; j < vol->GetNumberOfFaces(); j++) // number of faces
         {
-            const igIndex* index;
-            int size = vol->GetFacePoints(
-                    j, index); // this face's number of points
+            const igIndex* index; // this face's number of points
+            int size = vol->GetFacePointIds(j, index); 
             for (int k = 0; k < size; k++) { face[k] = cell[index[k]]; }
             igIndex idx;
             if ((idx = FaceTable->IsFace(face, size)) == -1) {
@@ -132,7 +131,7 @@ void VolumeMesh::BuildFacesAndEdges() {
 		for (int j = 0; j < vol->GetNumberOfFaces(); j++) // number of faces
 		{
 			const igIndex* index;
-			int size = vol->GetFacePoints(j, index); // this face's number of points 
+			int size = vol->GetFacePointIds(j, index); // this face's number of points 
 			for (int k = 0; k < size; k++) {
 				face[k] = cell[index[k]];
 			}
@@ -148,7 +147,7 @@ void VolumeMesh::BuildFacesAndEdges() {
 		for (int j = 0; j < vol->GetNumberOfEdges(); j++)
 		{
 			const igIndex* index;
-			vol->GetEdgePoints(j, index); // this edge's number of points
+            vol->GetEdgePointIds(j, index); // this edge's number of points
 			for (int k = 0; k < 2; k++) {
 				edge[k] = cell[index[k]];
 			}

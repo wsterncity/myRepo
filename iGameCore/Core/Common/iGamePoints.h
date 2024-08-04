@@ -38,7 +38,7 @@ public:
 	// Set/Get/Add a point
 	void GetPoint(const IGsize ptId, Vector3d& p);
 	void GetPoint(const IGsize ptId, Vector3f& p);
-	//Point& GetPoint(const IGsize ptId);
+	Point& GetPoint(const IGsize ptId);
 	const Point& GetPoint(const IGsize ptId) const;
 
 	void SetPoint(const IGsize ptId, const Vector3d& p);

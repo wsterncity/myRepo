@@ -9,11 +9,10 @@ public:
 	I_OBJECT(Triangle);
 	static Pointer New() { return new Triangle; }
 
-	int GetCellType() override { return IG_TRIANGLE; }
-	int GetCellSize() override { return 3; }
-	int GetCellDimension() override { return 2; }
-	int GetNumberOfEdges() override { return 3; }
-	
+	IGenum GetCellType() const noexcept override { return IG_TRIANGLE; }
+    int GetCellSize() const noexcept override { return 3; }
+    int GetNumberOfEdges() override { return 3; }
+
 	Vector3f GetNormal() override
 	{
 		const Vector3f& v0 = this->Points->GetPoint(0);

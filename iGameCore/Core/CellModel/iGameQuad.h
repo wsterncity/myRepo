@@ -10,11 +10,10 @@ public:
 	I_OBJECT(Quad);
 	static Pointer New() { return new Quad; }
 
-	int GetCellType() override { return IG_QUAD; }
-	int GetCellSize() override { return 4; }
-	int GetCellDimension() override { return 2; }
-	int GetNumberOfEdges() override { return 4; }
-	
+	IGenum GetCellType() const noexcept override { return IG_QUAD; }
+    int GetCellSize() const noexcept override { return 4; }
+    int GetNumberOfEdges() override { return 4; }
+
 	Vector3f GetNormal() override
 	{
 		const Vector3f& v0 = this->Points->GetPoint(0);

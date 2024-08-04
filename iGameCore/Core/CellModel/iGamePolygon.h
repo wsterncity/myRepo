@@ -10,10 +10,9 @@ public:
 	I_OBJECT(Polygon);
 	static Pointer New() { return new Polygon; }
 
-	int GetCellType() override { return IG_POLYGON; }
-	int GetCellDimension() override { return 2; }
-	int GetNumberOfEdges() override { return this->GetCellSize(); }
-	
+	IGenum GetCellType() const noexcept override { return IG_POLYGON; }
+    int GetNumberOfEdges() override { return this->GetCellSize(); }
+
 	Vector3f GetNormal() override
 	{
 		return this->Self::ComputrAverageNormal(this->Points);

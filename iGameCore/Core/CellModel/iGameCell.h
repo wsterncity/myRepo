@@ -11,47 +11,29 @@ class Cell : public Object {
 public:
 	I_OBJECT(Cell);
 
-	void Initialize(int npts, const igIndex* pts) {
-		this->PointIds->Reset();
-		this->Points->Reset();
+	virtual IGenum GetCellType() const noexcept = 0;
+	virtual int GetCellSize() const noexcept { return this->PointIds->GetNumberOfIds(); }
 
-		for (int i = 0; i < npts; i++)
-		{
-			this->PointIds->AddId(pts[i]);
-		}
-	}
+	virtual int GetNumberOfPoints() { return this->PointIds->GetNumberOfIds(); }
+	virtual int GetNumberOfEdges() = 0;
+	virtual int GetNumberOfFaces() = 0;
 
-	void Reset() {
+	igIndex GetPointId(const int ptId) { return this->PointIds->GetId(ptId); }
+    Point& GetPoint(const int ptId) { return this->Points->GetPoint(ptId); }
+    const Point& GetPoint(const int ptId) const {
+		return this->Points->GetPoint(ptId);
+    }
+
+	virtual Cell* GetEdge(const int edgeId) = 0;
+    virtual Cell* GetFace(const int faceId) = 0;
+
+	Points::Pointer Points{};
+    IdArray::Pointer PointIds{};
+
+    void Reset() {
         this->PointIds->Reset();
         this->Points->Reset();
     }
-
-	virtual int GetCellType() = 0;
-
-	virtual int GetCellSize() { return this->PointIds->GetNumberOfIds(); }
-
-	virtual int GetCellDimension() = 0;
-
-	virtual int IsLinear() { return 1; }
-
-	Points::Pointer GetPoints() { return this->Points; }
-	IdArray::Pointer GetPointIds() { return this->PointIds; }
-
-	int GetNumberOfPoints() { return this->PointIds->GetNumberOfIds(); }
-
-	virtual int GetNumberOfEdges() = 0;
-
-	virtual int GetNumberOfFaces() = 0;
-
-	igIndex GetPointId(int ptId) { return this->PointIds->GetId(ptId); }
-	// Point& GetPoint(int ptId) { return this->Points->GetPoint(ptId); }
-	const Point& GetPoint(int ptId) const { return this->Points->GetPoint(ptId); }
-
-	virtual Cell* GetEdge(int edgeId) = 0;
-	virtual Cell* GetFace(int faceId) = 0;
-
-	Points::Pointer Points{};
-	IdArray::Pointer PointIds{};
 
 protected:
 	Cell() 
