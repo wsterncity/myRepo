@@ -123,6 +123,45 @@ IGsize CellArray::AddCellId3(igIndex val0, igIndex val1, igIndex val2)
     return this->AddCellIds(cell, 3);
 }
 
+IGsize CellArray::AddCellId4(igIndex val0, igIndex val1, igIndex val2,
+                             igIndex val3) {
+    igIndex cell[4]{val0, val1, val2, val3};
+    return this->AddCellIds(cell, 4);
+}
+
+IGsize CellArray::AddCellId5(igIndex val0, igIndex val1, igIndex val2,
+                             igIndex val3, igIndex val4) {
+    igIndex cell[5]{val0, val1, val2, val3, val4};
+    return this->AddCellIds(cell, 5);
+}
+
+IGsize CellArray::AddCellId6(igIndex val0, igIndex val1, igIndex val2,
+                             igIndex val3, igIndex val4, igIndex val5) {
+    igIndex cell[6]{val0, val1, val2, val3, val4, val5};
+    return this->AddCellIds(cell, 6);
+}
+
+IGsize CellArray::AddCellId7(igIndex val0, igIndex val1, igIndex val2,
+                             igIndex val3, igIndex val4, igIndex val5,
+                             igIndex val6) {
+    igIndex cell[7]{val0, val1, val2, val3, val4, val5, val6};
+    return this->AddCellIds(cell, 7);
+}
+
+IGsize CellArray::AddCellId8(igIndex val0, igIndex val1, igIndex val2,
+                             igIndex val3, igIndex val4, igIndex val5,
+                             igIndex val6, igIndex val7) {
+    igIndex cell[8]{val0, val1, val2, val3, val4, val5, val6, val7};
+    return this->AddCellIds(cell, 8);
+}
+
+IGsize CellArray::AddCellId9(igIndex val0, igIndex val1, igIndex val2,
+                             igIndex val3, igIndex val4, igIndex val5,
+                             igIndex val6, igIndex val7, igIndex val8) {
+    igIndex cell[9]{val0, val1, val2, val3, val4, val5, val6, val7, val8};
+    return this->AddCellIds(cell, 9);
+}
+
 // Replace one index.
 void CellArray::ReplaceCellReference(const IGsize cellId, igIndex from,
                                      igIndex to) {

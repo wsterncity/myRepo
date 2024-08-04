@@ -59,6 +59,18 @@ public:
     IGsize AddCellIds(IdArray::Pointer ids);
     IGsize AddCellId2(igIndex val0, igIndex val1);
     IGsize AddCellId3(igIndex val0, igIndex val1, igIndex val2);
+    IGsize AddCellId4(igIndex val0, igIndex val1, igIndex val2, igIndex val3);
+    IGsize AddCellId5(igIndex val0, igIndex val1, igIndex val2, igIndex val3,
+                      igIndex val4);
+    IGsize AddCellId6(igIndex val0, igIndex val1, igIndex val2, igIndex val3,
+                      igIndex val4, igIndex val5);
+    IGsize AddCellId7(igIndex val0, igIndex val1, igIndex val2, igIndex val3,
+                      igIndex val4, igIndex val5, igIndex val6);
+    IGsize AddCellId8(igIndex val0, igIndex val1, igIndex val2, igIndex val3,
+                      igIndex val4, igIndex val5, igIndex val6, igIndex val7);
+    IGsize AddCellId9(igIndex val0, igIndex val1, igIndex val2, igIndex val3,
+                      igIndex val4, igIndex val5, igIndex val6, igIndex val7,
+                      igIndex val8);
 
 	// Replace one index.
     void ReplaceCellReference(const IGsize cellId, igIndex from, igIndex to);

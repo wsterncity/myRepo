@@ -691,12 +691,11 @@ void SurfaceMesh::ConvertToDrawableData() {
     IdArray::Pointer triangleIndices = IdArray::New();
     int i, ncell;
     igIndex cell[32]{};
-    int a = this->GetNumberOfFaces();
+
     for (i = 0; i < this->GetNumberOfFaces(); i++) {
         ncell = this->GetFacePointIds(i, cell);
-        igIndex v0 = cell[0];
         for (int j = 2; j < ncell; j++) {
-            triangleIndices->AddId(v0);
+            triangleIndices->AddId(cell[0]);
             triangleIndices->AddId(cell[j - 1]);
             triangleIndices->AddId(cell[j]);
         }

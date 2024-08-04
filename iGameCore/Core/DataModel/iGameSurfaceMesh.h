@@ -119,22 +119,18 @@ protected:
     CellLinks::Pointer m_FaceEdgeLinks{}; // The adjacent faces of edges
 
 private:
-    Line::Pointer
-            m_Edge{}; // Used for the returned 'Line' object, which is Thread-Unsafe
-    Triangle::Pointer
-            m_Triangle{}; // Used for the returned 'Triangle' object, which is Thread-Unsafe
-    Quad::Pointer
-            m_Quad{}; // Used for the returned 'Quad' object, which is Thread-Unsafe
-    Polygon::Pointer
-            m_Polygon{}; // Used for the returned 'Polygon' object, which is Thread-Unsafe
+    // Used for the returned cell object, which is Thread-Unsafe
+    Line::Pointer m_Edge{};
+    Triangle::Pointer m_Triangle{};
+    Quad::Pointer m_Quad{};
+    Polygon::Pointer m_Polygon{};
 
 public:
     void Draw(Scene*) override;
     void ConvertToDrawableData() override;
     bool IsDrawable() override { return true; }
     void ViewCloudPicture(int index, int demension = -1) override;
-    void SetAttributeWithPointData(ArrayObject::Pointer attr,
-                                   igIndex i = -1) override;
+    void SetAttributeWithPointData(ArrayObject::Pointer attr, igIndex i = -1) override;
     void SetAttributeWithCellData(ArrayObject::Pointer attr, igIndex i = -1);
 
 private:
