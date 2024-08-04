@@ -116,9 +116,10 @@ void igQtAnimationWidget::playAnimation_snap(int keyframe_idx){
     auto currentScene = SceneManager::Instance()->GetCurrentScene();
     auto currentObject = currentScene->GetCurrentObject();
     if(currentObject == nullptr || currentObject->GetTimeFrames()->GetArrays().empty())  return;
+    std::cout << "current obj id : " << currentObject << '\n';
     auto& frameSubFiles = currentObject->GetTimeFrames()->GetTargetTimeFrame(keyframe_idx).SubFileNames;
     if(frameSubFiles->Size() > 1){
-//        currentObject->ClearSubDataObject();
+        currentObject->ClearSubDataObject();
         for(int i = 0; i < frameSubFiles->Size(); i ++){
             auto sub = FileIO::ReadFile(frameSubFiles->GetElement(i));
             currentObject->AddSubDataObject(sub);

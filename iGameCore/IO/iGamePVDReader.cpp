@@ -13,12 +13,12 @@
 #include "iGameVTUReader.h"
 #include "iGameDataObject.h"
 
-#include <tinyxml.h>
+#include <tinyxml2.h>
 
 bool iGame::iGamePVDReader::Parsing() {
     std::string fileDir = this->m_FilePath.substr(0, this->m_FilePath.find_last_of('/') + 1);
     const char* existAttribute;
-    TiXmlElement* elem = root->FirstChild()->FirstChildElement("DataSet");
+    tinyxml2::XMLElement* elem = root->FirstChild()->FirstChildElement("DataSet");
 //    DataObject::Pointer newObj;
     std::map<float, StringArray::Pointer> child_map;
 

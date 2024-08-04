@@ -138,6 +138,12 @@ void igQtFileLoader::OpenFile(const std::string& filePath)
 	//attrbNameArray->InsertToBack("cellScalar");
 	//obj->GetMetadata()->AddStringArray(ATTRIBUTE_NAME_ARRAY, attrbNameArray);
 
+//    for(int i = 0; i < 20; i ++){
+//        if(i % 2)obj->AddSubDataObject(iGame::FileIO::ReadFile("C:/Users/m_ky/Desktop/Resource/Model/Armadillo.obj"));
+//        else obj->AddSubDataObject(iGame::FileIO::ReadFile("C:/Users/m_ky/Desktop/Resource/Model/bunny.obj"));
+//
+//    }
+
 	m_SceneManager->GetCurrentScene()->AddDataObject(obj);
 	this->SaveCurrentFileToRecentFile(QString::fromStdString(filePath));
 	Q_EMIT AddFileToModelList(QString(filePath.substr(filePath.find_last_of('/') + 1).c_str()));

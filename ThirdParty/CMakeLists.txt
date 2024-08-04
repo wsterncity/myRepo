@@ -1,5 +1,5 @@
 add_subdirectory(glad)
 add_subdirectory(freetype-2.13.2)
-add_subdirectory(tinyXML)
+add_subdirectory(tinyXML2)
 #add_subdirectory(Eigen)
 add_subdirectory(meshoptimizer)
