@@ -8,9 +8,9 @@
  */
 #pragma once
 
-#include <utility>
-
+#include "iGameStringArray.h"
 #include "iGameElementArray.h"
+
 IGAME_NAMESPACE_BEGIN
 class StreamingData : public Object{
 public:

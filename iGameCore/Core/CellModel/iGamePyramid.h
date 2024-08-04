@@ -9,7 +9,38 @@ public:
 	I_OBJECT(Pyramid);
 	static Pointer New() { return new Pyramid; }
 
-	int GetCellDimension() { return 3; }
+	IGenum GetCellType() const noexcept override { return IG_PYRAMID; }
+    int GetCellSize() const noexcept override { return 5; }
+    int GetNumberOfEdges() override { return 8; }
+    int GetNumberOfFaces() override { return 5; }
+
+    Cell* GetEdge(const int edgeId) override {
+        const int* verts = edges[edgeId];
+
+        m_Line->PointIds->SetId(0, this->PointIds->GetId(verts[0]));
+        m_Line->PointIds->SetId(1, this->PointIds->GetId(verts[1]));
+
+        m_Line->Points->SetPoint(0, this->Points->GetPoint(verts[0]));
+        m_Line->Points->SetPoint(1, this->Points->GetPoint(verts[1]));
+
+        return m_Line.get();
+    }
+
+    Cell* GetFace(const int faceId) override {
+        const int* verts = faces[faceId];
+        Cell* face;
+        if (faces[faceId][MaxFaceSize] == 3) {
+            face = m_Triangle.get();
+        } else {
+            face = m_Quad.get();
+        }
+        for (int i = 0; i < faces[faceId][MaxFaceSize]; ++i) {
+            face->PointIds->SetId(i, this->PointIds->GetId(verts[i]));
+            face->Points->SetPoint(i, this->Points->GetPoint(verts[i]));
+        }
+
+        return face;
+    }
 
 	/**
 	 * 单元的顶点个数。
@@ -29,155 +60,111 @@ public:
 	/**
 	 * 单元面最大的顶点个数。
 	 */
-	static constexpr int MaximumFaceSize = 4;
+	static constexpr int MaxFaceSize = 4;
 
 	/**
 	 * 单元顶点最大的度。
 	 */
-	static constexpr int MaximumValence = 4;
+	static constexpr int MaxValence = 4;
 
-	/***************** 所有Maximum + 1的数组最后一位数字表示个数 *****************/
+	/***************** 所有Max + 1的数组最后一位数字表示个数 *****************/
 
 	// 边的顶点序号
 	static constexpr int edges[NumberOfEdges][2] = {
-	  { 0, 1 }, // 0
-	  { 1, 2 }, // 1
-	  { 2, 3 }, // 2
-	  { 3, 0 }, // 3
-	  { 0, 4 }, // 4
-	  { 1, 4 }, // 5
-	  { 2, 4 }, // 6
-	  { 3, 4 }, // 7
+	  { 0, 1 },
+	  { 1, 2 },
+	  { 2, 3 },
+	  { 3, 0 },
+	  { 0, 4 },
+	  { 1, 4 },
+	  { 2, 4 },
+	  { 3, 4 },
 	};
 
 	// 面的顶点序号
-	static constexpr int faces[NumberOfFaces][MaximumFaceSize + 1] = {
-	  { 0, 3, 2,  1, 4 }, // 0
-	  { 0, 1, 4, -1, 3 }, // 1
-	  { 1, 2, 4, -1, 3 }, // 2
-	  { 2, 3, 4, -1, 3 }, // 3
-	  { 3, 0, 4, -1, 3 }, // 4
+	static constexpr int faces[NumberOfFaces][MaxFaceSize + 1] = {
+	  { 0, 3, 2,  1, 4 },
+	  { 0, 1, 4, -1, 3 },
+	  { 1, 2, 4, -1, 3 },
+	  { 2, 3, 4, -1, 3 },
+	  { 3, 0, 4, -1, 3 },
 	};
 
 	// 边的邻接面序号
 	static constexpr int edgeToNeighborFaces[NumberOfEdges][2] = {
-	  { 0, 1 }, // 0
-	  { 0, 2 }, // 1
-	  { 0, 3 }, // 2
-	  { 0, 4 }, // 3
-	  { 1, 4 }, // 4
-	  { 1, 2 }, // 5
-	  { 2, 3 }, // 6
-	  { 3, 4 }, // 7
+	  { 0, 1 },
+	  { 0, 2 },
+	  { 0, 3 },
+	  { 0, 4 },
+	  { 1, 4 },
+	  { 1, 2 },
+	  { 2, 3 },
+	  { 3, 4 },
 	};
 
 	// 面的邻接面序号
-	static constexpr int faceToNeighborFaces[NumberOfFaces][MaximumFaceSize + 1] = {
-	  { 4, 3, 2, 1,  4 }, // 0
-	  { 0, 2, 4, -1, 3 }, // 1
-	  { 0, 3, 1, -1, 3 }, // 2
-	  { 0, 4, 2, -1, 3 }, // 3
-	  { 0, 1, 3, -1, 3 }, // 4
+	static constexpr int faceToNeighborFaces[NumberOfFaces][MaxFaceSize + 1] = {
+	  { 4, 3, 2, 1,  4 },
+	  { 0, 2, 4, -1, 3 },
+	  { 0, 3, 1, -1, 3 },
+	  { 0, 4, 2, -1, 3 },
+	  { 0, 1, 3, -1, 3 },
 	};
 
 	// 顶点的邻接边序号
-	static constexpr int pointToNeighborEdges[NumberOfPoints][MaximumValence + 1] = {
-	  { 0, 4, 3, -1, 3 }, // 0
-	  { 0, 1, 5, -1, 3 }, // 1
-	  { 1, 2, 6, -1, 3 }, // 2
-	  { 2, 3, 7, -1, 3 }, // 3
-	  { 4, 5, 6, 7 , 4 }, // 4
+	static constexpr int pointToNeighborEdges[NumberOfPoints][MaxValence + 1] = {
+	  { 0, 4, 3, -1, 3 },
+	  { 0, 1, 5, -1, 3 },
+	  { 1, 2, 6, -1, 3 },
+	  { 2, 3, 7, -1, 3 },
+	  { 4, 5, 6, 7 , 4 },
 	};
 
 	// 顶点的邻接面序号
-	static constexpr int pointToNeighborFaces[NumberOfPoints][MaximumValence + 1] = {
-	  { 1, 4, 0, -1, 3 }, // 0
-	  { 0, 2, 1, -1, 3 }, // 1
-	  { 0, 3, 2, -1, 3 }, // 2
-	  { 0, 4, 3, -1, 3 }, // 3
-	  { 1, 2, 3, 4 , 4 }, // 4
+	static constexpr int pointToNeighborFaces[NumberOfPoints][MaxValence + 1] = {
+	  { 1, 4, 0, -1, 3 },
+	  { 0, 2, 1, -1, 3 },
+	  { 0, 3, 2, -1, 3 },
+	  { 0, 4, 3, -1, 3 },
+	  { 1, 2, 3, 4 , 4 },
 	};
 
 	// 顶点的一邻域顶点序号
-	static constexpr int pointToOneRingPoints[NumberOfPoints][MaximumValence + 1] = {
-	  { 1, 4, 3, -1, 3 }, // 0
-	  { 0, 2, 4, -1, 3 }, // 1
-	  { 1, 3, 4, -1, 3 }, // 2
-	  { 2, 0, 4, -1, 3 }, // 3
-	  { 0, 1, 2, 3 , 4 }, // 4
+	static constexpr int pointToOneRingPoints[NumberOfPoints][MaxValence + 1] = {
+	  { 1, 4, 3, -1, 3 },
+	  { 0, 2, 4, -1, 3 },
+	  { 1, 3, 4, -1, 3 },
+	  { 2, 0, 4, -1, 3 },
+	  { 0, 1, 2, 3 , 4 },
 	};
 
-	void GetEdgePoints(igIndex edgeId, const igIndex*& pts) override {
-		assert(edgeId < NumberOfEdges && "edgeId too large");
+	int GetEdgePointIds(const int edgeId, const igIndex*& pts) override {
 		pts = edges[edgeId];
+        return 2;
 	}
-	igIndex GetFacePoints(igIndex faceId, const igIndex*& pts) override {
-		assert(faceId < NumberOfFaces && "faceId too large");
+    int GetFacePointIds(const int faceId, const igIndex*& pts) override {
 		pts = faces[faceId];
-		return faces[faceId][MaximumFaceSize];
+		return faces[faceId][MaxFaceSize];
 	}
-	void GetEdgeToNeighborFaces(igIndex edgeId, const igIndex*& pts) override {
-		assert(edgeId < NumberOfEdges && "edgeId too large");
+    int GetEdgeToNeighborFaces(const int edgeId, const igIndex*& pts) override {
 		pts = edgeToNeighborFaces[edgeId];
+        return 2;
 	}
-	igIndex GetFaceToNeighborFaces(igIndex faceId, const igIndex*& faceIds) override {
-		assert(faceId < NumberOfFaces && "faceId too large");
+	int GetFaceToNeighborFaces(const int faceId, const igIndex*& faceIds) override {
 		faceIds = faceToNeighborFaces[faceId];
-		return faceToNeighborFaces[faceId][MaximumFaceSize];
+		return faceToNeighborFaces[faceId][MaxFaceSize];
 	}
-	igIndex GetPointToNeighborEdges(igIndex pointId, const igIndex*& edgeIds) override {
-		assert(pointId < NumberOfPoints && "pointId too large");
+	int GetPointToNeighborEdges(const int pointId, const igIndex*& edgeIds) override {
 		edgeIds = pointToNeighborEdges[pointId];
-		return pointToNeighborEdges[pointId][MaximumValence];
+		return pointToNeighborEdges[pointId][MaxValence];
 	}
-	igIndex GetPointToNeighborFaces(igIndex pointId, const igIndex*& faceIds) override {
-		assert(pointId < NumberOfPoints && "pointId too large");
+	int GetPointToNeighborFaces(const int pointId, const igIndex*& faceIds) override {
 		faceIds = pointToNeighborFaces[pointId];
-		return pointToNeighborFaces[pointId][MaximumValence];
+		return pointToNeighborFaces[pointId][MaxValence];
 	}
-	igIndex GetPointToOneRingPoints(igIndex pointId, const igIndex*& pts) override {
-		assert(pointId < NumberOfPoints && "pointId too large");
+	int GetPointToOneRingPoints(const int pointId, const igIndex*& pts) override {
 		pts = pointToOneRingPoints[pointId];
-		return pointToOneRingPoints[pointId][MaximumValence];
-	}
-
-	int GetCellType() override { return IG_PYRAMID; }
-	int GetCellSize() override { return 5; }
-	int GetNumberOfEdges() override { return 8; }
-	int GetNumberOfFaces() override { return 5; }
-	Cell* GetEdge(int edgeId) override
-	{
-		const int* verts = edges[edgeId];
-
-		// load point id's
-		this->Line->PointIds->SetId(0, this->PointIds->GetId(verts[0]));
-		this->Line->PointIds->SetId(1, this->PointIds->GetId(verts[1]));
-
-		// load coordinates
-		this->Line->Points->SetPoint(0, this->Points->GetPoint(verts[0]));
-		this->Line->Points->SetPoint(1, this->Points->GetPoint(verts[1]));
-
-		return this->Line.get();
-	}
-	Cell* GetFace(int faceId) override
-	{
-		const int* verts = faces[faceId];
-		Cell* face;
-		if (faces[faceId][MaximumFaceSize] == 3)
-		{
-			face = this->Triangle.get();
-		}
-		else 
-		{
-			face = this->Quad.get();
-		}
-		for (int i = 0; i < faces[faceId][MaximumFaceSize]; ++i)
-		{
-			face->PointIds->SetId(i, this->PointIds->GetId(verts[i]));
-			face->Points->SetPoint(i, this->Points->GetPoint(verts[i]));
-		}
-
-		return face;
+		return pointToOneRingPoints[pointId][MaxValence];
 	}
 
 private:
@@ -191,15 +178,15 @@ private:
 			this->PointIds->SetId(i, 0);
 		}
 
-		this->Line = Line::New();
-		this->Triangle = Triangle::New();
-		this->Quad = Quad::New();
+		m_Line = Line::New();
+		m_Triangle = Triangle::New();
+		m_Quad = Quad::New();
 	}
 	~Pyramid() override = default;
 
-	Line::Pointer Line;
-	Triangle::Pointer Triangle;
-	Quad::Pointer Quad;
+	Line::Pointer m_Line;
+    Triangle::Pointer m_Triangle;
+    Quad::Pointer m_Quad;
 };
 
 

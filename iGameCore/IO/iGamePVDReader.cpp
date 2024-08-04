@@ -12,6 +12,7 @@
 #include "iGameVTSReader.h"
 #include "iGameVTUReader.h"
 #include "iGameDataObject.h"
+#include "iGameStringArray.h"
 
 #include <tinyxml2.h>
 
@@ -65,13 +66,13 @@ bool iGame::iGamePVDReader::Parsing() {
             if(fileSuffix == "vts"){
                 iGameVTSReader::Pointer rd = iGameVTSReader::New();
                 rd->SetFilePath(fileName);
-                rd->Update();
+                rd->Execute();
                 newObj = rd->GetOutput();
             }
             else if(fileSuffix == "vtu"){
                 iGameVTUReader::Pointer rd = iGameVTUReader::New();
                 rd->SetFilePath(fileName);
-                rd->Update();
+                rd->Execute();
                 newObj = rd->GetOutput();
             }
             m_data_object->AddSubDataObject(newObj);

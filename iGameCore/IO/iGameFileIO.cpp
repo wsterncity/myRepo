@@ -113,7 +113,7 @@ DataObject::Pointer FileIO::ReadFile(const std::string &file_name)
         {
 			VTKReader::Pointer reader = VTKReader::New();
 			reader->SetFilePath(file_name);
-			reader->Update();
+            reader->Execute();
 			resObj = reader->GetOutput();
             break;
         }
@@ -121,7 +121,7 @@ DataObject::Pointer FileIO::ReadFile(const std::string &file_name)
         {
 			OBJReader::Pointer reader = OBJReader::New();
             reader->SetFilePath(file_name);
-			reader->Update();
+            reader->Execute();
 			resObj = reader->GetOutput();
             break;
         }
@@ -129,7 +129,7 @@ DataObject::Pointer FileIO::ReadFile(const std::string &file_name)
         {
 			OFFReader::Pointer reader = OFFReader::New();
 			reader->SetFilePath(file_name);
-			reader->Update();
+            reader->Execute();
 			resObj = reader->GetOutput();
 			break;
         }
@@ -137,7 +137,7 @@ DataObject::Pointer FileIO::ReadFile(const std::string &file_name)
         {
 			MESHReader::Pointer reader = MESHReader::New();
 			reader->SetFilePath(file_name);
-			reader->Update();
+            reader->Execute();
 			resObj = reader->GetOutput();
 			break;
         }
@@ -152,7 +152,7 @@ DataObject::Pointer FileIO::ReadFile(const std::string &file_name)
         {
 			PLYReader::Pointer reader = PLYReader::New();
 			reader->SetFilePath(file_name);
-			reader->Update();
+            reader->Execute();
 			resObj = reader->GetOutput();
 			break;
         }
@@ -167,7 +167,7 @@ DataObject::Pointer FileIO::ReadFile(const std::string &file_name)
 		{
 			INPReader::Pointer reader = INPReader::New();
 			reader->SetFilePath(file_name);
-			reader->Update();
+            reader->Execute();
 			resObj = reader->GetOutput();
 			break;
 		}
@@ -186,7 +186,7 @@ DataObject::Pointer FileIO::ReadFile(const std::string &file_name)
         {
             iGameVTSReader::Pointer reader = iGameVTSReader::New();
             reader->SetFilePath(file_name);
-            reader->Update();
+            reader->Execute();
             resObj = reader->GetOutput();
             break;
         }
@@ -194,7 +194,7 @@ DataObject::Pointer FileIO::ReadFile(const std::string &file_name)
         {
 			iGameVTUReader::Pointer reader = iGameVTUReader::New();
 			reader->SetFilePath(file_name);
-			reader->Update();
+            reader->Execute();
 			resObj = reader->GetOutput();
 			break;
         }
@@ -203,7 +203,7 @@ DataObject::Pointer FileIO::ReadFile(const std::string &file_name)
         {
 			iGamePVDReader::Pointer reader = iGamePVDReader::New();
 			reader->SetFilePath(file_name);
-			reader->Update();
+			reader->Execute();
 			resObj = reader->GetOutput();
             break;
         }
@@ -211,7 +211,7 @@ DataObject::Pointer FileIO::ReadFile(const std::string &file_name)
         {
             iGameVTMReader::Pointer reader = iGameVTMReader::New();
             reader->SetFilePath(file_name);
-            reader->Update();
+            reader->Execute();
             resObj = reader->GetOutput();
             break;
         }

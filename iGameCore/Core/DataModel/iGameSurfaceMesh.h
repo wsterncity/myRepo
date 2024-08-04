@@ -19,58 +19,92 @@ public:
     I_OBJECT(SurfaceMesh);
     static Pointer New() { return new SurfaceMesh; }
 
-	IGsize GetNumberOfEdges() const noexcept;
-	IGsize GetNumberOfFaces() const noexcept;
-	
-	CellArray* GetEdges();
-	CellArray* GetFaces();
+    // Get the number of all edges
+    IGsize GetNumberOfEdges() const noexcept;
+    // Get the number of all faces
+    IGsize GetNumberOfFaces() const noexcept;
 
+    // Get edge array
+    CellArray* GetEdges();
+    // Get face array
+    CellArray* GetFaces();
+
+    // Set face array
     void SetFaces(CellArray::Pointer faces);
 
+    // Get edge cell by index edgeId
     Line* GetEdge(const IGsize edgeId);
+    // Get face cell by index faceId
     Face* GetFace(const IGsize faceId);
 
+    // Get edge's point index. Return PointIds size
     int GetEdgePointIds(const IGsize edgeId, igIndex* ptIds);
+    // Get face's point index. Return PointIds size
     int GetFacePointIds(const IGsize faceId, igIndex* ptIds);
+    // Get face's edge index. Return EdgeIds size
     int GetFaceEdgeIds(const IGsize faceId, igIndex* edgeIds);
 
+    // All edges are constructed according to the point index of the face
     void BuildEdges();
+    // Construct the adjacent edges of the points
     void BuildEdgeLinks();
+    // Construct the adjacent faces of the points
     void BuildFaceLinks();
+    // Construct the adjacent faces of the edges
     void BuildFaceEdgeLinks();
 
+    // Get all points within one ring of a point. Return the size of indices.
     int GetPointToOneRingPoints(const IGsize ptId, igIndex* ptIds);
+    // Get all neighboring edges of a point. Return the size of indices.
     int GetPointToNeighborEdges(const IGsize ptId, igIndex* edgeIds);
+    // Get all neighboring faces of a point. Return the size of indices.
     int GetPointToNeighborFaces(const IGsize ptId, igIndex* faceIds);
+    // Get all neighboring faces of a edge (shared edge). Return the size of indices.
     int GetEdgeToNeighborFaces(const IGsize edgeId, igIndex* faceIds);
+    // Get all faces within one ring of a edge (shared point). Return the size of indices.
     int GetEdgeToOneRingFaces(const IGsize edgeId, igIndex* faceIds);
+    // Get all neighboring faces of a face (shared edge). Return the size of indices.
     int GetFaceToNeighborFaces(const IGsize faceId, igIndex* faceIds);
+    // Get all faces within one ring of a face (shared point). Return the size of indices.
     int GetFaceToOneRingFaces(const IGsize faceId, igIndex* faceIds);
 
-	igIndex GetEdgeIdFormPointIds(const IGsize ptId1, const IGsize ptId2);
-	igIndex GetFaceIdFormPointIds(igIndex* ids, int size);
+    // Get edge index according to two point index. If don't, return index -1
+    igIndex GetEdgeIdFormPointIds(const IGsize ptId1, const IGsize ptId2);
+    // Get face index according to sequence. If don't, return index -1
+    igIndex GetFaceIdFormPointIds(igIndex* ids, int size);
 
-	void RequestEditStatus() override;
-	void GarbageCollection() override;
-	bool IsEdgeDeleted(const IGsize edgeId);
-	bool IsFaceDeleted(const IGsize faceId);
+    // Request data edit state, only in this state,
+    // can perform the adding and delete operation.
+    // Adding operations also can be done via GetFaces().
+    void RequestEditStatus() override;
 
-	IGsize AddPoint(const Point& p) override;
-	virtual IGsize AddEdge(const IGsize ptId1, const IGsize ptId2);
-	virtual IGsize AddFace(igIndex* ptIds, int size);
+    // Garbage collection to free memory that has been removed.
+    // This function must be called if the topology changes.
+    void GarbageCollection() override;
 
-	void DeletePoint(const IGsize ptId) override;
-	virtual void DeleteEdge(const IGsize edgeId);
-	virtual void DeleteFace(const IGsize faceId);
+    // Whether edge is deleted or not
+    bool IsEdgeDeleted(const IGsize edgeId);
+    // Whether face is deleted or not
+    bool IsFaceDeleted(const IGsize faceId);
 
-	void ReplacePointReference(const IGsize fromPtId, const IGsize toPtId);
+    // Add element, necessarily called after RequestEditStatus()
+    IGsize AddPoint(const Point& p) override;
+    virtual IGsize AddEdge(const IGsize ptId1, const IGsize ptId2);
+    virtual IGsize AddFace(igIndex* ptIds, int size);
+
+    // Delete element, necessarily called after RequestEditStatus()
+    void DeletePoint(const IGsize ptId) override;
+    virtual void DeleteEdge(const IGsize edgeId);
+    virtual void DeleteFace(const IGsize faceId);
+
+    void ReplacePointReference(const IGsize fromPtId, const IGsize toPtId);
 
 protected:
-	SurfaceMesh();
-	~SurfaceMesh() override = default;
+    SurfaceMesh();
+    ~SurfaceMesh() override = default;
 
-	void RequestEdgeStatus();
-	void RequestFaceStatus();
+    void RequestEdgeStatus();
+    void RequestFaceStatus();
 
     DeleteMarker::Pointer m_EdgeDeleteMarker{};
     DeleteMarker::Pointer m_FaceDeleteMarker{};
@@ -85,141 +119,19 @@ protected:
     CellLinks::Pointer m_FaceEdgeLinks{}; // The adjacent faces of edges
 
 private:
-    Line::Pointer
-            m_Edge{}; // Used for the returned 'Line' object, which is Thread-Unsafe
-    Triangle::Pointer
-            m_Triangle{}; // Used for the returned 'Triangle' object, which is Thread-Unsafe
-    Quad::Pointer
-            m_Quad{}; // Used for the returned 'Quad' object, which is Thread-Unsafe
-    Polygon::Pointer
-            m_Polygon{}; // Used for the returned 'Polygon' object, which is Thread-Unsafe
+    // Used for the returned cell object, which is Thread-Unsafe
+    Line::Pointer m_Edge{};
+    Triangle::Pointer m_Triangle{};
+    Quad::Pointer m_Quad{};
+    Polygon::Pointer m_Polygon{};
 
 public:
     void Draw(Scene*) override;
     void ConvertToDrawableData() override;
     bool IsDrawable() override { return true; }
-    void ViewCloudPicture(int index, int demension = -1) override {
-        if (index == -1) {
-            m_UseColor = false;
-            m_ViewAttribute = nullptr;
-            m_ViewDemension = -1;
-            m_ColorWithCell = false;
-            return;
-        }
-        m_AttributeIndex = index;
-        auto& attr = this->GetPropertySet()->GetProperty(index);
-        if (!attr.isDeleted) {
-            if (attr.attachmentType == IG_POINT)
-                this->SetAttributeWithPointData(attr.pointer, demension);
-            else if (attr.attachmentType == IG_CELL)
-                this->SetAttributeWithCellData(attr.pointer, demension);
-        }
-    }
-
-    void SetAttributeWithPointData(ArrayObject::Pointer attr,
-                                   igIndex i = -1) override {
-        if (m_ViewAttribute != attr || m_ViewDemension != i) {
-            m_ViewAttribute = attr;
-            m_ViewDemension = i;
-            m_UseColor = true;
-            m_ColorWithCell = false;
-            ScalarsToColors::Pointer mapper = ScalarsToColors::New();
-
-            if (i == -1) {
-                mapper->InitRange(attr);
-            } else {
-                mapper->InitRange(attr, i);
-            }
-
-            m_Colors = mapper->MapScalars(attr, i);
-            if (m_Colors == nullptr) { return; }
-
-            GLAllocateGLBuffer(m_ColorVBO,
-                               m_Colors->GetNumberOfValues() * sizeof(float),
-                               m_Colors->RawPointer());
-
-            m_PointVAO.vertexBuffer(GL_VBO_IDX_1, m_ColorVBO, 0,
-                                    3 * sizeof(float));
-            GLSetVertexAttrib(m_PointVAO, GL_LOCATION_IDX_1, GL_VBO_IDX_1, 3,
-                              GL_FLOAT, GL_FALSE, 0);
-
-            m_LineVAO.vertexBuffer(GL_VBO_IDX_1, m_ColorVBO, 0,
-                                   3 * sizeof(float));
-            GLSetVertexAttrib(m_LineVAO, GL_LOCATION_IDX_1, GL_VBO_IDX_1, 3,
-                              GL_FLOAT, GL_FALSE, 0);
-
-
-            m_TriangleVAO.vertexBuffer(GL_VBO_IDX_1, m_ColorVBO, 0,
-                                       3 * sizeof(float));
-            GLSetVertexAttrib(m_TriangleVAO, GL_LOCATION_IDX_1, GL_VBO_IDX_1, 3,
-                              GL_FLOAT, GL_FALSE, 0);
-        }
-    }
-
-    void SetAttributeWithCellData(ArrayObject::Pointer attr, igIndex i = -1) {
-        if (m_ViewAttribute != attr || m_ViewDemension != i) {
-            m_ViewAttribute = attr;
-            m_ViewDemension = i;
-            m_UseColor = true;
-            m_ColorWithCell = true;
-            ScalarsToColors::Pointer mapper = ScalarsToColors::New();
-
-            if (i == -1) {
-                mapper->InitRange(attr);
-            } else {
-                mapper->InitRange(attr, i);
-            }
-
-            FloatArray::Pointer colors = mapper->MapScalars(attr, i);
-            if (colors == nullptr) { return; }
-
-            FloatArray::Pointer newPositions = FloatArray::New();
-            FloatArray::Pointer newColors = FloatArray::New();
-            newPositions->SetElementSize(3);
-            newColors->SetElementSize(3);
-
-			//std::cout << this->GetNumberOfFaces() << std::endl;
-			//std::cout << colors->GetNumberOfElements() << std::endl;
-			float color[3]{};
-			for (int i = 0; i < this->GetNumberOfFaces(); i++)
-			{
-				Face* face = this->GetFace(i);
-				for (int j = 2; j < face->GetCellSize(); j++) {
-					auto& p0 = face->Points->GetPoint(0);
-					newPositions->AddElement3(p0[0], p0[1], p0[2]);
-
-                    auto& p1 = face->Points->GetPoint(j - 1);
-                    newPositions->AddElement3(p1[0], p1[1], p1[2]);
-
-                    auto& p2 = face->Points->GetPoint(j);
-                    newPositions->AddElement3(p2[0], p2[1], p2[2]);
-
-                    colors->GetElement(i, color);
-                    newColors->AddElement3(color[0], color[1], color[2]);
-                    newColors->AddElement3(color[0], color[1], color[2]);
-                    newColors->AddElement3(color[0], color[1], color[2]);
-                }
-            }
-            m_CellPositionSize = newPositions->GetNumberOfElements();
-
-            GLAllocateGLBuffer(m_CellPositionVBO,
-                               newPositions->GetNumberOfValues() *
-                                       sizeof(float),
-                               newPositions->RawPointer());
-            GLAllocateGLBuffer(m_CellColorVBO,
-                               newColors->GetNumberOfValues() * sizeof(float),
-                               newColors->RawPointer());
-
-            m_CellVAO.vertexBuffer(GL_VBO_IDX_0, m_CellPositionVBO, 0,
-                                   3 * sizeof(float));
-            GLSetVertexAttrib(m_CellVAO, GL_LOCATION_IDX_0, GL_VBO_IDX_0, 3,
-                              GL_FLOAT, GL_FALSE, 0);
-            m_CellVAO.vertexBuffer(GL_VBO_IDX_1, m_CellColorVBO, 0,
-                                   3 * sizeof(float));
-            GLSetVertexAttrib(m_CellVAO, GL_LOCATION_IDX_1, GL_VBO_IDX_1, 3,
-                              GL_FLOAT, GL_FALSE, 0);
-        }
-    }
+    void ViewCloudPicture(int index, int demension = -1) override;
+    void SetAttributeWithPointData(ArrayObject::Pointer attr, igIndex i = -1) override;
+    void SetAttributeWithCellData(ArrayObject::Pointer attr, igIndex i = -1);
 
 private:
     GLVertexArray m_PointVAO, m_LineVAO, m_TriangleVAO;
@@ -235,7 +147,7 @@ private:
     IdArray::Pointer m_PointIndices{};
     IdArray::Pointer m_LineIndices{};
     IdArray::Pointer m_TriangleIndices{};
-    Meshlet::Pointer m_Meshlets = Meshlet::New();
+    Meshlet::Pointer m_Meshlets{Meshlet::New()};
 
     bool m_Flag{false};
     bool m_UseColor{false};

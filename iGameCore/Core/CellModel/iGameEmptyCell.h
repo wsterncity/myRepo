@@ -8,16 +8,13 @@ class EmptyCell : public Cell {
 public:
 	I_OBJECT(EmptyCell);
 	static Pointer New() {	return new EmptyCell; }
-	static constexpr int CELL_TYPE = IG_EMPTY_CELL;
-	static constexpr int CELL_SIZE = 0;
 
-	int GetCellType() override { return IG_EMPTY_CELL; }
-	int GetCellSize() override { return 0; }
-	int GetCellDimension() override { return 0; }
+	IGenum GetCellType() const noexcept override { return IG_EMPTY_CELL; }
+    int GetCellSize() const noexcept override { return 0; }
 	int GetNumberOfEdges() override { return 0; }
 	int GetNumberOfFaces() override { return 0; }
-	Cell* GetEdge(int) override { return nullptr; }
-	Cell* GetFace(int) override { return nullptr; }
+	Cell* GetEdge(const int) override { return nullptr; }
+    Cell* GetFace(const int) override { return nullptr; }
 
 protected:
 	EmptyCell() = default;

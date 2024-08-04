@@ -41,7 +41,6 @@ public:
 
     Character& GetCharacter(const wchar_t wchar);
     GLTexture2d& GetTexture(const wchar_t wchar);
-    GLTextureHandle GetTextureHandle(const wchar_t wchar);
 
 private:
     void FlipVertically(unsigned char* data, int width, int height);

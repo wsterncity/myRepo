@@ -2,7 +2,9 @@
 // Created by m_ky on 2024/4/10.
 //
 
+#include <iGameUnstructuredMesh.h>
 #include <iGameFilterPoints.h>
+#include <iGameDataSource.h>
 #include <iGameSurfaceMeshFilterTest.h>
 #include <iGameVolumeMeshFilterTest.h>
 
@@ -249,7 +251,7 @@ void igQtMainWindow::initAllFilters() {
 		FilterPoints::Pointer fp = FilterPoints::New();
 		fp->SetInput(rendererWidget->GetScene()->GetCurrentObject());
 		fp->SetFilterRate(0.5);
-		fp->Update();
+        fp->Execute();
 		rendererWidget->update();
 		});
 
@@ -272,22 +274,95 @@ void igQtMainWindow::initAllFilters() {
 	connect(ui->action_test_04, &QAction::triggered, this, [&](bool checked) {
 		SurfaceMeshFilterTest::Pointer fp = SurfaceMeshFilterTest::New();
 		fp->SetInput(rendererWidget->GetScene()->GetCurrentObject());
-		fp->Update();
+		fp->Execute();
 		rendererWidget->update();
 		});
 
 	connect(ui->action_test_05, &QAction::triggered, this, [&](bool checked) {
 		VolumeMeshFilterTest::Pointer fp = VolumeMeshFilterTest::New();
 		fp->SetInput(rendererWidget->GetScene()->GetCurrentObject());
-		fp->Update();
+        fp->Execute();
 		rendererWidget->update();
 		});
+
+	connect(ui->action_test_06, &QAction::triggered, this, [&](bool checked) {
+  //      LineSource::Pointer source = LineSource::New();
+  //      Points::Pointer points = Points::New();
+  //      FloatArray::Pointer colors = FloatArray::New();
+  //      CellArray::Pointer polylines = CellArray::New();
+  //      CellArray::Pointer lines = CellArray::New();
+  //      IdArray::Pointer pl = IdArray::New();
+  //      for (int i = 0; i < 10; ++i) {
+  //          float theta = 2 * M_PI * i / 10;
+  //          float x = std::cos(theta);
+  //          float y = std::sin(theta);
+  //          IGsize ptId = points->AddPoint(Point{ x, y, 0.0f});
+  //          colors->AddValue((x + y) / 2);
+  //          pl->AddId(ptId);
+  //      }
+  //      polylines->AddCellIds(pl);
+
+		//IGsize ptId0 = points->AddPoint(Point{0, 0, 0});
+		//IGsize ptId1 = points->AddPoint(Point{0, 0, 1});
+  //      colors->AddValue(0.3);
+  //      colors->AddValue(0.4);
+  //      lines->AddCellId2(ptId0, ptId1);
+
+  //      source->SetPoints(points);
+  //      source->SetColors(colors);
+  //      source->SetLines(lines);
+  //      source->SetPolyLines(polylines);
+  //      source->SetName("undefined_line_source");
+  //      rendererWidget->AddDataObject(source);
+
+		UnstructuredMesh::Pointer mesh = UnstructuredMesh::New();
+		Points::Pointer points = Points::New();
+        CellArray::Pointer cells = CellArray::New();
+        UnsignedIntArray::Pointer types = UnsignedIntArray::New();
+        FloatArray::Pointer property = FloatArray::New();
+        property->SetName("scalar");
+
+		points->AddPoint(-0.5, -0.5, 0);
+        points->AddPoint(0.5, -0.5, 0);
+		points->AddPoint(0, 0.5, 0);
+		points->AddPoint(0, 0, 0.6);
+
+		points->AddPoint(1, 1, 0);
+        points->AddPoint(2, 1, 0);
+        points->AddPoint(1, 2, 0);
+
+		property->AddValue(-0.5);
+		property->AddValue(0.5);
+		property->AddValue(0);
+		property->AddValue(0);
+		property->AddValue(1);
+		property->AddValue(2);
+		property->AddValue(1);
+
+        cells->AddCellId4(0, 1, 2, 3);
+        types->AddValue(IG_TETRA);
+
+        cells->AddCellId3(4, 5, 6);
+        types->AddValue(IG_TRIANGLE);
+
+		StringArray::Pointer sa = StringArray::New();
+        sa->AddElement("scalar");
+
+		mesh->GetMetadata()->AddStringArray(ATTRIBUTE_NAME_ARRAY, sa);
+		mesh->GetPropertySet()->AddScalar(IG_POINT, property);
+		mesh->SetPoints(points);
+        mesh->SetCells(cells, types);
+		mesh->SetName("undefined_unstructured_mesh");
+        rendererWidget->AddDataObject(mesh);
+        this->updateCurrentDataObject();
+    });
 }
 
 void igQtMainWindow::initAllDockWidgetConnectWithAction()
 {
 	//connect(ui->action_SearchInfo, &QAction::triggered, this, [&](bool checked) {
-	//	ui->dockWidget_SearchInfo->show();
+	//	ui->dockWidget_SearchInfo->sh
+	// ow();
 	//	});
 	//connect(ui->action_IsShowColorBar, &QAction::triggered, this, &igQtMainWindow::updateColorBarShow);
 	connect(ui->action_ExportAnimation, &QAction::triggered, this, [&](bool checked) {

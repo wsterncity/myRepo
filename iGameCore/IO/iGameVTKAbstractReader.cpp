@@ -417,10 +417,10 @@ int VTKAbstractReader::ReadScalarData(int PointsNum)
 	if (data != nullptr) {
 		data->SetName(name);
 		if (this->DataType == POINT_TYPE) {
-			m_Data.GetData()->AddScalars(IG_POINT, data);
+			m_Data.GetData()->AddScalar(IG_POINT, data);
 		}
 		else if (this->DataType == CELL_TYPE) {
-			m_Data.GetData()->AddScalars(IG_CELL, data);
+			m_Data.GetData()->AddScalar(IG_CELL, data);
 		}
 	}
 	else {

@@ -18,7 +18,7 @@ namespace tinyxml2{
 
 IGAME_NAMESPACE_BEGIN
 
-class iGameXMLFileReader : public Filter{
+class iGameXMLFileReader : public Filter {
 public:
     I_OBJECT(iGameXMLFileReader)
 public:
@@ -28,6 +28,7 @@ public:
     virtual bool CreateDataObject();
     virtual bool Parsing() = 0;
 
+    bool Execute() override;
 
 protected:
     std::string m_FilePath;
@@ -43,8 +44,6 @@ protected:
 
     tinyxml2::XMLElement* FindTargetAttributeItem(tinyxml2::XMLElement* root, const char* itemName,
                                           const char* attributeName, const char* attributeData);
-
-    bool Execute() override;
 
     void ReadBase64EncodedPoints(const char* p, const Points::Pointer& pointSet);
 

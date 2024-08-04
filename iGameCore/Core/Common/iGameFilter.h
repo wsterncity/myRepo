@@ -11,40 +11,48 @@ public:
 	static Pointer New() { return new Filter; }
 	using DataObjectArray = ElementArray<DataObject::Pointer>;
 	
-	void Update();
+	// The function that executes the algorithm
+	virtual bool Execute() { return true; }
 
+	// Set/Get the number of input's data object.
 	void SetNumberOfInputs(int n);
+    int GetNumberOfInputs() const;
+
+    // Set/Get the number of output's data object.
 	void SetNumberOfOutputs(int n);
-	int GetNumberOfInputs() const;
 	int GetNumberOfOutputs() const;
 
-	bool SetInput(int index, DataObject::Pointer data);
+	// Set input's data object at index i.
+	bool SetInput(int i, DataObject::Pointer data);
+    // Set input's data object at index 0.
 	bool SetInput(DataObject::Pointer data);
-	DataObject::Pointer GetInput(int index);
+    // Get input's data object at index i.
+	DataObject::Pointer GetInput(int i);
+	// Get input's data object according to name
 	DataObject::Pointer GetNamedInput(const std::string& name);
 
-
+	// Set output's data object at index i.
 	bool SetOutput(int index, DataObject::Pointer data);
 	bool SetOutput(DataObject::Pointer data);
 	DataObject::Pointer GetOutput(int index);
 	DataObject::Pointer GetOutput();
 	DataObject::Pointer GetNamedOutput(const std::string& name);
 
+	// Update the current task progress.'amount'is between 0 and 1.
 	void UpdateProgress(double amount);
-	void ResetProgressShiftScale();
+	// Switch to the next task. Progress will be reset.
+    void ResetProgress();
 	
 protected:
 	Filter();
 	~Filter() override = default;
 
-	virtual bool Execute() { return true; }
+	DataObjectArray::Pointer m_Inputs;  // Input data object array
+	DataObjectArray::Pointer m_Outputs; // Output data object array
 
-	DataObjectArray::Pointer m_Inputs;
-	DataObjectArray::Pointer m_Outputs;
-
-	double Progress{ 0.0 };
-	double ProgressShift{ 0.0 };
-	double ProgressScale{ 1.0 };
+	double m_Progress{ 0.0 };           // The current task progress
+    double m_ProgressShift{0.0};        // Previous task's progress
+    double m_ProgressScale{1.0};        // The current task progress range
 };
 IGAME_NAMESPACE_END
 #endif

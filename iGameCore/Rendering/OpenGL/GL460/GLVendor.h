@@ -1,0 +1,18 @@
+//
+// Created by Sumzeek on 6/29/2024.
+//
+
+#ifndef OPENIGAME_GLVENDOR_H
+#define OPENIGAME_GLVENDOR_H
+
+#ifdef __APPLE__
+#define __gl3_h_
+#define __glext_h_
+#endif
+
+#include "RenderingMacro.h"
+#include "glad/glad.h"
+#include "iGameMacro.h"
+#include "igm/igm.h"
+
+#endif //OPENIGAME_GLVENDOR_H

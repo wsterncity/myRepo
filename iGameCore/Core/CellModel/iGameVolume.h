@@ -12,13 +12,13 @@ class Volume : public Cell {
 public:
 	I_OBJECT(Volume);
 
-	virtual void GetEdgePoints(igIndex edgeId, const igIndex*& pts) = 0;
-	virtual igIndex GetFacePoints(igIndex faceId, const igIndex*& pts) = 0;
-	virtual void GetEdgeToNeighborFaces(igIndex edgeId, const igIndex*& pts) = 0;
-	virtual igIndex GetFaceToNeighborFaces(igIndex faceId, const igIndex*& faceIds) = 0;
-	virtual igIndex GetPointToNeighborEdges(igIndex pointId, const igIndex*& edgeIds) = 0;
-	virtual igIndex GetPointToNeighborFaces(igIndex pointId, const igIndex*& faceIds) = 0;
-	virtual igIndex GetPointToOneRingPoints(igIndex pointId, const igIndex*& pts) = 0;
+	virtual int GetEdgePointIds(const int edgeId, const igIndex*& ptIds) = 0;
+    virtual int GetFacePointIds(const int faceId, const igIndex*& ptIds) = 0;
+	virtual int GetPointToOneRingPoints(const int ptId, const igIndex*& ptIds) = 0;
+	virtual int GetPointToNeighborEdges(const int ptId, const igIndex*& edgeIds) = 0;
+	virtual int GetPointToNeighborFaces(const int ptId, const igIndex*& faceIds) = 0;
+	virtual int GetEdgeToNeighborFaces(const int edgeId, const igIndex*& faceIds) = 0;
+	virtual int GetFaceToNeighborFaces(const int faceId, const igIndex*& faceIds) = 0;
 
 protected:
 	Volume() = default;

@@ -1,0 +1,30 @@
+#version 460
+#extension GL_ARB_bindless_texture : require
+
+layout(local_size_x = 16, local_size_y = 16) in;
+
+uniform uvec2 inImage;
+layout(binding = 0, r32f) uniform writeonly image2D outImage;
+
+uniform uvec2 inImageSize;
+uniform uint level;
+
+void main() {
+    uvec2 pos = gl_GlobalInvocationID.xy;
+    if (pos.x * 2 >= inImageSize.x || pos.y * 2 >= inImageSize.y) return;
+
+    uvec2 pos_0 = pos * 2 + uvec2(0, 0);
+    uvec2 pos_1 = pos * 2 + uvec2(0, 1);
+    uvec2 pos_2 = pos * 2 + uvec2(1, 0);
+    uvec2 pos_3 = pos * 2 + uvec2(1, 1);
+
+    float preLevel = float(level - 1);
+    float depth_0 = textureLod(sampler2D(inImage), (vec2(pos_0) + vec2(0.5)) / vec2(inImageSize), preLevel).x;
+    float depth_1 = textureLod(sampler2D(inImage), (vec2(pos_1) + vec2(0.5)) / vec2(inImageSize), preLevel).x;
+    float depth_2 = textureLod(sampler2D(inImage), (vec2(pos_2) + vec2(0.5)) / vec2(inImageSize), preLevel).x;
+    float depth_3 = textureLod(sampler2D(inImage), (vec2(pos_3) + vec2(0.5)) / vec2(inImageSize), preLevel).x;
+
+    // depth range: 0.0(near plane) -> 1.0(far plane)
+    float maxDepth = max(max(depth_0, depth_1), max(depth_2, depth_3));
+    imageStore(outImage, ivec2(pos), vec4(maxDepth));
+}

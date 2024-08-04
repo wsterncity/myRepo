@@ -31,6 +31,8 @@ public:
 	bool CreateDataObject();
 	bool Close();
 
+	bool Execute() override;
+
 	void SetFilePath(const std::string& filePath);
 
 	/**
@@ -104,8 +106,6 @@ public:
 protected:
     FileReader();
 	~FileReader() override = default;
-
-	bool Execute() override;
 
 	CellArray::Pointer m_CellArray;
 	DataCollection m_Data;

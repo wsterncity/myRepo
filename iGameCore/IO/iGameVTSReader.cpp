@@ -56,10 +56,9 @@ bool iGame::iGameVTSReader::Parsing() {
     {
         char* data_p = const_cast<char*>(data);
         while (*data_p == '\n' || *data_p == ' ' || *data_p == '\t') data_p ++;
-        std::string formatAttribute = std::string(attribute);
-        if(strcmp(attribute, "binary") == 0){
+        if(attribute && strcmp(attribute, "binary") == 0){
             ReadBase64EncodedPoints(data, Points);
-        } else if(strcmp(attribute, "ascii") == 0){
+        } else {
             float p[3] = { 0 };
             char* token = strtok(const_cast<char*>(data_p), " ");
             while (token != nullptr) {
@@ -123,7 +122,7 @@ bool iGame::iGameVTSReader::Parsing() {
 
             if(array != nullptr){
                 array->SetName(scalarName);
-                m_Data.GetData()->AddScalars(IG_POINT, array);
+                m_Data.GetData()->AddScalar(IG_POINT, array);
             }
 
 //            if(dataSet->GetPointData() == nullptr)

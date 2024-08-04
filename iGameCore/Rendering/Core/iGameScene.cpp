@@ -12,8 +12,6 @@ Scene::Scene() {
     InitOpenGL();
     InitFont();
     InitAxes();
-
-    GLCheckError();
 }
 Scene::~Scene() {}
 
@@ -133,6 +131,99 @@ bool Scene::HasShader(IGenum type) {
     return this->GetShaderWithType(type) != nullptr;
 }
 
+void Scene::AddDataObject(DataObject::Pointer obj) {
+    m_Models.insert(std::make_pair<>(obj->GetDataObjectId(), obj));
+    m_CurrentObjectId = obj->GetDataObjectId();
+    m_CurrentObject = obj.get();
+
+    if (auto visibility = m_CurrentObject->GetVisibility()) {
+        ChangeDataObjectVisibility(m_CurrentObjectId, visibility);
+    }
+}
+
+void Scene::RemoveDataObject(DataObject::Pointer obj) {
+    for (auto it = m_Models.begin(); it != m_Models.end(); ++it) {
+        if (it->second == obj) {
+            m_Models.erase(it);
+            m_CurrentObjectId = m_Models.begin()->first;
+            m_CurrentObject = m_Models.begin()->second;
+            break;
+        }
+    }
+}
+
+void Scene::RemoveCurrentDataObject() {
+    if (auto visibility = m_CurrentObject->GetVisibility()) {
+        m_VisibleModelsCount--;
+    }
+
+    m_Models.erase(m_CurrentObjectId);
+    if (m_Models.empty()) return;
+    m_CurrentObjectId = m_Models.begin()->first;
+    m_CurrentObject = m_Models.begin()->second;
+}
+
+bool Scene::UpdateCurrentDataObject(int index) {
+    for (auto& [id, obj]: m_Models) {
+        if (id == index) {
+            m_CurrentObjectId = id;
+            m_CurrentObject = obj.get();
+            return true;
+        }
+        if (obj->HasSubDataObject()) {
+            auto subObj = obj->GetSubDataObject(index);
+            if (subObj != nullptr) {
+                m_CurrentObjectId = index;
+                m_CurrentObject = subObj.get();
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+DataObject* Scene::GetDataObject(int index) {
+    for (auto& [id, obj]: m_Models) {
+        if (id == index) { return obj.get(); }
+        if (obj->HasSubDataObject()) {
+            auto subObj = obj->GetSubDataObject(index);
+            if (subObj != nullptr) { return subObj.get(); }
+        }
+    }
+    return nullptr;
+}
+
+DataObject* Scene::GetCurrentObject() { return m_CurrentObject; }
+
+void Scene::ChangeViewStyle(IGenum mode) {
+    m_CurrentObject->SetViewStyle(mode);
+}
+
+void Scene::ChangeDataObjectVisibility(int index, bool visibility) {
+    auto* obj = GetDataObject(index);
+    obj->SetVisibility(visibility);
+
+    if (visibility) {
+        m_VisibleModelsCount++;
+        if (m_VisibleModelsCount == 1) {
+            Vector3f center = obj->GetBoundingBox().center();
+            float radius = obj->GetBoundingBox().diag() / 2;
+            
+            m_FirstModelCenter =
+                    igm::vec4{center[0], center[1], center[2], radius};
+            m_Camera->SetCamaraPos(center[0], center[1],
+                                   center[2] + 2.0f * radius);
+            //m_Camera->SetCamaraPos(0.293951, 21.5821, 228.601);
+        }
+    } else {
+        m_VisibleModelsCount--;
+    }
+}
+
+std::map<DataObjectId, DataObject::Pointer>& Scene::GetModelList() {
+    return m_Models;
+}
+
 void Scene::InitOpenGL() {
     if (!gladLoadGL()) {
         throw std::runtime_error("Failed to initialize GLAD");
@@ -146,8 +237,10 @@ void Scene::InitOpenGL() {
     // allocate memory
     {
         m_MVPBlock.create();
+        m_MVPBlock.target(GL_UNIFORM_BUFFER);
         m_MVPBlock.allocate(sizeof(MVPMatrix), nullptr, GL_STATIC_DRAW);
         m_UBOBlock.create();
+        m_UBOBlock.target(GL_UNIFORM_BUFFER);
         m_UBOBlock.allocate(sizeof(UniformBufferObject), nullptr,
                             GL_STATIC_DRAW);
 
@@ -167,6 +260,7 @@ void Scene::InitOpenGL() {
     {
         m_ScreenQuadVAO.create();
         m_ScreenQuadVBO.create();
+        m_ScreenQuadVBO.target(GL_ARRAY_BUFFER);
 
         float quadVertices[] = {// positions   // texCoords
                                 -1.0f, 1.0f, 0.0f, 1.0f,  -1.0f, -1.0f,
@@ -191,6 +285,7 @@ void Scene::InitOpenGL() {
 
     // init drawculldata buffer
     m_DrawCullData.create();
+    m_DrawCullData.target(GL_UNIFORM_BUFFER);
     m_DrawCullData.allocate(sizeof(DrawCullData), nullptr, GL_DYNAMIC_DRAW);
 
     // init framebuffer
@@ -225,13 +320,13 @@ void Scene::ResizeFrameBuffer() {
     {
         GLFramebuffer fbo;
         fbo.create();
-        fbo.bind(GL_FRAMEBUFFER);
+        fbo.target(GL_FRAMEBUFFER);
+        fbo.bind();
 
         GLTexture2dMultisample colorTexture;
         colorTexture.create();
         colorTexture.bind();
         colorTexture.storage(samples, GL_RGB8, width, height, GL_TRUE);
-        colorTexture.getTextureHandle().makeResident();
         fbo.texture(GL_COLOR_ATTACHMENT0, colorTexture, 0);
 
         GLTexture2dMultisample depthTexture;
@@ -239,15 +334,13 @@ void Scene::ResizeFrameBuffer() {
         depthTexture.bind();
         depthTexture.storage(samples, GL_DEPTH_COMPONENT32F, width, height,
                              GL_TRUE);
-        depthTexture.getTextureHandle().makeResident();
         fbo.texture(GL_DEPTH_ATTACHMENT, depthTexture, 0);
 
-        fbo.release(GL_FRAMEBUFFER);
+        fbo.release();
 
         m_FramebufferMultisampled = std::move(fbo);
 
-        if (m_FramebufferMultisampled.checkStatus(GL_FRAMEBUFFER) !=
-            GL_FRAMEBUFFER_COMPLETE)
+        if (m_FramebufferMultisampled.checkStatus() != GL_FRAMEBUFFER_COMPLETE)
             std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!"
                       << std::endl;
     }
@@ -256,7 +349,8 @@ void Scene::ResizeFrameBuffer() {
     {
         GLFramebuffer fbo;
         fbo.create();
-        fbo.bind(GL_FRAMEBUFFER);
+        fbo.target(GL_FRAMEBUFFER);
+        fbo.bind();
 
         GLTexture2d colorTexture;
         colorTexture.create();
@@ -264,7 +358,6 @@ void Scene::ResizeFrameBuffer() {
         colorTexture.storage(1, GL_RGB8, width, height);
         colorTexture.parameteri(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         colorTexture.parameteri(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        colorTexture.getTextureHandle().makeResident();
         fbo.texture(GL_COLOR_ATTACHMENT0, colorTexture, 0);
 
         GLTexture2d depthTexture;
@@ -273,32 +366,27 @@ void Scene::ResizeFrameBuffer() {
         depthTexture.storage(1, GL_DEPTH_COMPONENT32F, width, height);
         depthTexture.parameteri(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         depthTexture.parameteri(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        depthTexture.getTextureHandle().makeResident();
         fbo.texture(GL_DEPTH_ATTACHMENT, depthTexture, 0);
 
-        fbo.release(GL_FRAMEBUFFER);
+        fbo.release();
 
         m_Framebuffer = std::move(fbo);
         m_ColorTexture = std::move(colorTexture);
         m_DepthTexture = std::move(depthTexture);
 
-        if (m_Framebuffer.checkStatus(GL_FRAMEBUFFER) !=
-            GL_FRAMEBUFFER_COMPLETE)
+        if (m_Framebuffer.checkStatus() != GL_FRAMEBUFFER_COMPLETE)
             std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!"
                       << std::endl;
     }
 
+#ifndef __APPLE__
     ResizeHZBTexture();
+#endif
 }
 void Scene::ResizeHZBTexture() {
     uint32_t width = m_Camera->GetViewPort().x;
     uint32_t height = m_Camera->GetViewPort().y;
 
-    //auto previousPow2 = [](uint32_t v) {
-    //    uint32_t r = 1;
-    //    while (r * 2 < v) r *= 2;
-    //    return r;
-    //};
     m_DepthPyramidWidth = width;
     m_DepthPyramidHeight = height;
     m_DepthPyramidLevels = 1 + static_cast<unsigned int>(std::floor(
@@ -310,12 +398,12 @@ void Scene::ResizeHZBTexture() {
     texture.storage(m_DepthPyramidLevels, GL_R32F, width, height);
     texture.parameteri(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     texture.parameteri(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    texture.parameteri(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    texture.parameteri(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    texture.getTextureHandle().makeResident();
+    texture.parameteri(GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+    texture.parameteri(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     texture.release();
 
     m_DepthPyramid = std::move(texture);
+    m_DepthPyramid.getTextureHandle().makeResident();
 }
 
 void Scene::Draw() {
@@ -328,12 +416,12 @@ void Scene::Draw() {
 
     // render to framebuffer
     {
-        m_FramebufferMultisampled.bind(GL_FRAMEBUFFER);
+        m_FramebufferMultisampled.bind();
         glClearColor(m_BackgroundColor.r, m_BackgroundColor.g,
                      m_BackgroundColor.b, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         DrawFrame();
-        m_FramebufferMultisampled.release(GL_FRAMEBUFFER);
+        m_FramebufferMultisampled.release();
         //return;
     }
 
@@ -351,8 +439,6 @@ void Scene::Draw() {
     {
         glBindFramebuffer(GL_FRAMEBUFFER, defaultFramebuffer);
         glViewport(0, 0, width, height);
-        glClearColor(m_BackgroundColor.r, m_BackgroundColor.g,
-                     m_BackgroundColor.b, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
         glDisable(GL_DEPTH_TEST);
 
@@ -360,9 +446,11 @@ void Scene::Draw() {
         shader->use();
 
         GLUniform textureUniform = shader->getUniformLocation("screenTexture");
-        shader->setUniform(textureUniform, m_ColorTexture.getTextureHandle());
-        //shader->setUniform(textureUniform, m_DepthTexture.getTextureHandle());
-        //shader->setUniform(textureUniform, m_DepthPyramid.getTextureHandle());
+        m_ColorTexture.active(GL_TEXTURE1);
+        m_DepthTexture.active(GL_TEXTURE2);
+        m_DepthPyramid.active(GL_TEXTURE3);
+        shader->setUniform(textureUniform, 1);
+
         m_ScreenQuadVAO.bind();
         glDrawArrays(GL_TRIANGLES, 0, 6);
         m_ScreenQuadVAO.release();
@@ -370,10 +458,42 @@ void Scene::Draw() {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
-    RefreshHZBTexture();
-
-    GLCheckError();
+#ifndef __APPLE__
+    RefreshHizTexture();
+#endif
 }
+
+void Scene::RefreshHizTexture() {
+    // copy level 0
+    GLTexture2d::copyImageSubData(m_DepthTexture, GL_TEXTURE_2D, 0, 0, 0, 0,
+                                  m_DepthPyramid, GL_TEXTURE_2D, 0, 0, 0, 0,
+                                  m_DepthPyramidWidth, m_DepthPyramidHeight, 1);
+
+    // generate other level
+    for (unsigned int level = 1; level < m_DepthPyramidLevels; ++level) {
+        uint32_t width = m_DepthPyramidWidth >> (level - 1);
+        uint32_t height = m_DepthPyramidHeight >> (level - 1);
+        if (width < 1) width = 1;
+        if (height < 1) height = 1;
+
+        uint32_t levelWidth = width >> 1;
+        uint32_t levelHeight = height >> 1;
+        if (levelWidth < 1) levelWidth = 1;
+        if (levelHeight < 1) levelHeight = 1;
+
+        auto shader = GetShader(DEPTHREDUCE);
+        shader->use();
+        shader->setUniform(shader->getUniformLocation("inImage"),
+                           m_DepthPyramid.getTextureHandle());
+        shader->setUniform(shader->getUniformLocation("inImageSize"),
+                           igm::uvec2{width, height});
+        shader->setUniform(shader->getUniformLocation("level"), level);
+        m_DepthPyramid.bindImage(0, level, GL_FALSE, 0, GL_WRITE_ONLY, GL_R32F);
+
+        glDispatchCompute((levelWidth + 15) / 16, (levelHeight + 15) / 16, 1);
+        glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+    }
+};
 
 void Scene::Update() { this->Draw(); }
 
@@ -389,6 +509,19 @@ void Scene::DrawFrame() {
 
     DrawModels();
     DrawAxes();
+}
+
+void Scene::DrawModels() {
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+    glViewport(0, 0, m_Camera->GetViewPort().x, m_Camera->GetViewPort().y);
+
+    for (auto& [id, obj]: m_Models) {
+        obj->ConvertToDrawableData();
+        GLCheckError();
+        obj->Draw(this);
+        GLCheckError();
+    }
 }
 
 void Scene::UpdateUniformData() {
@@ -409,11 +542,9 @@ void Scene::UpdateUniformData() {
 
 void Scene::UpdateUniformBuffer() {
     // update mvp matrix
-    m_MVPBlock.bind(GL_UNIFORM_BUFFER);
     m_MVPBlock.subData(0, sizeof(MVPMatrix), &m_MVP);
 
     // update other ubo
-    m_UBOBlock.bind(GL_UNIFORM_BUFFER);
     m_UBOBlock.subData(0, sizeof(UniformBufferObject), &m_UBO);
 }
 
@@ -442,13 +573,152 @@ void Scene::DrawAxes() {
 
     m_Axes->Update(mvp, {0, 0, 200, 200});
 
-    GLUniform textureUniform = fontShader->getUniformLocation("textureHandle");
+    GLUniform textureUniform = fontShader->getUniformLocation("fontTexture");
     GLUniform colorUniform = fontShader->getUniformLocation("textColor");
     m_Axes->DrawXYZ(fontShader, textureUniform, colorUniform);
 }
 
-void Scene::ChangeViewStyle(IGenum mode) {
-    m_CurrentObject->SetViewStyle(mode);
+GLBuffer& Scene::GetDrawCullDataBuffer() {
+    igm::mat4 projection = m_Camera->GetProjectionMatrix();
+    igm::mat4 projectionT = projection.transpose();
+
+    auto normalizePlane = [](igm::vec4 p) { return p / igm::vec3(p).length(); };
+    igm::vec4 frustumX =
+            normalizePlane(projectionT[3] + projectionT[0]); // x + w < 0
+    igm::vec4 frustumY =
+            normalizePlane(projectionT[3] + projectionT[1]); // y + w < 0
+
+    DrawCullData cullData = {};
+    cullData.modelview = m_Camera->GetViewMatrix() * m_ModelRotate;
+    cullData.P00 = projection[0][0];
+    cullData.P11 = projection[1][1];
+    cullData.znear = m_Camera->GetNearPlane();
+    cullData.zfar = m_Camera->GetFarPlane();
+    cullData.frustum[0] = frustumX.x;
+    cullData.frustum[1] = frustumX.z;
+    cullData.frustum[2] = frustumY.y;
+    cullData.frustum[3] = frustumY.z;
+    cullData.pyramidWidth = static_cast<float>(m_DepthPyramidWidth);
+    cullData.pyramidHeight = static_cast<float>(m_DepthPyramidHeight);
+
+    //std::cout << "amadio: " << std::endl;
+    //{
+    //    auto sphereBounds = igm::vec4{2.26758385f, 19.6720943f, 3.01321363f,
+    //                                  26.9144592f};
+    //    //auto sphereBounds = igm::vec4{0.0230077654f, 0.719376027f,
+    //    //                              0.0456265621f, 0.917246699f};
+    //    auto center = cullData.modelview * igm::vec4{sphereBounds.x,
+    //                                                 sphereBounds.y,
+    //                                                 sphereBounds.z, 1.0f};
+    //    float radius = sphereBounds.w;
+    //
+    //    auto C = center;
+    //    auto r = radius;
+    //    auto P00 = cullData.P00;
+    //    auto P11 = cullData.P11;
+    //
+    //    std::cout << "origin z: " << C.z << std::endl;
+    //    auto z_buffer = (1 / -C.z - 1 / cullData.znear) /
+    //                    (1 / cullData.zfar - 1 / cullData.znear);
+    //    std::cout << "z-buffer: " << z_buffer << std::endl;
+    //    auto z_linear = (2 * cullData.znear * cullData.zfar) /
+    //                    (cullData.znear + cullData.zfar -
+    //                     (z_buffer * 2.0f - 1.0f) *
+    //                             (cullData.zfar - cullData.znear));
+    //    std::cout << "z_linear: " << z_linear << std::endl;
+    //
+    //    //igm::vec2 cx = -C.xz;
+    //    igm::vec2 cx = -igm::vec2{C.x, C.z};
+    //    igm::vec2 vx = igm::vec2(sqrt(dot(cx, cx) - r * r), r);
+    //    igm::vec2 minx = igm::mat2(vx.x, vx.y, -vx.y, vx.x) * cx;
+    //    igm::vec2 maxx = igm::mat2(vx.x, -vx.y, vx.y, vx.x) * cx;
+    //
+    //    //igm::vec2 cy = -C.yz;
+    //    igm::vec2 cy = -igm::vec2{C.y, C.z};
+    //    igm::vec2 vy = igm::vec2(sqrt(dot(cy, cy) - r * r), r);
+    //    igm::vec2 miny = igm::mat2(vy.x, vy.y, -vy.y, vy.x) * cy;
+    //    igm::vec2 maxy = igm::mat2(vy.x, -vy.y, vy.y, vy.x) * cy;
+    //
+    //    auto aabb = igm::vec4(minx.x / minx.y * P00, miny.x / miny.y * P11,
+    //                          maxx.x / maxx.y * P00, maxy.x / maxy.y * P11);
+    //    aabb = igm::vec4{aabb.x, aabb.w, aabb.z, aabb.y} *
+    //                   igm::vec4(0.5f, -0.5f, 0.5f, -0.5f) +
+    //           igm::vec4(0.5f); // clip space -> uv space
+    //
+    //    std::cout << "aabb: " << aabb << std::endl;
+    //    auto aabb_width = aabb.z - aabb.x;
+    //    auto aabb_height = aabb.w - aabb.y;
+    //    std::cout << "aabb(width, height): "
+    //              << igm::vec2{aabb_width, aabb_height} << std::endl;
+    //    auto aabb_width_pixel = aabb_width * cullData.pyramidWidth;
+    //    auto aabb_height_pixel = aabb_height * cullData.pyramidHeight;
+    //    std::cout << "aabb(width, height): "
+    //              << igm::vec2{aabb_width_pixel, aabb_height_pixel}
+    //              << std::endl;
+    //    unsigned int level = static_cast<unsigned int>(std::floor(
+    //            std::log2(std::max(aabb_width_pixel, aabb_height_pixel))));
+    //    std::cout << level << std::endl;
+    //}
+    //std::cout << "bunny: " << std::endl;
+    //{
+    //    auto sphereBounds = igm::vec4{-0.0403442159f, 0.0356687158f,
+    //                                  -0.10301578f, 0.203350931f};
+    //    auto center = cullData.modelview * igm::vec4{sphereBounds.x,
+    //                                                 sphereBounds.y,
+    //                                                 sphereBounds.z, 1.0f};
+    //    float radius = sphereBounds.w;
+    //
+    //    auto C = center;
+    //    auto r = radius;
+    //    auto P00 = cullData.P00;
+    //    auto P11 = cullData.P11;
+    //
+    //    std::cout << "origin z: " << C.z << std::endl;
+    //    auto z_buffer = (1 / -C.z - 1 / cullData.znear) /
+    //                    (1 / cullData.zfar - 1 / cullData.znear);
+    //    std::cout << "z-buffer: " << z_buffer << std::endl;
+    //    auto z_linear = (2 * cullData.znear * cullData.zfar) /
+    //                    (cullData.znear + cullData.zfar -
+    //                     (z_buffer * 2.0f - 1.0f) *
+    //                             (cullData.zfar - cullData.znear));
+    //    std::cout << "z_linear: " << z_linear << std::endl;
+    //
+    //    //igm::vec2 cx = -C.xz;
+    //    igm::vec2 cx = -igm::vec2{C.x, C.z};
+    //    igm::vec2 vx = igm::vec2(sqrt(dot(cx, cx) - r * r), r);
+    //    igm::vec2 minx = igm::mat2(vx.x, vx.y, -vx.y, vx.x) * cx;
+    //    igm::vec2 maxx = igm::mat2(vx.x, -vx.y, vx.y, vx.x) * cx;
+    //
+    //    //igm::vec2 cy = -C.yz;
+    //    igm::vec2 cy = -igm::vec2{C.y, C.z};
+    //    igm::vec2 vy = igm::vec2(sqrt(dot(cy, cy) - r * r), r);
+    //    igm::vec2 miny = igm::mat2(vy.x, vy.y, -vy.y, vy.x) * cy;
+    //    igm::vec2 maxy = igm::mat2(vy.x, -vy.y, vy.y, vy.x) * cy;
+    //
+    //    auto aabb = igm::vec4(minx.x / minx.y * P00, miny.x / miny.y * P11,
+    //                          maxx.x / maxx.y * P00, maxy.x / maxy.y * P11);
+    //    aabb = igm::vec4{aabb.x, aabb.w, aabb.z, aabb.y} *
+    //                   igm::vec4(0.5f, -0.5f, 0.5f, -0.5f) +
+    //           igm::vec4(0.5f); // clip space -> uv space
+    //
+    //    std::cout << "aabb: " << aabb << std::endl;
+    //    auto aabb_width = aabb.z - aabb.x;
+    //    auto aabb_height = aabb.w - aabb.y;
+    //    std::cout << "aabb(width, height): "
+    //              << igm::vec2{aabb_width, aabb_height} << std::endl;
+    //    auto aabb_width_pixel = aabb_width * cullData.pyramidWidth;
+    //    auto aabb_height_pixel = aabb_height * cullData.pyramidHeight;
+    //    std::cout << "aabb(width, height): "
+    //              << igm::vec2{aabb_width_pixel, aabb_height_pixel}
+    //              << std::endl;
+    //    unsigned int level = static_cast<unsigned int>(std::floor(
+    //            std::log2(std::max(aabb_width_pixel, aabb_height_pixel))));
+    //    std::cout << level << std::endl;
+    //}
+
+    m_DrawCullData.subData(0, sizeof(DrawCullData), &cullData);
+
+    return m_DrawCullData;
 }
 
 IGAME_NAMESPACE_END

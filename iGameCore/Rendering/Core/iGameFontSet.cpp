@@ -9,11 +9,11 @@ IGAME_NAMESPACE_BEGIN
 FontSet::FontSet() {}
 
 FontSet::~FontSet() {
-    for (const auto& pair: m_Textures) {
-        const GLTexture2d& texture = pair.second;
-        auto handle = texture.getTextureHandle();
-        handle.makeNonResident();
-    }
+    //for (const auto& pair: m_Textures) {
+    //    const GLTexture2d& texture = pair.second;
+    //    auto handle = texture.getTextureHandle();
+    //    handle.makeNonResident();
+    //}
 }
 
 void FontSet::RegisterWords(const wchar_t* text) {
@@ -73,8 +73,6 @@ void FontSet::RegisterWords(const wchar_t* text) {
         texture.parameteri(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
         // Store textures for later use
-        GLTextureHandle handle = texture.getTextureHandle();
-        handle.makeResident();
         m_Textures.insert(
                 std::pair<wchar_t, GLTexture2d>(wchar, std::move(texture)));
 
@@ -114,11 +112,6 @@ GLTexture2d& FontSet::GetTexture(const wchar_t wchar) {
     auto it = m_Textures.find(wchar);
     assert(it != m_Textures.end());
     return it->second;
-}
-GLTextureHandle FontSet::GetTextureHandle(const wchar_t wchar) {
-    auto it = m_Textures.find(wchar);
-    assert(it != m_Textures.end());
-    return it->second.getTextureHandle();
 }
 
 IGAME_NAMESPACE_END

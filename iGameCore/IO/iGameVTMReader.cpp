@@ -49,13 +49,13 @@ bool iGameVTMReader::Parsing() {
                 if(fileSuffix == "vts"){
                     iGameVTSReader::Pointer rd = iGameVTSReader::New();
                     rd->SetFilePath(fileDir + std::string(existAttribute));
-                    rd->Update();
+                    rd->Execute();
                     newObj = rd->GetOutput();
                 }
                 else if(fileSuffix == "vtu"){
                     iGameVTUReader::Pointer rd = iGameVTUReader::New();
                     rd->SetFilePath(fileDir + std::string(existAttribute));
-                    rd->Update();
+                    rd->Execute();
                     newObj = rd->GetOutput();
                 }
             }

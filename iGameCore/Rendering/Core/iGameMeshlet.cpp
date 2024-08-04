@@ -78,9 +78,11 @@ void Meshlet::BuildMeshlet(const float* vertex_positions, size_t vertex_count,
 
     m_MeshletsCount = meshlet_count;
     m_MeshletsBuffer.create();
+    m_MeshletsBuffer.target(GL_SHADER_STORAGE_BUFFER);
     m_MeshletsBuffer.allocate(meshletDatas.size() * sizeof(MeshletData),
                               meshletDatas.data(), GL_DYNAMIC_DRAW);
     m_DrawCommandBuffer.create();
+    m_DrawCommandBuffer.target(GL_DRAW_INDIRECT_BUFFER);
     m_DrawCommandBuffer.allocate(drawCommands.size() *
                                          sizeof(DrawElementsIndirectCommand),
                                  drawCommands.data(), GL_DYNAMIC_DRAW);
@@ -96,20 +98,16 @@ void Meshlet::BuildMeshlet(const float* vertex_positions, size_t vertex_count,
     std::cout << out << std::endl;
 }
 
-const size_t Meshlet::MeshletsCount() const { return m_MeshletsCount; };
+size_t Meshlet::MeshletsCount() { return m_MeshletsCount; };
 
 const unsigned int* Meshlet::GetMeshletIndices() const {
     return m_MeshletIndices.data();
 };
 
-const size_t Meshlet::GetMeshletIndexCount() const {
-    return m_MeshletIndices.size();
-};
+size_t Meshlet::GetMeshletIndexCount() { return m_MeshletIndices.size(); };
 
-const GLBuffer& Meshlet::MeshletsBuffer() const { return m_MeshletsBuffer; };
+GLBuffer& Meshlet::MeshletsBuffer() { return m_MeshletsBuffer; };
 
-const GLBuffer& Meshlet::DrawCommandBuffer() const {
-    return m_DrawCommandBuffer;
-};
+GLBuffer& Meshlet::DrawCommandBuffer() { return m_DrawCommandBuffer; };
 
 IGAME_NAMESPACE_END

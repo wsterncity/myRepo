@@ -38,6 +38,8 @@ typedef enum
 	IG_BIQUADRATIC_QUADRATIC_WEDGE = 32,
 	IG_BIQUADRATIC_QUADRATIC_HEXAHEDRON = 33,
 	IG_BIQUADRATIC_TRIANGLE = 34,
+
+	IG_POLY_LINE,
 } IGCellType;
 
 inline constexpr bool GetCellTypeIsVariable(int type)
