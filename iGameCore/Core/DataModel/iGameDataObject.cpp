@@ -161,8 +161,8 @@ void DataObject::SwitchToCurrentTimeframe(int timeIndex) {
     m_CurrentTimeframeIndex = timeIndex;
 }
 
-StreamingData::Pointer DataObject::GetTimeFrames() {
-    //        if(m_TimeFrames == nullptr) m_TimeFrames = StreamingData::New();
+    StreamingData::Pointer DataObject::GetTimeFrames() {
+        if(m_TimeFrames == nullptr) m_TimeFrames = StreamingData::New();
 
     return m_TimeFrames;
 }

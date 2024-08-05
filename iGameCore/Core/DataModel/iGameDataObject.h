@@ -117,13 +117,15 @@ public:
     DataObject* FindParent();
 
 protected:
-    DataObject() {
-        m_Propertys = PropertySet::New();
-        m_Metadata = Metadata::New();
-        m_UniqueId = GetIncrementDataObjectId();
-        m_BoundingHelper = Object::New();
-    }
-    ~DataObject() override = default;
+	DataObject()
+	{
+		m_Propertys = PropertySet::New();
+		m_Metadata = Metadata::New();
+//        m_TimeFrames = StreamingData::New();
+		m_UniqueId = GetIncrementDataObjectId();
+		m_BoundingHelper = Object::New();
+	}
+	~DataObject() override = default;
 
     virtual void ComputeBoundingBox() {}
 

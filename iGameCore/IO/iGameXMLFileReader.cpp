@@ -9,9 +9,8 @@
 
 #include "iGameXMLFileReader.h"
 #include "iGameVolumeMesh.h"
-#include "iGameStringArray.h"
-#include <tinyxml.h>
 
+#include <tinyxml2.h>
 IGAME_NAMESPACE_BEGIN
 
 iGameXMLFileReader::iGameXMLFileReader() {
@@ -38,7 +37,6 @@ bool iGameXMLFileReader::Execute() {
         return false;
     }
     CreateDataObject();
-
     int size = m_Output->GetPropertySet()->GetAllPropertys()->GetNumberOfElements();
 
     if (size > 0) {
@@ -50,11 +48,11 @@ bool iGameXMLFileReader::Execute() {
         m_Output->GetMetadata()->AddStringArray(ATTRIBUTE_NAME_ARRAY, attrbNameArray);
     }
     m_Output->SetName(m_FileName);
+    delete doc;
     SetOutput(0, m_Output);
     end = clock();
     std::cout << "Read file success!" << std::endl;
     std::cout << "   The time cost: " << end - start << "ms" << std::endl;
-    delete doc;
     return true;
 }
 
@@ -63,9 +61,10 @@ bool iGameXMLFileReader::Open() {
         printf("[XML parser]:FilePath is empty. Exiting.\n");
         return false;
     }
-    doc = new TiXmlDocument((char*)m_FilePath.data());
-    if (!doc->LoadFile()) {
-        printf("[XML parser]:Could not load file: %s . Error='%s'. Exiting.\n", m_FilePath.c_str(), doc->ErrorDesc());
+
+    doc = new tinyxml2::XMLDocument();
+    if (doc->LoadFile(m_FilePath.c_str()) != tinyxml2::XML_SUCCESS) {
+        printf("[XML parser]:Could not load file: %s . Error='%s'. Exiting.\n", m_FilePath.c_str(), doc->ErrorStr());
         return false;
     }
     root = doc->RootElement(); // <VTKFile>
@@ -123,9 +122,9 @@ bool iGameXMLFileReader::CreateDataObject() {
     return true;
 }
 
-TiXmlElement *iGameXMLFileReader::FindTargetItem(TiXmlElement *root, const char *itemName) {
+tinyxml2::XMLElement* iGameXMLFileReader::FindTargetItem(tinyxml2::XMLElement *root, const char *itemName) {
     if(root == nullptr) return nullptr;
-    TiXmlElement* res = root->FirstChildElement(itemName);
+    tinyxml2::XMLElement* res = root->FirstChildElement(itemName);
     if(res) return res;
     res = FindTargetItem(root->FirstChildElement(), itemName);
     if(res) return res;
@@ -133,18 +132,26 @@ TiXmlElement *iGameXMLFileReader::FindTargetItem(TiXmlElement *root, const char 
     return res;
 }
 
-TiXmlElement * iGameXMLFileReader::FindTargetAttributeItem(TiXmlElement *root, const char *itemName, const char *attributeName,
-                                            const std::string &attributeData) {
+tinyxml2::XMLElement * iGameXMLFileReader::FindTargetAttributeItem(tinyxml2::XMLElement *root, const char *itemName, const char *attributeName,
+                                                                   const char* attributeData) {
     if(root == nullptr) return nullptr;
-    if(std::string(root->Value()) == std::string(itemName) && std::string(root->Attribute(attributeName)) == attributeData){
+    if(strcmp(root->Value(), itemName) == 0 && strcmp(root->Attribute(attributeName), attributeData) == 0){
         return root;
     }
-    TiXmlElement* res = FindTargetAttributeItem(root->FirstChildElement(), itemName, attributeName, attributeData);
+    tinyxml2::XMLElement* res = FindTargetAttributeItem(root->FirstChildElement(), itemName, attributeName, attributeData);
     if(res) return res;
     res = FindTargetAttributeItem(root->NextSiblingElement(), itemName, attributeName, attributeData);
     return res;
 }
 
-
+void iGameXMLFileReader::ReadBase64EncodedPoints(const char *p, const Points::Pointer& pointSet) {
+    if(is_header_type_uint64){
+        auto byte_size = Base64_Convert_TargetValue<uint64_t>(p);
+        Base64_ConvertTo_Float_Points(p, 8, byte_size, pointSet);
+    } else {
+        auto byte_size = Base64_Convert_TargetValue<uint32_t>(p);
+        Base64_ConvertTo_Float_Points(p, 4, byte_size, pointSet);
+    }
+}
 
 IGAME_NAMESPACE_END

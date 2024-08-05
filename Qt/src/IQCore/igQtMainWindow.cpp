@@ -2,10 +2,12 @@
 // Created by m_ky on 2024/4/10.
 //
 
+#include <iGameUnstructuredMesh.h>
 #include <iGameFilterPoints.h>
 #include <iGameDataSource.h>
 #include <iGameSurfaceMeshFilterTest.h>
 #include <iGameVolumeMeshFilterTest.h>
+#include <iGameModelSurfaceFilters/iGameModelGeometryFilter.h>
 
 #include <IQCore/igQtMainWindow.h>
 #include <IQCore/igQtFileLoader.h>
@@ -184,142 +186,197 @@ igQtMainWindow::~igQtMainWindow() {
 }
 
 void igQtMainWindow::initAllFilters() {
-	//connect(ui->action_LaSmoothing, &QAction::triggered, this, [&](bool checked) {
-	//	iGame::iGameInformationMap* info = iGame::iGameInformationMap::New();
-	//	info->Add("lambda", 0.05);
-	//	info->Add("iterTime", 5);
-	//	iGame::iGameManager::Instance()->ExecuteAlgorithm(iGame::iGameLaplacianSmoothing::New(), info);
-	//	delete info;
-	//	});
-	//connect(ui->action_About, &QAction::triggered, this, [&](bool checked) {
-	//	iGame::iGameInformationMap* info = iGame::iGameInformationMap::New();
-	//	iGame::iGameManager::Instance()->ExecuteAlgorithm(iGame::iGameGenBaseScalar::New(), info);
-	//	delete info;
-	//	ui->widget_ScalarField->getScalarsName();
-	//	});
+    //connect(ui->action_LaSmoothing, &QAction::triggered, this, [&](bool checked) {
+    //	iGame::iGameInformationMap* info = iGame::iGameInformationMap::New();
+    //	info->Add("lambda", 0.05);
+    //	info->Add("iterTime", 5);
+    //	iGame::iGameManager::Instance()->ExecuteAlgorithm(iGame::iGameLaplacianSmoothing::New(), info);
+    //	delete info;
+    //	});
+    //connect(ui->action_About, &QAction::triggered, this, [&](bool checked) {
+    //	iGame::iGameInformationMap* info = iGame::iGameInformationMap::New();
+    //	iGame::iGameManager::Instance()->ExecuteAlgorithm(iGame::iGameGenBaseScalar::New(), info);
+    //	delete info;
+    //	ui->widget_ScalarField->getScalarsName();
+    //	});
 
-	//connect(ui->action_Simplification, &QAction::triggered, this, [&](bool checked) {
-	//	iGame::iGameInformationMap* info = iGame::iGameInformationMap::New();
-	//	info->Add("TargetFaceNum", 0);
-	//	info->Add("TargetReduction", 0.5);
-	//	info->Add("NormalCheck", true);
-	//	info->Add("OptimalPosition", true);
-	//	info->Add("PreserveBoundary", true);
-	//	info->Add("QualityCheck", true);
-	//	iGame::iGameManager::Instance()->ExecuteAlgorithm(iGame::iGameQEMSimplification::New(), info);
-	//	delete info;
-	//	});
+    //connect(ui->action_Simplification, &QAction::triggered, this, [&](bool checked) {
+    //	iGame::iGameInformationMap* info = iGame::iGameInformationMap::New();
+    //	info->Add("TargetFaceNum", 0);
+    //	info->Add("TargetReduction", 0.5);
+    //	info->Add("NormalCheck", true);
+    //	info->Add("OptimalPosition", true);
+    //	info->Add("PreserveBoundary", true);
+    //	info->Add("QualityCheck", true);
+    //	iGame::iGameManager::Instance()->ExecuteAlgorithm(iGame::iGameQEMSimplification::New(), info);
+    //	delete info;
+    //	});
 
 
-	//connect(ui->action_TetSimplification, &QAction::triggered, this, [&](bool checked) {
-	//	iGame::iGameInformationMap* info = iGame::iGameInformationMap::New();
-	//	iGame::iGameManager::Instance()->ExecuteAlgorithm(iGame::iGameTriDecimation::New(), info);
-	//	delete info;
-	//		});
+    //connect(ui->action_TetSimplification, &QAction::triggered, this, [&](bool checked) {
+    //	iGame::iGameInformationMap* info = iGame::iGameInformationMap::New();
+    //	iGame::iGameManager::Instance()->ExecuteAlgorithm(iGame::iGameTriDecimation::New(), info);
+    //	delete info;
+    //		});
 
-	connect(ui->action_test_01, &QAction::triggered, this, [&](bool checked) {
-		PointSet::Pointer points = PointSet::New();
-		Points::Pointer ps = Points::New();
-		
-		std::random_device rd;
-		std::mt19937 gen(rd());
-		std::uniform_real_distribution<> dis(0.0, 1.0);
+    connect(ui->action_test_01, &QAction::triggered, this, [&](bool checked) {
+        PointSet::Pointer points = PointSet::New();
+        Points::Pointer ps = Points::New();
 
-		double r = 1;
-		for (int i = 0; i < 1000000; i++) {
-			double u = dis(gen);
-			double v = dis(gen);
-			double w = dis(gen);
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_real_distribution<> dis(0.0, 1.0);
 
-			double theta = 2.0 * M_PI * u;
-			double phi = acos(2.0 * v - 1.0);
-			double rCubeRoot = std::cbrt(w);
+        double r = 1;
+        for (int i = 0; i < 1000000; i++) {
+            double u = dis(gen);
+            double v = dis(gen);
+            double w = dis(gen);
 
-			double x = r * rCubeRoot * sin(phi) * cos(theta);
-			double y = r * rCubeRoot * sin(phi) * sin(theta);
-			double z = r * rCubeRoot * cos(phi);
+            double theta = 2.0 * M_PI * u;
+            double phi = acos(2.0 * v - 1.0);
+            double rCubeRoot = std::cbrt(w);
 
-			ps->AddPoint( x, y, z );
-		}
-		points->SetPoints(ps);
-		points->SetName("undefined_PointSet");
-		rendererWidget->AddDataObject(points);
-		});
+            double x = r * rCubeRoot * sin(phi) * cos(theta);
+            double y = r * rCubeRoot * sin(phi) * sin(theta);
+            double z = r * rCubeRoot * cos(phi);
 
-	connect(ui->action_test_02, &QAction::triggered, this, [&](bool checked) {
-		FilterPoints::Pointer fp = FilterPoints::New();
-		fp->SetInput(rendererWidget->GetScene()->GetCurrentObject());
-		fp->SetFilterRate(0.5);
-        fp->Execute();
-		rendererWidget->update();
-		});
-
-	connect(ui->action_test_03, &QAction::triggered, this, [&](bool checked) {
-		SurfaceMesh::Pointer mesh = SurfaceMesh::New();
-		Points::Pointer points = Points::New();
-		points->AddPoint(0, 0, 0);
-		points->AddPoint(1, 0, 0);
-		points->AddPoint(0, 1, 0);
-
-		CellArray::Pointer faces = CellArray::New();
-		faces->AddCellId3(0, 1, 2);
-
-		mesh->SetPoints(points);
-		mesh->SetFaces(faces);
-		mesh->SetName("undefined_mesh");
-		rendererWidget->AddDataObject(mesh);
-		});
-
-	connect(ui->action_test_04, &QAction::triggered, this, [&](bool checked) {
-		SurfaceMeshFilterTest::Pointer fp = SurfaceMeshFilterTest::New();
-		fp->SetInput(rendererWidget->GetScene()->GetCurrentObject());
-		fp->Execute();
-		rendererWidget->update();
-		});
-
-	connect(ui->action_test_05, &QAction::triggered, this, [&](bool checked) {
-		VolumeMeshFilterTest::Pointer fp = VolumeMeshFilterTest::New();
-		fp->SetInput(rendererWidget->GetScene()->GetCurrentObject());
-        fp->Execute();
-		rendererWidget->update();
-		});
-
-	connect(ui->action_test_06, &QAction::triggered, this, [&](bool checked) {
-        LineSource::Pointer source = LineSource::New();
-        Points::Pointer points = Points::New();
-        FloatArray::Pointer colors = FloatArray::New();
-        CellArray::Pointer polylines = CellArray::New();
-        CellArray::Pointer lines = CellArray::New();
-        IdArray::Pointer pl = IdArray::New();
-        for (int i = 0; i < 10; ++i) {
-            float theta = 2 * M_PI * i / 10;
-            float x = std::cos(theta);
-            float y = std::sin(theta);
-            IGsize ptId = points->AddPoint(Point{ x, y, 0.0f});
-            colors->AddValue((x + y) / 2);
-            pl->AddId(ptId);
+            ps->AddPoint(x, y, z);
         }
-        polylines->AddCellIds(pl);
-
-		IGsize ptId0 = points->AddPoint(Point{0, 0, 0});
-		IGsize ptId1 = points->AddPoint(Point{0, 0, 1});
-        colors->AddValue(0.3);
-        colors->AddValue(0.4);
-        lines->AddCellId2(ptId0, ptId1);
-
-        source->SetPoints(points);
-        source->SetColors(colors);
-        source->SetLines(lines);
-        source->SetPolyLines(polylines);
-        source->SetName("undefined_line_source");
-        rendererWidget->AddDataObject(source);
+        points->SetPoints(ps);
+        points->SetName("undefined_PointSet");
+        rendererWidget->AddDataObject(points);
     });
+
+    connect(ui->action_test_02, &QAction::triggered, this, [&](bool checked) {
+        FilterPoints::Pointer fp = FilterPoints::New();
+        fp->SetInput(rendererWidget->GetScene()->GetCurrentObject());
+        fp->SetFilterRate(0.5);
+        fp->Execute();
+        rendererWidget->update();
+    });
+
+    connect(ui->action_test_03, &QAction::triggered, this, [&](bool checked) {
+        SurfaceMesh::Pointer mesh = SurfaceMesh::New();
+        Points::Pointer points = Points::New();
+        points->AddPoint(0, 0, 0);
+        points->AddPoint(1, 0, 0);
+        points->AddPoint(0, 1, 0);
+
+        CellArray::Pointer faces = CellArray::New();
+        faces->AddCellId3(0, 1, 2);
+
+        mesh->SetPoints(points);
+        mesh->SetFaces(faces);
+        mesh->SetName("undefined_mesh");
+        rendererWidget->AddDataObject(mesh);
+    });
+
+    connect(ui->action_test_04, &QAction::triggered, this, [&](bool checked) {
+        SurfaceMeshFilterTest::Pointer fp = SurfaceMeshFilterTest::New();
+        fp->SetInput(rendererWidget->GetScene()->GetCurrentObject());
+        fp->Execute();
+        rendererWidget->update();
+    });
+
+    connect(ui->action_test_05, &QAction::triggered, this, [&](bool checked) {
+        VolumeMeshFilterTest::Pointer fp = VolumeMeshFilterTest::New();
+        fp->SetInput(rendererWidget->GetScene()->GetCurrentObject());
+        fp->Execute();
+        rendererWidget->update();
+    });
+
+    connect(ui->action_test_06, &QAction::triggered, this, [&](bool checked) {
+        //      LineSource::Pointer source = LineSource::New();
+        //      Points::Pointer points = Points::New();
+        //      FloatArray::Pointer colors = FloatArray::New();
+        //      CellArray::Pointer polylines = CellArray::New();
+        //      CellArray::Pointer lines = CellArray::New();
+        //      IdArray::Pointer pl = IdArray::New();
+        //      for (int i = 0; i < 10; ++i) {
+        //          float theta = 2 * M_PI * i / 10;
+        //          float x = std::cos(theta);
+        //          float y = std::sin(theta);
+        //          IGsize ptId = points->AddPoint(Point{ x, y, 0.0f});
+        //          colors->AddValue((x + y) / 2);
+        //          pl->AddId(ptId);
+        //      }
+        //      polylines->AddCellIds(pl);
+
+        //IGsize ptId0 = points->AddPoint(Point{0, 0, 0});
+        //IGsize ptId1 = points->AddPoint(Point{0, 0, 1});
+        //      colors->AddValue(0.3);
+        //      colors->AddValue(0.4);
+        //      lines->AddCellId2(ptId0, ptId1);
+
+        //      source->SetPoints(points);
+        //      source->SetColors(colors);
+        //      source->SetLines(lines);
+        //      source->SetPolyLines(polylines);
+        //      source->SetName("undefined_line_source");
+        //      rendererWidget->AddDataObject(source);
+
+        UnstructuredMesh::Pointer mesh = UnstructuredMesh::New();
+        Points::Pointer points = Points::New();
+        CellArray::Pointer cells = CellArray::New();
+        UnsignedIntArray::Pointer types = UnsignedIntArray::New();
+        FloatArray::Pointer property = FloatArray::New();
+        property->SetName("scalar");
+
+        points->AddPoint(-0.5, -0.5, 0);
+        points->AddPoint(0.5, -0.5, 0);
+        points->AddPoint(0, 0.5, 0);
+        points->AddPoint(0, 0, 0.6);
+
+        points->AddPoint(1, 1, 0);
+        points->AddPoint(2, 1, 0);
+        points->AddPoint(1, 2, 0);
+
+        property->AddValue(-0.5);
+        property->AddValue(0.5);
+        property->AddValue(0);
+        property->AddValue(0);
+        property->AddValue(1);
+        property->AddValue(2);
+        property->AddValue(1);
+
+        cells->AddCellId4(0, 1, 2, 3);
+        types->AddValue(IG_TETRA);
+
+        cells->AddCellId3(4, 5, 6);
+        types->AddValue(IG_TRIANGLE);
+
+        StringArray::Pointer sa = StringArray::New();
+        sa->AddElement("scalar");
+
+        mesh->GetMetadata()->AddStringArray(ATTRIBUTE_NAME_ARRAY, sa);
+        mesh->GetPropertySet()->AddScalar(IG_POINT, property);
+        mesh->SetPoints(points);
+        mesh->SetCells(cells, types);
+        mesh->SetName("undefined_unstructured_mesh");
+        rendererWidget->AddDataObject(mesh);
+        this->updateCurrentDataObject();
+    });
+    auto action = ui->menuTest->addAction("surfaceExtractTest");
+    connect(action, &QAction::triggered, this,
+            [&](bool checked) {
+			auto fp = iGameModelGeometryFilter::New();
+        auto input = rendererWidget->GetScene()->GetCurrentObject();
+        fp->Execute(input);
+        SceneManager::Instance()->GetCurrentScene()->ChangeDataObjectVisibility(
+                0, false);
+        auto mesh = fp->GetOutPut();
+        rendererWidget->AddDataObject(mesh);
+
+    });
+
 }
 
 void igQtMainWindow::initAllDockWidgetConnectWithAction()
 {
 	//connect(ui->action_SearchInfo, &QAction::triggered, this, [&](bool checked) {
-	//	ui->dockWidget_SearchInfo->show();
+	//	ui->dockWidget_SearchInfo->sh
+	// ow();
 	//	});
 	//connect(ui->action_IsShowColorBar, &QAction::triggered, this, &igQtMainWindow::updateColorBarShow);
 	connect(ui->action_ExportAnimation, &QAction::triggered, this, [&](bool checked) {
@@ -364,8 +421,8 @@ void igQtMainWindow::initAllMySignalConnections()
 	//	});
 	//connect(fileLoader, &igQtFileLoader::FinishReading, ui->widget_SearchInfo, &igQtSearchInfoWidget::updateDataProducer);
 
-//	connect(fileLoader, &igQtFileLoader::AddFileToModelList, ui->modelTreeView, &igQtModelListView::AddModel);
-//	connect(rendererWidget, &igQtRenderWidget::AddDataObjectToModelList, ui->modelTreeView, &igQtModelListView::AddModel);
+	connect(fileLoader, &igQtFileLoader::AddFileToModelList, ui->modelTreeView, &igQtModelListView::AddModel);
+	connect(rendererWidget, &igQtRenderWidget::AddDataObjectToModelList, ui->modelTreeView, &igQtModelListView::AddModel);
 	connect(rendererWidget, &igQtRenderWidget::UpdateCurrentDataObject, this, &igQtMainWindow::updateCurrentDataObject);
 	
 	//connect(fileLoader, &igQtFileLoader::LoadAnimationFile, ui->widget_Animation, &igQtAnimationWidget::initAnimationComponents);
