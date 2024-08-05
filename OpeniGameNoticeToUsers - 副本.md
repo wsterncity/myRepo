@@ -313,7 +313,7 @@ IGAME_NAMESPACE_END
 #endif
 ```
 
-4. 在QtMainWindow中添加代码逻辑（暂定写法）
+4. 在QtMainWindow中添加代码逻辑
 
 在ui界面的某个成员（按钮、动作等都可以）进行该算法的调用执行，需要自己编写connect函数，具体可以查看示例。在igQtMainWindow中的initAllFilters()函数内部定义具体的connect，可以使用lambda表达式。
 
@@ -344,6 +344,78 @@ connect(ui->action_test_04, &QAction::triggered, this, [&](bool checked) {
 		mesh->SetName("undefined_mesh");    // 这里需要设置一下名字，会显示在模型列表上
 		rendererWidget->AddDataObject(mesh);// 把新的数据对象添加到Scene中
 		});
+
+
+
+1. 生成一个Dialog
+
+```
+igQtFilterDialogDockWidget* dialog = new igQtFilterDialogDockWidget(this);
+```
+
+2. 设置算法名称和介绍
+
+> void setFilterTitle(const QString& title);                // 设置名称
+
+>  void setFilterDescription(const QString& text);  // 设置介绍
+
+2. 设置参数
+
+> int addParameter(WidgetType type, const QString& title, const QString& defaultValue)
+
+@param: Widget类型，参数名称，参数默认值
+
+@return: 返回item的id，用于获取参数
+
+```
+int targetId = dialog->addParameter(igQtFilterDialogDockWidget::QT_LINE_EDIT, "Target number of faces", "1000");
+int reductionId = dialog->addParameter(igQtFilterDialogDockWidget::QT_LINE_EDIT, "Reduction (0..1)", "0");
+int thresholdId = dialog->addParameter(igQtFilterDialogDockWidget::QT_LINE_EDIT, "Quality threshold", "0.1");
+int preserveId = dialog->addParameter(igQtFilterDialogDockWidget::QT_CHECK_BOX, "Preserve Boundary of the mesh", "false");
+```
+
+3. 添加回调函数
+
+```
+方法一：
+dialog->setApplyFunctor(&VolumeMeshFilterTest::Execute);
+
+方法二：
+dialog->setApplyFunctor([&]() { 
+    std::cout << "123\n";
+});
+```
+
+4. 获取参数
+
+> double getDouble(int i, bool& ok)  // 获取double参数
+>
+> int getInt(int i, bool& ok)                  // 获取int参数
+>
+> bool getChecked(int i, bool& ok)    // 获取bool参数
+
+例子：
+
+```
+igQtFilterDialogDockWidget* dialog = new igQtFilterDialogDockWidget(this);
+int targetId = dialog->addParameter(igQtFilterDialogDockWidget::QT_LINE_EDIT, "Target number of faces", "1000");
+int reductionId = dialog->addParameter(igQtFilterDialogDockWidget::QT_LINE_EDIT, "Reduction (0..1)", "0");
+int thresholdId = dialog->addParameter(igQtFilterDialogDockWidget::QT_LINE_EDIT, "Quality threshold", "0.1");
+int preserveId = dialog->addParameter(igQtFilterDialogDockWidget::QT_CHECK_BOX, "Preserve Boundary of the mesh", "false");
+dialog->show();
+
+bool ok;
+std::cout << dialog->getInt(targetId, ok) << std::endl;
+std::cout << dialog->getDouble(reductionId, ok) << std::endl;
+std::cout << dialog->getDouble(thresholdId, ok) << std::endl;
+std::cout << (dialog->getChecked(preserveId, ok) ? "true" : "false") << std::endl;
+
+dialog->setApplyFunctor([&]() { 
+    std::cout << "123\n";
+});
+```
+
+
 
 ## 数据存储对象
 

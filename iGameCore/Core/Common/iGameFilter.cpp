@@ -6,6 +6,7 @@ Filter::Filter()
 {
     m_Inputs = DataObjectArray::New();
     m_Outputs = DataObjectArray::New();
+    m_ProgressObserver = ProgressObserver::Instance();
 }
 
 int Filter::GetNumberOfInputs() const
@@ -100,6 +101,10 @@ void Filter::UpdateProgress(double amount)
     amount = std::max(0.0, amount);
 
     m_Progress = amount;
+    if (m_ProgressObserver)
+    { 
+        m_ProgressObserver->UpdateProgress(amount);
+    }
 }
 
 void Filter::ResetProgress() 

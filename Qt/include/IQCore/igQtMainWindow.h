@@ -65,10 +65,8 @@ private slots:
     void updateViewStyleAndCloudPicture();
     void updateCurrentDataObject();
 
-//<<<<<<< HEAD
     void updateCurrentSceneWidget();
-//=======
-//>>>>>>> 5c590c0b5220d077d84cdab81b6eed106d7d4de8
+
 private:
     Ui::MainWindow* ui;
 };
