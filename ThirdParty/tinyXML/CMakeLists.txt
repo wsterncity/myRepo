@@ -1,7 +1,0 @@
-if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-    set(CMAKE_CXX_FLAGS "-fPIC")
-endif()
-file(GLOB_RECURSE srcs CONFIGURE_DEPENDS ./*.cpp ./*.h)
-add_library(tinyXML STATIC ${srcs})
-set_target_properties(tinyXML PROPERTIES LINKER_LANGUAGE CXX)
-target_include_directories(tinyXML PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")

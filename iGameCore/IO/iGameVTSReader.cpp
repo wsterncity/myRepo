@@ -8,35 +8,37 @@
  */
 
 #include "iGameVTSReader.h"
-#include "tinyxml.h"
 #include "iGameFileReader.h"
+#include "iGameBase64Util.h"
 
+#include "tinyxml2.h"
 IGAME_NAMESPACE_BEGIN
 bool iGame::iGameVTSReader::Parsing() {
-    TiXmlElement* elem;
+    tinyxml2::XMLElement* elem;
     const char* data;
+    const char* attribute;
     // get x y z range.
     elem = FindTargetItem(root, "StructuredGrid");
     int x_dimension, y_dimension, z_dimension;
     if(elem){
         data = elem->Attribute("WholeExtent");
-        char* nextToken;
-        char* token = strtok_s(const_cast<char*>(data), " ", &nextToken);
+//        char* nextToken;
+        char* token = strtok(const_cast<char*>(data), " ");
         int l, r;
         l = mAtoi(token);
-        token = strtok_s(nullptr, " ", &nextToken);
+        token = strtok(nullptr, " ");
         r = mAtoi(token);
-        token = strtok_s(nullptr, " ", &nextToken);
+        token = strtok(nullptr, " ");
         x_dimension = r - l + 1;
 
         l = mAtoi(token);
-        token = strtok_s(nullptr, " ", &nextToken);
+        token = strtok(nullptr, " ");
         r = mAtoi(token);
-        token = strtok_s(nullptr, " ", &nextToken);
+        token = strtok(nullptr, " ");
         y_dimension = r - l + 1;
 
         l = mAtoi(token);
-        token = strtok_s(nullptr, " ", &nextToken);
+        token = strtok(nullptr, " ");
         r = mAtoi(token);
         z_dimension = r - l + 1;
     } else {
@@ -45,33 +47,36 @@ bool iGame::iGameVTSReader::Parsing() {
     }
 
     //  find Points' position Data
-    elem = FindTargetItem(root, "Points");
-    data = elem->FirstChildElement()->GetText();
+    elem = FindTargetItem(root, "Points")->FirstChildElement("DataArray");
+    attribute = elem->Attribute("format");
+    data = elem->GetText();
 
     Points::Pointer Points = m_Data.GetPoints();
-    //  for processing multiple part data
-    int offset_idx = 0;
     if(data)
     {
-        float p[3] = { 0 };
-        char* nextToken;
-        char* token = strtok_s(const_cast<char*>(data), " ", &nextToken);
-        while (token != nullptr) {
-            for(float & i : p) {
-                i = mAtof(token);
-                token = strtok_s(nullptr, " ", &nextToken);
+        char* data_p = const_cast<char*>(data);
+        while (*data_p == '\n' || *data_p == ' ' || *data_p == '\t') data_p ++;
+        if(attribute && strcmp(attribute, "binary") == 0){
+            ReadBase64EncodedPoints(data, Points);
+        } else {
+            float p[3] = { 0 };
+            char* token = strtok(const_cast<char*>(data_p), " ");
+            while (token != nullptr) {
+                for(float & i : p) {
+                    i = mAtof(token);
+                    token = strtok(nullptr, " ");
+                }
+                Points->AddPoint(p);
             }
-            Points->AddPoint(p);
         }
     }
     int vhs[16] = { 0 };
     int CellNum = (x_dimension - 1) * (y_dimension - 1) * (z_dimension - 1);
-
     CellArray::Pointer volume = m_Data.GetVolumes();
 
     int xy_multi_dimensions = x_dimension * y_dimension;
     int xyz_multi_dimensions = x_dimension * y_dimension * z_dimension;
-    for(int z = offset_idx; z + xy_multi_dimensions < xyz_multi_dimensions + offset_idx; z += xy_multi_dimensions)
+    for(int z = 0; z + xy_multi_dimensions < xyz_multi_dimensions + 0; z += xy_multi_dimensions)
     {
         for(int y = z; y + y_dimension < z + xy_multi_dimensions; y += y_dimension)
         {
@@ -91,7 +96,6 @@ bool iGame::iGameVTSReader::Parsing() {
     // find Points' Scalar Data
     elem = FindTargetItem(root, "PointData");
     elem = elem->FirstChildElement("DataArray");
-
     //  use while loop to find point's multiple scala data.
     while(elem){
         data = elem->GetText();
@@ -104,12 +108,11 @@ bool iGame::iGameVTSReader::Parsing() {
             if(!strncmp(type, "Float32", 7)){
                 FloatArray::Pointer arr = FloatArray::New();
                 float ps[3] = { 0 };
-                char* nextToken;
-                char* token = strtok_s(const_cast<char*>(data), " ", &nextToken);
+                char* token = strtok(const_cast<char*>(data), " ");
                 while (token != nullptr) {
                     for(float & i : ps) {
                         i = mAtof(token);
-                        token = strtok_s(nullptr, " ", &nextToken);
+                        token = strtok(nullptr, " ");
                     }
                     arr->AddElement(ps);
                 }

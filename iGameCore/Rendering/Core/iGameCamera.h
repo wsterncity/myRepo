@@ -14,8 +14,8 @@
 #define OPENIGAME_CAMERA_H
 
 
-#include "RenderingMacro.h"
 #include "iGameObject.h"
+#include "iGameRenderingMacro.h"
 #include "igm/igm.h"
 #include "igm/transform.h"
 

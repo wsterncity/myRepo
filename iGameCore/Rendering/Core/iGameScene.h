@@ -74,7 +74,7 @@ public:
     DataObject* GetCurrentObject();
     std::map<DataObjectId, DataObject::Pointer>& GetModelList();
 
-    GLTexture2d& DepthPyramidTexture() { return m_DepthPyramid; }
+    GLTexture2d& HizTexture() { return m_DepthPyramid; }
 
     // TODO: slove z-buffer Accuracy issues
     GLBuffer& GetDrawCullDataBuffer();
@@ -88,13 +88,13 @@ protected:
     void InitAxes();
 
     void ResizeFrameBuffer();
-    void ResizeHZBTexture();
+    void ResizeHizTexture();
+    void RefreshHizTexture();
 
     void UpdateUniformData();
     void DrawFrame();
     void DrawModels();
     void DrawAxes();
-    void RefreshHizTexture();
 
     std::map<DataObjectId, DataObject::Pointer> m_Models;
     DataObjectId m_CurrentObjectId{0};

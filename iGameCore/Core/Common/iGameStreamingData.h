@@ -21,7 +21,7 @@ public:
 
         TimeFrame()= default;
 
-        TimeFrame(float _t,  StringArray::Pointer f_names) : timeValue(_t), SubFileNames(f_names){}
+        TimeFrame(float _t,  StringArray::Pointer f_names) : timeValue(_t), SubFileNames(std::move(f_names)){}
     };
 
     static Pointer New() { return new StreamingData; }

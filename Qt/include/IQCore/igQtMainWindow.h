@@ -6,8 +6,6 @@
 #ifndef OPENIGAME_IGQTMAINWINDOW_H
 #define OPENIGAME_IGQTMAINWINDOW_H
 
-#include "iGameSceneManager.h"
-
 #define QT_NO_OPENGL
 #include <ui_iGameQtMainWindow.h>
 #if __linux__
@@ -41,7 +39,6 @@ public:
     void initAllDockWidgetConnectWithAction();
     void initAllMySignalConnections();
     void initAllFilters();
-
 
 
 public:

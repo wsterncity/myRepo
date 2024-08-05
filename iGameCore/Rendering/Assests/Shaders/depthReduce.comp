@@ -26,5 +26,6 @@ void main() {
 
     // depth range: 0.0(near plane) -> 1.0(far plane)
     float maxDepth = max(max(depth_0, depth_1), max(depth_2, depth_3));
+    
     imageStore(outImage, ivec2(pos), vec4(maxDepth));
 }
