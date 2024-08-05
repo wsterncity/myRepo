@@ -208,7 +208,7 @@ void Scene::ChangeDataObjectVisibility(int index, bool visibility) {
         if (m_VisibleModelsCount == 1) {
             Vector3f center = obj->GetBoundingBox().center();
             float radius = obj->GetBoundingBox().diag() / 2;
-            
+
             m_FirstModelCenter =
                     igm::vec4{center[0], center[1], center[2], radius};
             m_Camera->SetCamaraPos(center[0], center[1],
@@ -245,15 +245,16 @@ void Scene::InitOpenGL() {
                             GL_STATIC_DRAW);
 
         auto patchShader = this->GetShader(PATCH);
-        patchShader->mapUniformBlock("MVPMatrix", 0, m_MVPBlock);
-        patchShader->mapUniformBlock("UniformBufferObject", 1, m_UBOBlock);
+        patchShader->mapUniformBlock("MVPMatrixBlock", 0, m_MVPBlock);
+        patchShader->mapUniformBlock("UniformBufferObjectBlock", 1, m_UBOBlock);
 
         auto noLightShader = this->GetShader(NOLIGHT);
-        noLightShader->mapUniformBlock("MVPMatrix", 0, m_MVPBlock);
-        noLightShader->mapUniformBlock("UniformBufferObject", 1, m_UBOBlock);
+        noLightShader->mapUniformBlock("MVPMatrixBlock", 0, m_MVPBlock);
+        noLightShader->mapUniformBlock("UniformBufferObjectBlock", 1,
+                                       m_UBOBlock);
 
         auto cullComputeShader = this->GetShader(MESHLETCULL);
-        cullComputeShader->mapUniformBlock("MVPMatrix", 0, m_MVPBlock);
+        cullComputeShader->mapUniformBlock("MVPMatrixBlock", 0, m_MVPBlock);
     }
 
     // init screen quad VAO
@@ -380,10 +381,10 @@ void Scene::ResizeFrameBuffer() {
     }
 
 #ifndef __APPLE__
-    ResizeHZBTexture();
+    ResizeHizTexture();
 #endif
 }
-void Scene::ResizeHZBTexture() {
+void Scene::ResizeHizTexture() {
     uint32_t width = m_Camera->GetViewPort().x;
     uint32_t height = m_Camera->GetViewPort().y;
 
@@ -457,10 +458,6 @@ void Scene::Draw() {
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
-
-#ifndef __APPLE__
-    RefreshHizTexture();
-#endif
 }
 
 void Scene::RefreshHizTexture() {
@@ -516,12 +513,34 @@ void Scene::DrawModels() {
     glDepthFunc(GL_LESS);
     glViewport(0, 0, m_Camera->GetViewPort().x, m_Camera->GetViewPort().y);
 
+#ifdef __APPLE__
     for (auto& [id, obj]: m_Models) {
         obj->ConvertToDrawableData();
-        GLCheckError();
         obj->Draw(this);
-        GLCheckError();
     }
+#else
+    bool debug = true;
+    if (debug) {
+        for (auto& [id, obj]: m_Models) { obj->ConvertToDrawableData(); }
+
+        // phase1: draw visible meshlet
+        for (auto& [id, obj]: m_Models) { obj->DrawPhase1(this); }
+
+        // phase2: draw invisible meshlet
+        RefreshHizTexture();
+        for (auto& [id, obj]: m_Models) { obj->DrawPhase2(this); }
+
+        // phase3: record all visible meshlet
+        RefreshHizTexture();
+        for (auto& [id, obj]: m_Models) { obj->DrawPhase3(this); }
+
+    } else {
+        for (auto& [id, obj]: m_Models) {
+            obj->ConvertToDrawableData();
+            obj->Draw(this);
+        }
+    }
+#endif
 }
 
 void Scene::UpdateUniformData() {

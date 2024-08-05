@@ -14,8 +14,8 @@
 #define OPENIGAME_CAMERA_H
 
 
-#include "RenderingMacro.h"
 #include "iGameObject.h"
+#include "iGameRenderingMacro.h"
 #include "igm/igm.h"
 #include "igm/transform.h"
 
@@ -72,7 +72,7 @@ public:
 protected:
     float fov = 45.0f;
     float nearPlane = 0.1f;
-    float farPlane = 300.0f;
+    float farPlane = 1000.0f;
 
 protected:
     Viewer() = default;

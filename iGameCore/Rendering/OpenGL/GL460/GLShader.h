@@ -109,6 +109,9 @@ public:
     void setUniform(GLUniform uniform, unsigned int value) const {
         glProgramUniform1ui(handle, uniform.index(), value);
     }
+    void getUniformValue(GLUniform uniform, unsigned int& value) const {
+        glGetUniformuiv(handle, uniform.index(), &value);
+    }
 
     void setUniform(GLUniform uniform, float value) const {
         glProgramUniform1f(handle, uniform.index(), value);

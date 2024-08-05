@@ -2,6 +2,7 @@
 
 #include "GLBuffer.h"
 #include "GLObject.h"
+#include <map>
 
 IGAME_NAMESPACE_BEGIN
 

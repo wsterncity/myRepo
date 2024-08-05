@@ -41,7 +41,11 @@ public:
     // GLbitfield access: GL_MAP_INVALIDATE_RANGE_BIT, GL_MAP_INVALIDATE_BUFFER_BIT
     // GLbitfield access: GL_MAP_FLUSH_EXPLICIT_BIT, GL_MAP_UNSYNCHRONIZED_BIT
     void* mapRange(size_t offset, size_t length, GLbitfield access) const {
-        return glMapNamedBufferRange(handle, offset, length, access);
+        void* ptr = glMapNamedBufferRange(handle, offset, length, access);
+        if (ptr == nullptr) {
+            throw std::runtime_error("Map buffer range is nullptr.");
+        }
+        return ptr;
     }
 
     void subData(size_t offset, size_t size, const void* data) const {

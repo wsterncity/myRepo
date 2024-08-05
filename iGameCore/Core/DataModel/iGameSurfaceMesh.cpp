@@ -500,72 +500,6 @@ void SurfaceMesh::ReplacePointReference(const IGsize fromPtId,
 SurfaceMesh::SurfaceMesh() { m_ViewStyle = IG_SURFACE; };
 
 void SurfaceMesh::Draw(Scene* scene) {
-    bool debug = false;
-    // TODO: Two-phase occlusion culling
-    if (debug) {
-        // compute culling
-        auto shader = scene->GetShader(Scene::MESHLETCULL);
-        shader->use();
-
-        m_Meshlets->MeshletsBuffer().target(GL_SHADER_STORAGE_BUFFER);
-        m_Meshlets->MeshletsBuffer().bindBase(1);
-
-        m_Meshlets->DrawCommandBuffer().target(GL_SHADER_STORAGE_BUFFER);
-        m_Meshlets->DrawCommandBuffer().bindBase(2);
-
-        scene->GetDrawCullDataBuffer().target(GL_UNIFORM_BUFFER);
-        scene->GetDrawCullDataBuffer().bindBase(3);
-
-        shader->setUniform(shader->getUniformLocation("depthPyramid"),
-                           scene->DepthPyramidTexture().getTextureHandle());
-
-        auto count = m_Meshlets->MeshletsCount();
-        glDispatchCompute(((count + 255) / 256), 1, 1);
-        glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_COMMAND_BARRIER_BIT);
-
-        // 打印或检查 readBackCommands 数据以验证计算着色器的输出
-        std::vector<DrawElementsIndirectCommand> readBackCommands(
-                m_Meshlets->MeshletsCount());
-        m_Meshlets->DrawCommandBuffer().getSubData(
-                0,
-                readBackCommands.size() * sizeof(DrawElementsIndirectCommand),
-                readBackCommands.data());
-        int cnt0 = 0;
-        int cnt1 = 0;
-        for (const auto& cmd: readBackCommands) {
-            if (cmd.primCount == 0) {
-                cnt0++;
-            } else {
-                cnt1++;
-            }
-            //std::cout << "count: " << cmd.count << std::endl;
-            //std::cout << "primCount: " << cmd.primCount << std::endl;
-            //std::cout << "firstIndex: " << cmd.firstIndex << std::endl;
-            //std::cout << "baseVertex: " << cmd.baseVertex << std::endl;
-            //std::cout << "baseInstance: " << cmd.baseInstance << std::endl;
-        }
-        std::cout << "visible meshlet: " << cnt1 << std::endl;
-        std::cout << "unvisible meshlet: " << cnt0 << std::endl;
-
-        // draw
-        if (m_UseColor) {
-            scene->UBO().useColor = true;
-        } else {
-            scene->UBO().useColor = false;
-        }
-        scene->UpdateUniformBuffer();
-
-        scene->GetShader(Scene::PATCH)->use();
-        m_TriangleVAO.bind();
-        m_Meshlets->DrawCommandBuffer().target(GL_DRAW_INDIRECT_BUFFER);
-        m_Meshlets->DrawCommandBuffer().bind();
-        glMultiDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, nullptr,
-                                    m_Meshlets->MeshletsCount(), 0);
-        m_TriangleVAO.release();
-
-        return;
-    }
-
     if (!m_Visibility) { return; }
 
     // update uniform buffer
@@ -637,6 +571,178 @@ void SurfaceMesh::Draw(Scene* scene) {
     }
 }
 
+void SurfaceMesh::DrawPhase1(Scene* scene) {
+    //std::cout << "Draw phase 1:" << std::endl;
+    if (!m_Visibility) { return; }
+
+    // update uniform buffer
+    {
+        if (m_UseColor) {
+            scene->UBO().useColor = true;
+        } else {
+            scene->UBO().useColor = false;
+        }
+        scene->UpdateUniformBuffer();
+    }
+
+    // draw
+    if (m_UseColor && m_ColorWithCell) {}
+
+    if (m_ViewStyle == IG_POINTS) {
+
+    } else if (m_ViewStyle == IG_WIREFRAME) {
+
+    } else if (m_ViewStyle == IG_SURFACE) {
+        scene->GetShader(Scene::PATCH)->use();
+        m_TriangleVAO.bind();
+
+        unsigned int count = 0;
+        m_Meshlets->VisibleMeshletBuffer().getSubData(0, sizeof(unsigned int),
+                                                      &count);
+
+        m_Meshlets->FinalDrawCommandBuffer().target(GL_DRAW_INDIRECT_BUFFER);
+        m_Meshlets->FinalDrawCommandBuffer().bind();
+        glMultiDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, nullptr,
+                                    count, 0);
+
+        m_TriangleVAO.release();
+    } else if (m_ViewStyle == IG_SURFACE_WITH_EDGE) {
+    }
+};
+void SurfaceMesh::DrawPhase2(Scene* scene) {
+    //std::cout << "Draw phase 2:" << std::endl;
+    if (!m_Visibility) { return; }
+
+    // update uniform buffer
+    {
+        if (m_UseColor) {
+            scene->UBO().useColor = true;
+        } else {
+            scene->UBO().useColor = false;
+        }
+        scene->UpdateUniformBuffer();
+    }
+
+    // draw
+    if (m_UseColor && m_ColorWithCell) {}
+
+    if (m_ViewStyle == IG_POINTS) {
+
+    } else if (m_ViewStyle == IG_WIREFRAME) {
+
+    } else if (m_ViewStyle == IG_SURFACE) {
+        // compute culling
+        {
+            auto shader = scene->GetShader(Scene::MESHLETCULL);
+            shader->use();
+
+            GLUniform workMode = shader->getUniformLocation("workMode");
+            shader->setUniform(workMode, 0);
+
+            m_Meshlets->MeshletsBuffer().target(GL_SHADER_STORAGE_BUFFER);
+            m_Meshlets->MeshletsBuffer().bindBase(1);
+
+            m_Meshlets->DrawCommandBuffer().target(GL_SHADER_STORAGE_BUFFER);
+            m_Meshlets->DrawCommandBuffer().bindBase(2);
+
+            unsigned int data = 0;
+            m_Meshlets->VisibleMeshletBuffer().subData(0, sizeof(unsigned int),
+                                                       &data);
+            m_Meshlets->VisibleMeshletBuffer().target(GL_SHADER_STORAGE_BUFFER);
+            m_Meshlets->VisibleMeshletBuffer().bindBase(3);
+
+            m_Meshlets->FinalDrawCommandBuffer().target(
+                    GL_SHADER_STORAGE_BUFFER);
+            m_Meshlets->FinalDrawCommandBuffer().bindBase(4);
+
+            scene->GetDrawCullDataBuffer().target(GL_UNIFORM_BUFFER);
+            scene->GetDrawCullDataBuffer().bindBase(5);
+
+            shader->setUniform(shader->getUniformLocation("depthPyramid"),
+                               scene->HizTexture().getTextureHandle());
+
+            auto count = m_Meshlets->MeshletsCount();
+            glDispatchCompute(((count + 255) / 256), 1, 1);
+            glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT |
+                            GL_COMMAND_BARRIER_BIT);
+        }
+
+        scene->GetShader(Scene::PATCH)->use();
+        m_TriangleVAO.bind();
+
+        unsigned int count = 0;
+        m_Meshlets->VisibleMeshletBuffer().getSubData(0, sizeof(unsigned int),
+                                                      &count);
+
+        m_Meshlets->FinalDrawCommandBuffer().target(GL_DRAW_INDIRECT_BUFFER);
+        m_Meshlets->FinalDrawCommandBuffer().bind();
+        glMultiDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, nullptr,
+                                    count, 0);
+
+        m_TriangleVAO.release();
+    } else if (m_ViewStyle == IG_SURFACE_WITH_EDGE) {
+    }
+};
+void SurfaceMesh::DrawPhase3(Scene* scene) {
+    //std::cout << "Draw phase 3:" << std::endl;
+    if (m_UseColor && m_ColorWithCell) {}
+
+    if (m_ViewStyle == IG_POINTS) {
+
+    } else if (m_ViewStyle == IG_WIREFRAME) {
+
+    } else if (m_ViewStyle == IG_SURFACE) {
+        // compute culling
+        {
+            auto shader = scene->GetShader(Scene::MESHLETCULL);
+            shader->use();
+
+            GLUniform workMode = shader->getUniformLocation("workMode");
+            shader->setUniform(workMode, 1);
+
+            m_Meshlets->MeshletsBuffer().target(GL_SHADER_STORAGE_BUFFER);
+            m_Meshlets->MeshletsBuffer().bindBase(1);
+
+            m_Meshlets->DrawCommandBuffer().target(GL_SHADER_STORAGE_BUFFER);
+            m_Meshlets->DrawCommandBuffer().bindBase(2);
+
+            unsigned int data = 0;
+            m_Meshlets->VisibleMeshletBuffer().subData(0, sizeof(unsigned int),
+                                                       &data);
+            m_Meshlets->VisibleMeshletBuffer().target(GL_SHADER_STORAGE_BUFFER);
+            m_Meshlets->VisibleMeshletBuffer().bindBase(3);
+
+            m_Meshlets->FinalDrawCommandBuffer().target(
+                    GL_SHADER_STORAGE_BUFFER);
+            m_Meshlets->FinalDrawCommandBuffer().bindBase(4);
+
+            scene->GetDrawCullDataBuffer().target(GL_UNIFORM_BUFFER);
+            scene->GetDrawCullDataBuffer().bindBase(5);
+
+            shader->setUniform(shader->getUniformLocation("depthPyramid"),
+                               scene->HizTexture().getTextureHandle());
+
+            auto count = m_Meshlets->MeshletsCount();
+            glDispatchCompute(((count + 255) / 256), 1, 1);
+            glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT |
+                            GL_COMMAND_BARRIER_BIT);
+        }
+    }
+
+    //std::vector<DrawElementsIndirectCommand> readBackCommands(
+    //        m_Meshlets->MeshletsCount());
+    //m_Meshlets->DrawCommandBuffer().getSubData(
+    //        0, readBackCommands.size() * sizeof(DrawElementsIndirectCommand),
+    //        readBackCommands.data());
+    //for (const auto& cmd: readBackCommands) {
+    //    //std::cout << "count: " << cmd.count << std::endl;
+    //    std::cout << "primCount: " << cmd.primCount << std::endl;
+    //    //std::cout << "firstIndex: " << cmd.firstIndex << std::endl;
+    //    //std::cout << "baseVertex: " << cmd.baseVertex << std::endl;
+    //    //std::cout << "baseInstance: " << cmd.baseInstance << std::endl;
+    //}
+}
+
 void SurfaceMesh::ConvertToDrawableData() {
     if (m_Positions && m_Positions->GetMTime() > this->GetMTime()) { return; }
 
@@ -664,6 +770,8 @@ void SurfaceMesh::ConvertToDrawableData() {
         m_CellPositionVBO.target(GL_ARRAY_BUFFER);
         m_CellColorVBO.create();
         m_CellColorVBO.target(GL_ARRAY_BUFFER);
+
+        m_Meshlets->CreateBuffer();
 
         m_Flag = true;
     }
@@ -732,14 +840,14 @@ void SurfaceMesh::ConvertToDrawableData() {
                        m_TriangleIndices->GetNumberOfIds() * sizeof(igIndex),
                        m_TriangleIndices->RawPointer());
 
-    //m_Meshlets->BuildMeshlet(m_Positions->RawPointer(),
-    //                         m_Positions->GetNumberOfValues() / 3,
-    //                         m_TriangleIndices->RawPointer(),
-    //                         m_TriangleIndices->GetNumberOfIds());
-    //
-    //GLAllocateGLBuffer(m_TriangleEBO,
-    //                   m_Meshlets->GetMeshletIndexCount() * sizeof(igIndex),
-    //                   m_Meshlets->GetMeshletIndices());
+    m_Meshlets->BuildMeshlet(m_Positions->RawPointer(),
+                             m_Positions->GetNumberOfValues() / 3,
+                             m_TriangleIndices->RawPointer(),
+                             m_TriangleIndices->GetNumberOfIds());
+
+    GLAllocateGLBuffer(m_TriangleEBO,
+                       m_Meshlets->GetMeshletIndexCount() * sizeof(igIndex),
+                       m_Meshlets->GetMeshletIndices());
 }
 
 void SurfaceMesh::ViewCloudPicture(int index, int demension) {
@@ -760,7 +868,8 @@ void SurfaceMesh::ViewCloudPicture(int index, int demension) {
     }
 }
 
-void SurfaceMesh::SetAttributeWithPointData(ArrayObject::Pointer attr, igIndex i) {
+void SurfaceMesh::SetAttributeWithPointData(ArrayObject::Pointer attr,
+                                            igIndex i) {
     if (m_ViewAttribute != attr || m_ViewDemension != i) {
         m_ViewAttribute = attr;
         m_ViewDemension = i;
