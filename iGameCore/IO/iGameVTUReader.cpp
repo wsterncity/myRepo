@@ -11,15 +11,26 @@
 #include "iGameVTUReader.h"
 
 #include "iGameVTKAbstractReader.h"
+#include "iGameBase64Util.h"
 
-#include <tinyxml.h>
+#include <tinyxml2.h>
 
 IGAME_NAMESPACE_BEGIN
 bool iGame::iGameVTUReader::Parsing() {
-    TiXmlElement* elem;
+    tinyxml2::XMLElement* elem;
     const char* data;
-    char* nextToken;
+    const char* attribute;
     char* token;
+    /*
+     *  used in binary encoded files, if true, the header presents a unsigned long long type number as the total byte num of the binary part.
+     *  Otherwise, the header presents a unsigned int type number.
+     * */
+    attribute = root->Attribute("header_type");
+    if(attribute){
+        if(strcmp(attribute, "UInt64") == 0){
+            is_header_type_uint64 = true;
+        }
+    }
 
     // get Piece's point and Cell num.
     int numOfPoints = 0, numOfCells = 0;
@@ -31,20 +42,27 @@ bool iGame::iGameVTUReader::Parsing() {
         numOfCells = mAtoi(data);
     }
     //  find Points' position Data
-    elem = FindTargetItem(elem, "Points");
-    data = elem->FirstChildElement("DataArray")->GetText();
-
+    elem = FindTargetItem(elem, "Points")->FirstChildElement("DataArray");
+    data = elem->GetText();
+    attribute = elem->Attribute("format");
     if(data)
     {
         Points::Pointer dataSetPoints = m_Data.GetPoints();
-        float p[3] = { 0 };
-        token = strtok_s(const_cast<char*>(data), " ", &nextToken);
-        while (token != nullptr) {
-            for(float & i : p) {
-                i = mAtof(token);
-                token = strtok_s(nullptr, " ", &nextToken);
+        char* data_p = const_cast<char*>(data);
+        while (*data_p == '\n' || *data_p == ' ' || *data_p == '\t') data_p ++;
+        if(strcmp(attribute, "ascii") == 0){
+            float p[3] = { 0 };
+            token = strtok(data_p, " ");
+
+            while (token != nullptr) {
+                for(float & i : p) {
+                    i = mAtof(token);
+                    token = strtok(nullptr, " ");
+                }
+                dataSetPoints->AddPoint(p);
             }
-            dataSetPoints->AddPoint(p);
+        } else if(strcmp(attribute, "binary") == 0){
+            ReadBase64EncodedPoints(data_p, dataSetPoints);
         }
     }
 
@@ -64,74 +82,71 @@ bool iGame::iGameVTUReader::Parsing() {
         data = elem->GetText();
         if(data)
         {
-            if(!strncmp(type, "Float32", 7)){
-                FloatArray::Pointer arr = FloatArray::New();
-//                arr->SetNumberOfComponents(scalarComponents);
-
-                float* ps = new float[scalarComponents];
-                token = strtok_s(const_cast<char*>(data), " ", &nextToken);
-                while (token != nullptr) {
-                    for(int i = 0; i < scalarComponents; i ++) {
-
-                        auto& it = ps[i];
-                        it = mAtof(token);
-                        token = strtok_s(nullptr, " ", &nextToken);
+            char* data_p = const_cast<char*>(data);
+            while (*data_p == '\n' || *data_p == ' ' || *data_p == '\t') data_p ++;
+            attribute = elem->Attribute("format");
+            if(!strncmp(type, "Float", 5)){
+                if(strcmp(attribute, "binary") == 0){
+                    //  Float32
+                    if(!strncmp(type + 5, "32", 2)){
+                        FloatArray::Pointer arr = FloatArray::New();
+                        ReadBase64EncodedArray<float>(data_p, arr);
+                        array = arr;
+                    } else /*Float64*/{
+                        DoubleArray::Pointer arr = DoubleArray::New();
+                        ReadBase64EncodedArray<double>(data_p, arr);
+                        array = arr;
                     }
-                    arr->AddElement(ps);
-                }
-                array = arr;
-                delete[] ps;
 
-            } else if(!strncmp(type, "Int64", 5)){
-                FloatArray::Pointer arr = FloatArray::New();
-                float* ps = new float[scalarComponents];
-                token = strtok_s(const_cast<char*>(data), " ", &nextToken);
-                while (token != nullptr) {
-                    for(int i = 0; i < scalarComponents; i ++) {
+                } else if(strcmp(attribute, "ascii") == 0){
+                    FloatArray::Pointer arr = FloatArray::New();
+                    float* ps = new float[scalarComponents];
+                    token = strtok(data_p, " ");
+                    while (token != nullptr) {
+                        for(int i = 0; i < scalarComponents; i ++) {
 
-                        auto& it = ps[i];
-                        it = mAtof(token);
-                        token = strtok_s(nullptr, " ", &nextToken);
+                            auto& it = ps[i];
+                            it = mAtof(token);
+                            token = strtok(nullptr, " ");
+                        }
+                        arr->AddElement(ps);
                     }
-                    arr->AddElement(ps);
+                    array = arr;
+                    delete[] ps;
                 }
-                array = arr;
-                delete[] ps;
+            } else if(!strncmp(type, "Int", 3)){
+                if(strcmp(attribute, "binary") == 0){
+                    //  Int32
+                    if(!strncmp(type + 3, "32", 2)){
+                        IntArray::Pointer arr = IntArray::New();
+                        ReadBase64EncodedArray<int>(data_p, arr);
+                        array = arr;
+                    } else /* Int64*/{
+                        LongLongArray::Pointer arr = LongLongArray::New();
+                        ReadBase64EncodedArray<int64_t>(data_p, arr);
+                        array = arr;
+                    }
+                } else if(strcmp(attribute, "ascii") == 0){
+                    IntArray::Pointer arr = IntArray::New();
+                    int* ps = new int[scalarComponents];
+                    token = strtok(data_p, " ");
+                    while (token != nullptr) {
+                        for(int i = 0; i < scalarComponents; i ++) {
+
+                            auto& it = ps[i];
+                            it = mAtoi(token);
+                            token = strtok(nullptr, " ");
+                        }
+                        arr->AddElement(ps);
+                    }
+                    array = arr;
+                    delete[] ps;
+                }
             }
-
             if(array != nullptr){
                 array->SetName(scalarName);
-                m_Data.GetData()->AddScalars(IG_POINT, array);
+                m_Data.GetData()->AddScalar(IG_POINT, array);
             }
-
-
-//            if(dataSet->GetPointData() == nullptr)
-//            {
-//                pointData = iGamePointData::New();
-//                dataSet->SetPointData(pointData);
-//            }
-//            else
-//            {
-//                pointData = dataSet->GetPointData();
-//            }
-//            ScalarData = dynamic_cast<iGameFloatArray *>(pointData->GetScalars(scalarName));
-//            if(ScalarData == nullptr)
-//            {
-//                ScalarData = iGameFloatArray::New();
-//                ScalarData->SetName(scalarName);
-//                ScalarData->SetNumberOfComponents(scalarComponents);
-//                pointData->AddScalars(ScalarData);
-//            }
-//            float i;
-//            token = strtok_s(const_cast<char*>(data), " ", &nextToken);
-//            while (token != nullptr)
-//            {
-//                i = mAtof(token);
-//                token = strtok_s(nullptr, " ", &nextToken);
-//                ScalarData->AddValue(i);
-//            }
-
-
         }
         elem = elem->NextSiblingElement("DataArray");
     }
@@ -140,55 +155,105 @@ bool iGame::iGameVTUReader::Parsing() {
     elem = FindTargetItem(root, "Cells");
 
     //   find Cell connectivity;
-    IntArray::Pointer CellConnects = IntArray::New();
+    ArrayObject::Pointer CellConnects;
 
-//    iGameLongLongArray* CellConnects = iGameLongLongArray::New();
-    elem = FindTargetAttributeItem(elem, "DataArray", "Name", std::string("connectivity"));
+    elem = FindTargetAttributeItem(elem, "DataArray", "Name", "connectivity");
     if(elem)
     {
-        int conn = -1;
         data = elem->GetText();
-        token = strtok_s(const_cast<char*>(data), " ", &nextToken);
-        while(token)
-        {
-            conn = mAtoi(token);
-            CellConnects->AddValue(conn);
-            token = strtok_s(nullptr, " ", &nextToken);
+
+        char* data_p = const_cast<char*>(data);
+        while (*data_p == '\n' || *data_p == ' ' || *data_p == '\t') data_p ++;
+
+        attribute = elem->Attribute("format");
+        if(strcmp(attribute, "ascii") == 0){
+            LongLongArray::Pointer arr = LongLongArray::New();
+            token = strtok(data_p, " ");
+            int conn = -1;
+            while(token)
+            {
+                conn = mAtoi(token);
+                arr->AddValue(conn);
+                token = strtok(nullptr, " ");
+            }
+            CellConnects = arr;
+        } else if(strcmp(attribute, "binary") == 0){
+            attribute = elem->Attribute("type");
+            //  Int32
+            if(!strncmp(attribute, "Int32", 5)){
+                IntArray::Pointer arr = IntArray::New();
+                ReadBase64EncodedArray<int>(data_p, arr);
+                CellConnects = arr;
+            }else /* Int64*/{
+                LongLongArray::Pointer arr = LongLongArray::New();
+                ReadBase64EncodedArray<int64_t>(data_p, arr);
+                CellConnects = arr;
+            }
         }
+
     }
-
     //   find Cell offsets;
-    IntArray::Pointer CellOffsets = IntArray::New();
+    ArrayObject::Pointer CellOffsets;
     //  Note that it need to add a zero index.
-    CellOffsets->AddValue(0);
 
-    elem = FindTargetAttributeItem(elem, "DataArray", "Name", std::string("offsets"));
+    elem = FindTargetAttributeItem(elem, "DataArray", "Name", "offsets");
     if(elem)
     {
-        int offset = -1;
         data = elem->GetText();
-        token = strtok_s(const_cast<char*>(data), " ", &nextToken);
-        while(token)
-        {
-            offset = mAtoi(token);
-            CellOffsets->AddValue(offset);
-            token = strtok_s(nullptr, " ", &nextToken);
+        char* data_p = const_cast<char*>(data);
+        while (*data_p == '\n' || *data_p == ' ' || *data_p == '\t') data_p ++;
+
+        attribute = elem->Attribute("format");
+        if(strcmp(attribute, "ascii") == 0){
+            LongLongArray::Pointer arr = LongLongArray::New();
+            arr->AddValue(0);
+            int offset = -1;
+            token = strtok(data_p, " ");
+            while(token)
+            {
+                offset = mAtoi(token);
+                arr->AddValue(offset);
+                token = strtok(nullptr, " ");
+            }
+            CellOffsets = arr;
+        } else if(strcmp(attribute, "binary") == 0){
+            attribute = elem->Attribute("type");
+            //  Int32
+            if(!strncmp(attribute, "Int32", 5)){
+                IntArray::Pointer arr = IntArray::New();
+                arr->AddValue(0);
+                ReadBase64EncodedArray<int>(data_p, arr);
+                CellOffsets = arr;
+            }else /* Int64*/{
+                LongLongArray::Pointer arr = LongLongArray::New();
+                arr->AddValue(0);
+                ReadBase64EncodedArray<int64_t>(data_p, arr);
+                CellOffsets = arr;
+            }
         }
     }
 
     //   find Cell types;
-    IntArray::Pointer CellTypes = IntArray::New();
-    elem = FindTargetAttributeItem(elem, "DataArray", "Name", std::string("types"));
+    UnsignedCharArray::Pointer CellTypes = UnsignedCharArray::New();
+    elem = FindTargetAttributeItem(elem, "DataArray", "Name", "types");
     if(elem)
     {
-        int type = -1;
         data = elem->GetText();
-        token = strtok_s(const_cast<char*>(data), " ", &nextToken);
-        while(token)
-        {
-            type = mAtoi(token);
-            CellTypes->AddValue(type);
-            token = strtok_s(nullptr, " ", &nextToken);
+        char* data_p = const_cast<char*>(data);
+        while (*data_p == '\n' || *data_p == ' ' || *data_p == '\t') data_p ++;
+
+        attribute = elem->Attribute("format");
+        if(strcmp(attribute, "ascii") == 0){
+            int type = -1;
+            token = strtok(data_p, " ");
+            while(token)
+            {
+                type = mAtoi(token);
+                CellTypes->AddValue(type);
+                token = strtok(nullptr, " ");
+            }
+        } else if(strcmp(attribute, "binary") == 0){
+            ReadBase64EncodedArray<uint8_t>(data_p, CellTypes);
         }
     }
 

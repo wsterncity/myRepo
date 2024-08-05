@@ -1,8 +1,6 @@
 #pragma once
 
-#include "GLImageHandle.h"
 #include "GLObject.h"
-#include "GLTextureHandle.h"
 
 IGAME_NAMESPACE_BEGIN
 
@@ -44,17 +42,6 @@ public:
         glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, handle);
         glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, pname, param);
         glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
-    }
-
-    // glUniformHandleui64ARB(glGetUniformLocation(shaderProgram,"tex0"), TextureHandle);
-    GLTextureHandle getTextureHandle() const {
-        return GLTextureHandle(glGetTextureHandleARB(handle));
-    }
-
-    GLImageHandle getImageHandle(unsigned level, bool layered, unsigned layer,
-                                 GLenum format) const {
-        return GLImageHandle(
-                glGetImageHandleARB(handle, level, layered, layer, format));
     }
 
     void bind() const { glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, handle); }

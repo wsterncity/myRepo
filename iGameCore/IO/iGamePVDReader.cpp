@@ -12,13 +12,14 @@
 #include "iGameVTSReader.h"
 #include "iGameVTUReader.h"
 #include "iGameDataObject.h"
+#include "iGameStringArray.h"
 
-#include <tinyxml.h>
+#include <tinyxml2.h>
 
 bool iGame::iGamePVDReader::Parsing() {
     std::string fileDir = this->m_FilePath.substr(0, this->m_FilePath.find_last_of('/') + 1);
     const char* existAttribute;
-    TiXmlElement* elem = root->FirstChild()->FirstChildElement("DataSet");
+    tinyxml2::XMLElement* elem = root->FirstChild()->FirstChildElement("DataSet");
 //    DataObject::Pointer newObj;
     std::map<float, StringArray::Pointer> child_map;
 
@@ -65,13 +66,13 @@ bool iGame::iGamePVDReader::Parsing() {
             if(fileSuffix == "vts"){
                 iGameVTSReader::Pointer rd = iGameVTSReader::New();
                 rd->SetFilePath(fileName);
-                rd->Update();
+                rd->Execute();
                 newObj = rd->GetOutput();
             }
             else if(fileSuffix == "vtu"){
                 iGameVTUReader::Pointer rd = iGameVTUReader::New();
                 rd->SetFilePath(fileName);
-                rd->Update();
+                rd->Execute();
                 newObj = rd->GetOutput();
             }
             m_data_object->AddSubDataObject(newObj);

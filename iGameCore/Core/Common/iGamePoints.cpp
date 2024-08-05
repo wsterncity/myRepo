@@ -36,12 +36,12 @@ void Points::GetPoint(const IGsize ptId, Vector3f& p)
 {
 	m_Buffer->GetElement(ptId, p.pointer());
 }
-//Point& Points::GetPoint(const IGsize ptId)
-//{
-//	float* ptr = m_Buffer->RawPointer() + ptId * 3;
-//	Point* p = reinterpret_cast<Point*>(ptr);
-//	return *p;
-//}
+Point& Points::GetPoint(const IGsize ptId)
+{
+	float* ptr = m_Buffer->RawPointer() + ptId * 3;
+	Point* p = reinterpret_cast<Point*>(ptr);
+	return *p;
+}
 const Point& Points::GetPoint(const IGsize ptId) const
 {
 	float* ptr = m_Buffer->RawPointer() + ptId * 3;

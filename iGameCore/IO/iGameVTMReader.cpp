@@ -8,7 +8,7 @@
  */
 
 #include "iGameVTMReader.h"
-#include <tinyxml.h>
+#include <tinyxml2.h>
 #include "iGameVTSReader.h"
 #include "iGameVTUReader.h"
 
@@ -19,8 +19,8 @@ bool iGameVTMReader::Parsing() {
     const char* existAttribute;
 
 
-    TiXmlElement* BlockElem = FindTargetItem(root, "vtkMultiBlockDataSet")->FirstChildElement("Block");
-    TiXmlElement* elem;
+    tinyxml2::XMLElement* BlockElem = FindTargetItem(root, "vtkMultiBlockDataSet")->FirstChildElement("Block");
+    tinyxml2::XMLElement* elem;
 
     std::vector<DataObject::Pointer> overall_multiBlock;
     DataObject::Pointer newObj;
@@ -49,13 +49,13 @@ bool iGameVTMReader::Parsing() {
                 if(fileSuffix == "vts"){
                     iGameVTSReader::Pointer rd = iGameVTSReader::New();
                     rd->SetFilePath(fileDir + std::string(existAttribute));
-                    rd->Update();
+                    rd->Execute();
                     newObj = rd->GetOutput();
                 }
                 else if(fileSuffix == "vtu"){
                     iGameVTUReader::Pointer rd = iGameVTUReader::New();
                     rd->SetFilePath(fileDir + std::string(existAttribute));
-                    rd->Update();
+                    rd->Execute();
                     newObj = rd->GetOutput();
                 }
             }
@@ -80,7 +80,7 @@ bool iGameVTMReader::Parsing() {
         for(const auto& mp : overall_multiBlock) rootDataObject->AddSubDataObject(mp);
 
         parseData = rootDataObject;
-        return false;
+        return true;
     }
 }
 

@@ -501,6 +501,7 @@ SurfaceMesh::SurfaceMesh() { m_ViewStyle = IG_SURFACE; };
 
 void SurfaceMesh::Draw(Scene* scene) {
     bool debug = false;
+    // TODO: Two-phase occlusion culling
     if (debug) {
         // compute culling
         auto shader = scene->GetShader(Scene::MESHLETCULL);
@@ -515,8 +516,8 @@ void SurfaceMesh::Draw(Scene* scene) {
         scene->GetDrawCullDataBuffer().target(GL_UNIFORM_BUFFER);
         scene->GetDrawCullDataBuffer().bindBase(3);
 
-        //shader->setUniform(shader->getUniformLocation("depthPyramid"),
-        //                   scene->DepthPyramidTexture().getTextureHandle());
+        shader->setUniform(shader->getUniformLocation("depthPyramid"),
+                           scene->DepthPyramidTexture().getTextureHandle());
 
         auto count = m_Meshlets->MeshletsCount();
         glDispatchCompute(((count + 255) / 256), 1, 1);
@@ -690,12 +691,11 @@ void SurfaceMesh::ConvertToDrawableData() {
     IdArray::Pointer triangleIndices = IdArray::New();
     int i, ncell;
     igIndex cell[32]{};
-    int a = this->GetNumberOfFaces();
+
     for (i = 0; i < this->GetNumberOfFaces(); i++) {
         ncell = this->GetFacePointIds(i, cell);
-        igIndex v0 = cell[0];
         for (int j = 2; j < ncell; j++) {
-            triangleIndices->AddId(v0);
+            triangleIndices->AddId(cell[0]);
             triangleIndices->AddId(cell[j - 1]);
             triangleIndices->AddId(cell[j]);
         }
@@ -739,5 +739,124 @@ void SurfaceMesh::ConvertToDrawableData() {
     //GLAllocateGLBuffer(m_TriangleEBO,
     //                   m_Meshlets->GetMeshletIndexCount() * sizeof(igIndex),
     //                   m_Meshlets->GetMeshletIndices());
+}
+
+void SurfaceMesh::ViewCloudPicture(int index, int demension) {
+    if (index == -1) {
+        m_UseColor = false;
+        m_ViewAttribute = nullptr;
+        m_ViewDemension = -1;
+        m_ColorWithCell = false;
+        return;
+    }
+    m_AttributeIndex = index;
+    auto& attr = this->GetPropertySet()->GetProperty(index);
+    if (!attr.isDeleted) {
+        if (attr.attachmentType == IG_POINT)
+            this->SetAttributeWithPointData(attr.pointer, demension);
+        else if (attr.attachmentType == IG_CELL)
+            this->SetAttributeWithCellData(attr.pointer, demension);
+    }
+}
+
+void SurfaceMesh::SetAttributeWithPointData(ArrayObject::Pointer attr, igIndex i) {
+    if (m_ViewAttribute != attr || m_ViewDemension != i) {
+        m_ViewAttribute = attr;
+        m_ViewDemension = i;
+        m_UseColor = true;
+        m_ColorWithCell = false;
+        ScalarsToColors::Pointer mapper = ScalarsToColors::New();
+
+        if (i == -1) {
+            mapper->InitRange(attr);
+        } else {
+            mapper->InitRange(attr, i);
+        }
+
+        m_Colors = mapper->MapScalars(attr, i);
+        if (m_Colors == nullptr) { return; }
+
+        GLAllocateGLBuffer(m_ColorVBO,
+                           m_Colors->GetNumberOfValues() * sizeof(float),
+                           m_Colors->RawPointer());
+
+        m_PointVAO.vertexBuffer(GL_VBO_IDX_1, m_ColorVBO, 0, 3 * sizeof(float));
+        GLSetVertexAttrib(m_PointVAO, GL_LOCATION_IDX_1, GL_VBO_IDX_1, 3,
+                          GL_FLOAT, GL_FALSE, 0);
+
+        m_LineVAO.vertexBuffer(GL_VBO_IDX_1, m_ColorVBO, 0, 3 * sizeof(float));
+        GLSetVertexAttrib(m_LineVAO, GL_LOCATION_IDX_1, GL_VBO_IDX_1, 3,
+                          GL_FLOAT, GL_FALSE, 0);
+
+
+        m_TriangleVAO.vertexBuffer(GL_VBO_IDX_1, m_ColorVBO, 0,
+                                   3 * sizeof(float));
+        GLSetVertexAttrib(m_TriangleVAO, GL_LOCATION_IDX_1, GL_VBO_IDX_1, 3,
+                          GL_FLOAT, GL_FALSE, 0);
+    }
+}
+
+void SurfaceMesh::SetAttributeWithCellData(ArrayObject::Pointer attr,
+                                           igIndex i) {
+    if (m_ViewAttribute != attr || m_ViewDemension != i) {
+        m_ViewAttribute = attr;
+        m_ViewDemension = i;
+        m_UseColor = true;
+        m_ColorWithCell = true;
+        ScalarsToColors::Pointer mapper = ScalarsToColors::New();
+
+        if (i == -1) {
+            mapper->InitRange(attr);
+        } else {
+            mapper->InitRange(attr, i);
+        }
+
+        FloatArray::Pointer colors = mapper->MapScalars(attr, i);
+        if (colors == nullptr) { return; }
+
+        FloatArray::Pointer newPositions = FloatArray::New();
+        FloatArray::Pointer newColors = FloatArray::New();
+        newPositions->SetElementSize(3);
+        newColors->SetElementSize(3);
+
+        //std::cout << this->GetNumberOfFaces() << std::endl;
+        //std::cout << colors->GetNumberOfElements() << std::endl;
+        float color[3]{};
+        for (int i = 0; i < this->GetNumberOfFaces(); i++) {
+            Face* face = this->GetFace(i);
+            for (int j = 2; j < face->GetCellSize(); j++) {
+                auto& p0 = face->Points->GetPoint(0);
+                newPositions->AddElement3(p0[0], p0[1], p0[2]);
+
+                auto& p1 = face->Points->GetPoint(j - 1);
+                newPositions->AddElement3(p1[0], p1[1], p1[2]);
+
+                auto& p2 = face->Points->GetPoint(j);
+                newPositions->AddElement3(p2[0], p2[1], p2[2]);
+
+                colors->GetElement(i, color);
+                newColors->AddElement3(color[0], color[1], color[2]);
+                newColors->AddElement3(color[0], color[1], color[2]);
+                newColors->AddElement3(color[0], color[1], color[2]);
+            }
+        }
+        m_CellPositionSize = newPositions->GetNumberOfElements();
+
+        GLAllocateGLBuffer(m_CellPositionVBO,
+                           newPositions->GetNumberOfValues() * sizeof(float),
+                           newPositions->RawPointer());
+        GLAllocateGLBuffer(m_CellColorVBO,
+                           newColors->GetNumberOfValues() * sizeof(float),
+                           newColors->RawPointer());
+
+        m_CellVAO.vertexBuffer(GL_VBO_IDX_0, m_CellPositionVBO, 0,
+                               3 * sizeof(float));
+        GLSetVertexAttrib(m_CellVAO, GL_LOCATION_IDX_0, GL_VBO_IDX_0, 3,
+                          GL_FLOAT, GL_FALSE, 0);
+        m_CellVAO.vertexBuffer(GL_VBO_IDX_1, m_CellColorVBO, 0,
+                               3 * sizeof(float));
+        GLSetVertexAttrib(m_CellVAO, GL_LOCATION_IDX_1, GL_VBO_IDX_1, 3,
+                          GL_FLOAT, GL_FALSE, 0);
+    }
 }
 IGAME_NAMESPACE_END

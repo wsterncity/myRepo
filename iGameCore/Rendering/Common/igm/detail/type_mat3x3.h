@@ -188,6 +188,30 @@ public:
     }
 
     /**
+    * @brief Matrix-vector multiplication operator for mat<3, 3, T> and vec<3, T>.
+    *
+    * This operator multiplies a 3x3 matrix by a 3-dimensional vector. The resulting
+    * vector is computed as follows:
+    *
+    * result[0] = (m[0][0] * v[0]) + (m[1][0] * v[1]) + (m[2][0] * v[2])
+    * result[1] = (m[0][1] * v[0]) + (m[1][1] * v[1]) + (m[2][1] * v[2])
+    * result[2] = (m[0][2] * v[0]) + (m[1][2] * v[1]) + (m[2][2] * v[2])
+    *
+    * where m is the matrix and v is the vector.
+    *
+    * @param v The vec<3, T> object to multiply.
+    * @return Resultant vec<3, T> object after matrix-vector multiplication.
+    */
+    template<typename T>
+    vec<3, T> operator*(const vec<3, T>& v) const {
+        return vec<3, T>(
+                value[0][0] * v[0] + value[1][0] * v[1] + value[2][0] * v[2],
+                value[0][1] * v[0] + value[1][1] * v[1] + value[2][1] * v[2],
+                value[0][2] * v[0] + value[1][2] * v[1] + value[2][2] * v[2]);
+    }
+
+
+    /**
     * @brief Matrix multiplication operator for mat<3, 3, T>.
     * @param other The mat<3, 3, T> object to multiply.
     * @return Resultant mat<3, 3, T> object after matrix multiplication.

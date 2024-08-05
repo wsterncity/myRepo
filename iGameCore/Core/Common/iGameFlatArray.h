@@ -15,30 +15,39 @@ public:
     using Reference = typename VectorType::reference;
     using ConstReference = typename VectorType::const_reference;
 
+    // Free all memory and initialize the array
     void Initialize() {
         this->VectorType::swap(std::vector<TValue>());
     }
 
+    // Reallocate memory, and the old data is preserved. The array
+    // size will not change. '_NewElementNum' is the number of elements.
     void Reserve(const IGsize _NewElementNum) {
         this->VectorType::reserve(_NewElementNum * m_ElementSize);
     }
 
+    // Reallocate memory, and the old data is preserved. The array
+    // size will change. '_Newsize' is the number of elements.
     void Resize(const IGsize _NewElementNum) {
         this->VectorType::resize(_NewElementNum * m_ElementSize);
     }
 
+    // Reset the array size, and the old memory will not change.
     void Reset() {
         this->VectorType::clear();
     }
 
+    // Free unnecessary memory.
     void Squeeze() {
         this->Resize(GetNumberOfElements());
     }
 
+    // Set the size of the element
     void SetElementSize(const int _Newsize) override {
         assert(_Newsize > 0);
         m_ElementSize = _Newsize;
     }
+    // Get the size of the element
     int GetElementSize() override {
         return m_ElementSize;
     }
@@ -52,6 +61,7 @@ public:
         return this->VectorType::capacity();
     }
 
+    // Add a element to array back. Return the index of element
     template<int dimension_t>
     IGsize AddElement(Vector<TValue, dimension_t>&& _Element) 
     {
@@ -118,6 +128,7 @@ public:
         return this->AddElement(value);
     }
 
+    // Get the reference of element by index _Pos, '_Element' is a pointer.
     void ElementAt(const IGsize _Pos, TValue*& _Element) {
         assert(0 <= _Pos && _Pos < this->GetNumberOfElements());
         _Element = this->RawPointer(_Pos);
@@ -141,6 +152,8 @@ public:
             _Element.push_back(data[i]);
         }
     }
+    
+    // Get a element by index _Pos. This function is thread-unsafe.
     const std::vector<TValue>& GetElement(const IGsize _Pos) {
         assert(0 <= _Pos && _Pos < this->GetNumberOfElements());
         m_Element.clear();
@@ -151,6 +164,7 @@ public:
         return m_Element;
     }
 
+    // Set a element by index _Pos
     template<int dimension_t>
     void SetElement(const IGsize _Pos, Vector<TValue, dimension_t>&& _Element) {
         assert(0 <= _Pos && _Pos < this->GetNumberOfElements());
@@ -192,11 +206,13 @@ public:
         }
     }
 
+    // Add a value to array back
     IGsize AddValue(TValue _Value)
     {
         this->VectorType::push_back(_Value);
         return this->VectorType::size();
     }
+    // Get the reference of value by index _Pos
     Reference ValueAt(const IGsize _Pos) {
         return this->VectorType::operator[](_Pos);
     }
@@ -204,6 +220,7 @@ public:
         return this->SuperClass::operator[](_Pos);
     }
 
+    // Constructed by std::vector or pointer
     bool SetArray(const std::vector<TValue>& _Buffer, int _ElementSize) {
         if (_ElementSize < 1)
         {
@@ -229,6 +246,7 @@ public:
 		m_ElementSize = _ElementSize;
 		return true;
 	}
+
 
     double GetValue(const IGsize _Pos) override {
         assert(0 <= _Pos && _Pos < this->GetNumberOfValues());
@@ -268,6 +286,7 @@ public:
         }
     }
 
+    // Get the raw pointer. '_Pos' is element index
     TValue* RawPointer(const IGsize _Pos = 0) {
         return this->VectorType::data() + _Pos * m_ElementSize;
     }
@@ -278,8 +297,9 @@ protected:
     FlatArray() = default;
     ~FlatArray() override = default;
 
-    int m_ElementSize{ 1 };
+    int m_ElementSize{ 1 };            // The size of element
 
+    // The temporary vector to return element, is thread-unsafe.
     std::vector<TValue> m_Element{};
 };
 

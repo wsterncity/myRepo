@@ -2,6 +2,7 @@
 #include "iGameSurfaceMesh.h"
 #include "iGameByteSwap.h"
 #include "iGameVolumeMesh.h"
+#include "iGameStringArray.h"
 
 IGAME_NAMESPACE_BEGIN
 FileReader::FileReader()

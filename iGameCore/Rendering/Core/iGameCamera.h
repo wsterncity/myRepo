@@ -59,6 +59,8 @@ public:
     static Pointer New() { return new Viewer; }
 
 public:
+    float SetNearPlane(float near) { nearPlane = near; };
+    float SetFarPlane(float far) { nearPlane = far; };
     float GetNearPlane() { return nearPlane; };
     float GetFarPlane() { return farPlane; };
 
@@ -70,7 +72,7 @@ public:
 protected:
     float fov = 45.0f;
     float nearPlane = 0.1f;
-    float farPlane = 10000.0f;
+    float farPlane = 300.0f;
 
 protected:
     Viewer() = default;

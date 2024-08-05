@@ -199,7 +199,7 @@ void DataObject::SetVisibility(bool f)
     }
 
     StreamingData::Pointer DataObject::GetTimeFrames() {
-//        if(m_TimeFrames == nullptr) m_TimeFrames = StreamingData::New();
+        if(m_TimeFrames == nullptr) m_TimeFrames = StreamingData::New();
 
         return m_TimeFrames;
     }

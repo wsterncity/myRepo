@@ -138,6 +138,7 @@ protected:
 	{
 		m_Propertys = PropertySet::New();
 		m_Metadata = Metadata::New();
+//        m_TimeFrames = StreamingData::New();
 		m_UniqueId = GetIncrementDataObjectId();
 		m_BoundingHelper = Object::New();
 	}

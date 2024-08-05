@@ -13,33 +13,42 @@ public:
 	I_OBJECT(Points);
 	static Pointer New() { return new Points; }
 
+	// Free all memory and initialize the array
 	void Initialize();
 
+	// Reallocate memory, and the old data is preserved. The array
+    // size will not change. '_NewPointsNum' is the number of points.
 	void Reserve(const IGsize _NewPointsNum);
 
+	// Reallocate memory, and the old data is preserved. The array
+    // size will change. '_NewPointsNum' is the number of points.
 	void Resize(const IGsize _NewPointsNum);
 
+	// Reset the array size, and the old memory will not change.
 	void Reset();
 
+	// Free unnecessary memory.
 	void Squeeze();
 
+	// Equal to function Resize()
 	void SetNumberOfPoints(const IGsize _NewPointsNum);
 
 	IGsize GetNumberOfPoints() const noexcept;
 
+	// Set/Get/Add a point
 	void GetPoint(const IGsize ptId, Vector3d& p);
 	void GetPoint(const IGsize ptId, Vector3f& p);
-	//Point& GetPoint(const IGsize ptId);
+	Point& GetPoint(const IGsize ptId);
 	const Point& GetPoint(const IGsize ptId) const;
 
 	void SetPoint(const IGsize ptId, const Vector3d& p);
 	void SetPoint(const IGsize ptId, const Vector3f& p);
-	void SetPoint(const IGsize ptId, float x, float y, float z);
+    void SetPoint(const IGsize ptId, float x, float y, float z);
 
 	IGsize AddPoint(const Vector3d& p);
 	IGsize AddPoint(const Vector3f& p);
-	IGsize AddPoint(float x, float y, float z);
-	IGsize AddPoint(float p[3]);
+    IGsize AddPoint(float x, float y, float z);
+    IGsize AddPoint(float p[3]);
 	IGsize AddPoint(double p[3]);
 
 	FloatArray::Pointer ConvertToArray();

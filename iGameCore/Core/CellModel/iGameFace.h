@@ -9,34 +9,31 @@ class Face : public Cell {
 public:
 	I_OBJECT(Face);
 
-	virtual Vector3f GetNormal() = 0;
-
 	int GetNumberOfFaces() override { return 0; }
-
-	Cell* GetEdge(int edgeId) override 
+    Cell* GetEdge(const int edgeId) override 
 	{
 		int edgeIdPlus = (edgeId + 1) % this->GetNumberOfEdges();
 
-		// load point id's
-		this->Line->PointIds->SetId(0, this->PointIds->GetId(edgeId));
-		this->Line->PointIds->SetId(1, this->PointIds->GetId(edgeIdPlus));
+		m_Line->PointIds->SetId(0, this->PointIds->GetId(edgeId));
+		m_Line->PointIds->SetId(1, this->PointIds->GetId(edgeIdPlus));
 
-		// load coordinates
-		this->Line->Points->SetPoint(0, this->Points->GetPoint(edgeId));
-		this->Line->Points->SetPoint(1, this->Points->GetPoint(edgeIdPlus));
+		m_Line->Points->SetPoint(0, this->Points->GetPoint(edgeId));
+		m_Line->Points->SetPoint(1, this->Points->GetPoint(edgeIdPlus));
 
-		return this->Line;
+		return m_Line;
 	}
-	Cell* GetFace(int) override { return nullptr; }
+    Cell* GetFace(const int) override { return nullptr; }
+
+	virtual Vector3f GetNormal() = 0;
 
 protected:
 	Face()
 	{
-		this->Line = Line::New();
+		m_Line = Line::New();
 	}
 	~Face() override = default;
 
-	Line::Pointer Line;
+	Line::Pointer m_Line;
 };
 IGAME_NAMESPACE_END
 #endif

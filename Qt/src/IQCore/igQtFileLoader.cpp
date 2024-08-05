@@ -10,7 +10,6 @@
 #include "iGameFileIO.h"
 #include "iGameScene.h"
 #include "iGamePointSet.h"
-#include "iGameDrawableObject.h"
 
 #include <IQCore/igQtFileLoader.h>
 #include <QCoreApplication.h>
@@ -22,7 +21,7 @@
 igQtFileLoader::igQtFileLoader(QObject* parent) : QObject(parent) 
 {
 	InitRecentFilePaths();
-
+    m_SceneManager = SceneManager::Instance();
 }
 
 igQtFileLoader::~igQtFileLoader() {
@@ -137,6 +136,12 @@ void igQtFileLoader::OpenFile(const std::string& filePath)
 	//attrbNameArray->InsertToBack("pointScalar");
 	//attrbNameArray->InsertToBack("cellScalar");
 	//obj->GetMetadata()->AddStringArray(ATTRIBUTE_NAME_ARRAY, attrbNameArray);
+
+//    for(int i = 0; i < 20; i ++){
+//        if(i % 2)obj->AddSubDataObject(iGame::FileIO::ReadFile("C:/Users/m_ky/Desktop/Resource/Model/Armadillo.obj"));
+//        else obj->AddSubDataObject(iGame::FileIO::ReadFile("C:/Users/m_ky/Desktop/Resource/Model/bunny.obj"));
+//
+//    }
 
 	m_SceneManager->GetCurrentScene()->AddDataObject(obj);
 	this->SaveCurrentFileToRecentFile(QString::fromStdString(filePath));

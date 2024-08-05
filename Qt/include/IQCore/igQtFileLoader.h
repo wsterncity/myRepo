@@ -12,7 +12,7 @@
 
 using namespace iGame;
 
-class IG_QT_MODULE_EXPORT igQtFileLoader : public QObject, SceneObserver
+class IG_QT_MODULE_EXPORT igQtFileLoader : public QObject
 {
 	Q_OBJECT
 public:
@@ -44,4 +44,5 @@ signals:
 protected:
 	QList<QAction*> recentFileActionList;
 	int maxFileNr = 10;
+    SceneManager::Pointer m_SceneManager;
 };
