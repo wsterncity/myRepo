@@ -5,6 +5,7 @@
 #include <iGameFilterPoints.h>
 #include <iGameSurfaceMeshFilterTest.h>
 #include <iGameVolumeMeshFilterTest.h>
+#include <iGameModelSurfaceFilters/iGameModelGeometryFilter.h>
 
 #include <IQCore/igQtMainWindow.h>
 #include <IQCore/igQtFileLoader.h>
@@ -282,6 +283,16 @@ void igQtMainWindow::initAllFilters() {
 		fp->Update();
 		rendererWidget->update();
 		});
+    connect(ui->action_test_06, &QAction::triggered, this, [&](bool checked) {
+        iGameModelGeometryFilter::Pointer fp = iGameModelGeometryFilter::New();
+        auto DataObject = rendererWidget->GetScene()->GetCurrentObject();
+        fp->Execute(DataObject);
+        SceneManager::Instance()->GetCurrentScene()->ChangeDataObjectVisibility(
+                0, false);
+        auto mesh = fp->GetOutPut();
+        mesh->SetName("undefined_mesh");
+        rendererWidget->AddDataObject(mesh);
+    });
 }
 
 void igQtMainWindow::initAllDockWidgetConnectWithAction()

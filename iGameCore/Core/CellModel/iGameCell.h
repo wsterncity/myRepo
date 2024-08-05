@@ -5,7 +5,7 @@
 #include "iGamePoints.h"
 #include "iGameElementArray.h"
 #include "iGameCellType.h"
-
+#define IGAME_CELL_MAX_SIZE 256
 IGAME_NAMESPACE_BEGIN
 class Cell : public Object {
 public:
