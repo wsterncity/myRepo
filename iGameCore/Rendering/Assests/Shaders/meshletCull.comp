@@ -35,7 +35,6 @@ layout(std430, binding = 2) buffer DrawCommandBuffer {
     DrawElementsIndirectCommand commands[];
 } drawCommandBuffer;
 
-
 // Final visible meshlet info
 layout(std430, binding = 3)  buffer VisibleMeshletBuffer{
     uint count;
@@ -74,6 +73,8 @@ bool ProjectSphere(vec3 C, float r, float znear, float P00, float P11, out vec4 
         return false;
     }
 
+    C.x = -C.x;
+
     vec2 cx = -C.xz;
     vec2 vx = vec2(sqrt(dot(cx, cx) - r * r), r);
     vec2 minx = mat2(vx.x, vx.y, -vx.y, vx.x) * cx;
@@ -104,6 +105,7 @@ bool IsVisible(MeshletData meshlet) {
     // the left/top/right/bottom plane culling utilizes frustum symmetry to cull against two planes at the same time
     visible = visible && center.z * drawCullData.frustum[1] - abs(center.x) * drawCullData.frustum[0] > -radius;
     visible = visible && center.z * drawCullData.frustum[3] - abs(center.y) * drawCullData.frustum[2] > -radius;
+
     visible = visible && -center.z + radius > drawCullData.znear && -center.z - radius < drawCullData.zfar;
 
     vec4 aabb;
@@ -111,10 +113,9 @@ bool IsVisible(MeshletData meshlet) {
         float width = (aabb.z - aabb.x) * drawCullData.pyramidWidth;
         float height = (aabb.w - aabb.y) * drawCullData.pyramidHeight;
 
-        float level = floor(log2(max(width, height)));
+        float level = ceil(log2(max(width, height)));
 
         // Sampler is set up to do min reduction, so this computes the minimum depth of a 2x2 texel quad
-
         float depth = textureLod(sampler2D(depthPyramid), (aabb.xy + aabb.zw) * 0.5, level).x;
         float linearDepth = LinearizeDepth(depth);
 

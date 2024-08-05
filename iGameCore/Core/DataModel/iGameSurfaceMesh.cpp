@@ -604,6 +604,9 @@ void SurfaceMesh::DrawPhase1(Scene* scene) {
         m_Meshlets->FinalDrawCommandBuffer().bind();
         glMultiDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, nullptr,
                                     count, 0);
+        //std::cout << "Draw phase 1: [render count: " << count;
+        //std::cout << ", meshlet count: " << m_Meshlets->MeshletsCount() << "]"
+        //          << std::endl;
 
         m_TriangleVAO.release();
     } else if (m_ViewStyle == IG_SURFACE_WITH_EDGE) {
@@ -679,6 +682,10 @@ void SurfaceMesh::DrawPhase2(Scene* scene) {
         glMultiDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, nullptr,
                                     count, 0);
 
+        //std::cout << "Draw phase 2: [render count: " << count;
+        //std::cout << ", meshlet count: " << m_Meshlets->MeshletsCount() << "]"
+        //          << std::endl;
+
         m_TriangleVAO.release();
     } else if (m_ViewStyle == IG_SURFACE_WITH_EDGE) {
     }
@@ -728,6 +735,13 @@ void SurfaceMesh::DrawPhase3(Scene* scene) {
                             GL_COMMAND_BARRIER_BIT);
         }
     }
+
+    //unsigned int count = 0;
+    //m_Meshlets->VisibleMeshletBuffer().getSubData(0, sizeof(unsigned int),
+    //                                              &count);
+    //std::cout << "Draw phase 3: [render count: " << count;
+    //std::cout << ", meshlet count: " << m_Meshlets->MeshletsCount() << "]"
+    //          << std::endl;
 
     //std::vector<DrawElementsIndirectCommand> readBackCommands(
     //        m_Meshlets->MeshletsCount());
@@ -839,14 +853,14 @@ void SurfaceMesh::ConvertToDrawableData() {
                        m_TriangleIndices->GetNumberOfIds() * sizeof(igIndex),
                        m_TriangleIndices->RawPointer());
 
-    m_Meshlets->BuildMeshlet(m_Positions->RawPointer(),
-                             m_Positions->GetNumberOfValues() / 3,
-                             m_TriangleIndices->RawPointer(),
-                             m_TriangleIndices->GetNumberOfIds());
-
-    GLAllocateGLBuffer(m_TriangleEBO,
-                       m_Meshlets->GetMeshletIndexCount() * sizeof(igIndex),
-                       m_Meshlets->GetMeshletIndices());
+    //m_Meshlets->BuildMeshlet(m_Positions->RawPointer(),
+    //                         m_Positions->GetNumberOfValues() / 3,
+    //                         m_TriangleIndices->RawPointer(),
+    //                         m_TriangleIndices->GetNumberOfIds());
+    //
+    //GLAllocateGLBuffer(m_TriangleEBO,
+    //                   m_Meshlets->GetMeshletIndexCount() * sizeof(igIndex),
+    //                   m_Meshlets->GetMeshletIndices());
 }
 
 void SurfaceMesh::ViewCloudPicture(int index, int demension) {
