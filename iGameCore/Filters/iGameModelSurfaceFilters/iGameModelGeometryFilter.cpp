@@ -89,7 +89,7 @@ bool iGameModelGeometryFilter::Execute(DataObject* input, PolyData* output) {
             return this->ExecuteWithStructuredGrid(input, output, excFaces);
         }
     }
-    //»¹ÓĞÆäËûÖÖÀà£¬¿ÉÄÜÊÇÆÕÍ¨µÄdataobject´æ´¢Êı¾İÕâ±ßÅĞ¶ÏÏÂ×ß×îÆÕÍ¨µÄdatasetÖ´ĞĞ
+    //è¿˜æœ‰å…¶ä»–ç§ç±»ï¼Œå¯èƒ½æ˜¯æ™®é€šçš„dataobjectå­˜å‚¨æ•°æ®è¿™è¾¹åˆ¤æ–­ä¸‹èµ°æœ€æ™®é€šçš„datasetæ‰§è¡Œ
     else {
         igError("Data object " + input->GetName() + "is not supported.");
         return 0;
@@ -101,7 +101,7 @@ bool iGameModelGeometryFilter::Execute(DataObject* input, PolyData* output) {
 class GFace {
 public:
     GFace* Next = nullptr;
-    //ÓÃÓÚarrayµÄmap
+    //ç”¨äºarrayçš„map
     igIndex OriginalCellId;
     igIndex* PointIds;
     int NumberOfPoints;
@@ -434,7 +434,7 @@ public:
         this->Buckets.resize(this->Size);
     }
     std::vector<Bucket>& GetBuckets() { return this->Buckets; }
-    //²åÈëÃæµ½³Ø×ÓÖĞ£¬Èç¹ûÒÑ¾­´æÔÚ¾ÍÈ¥³ı£¬Èç¹û²»´æÔÚ¾Í¼ÓÈë
+    //æ’å…¥é¢åˆ°æ± å­ä¸­ï¼Œå¦‚æœå·²ç»å­˜åœ¨å°±å»é™¤ï¼Œå¦‚æœä¸å­˜åœ¨å°±åŠ å…¥
     template<typename GFaceType>
     void Insert(const GFaceType& f, TFaceMemoryPool* pool) {
         const size_t key = static_cast<size_t>(f.PointIds[0]) % this->Size;
@@ -447,7 +447,7 @@ public:
         auto& bucketHead = bucket.Head;
         //auto& bucketLock = bucket.Lock;
 
-        //ÒòÎªÊÇ¶àÏß³ÌÒª½øĞĞÉÏËø½âËø¹ÜÀíÎ¬»¤£¬Õâ±ßÓĞÎÊÌâÔİÊ±
+        //å› ä¸ºæ˜¯å¤šçº¿ç¨‹è¦è¿›è¡Œä¸Šé”è§£é”ç®¡ç†ç»´æŠ¤ï¼Œè¿™è¾¹æœ‰é—®é¢˜æš‚æ—¶
         //std::lock_guard<vtkAtomicMutex> lock(bucketLock);
         auto current = bucketHead;
         auto previous = current;
@@ -504,7 +504,7 @@ public:
                         f->NumberOfPoints, f->PointIds, f->OriginalCellId);
             }
         }
-        //²¢ĞĞËã·¨
+        //å¹¶è¡Œç®—æ³•
         //vtkSMPTools::For(
         //        0, numberOfThreads,
         //        [&](vtkIdType beginThreadId, vtkIdType endThreadId) {
@@ -685,7 +685,7 @@ void ExtractCellGeometry(UnstructuredGrid* input, igIndex cellId, int cellType,
             // is a linear cell is defined by vtkCellTypes::IsLinear().
             Cell* cell;
             input->GetCell(cellId, cell);
-            if (cell->GetCellDimension() == 3) {
+            if (/*cell->GetCellDimension() == 3*/true) {
                 for (GFaceId = 0, numFaces = cell->GetNumberOfFaces();
                      GFaceId < numFaces; GFaceId++) {
                     Cell* GFace = cell->GetFace(GFaceId);
@@ -1006,7 +1006,7 @@ struct ExtractUG : public ExtractCellBoundaries {
             igIndex cellType = 0;
             for (cellId = beginCellId; cellId < endCellId; cellId++) {
                 cellType = cellTypes[cellId];
-                //Èç¹ûÊÇĞéÄâCell
+                //å¦‚æœæ˜¯è™šæ‹ŸCell
                 if (isGhost && (Grid->GetCellDimension(cellType) < 3 ||
                                 !this->RemoveGhostInterFaces)) {
                     continue;
@@ -1090,7 +1090,7 @@ int iGameModelGeometryFilter::ExecuteWithUnstructuredGrid(
         }
     }
     CellArray::Pointer Polygons = CellArray::New();
-    //Èç¹û´æÔÚµãºÏ²¢µÄÇé¿ö£¬»áÔÚºóĞø´¦Àí
+    //å¦‚æœå­˜åœ¨ç‚¹åˆå¹¶çš„æƒ…å†µï¼Œä¼šåœ¨åç»­å¤„ç†
     //output->SetPoints(inPoints);
     //output->SetFaces(Polygons);
 
@@ -1182,7 +1182,7 @@ int iGameModelGeometryFilter::ExecuteWithStructuredGrid(
 //                    Cell* GFace = cell->GeTFace(j);
 //                    input->GetCellNeighbors(cellId, GFace->GetPointIds(),
 //                                            cellIds);
-//                    //Èç¹ûÕâ¸öÃæÃ»ÓĞÁÚ½ÓµÄcell»òÕßÁÚ½ÓµÄcellÊÇ²»¿É¼ûµÄ
+//                    //å¦‚æœè¿™ä¸ªé¢æ²¡æœ‰é‚»æ¥çš„cellæˆ–è€…é‚»æ¥çš„cellæ˜¯ä¸å¯è§çš„
 //                    if (cellIds->GetNumberOfIds() <= 0 ||
 //                        (cellVis && !cellVis[cellIds->GetId(0)])) {
 //                        polys.InsertNextCell(GFace->GetNumberOfPoints(),
@@ -1311,7 +1311,7 @@ int iGameModelGeometryFilter::ExecuteWithDataSet(DataObject::Pointer Input,
         }
     }
     CellArray::Pointer Polygons;
-    //Èç¹û´æÔÚµãºÏ²¢µÄÇé¿ö£¬»áÔÚºóĞø´¦Àí
+    //å¦‚æœå­˜åœ¨ç‚¹åˆå¹¶çš„æƒ…å†µï¼Œä¼šåœ¨åç»­å¤„ç†
     output->SetPoints(inPoints);
     output->SetFaces(Polygons);
 

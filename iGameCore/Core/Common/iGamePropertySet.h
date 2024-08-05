@@ -42,10 +42,9 @@ public:
 
     // Delete a property by index
     void DeleteProperty(const IGsize index);
+    // Get all propertys
+    ElementArray<Property>::Pointer GetAllPropertys();
 
-    ElementArray<Property>::Pointer GetAllPropertys() {
-        return m_Buffer;
-    }
     void AllocateSizeWithCopy(PropertySet* ps,IGsize numCells) {
         auto& allarray = ps->GetAllPropertys();
         this->m_Buffer->Resize(allarray->Size());
