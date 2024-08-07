@@ -310,6 +310,223 @@ public:
 
 public:
     /**
+    * Returns a 2-dimensional vector consisting of the x and y components.
+    * @return A vec<2, T> containing the x and y components of the original vector.
+    */
+    vec<2, T> xy() const { return vec<2, T>{x, y}; }
+
+    /**
+    * Returns a 2-dimensional vector consisting of the x and z components.
+    * @return A vec<2, T> containing the x and z components of the original vector.
+    */
+    vec<2, T> xz() const { return vec<2, T>{x, z}; }
+
+    /**
+    * Returns a 2-dimensional vector consisting of the x and w components.
+    * @return A vec<2, T> containing the x and w components of the original vector.
+    */
+    vec<2, T> xw() const { return vec<2, T>{x, w}; }
+
+    /**
+    * Returns a 2-dimensional vector consisting of the y and x components.
+    * @return A vec<2, T> containing the y and x components of the original vector.
+    */
+    vec<2, T> yx() const { return vec<2, T>{y, x}; }
+
+    /**
+    * Returns a 2-dimensional vector consisting of the y and z components.
+    * @return A vec<2, T> containing the y and z components of the original vector.
+    */
+    vec<2, T> yz() const { return vec<2, T>{y, z}; }
+
+    /**
+    * Returns a 2-dimensional vector consisting of the y and w components.
+    * @return A vec<2, T> containing the y and w components of the original vector.
+    */
+    vec<2, T> yw() const { return vec<2, T>{y, w}; }
+
+    /**
+    * Returns a 2-dimensional vector consisting of the z and x components.
+    * @return A vec<2, T> containing the z and x components of the original vector.
+    */
+    vec<2, T> zx() const { return vec<2, T>{z, x}; }
+
+    /**
+    * Returns a 2-dimensional vector consisting of the z and y components.
+    * @return A vec<2, T> containing the z and y components of the original vector.
+    */
+    vec<2, T> zy() const { return vec<2, T>{z, y}; }
+
+    /**
+    * Returns a 2-dimensional vector consisting of the z and w components.
+    * @return A vec<2, T> containing the z and w components of the original vector.
+    */
+    vec<2, T> zw() const { return vec<2, T>{z, w}; }
+
+    /**
+    * Returns a 2-dimensional vector consisting of the w and x components.
+    * @return A vec<2, T> containing the w and x components of the original vector.
+    */
+    vec<2, T> wx() const { return vec<2, T>{w, x}; }
+
+    /**
+    * Returns a 2-dimensional vector consisting of the w and y components.
+    * @return A vec<2, T> containing the w and y components of the original vector.
+    */
+    vec<2, T> wy() const { return vec<2, T>{w, y}; }
+
+    /**
+    * Returns a 2-dimensional vector consisting of the w and z components.
+    * @return A vec<2, T> containing the w and z components of the original vector.
+    */
+    vec<2, T> wz() const { return vec<2, T>{w, z}; }
+
+    /**
+    * Returns a 3-dimensional vector consisting of the x, y, and z components.
+    * @return A vec<3, T> containing the x, y, and z components of the original vector.
+    */
+    vec<3, T> xyz() const { return vec<3, T>{x, y, z}; }
+
+    /**
+    * Returns a 3-dimensional vector consisting of the x, y, and w components.
+    * @return A vec<3, T> containing the x, y, and w components of the original vector.
+    */
+    vec<3, T> xyw() const { return vec<3, T>{x, y, w}; }
+
+    /**
+    * Returns a 3-dimensional vector consisting of the x, z, and y components.
+    * @return A vec<3, T> containing the x, z, and y components of the original vector.
+    */
+    vec<3, T> xzy() const { return vec<3, T>{x, z, y}; }
+
+    /**
+    * Returns a 3-dimensional vector consisting of the x, z, and w components.
+    * @return A vec<3, T> containing the x, z, and w components of the original vector.
+    */
+    vec<3, T> xzw() const { return vec<3, T>{x, z, w}; }
+
+    /**
+    * Returns a 3-dimensional vector consisting of the x, w, and y components.
+    * @return A vec<3, T> containing the x, w, and y components of the original vector.
+    */
+    vec<3, T> xwy() const { return vec<3, T>{x, w, y}; }
+
+    /**
+    * Returns a 3-dimensional vector consisting of the x, w, and z components.
+    * @return A vec<3, T> containing the x, w, and z components of the original vector.
+    */
+    vec<3, T> xwz() const { return vec<3, T>{x, w, z}; }
+
+    /**
+    * Returns a 3-dimensional vector consisting of the y, x, and z components.
+    * @return A vec<3, T> containing the y, x, and z components of the original vector.
+    */
+    vec<3, T> yxz() const { return vec<3, T>{y, x, z}; }
+
+    /**
+    * Returns a 3-dimensional vector consisting of the y, x, and w components.
+    * @return A vec<3, T> containing the y, x, and w components of the original vector.
+    */
+    vec<3, T> yxw() const { return vec<3, T>{y, x, w}; }
+
+    /**
+    * Returns a 3-dimensional vector consisting of the y, z, and x components.
+    * @return A vec<3, T> containing the y, z, and x components of the original vector.
+    */
+    vec<3, T> yzx() const { return vec<3, T>{y, z, x}; }
+
+    /**
+    * Returns a 3-dimensional vector consisting of the y, z, and w components.
+    * @return A vec<3, T> containing the y, z, and w components of the original vector.
+    */
+    vec<3, T> yzw() const { return vec<3, T>{y, z, w}; }
+
+    /**
+    * Returns a 3-dimensional vector consisting of the y, w, and x components.
+    * @return A vec<3, T> containing the y, w, and x components of the original vector.
+    */
+    vec<3, T> ywx() const { return vec<3, T>{y, w, x}; }
+
+    /**
+    * Returns a 3-dimensional vector consisting of the y, w, and z components.
+    * @return A vec<3, T> containing the y, w, and z components of the original vector.
+    */
+    vec<3, T> ywz() const { return vec<3, T>{y, w, z}; }
+
+    /**
+    * Returns a 3-dimensional vector consisting of the z, x, and y components.
+    * @return A vec<3, T> containing the z, x, and y components of the original vector.
+    */
+    vec<3, T> zxy() const { return vec<3, T>{z, x, y}; }
+
+    /**
+    * Returns a 3-dimensional vector consisting of the z, x, and w components.
+    * @return A vec<3, T> containing the z, x, and w components of the original vector.
+    */
+    vec<3, T> zxw() const { return vec<3, T>{z, x, w}; }
+
+    /**
+    * Returns a 3-dimensional vector consisting of the z, y, and x components.
+    * @return A vec<3, T> containing the z, y, and x components of the original vector.
+    */
+    vec<3, T> zyx() const { return vec<3, T>{z, y, x}; }
+
+    /**
+    * Returns a 3-dimensional vector consisting of the z, y, and w components.
+    * @return A vec<3, T> containing the z, y, and w components of the original vector.
+    */
+    vec<3, T> zyw() const { return vec<3, T>{z, y, w}; }
+
+    /**
+    * Returns a 3-dimensional vector consisting of the z, w, and x components.
+    * @return A vec<3, T> containing the z, w, and x components of the original vector.
+    */
+    vec<3, T> zwx() const { return vec<3, T>{z, w, x}; }
+
+    /**
+    * Returns a 3-dimensional vector consisting of the z, w, and y components.
+    * @return A vec<3, T> containing the z, w, and y components of the original vector.
+    */
+    vec<3, T> zwy() const { return vec<3, T>{z, w, y}; }
+
+    /**
+    * Returns a 3-dimensional vector consisting of the w, x, and y components.
+    * @return A vec<3, T> containing the w, x, and y components of the original vector.
+    */
+    vec<3, T> wxy() const { return vec<3, T>{w, x, y}; }
+
+    /**
+    * Returns a 3-dimensional vector consisting of the w, x, and z components.
+    * @return A vec<3, T> containing the w, x, and z components of the original vector.
+    */
+    vec<3, T> wxz() const { return vec<3, T>{w, x, z}; }
+
+    /**
+    * Returns a 3-dimensional vector consisting of the w, y, and x components.
+    * @return A vec<3, T> containing the w, y, and x components of the original vector.
+    */
+    vec<3, T> wyx() const { return vec<3, T>{w, y, x}; }
+
+    /**
+    * Returns a 3-dimensional vector consisting of the w, y, and z components.
+    * @return A vec<3, T> containing the w, y, and z components of the original vector.
+    */
+    vec<3, T> wyz() const { return vec<3, T>{w, y, z}; }
+
+    /**
+    * Returns a 3-dimensional vector consisting of the w, z, and x components.
+    * @return A vec<3, T> containing the w, z, and x components of the original vector.
+    */
+    vec<3, T> wzx() const { return vec<3, T>{w, z, x}; }
+
+    /**
+    * Returns a 3-dimensional vector consisting of the w, z, and y components.
+    * @return A vec<3, T> containing the w, z, and y components of the original vector.
+    */
+    vec<3, T> wzy() const { return vec<3, T>{w, z, y}; }
+
+public:
+    /**
     * Returns a pointer to the data array of the vector.
     * @return A pointer to the first component.
     */

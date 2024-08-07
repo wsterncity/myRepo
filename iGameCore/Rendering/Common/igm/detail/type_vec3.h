@@ -268,6 +268,43 @@ public:
 
 public:
     /**
+    * Returns a 2-dimensional vector consisting of the x and y components.
+    * @return A vec<2, T> containing the x and y components of the original vector.
+    */
+    vec<2, T> xy() const { return vec<2, T>{x, y}; }
+
+    /**
+    * Returns a 2-dimensional vector consisting of the y and x components.
+    * @return A vec<2, T> containing the y and x components of the original vector.
+    */
+    vec<2, T> yx() const { return vec<2, T>{y, x}; }
+
+    /**
+    * Returns a 2-dimensional vector consisting of the x and z components.
+    * @return A vec<2, T> containing the x and z components of the original vector.
+    */
+    vec<2, T> xz() const { return vec<2, T>{x, z}; }
+
+    /**
+    * Returns a 2-dimensional vector consisting of the z and x components.
+    * @return A vec<2, T> containing the z and x components of the original vector.
+    */
+    vec<2, T> zx() const { return vec<2, T>{z, x}; }
+
+    /**
+    * Returns a 2-dimensional vector consisting of the y and z components.
+    * @return A vec<2, T> containing the y and z components of the original vector.
+    */
+    vec<2, T> yz() const { return vec<2, T>{y, z}; }
+
+    /**
+    * Returns a 2-dimensional vector consisting of the z and y components.
+    * @return A vec<2, T> containing the z and y components of the original vector.
+    */
+    vec<2, T> zy() const { return vec<2, T>{z, y}; }
+
+public:
+    /**
     * Returns a pointer to the underlying data.
     * @return A pointer to the first element of the vector.
     */
