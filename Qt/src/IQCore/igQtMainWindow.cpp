@@ -599,7 +599,7 @@ void igQtMainWindow::changePointPicked()
 	{
 		auto interactor = PointPickedInteractor::New();
 		interactor->SetPointSet(DynamicCast<PointSet>(
-			rendererWidget->GetScene()->GetCurrentObject()));
+			rendererWidget->GetScene()->GetCurrentObject()), rendererWidget->GetScene()->GetCurrentModel());
 		rendererWidget->ChangeInteractor(interactor);
 	}
 	else {

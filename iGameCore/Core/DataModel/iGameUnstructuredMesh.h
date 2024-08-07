@@ -3,6 +3,7 @@
 
 #include "iGamePointSet.h"
 #include "iGameScene.h"
+#include "iGameCellArray.h"
 
 #include "iGameEmptyCell.h"
 #include "iGameLine.h"

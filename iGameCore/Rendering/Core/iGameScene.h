@@ -12,7 +12,7 @@
 #include "iGameCamera.h"
 #include "iGameFontSet.h"
 #include "iGameLight.h"
-#include "iGameSurfaceMesh.h"
+#include "iGameModel.h"
 
 IGAME_NAMESPACE_BEGIN
 class Scene : public Object {
@@ -72,7 +72,8 @@ public:
     bool UpdateCurrentDataObject(int index);
     DataObject* GetDataObject(int index);
     DataObject* GetCurrentObject();
-    std::map<DataObjectId, DataObject::Pointer>& GetModelList();
+    Model* GetCurrentModel();
+    std::map<int, Model::Pointer>& GetModelList();
 
     GLTexture2d& HizTexture() { return m_DepthPyramid; }
 
@@ -98,8 +99,9 @@ protected:
     void DrawModels();
     void DrawAxes();
 
-    std::map<DataObjectId, DataObject::Pointer> m_Models;
-    DataObjectId m_CurrentObjectId{0};
+    std::map<int, Model::Pointer> m_Models;
+    int m_CurrentModelId{0};
+    Model* m_CurrentModel{nullptr};
     DataObject* m_CurrentObject{nullptr};
 
     Camera::Pointer m_Camera{};

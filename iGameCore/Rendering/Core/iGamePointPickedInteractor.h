@@ -11,19 +11,20 @@ public:
     I_OBJECT(PointPickedInteractor);
     static Pointer New() { return new PointPickedInteractor; }
 
-    void SetPointSet(PointSet::Pointer set) {
-        m_PointSet = set;
+    void SetPointSet(PointSet* set, Model* model) {
+        m_Points = set;
+        m_Model = model;
     }
 
     void MousePressEvent(int posX, int posY,
         MouseButton mouseMode) override
     {
         igm::vec2 pos = {float(posX), (float) posY};
-        if (m_PointSet == nullptr)
+        if (m_Points == nullptr || m_Model == nullptr)
         {
             return;
         }
-        
+
         m_Width = m_Camera->GetViewPort().x;
         m_Height = m_Camera->GetViewPort().y;
         m_DevicePixelRatio = m_Camera->GetDevicePixelRatio();
@@ -54,15 +55,15 @@ public:
         igm::vec3 dir = (point1 - point2).normalized();
 
         PointPicker::Pointer picker = PointPicker::New();
-        picker->SetPointSet(m_PointSet);
+        picker->SetPointSet(m_Points);
         igIndex id = picker->PickClosetPointWithLine(
                 Vector3d(point1.x, point1.y, point1.z),
                 Vector3d(dir.x, dir.y, dir.z));
 
-        if (id != -1) {
-            PointSet::Pointer p = PointSet::New();
-            p->AddPoint(m_PointSet->GetPoint(id));
-            m_Scene->AddDataObject(p);
+        m_Model->GetPointPainter()->Clear();
+        if (id != -1) 
+        {
+            m_Model->GetPointPainter()->DrawPoint(m_Points->GetPoint(id));
         }
     }
     void MouseMoveEvent(int posX, int posY) override
@@ -82,7 +83,8 @@ protected:
     PointPickedInteractor() {}
     ~PointPickedInteractor() override = default;
 
-    PointSet::Pointer m_PointSet{};
+    PointSet* m_Points{nullptr};
+    Model* m_Model{nullptr};
 
     int m_Width{}, m_Height{};
     int m_DevicePixelRatio{};
