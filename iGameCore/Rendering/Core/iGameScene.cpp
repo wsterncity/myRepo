@@ -259,15 +259,15 @@ void Scene::InitOpenGL() {
     {
         m_CameraDataBlock.create();
         m_CameraDataBlock.target(GL_UNIFORM_BUFFER);
-        m_CameraDataBlock.allocate(sizeof(CameraDataBlock), nullptr,
+        m_CameraDataBlock.allocate(sizeof(CameraDataBuffer), nullptr,
                                    GL_STATIC_DRAW);
         m_ObjectDataBlock.create();
         m_ObjectDataBlock.target(GL_UNIFORM_BUFFER);
-        m_ObjectDataBlock.allocate(sizeof(ObjectDataBlock), nullptr,
+        m_ObjectDataBlock.allocate(sizeof(ObjectDataBuffer), nullptr,
                                    GL_STATIC_DRAW);
         m_UBOBlock.create();
         m_UBOBlock.target(GL_UNIFORM_BUFFER);
-        m_UBOBlock.allocate(sizeof(UniformBufferObjectBlock), nullptr,
+        m_UBOBlock.allocate(sizeof(UniformBufferObjectBuffer), nullptr,
                             GL_STATIC_DRAW);
 
         auto patchShader = this->GetShader(PATCH);
@@ -604,13 +604,13 @@ void Scene::UpdateUniformData() {
 
 void Scene::UpdateUniformBuffer() {
     // update camera data matrix
-    m_CameraDataBlock.subData(0, sizeof(CameraDataBlock), &m_CameraData);
+    m_CameraDataBlock.subData(0, sizeof(CameraDataBuffer), &m_CameraData);
 
     // update object data matrix
-    m_ObjectDataBlock.subData(0, sizeof(ObjectDataBlock), &m_ObjectData);
+    m_ObjectDataBlock.subData(0, sizeof(ObjectDataBuffer), &m_ObjectData);
 
     // update other ubo
-    m_UBOBlock.subData(0, sizeof(UniformBufferObjectBlock), &m_UBO);
+    m_UBOBlock.subData(0, sizeof(UniformBufferObjectBuffer), &m_UBO);
 }
 
 void Scene::DrawAxes() {

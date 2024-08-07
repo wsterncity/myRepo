@@ -2,8 +2,8 @@
 #define OPENIGAME_POINT_PICKED_INTERACTOR_H
 
 #include "iGameInteractor.h"
-#include "iGamePointSet.h"
 #include "iGamePointPicker.h"
+#include "iGamePointSet.h"
 
 IGAME_NAMESPACE_BEGIN
 class PointPickedInteractor : public Interactor {
@@ -11,43 +11,37 @@ public:
     I_OBJECT(PointPickedInteractor);
     static Pointer New() { return new PointPickedInteractor; }
 
-    void SetPointSet(PointSet::Pointer set) {
-        m_PointSet = set;
-    }
+    void SetPointSet(PointSet::Pointer set) { m_PointSet = set; }
 
-    void MousePressEvent(int posX, int posY,
-        MouseButton mouseMode) override
-    {
+    void MousePressEvent(int posX, int posY, MouseButton mouseMode) override {
         igm::vec2 pos = {float(posX), (float) posY};
-        if (m_PointSet == nullptr)
-        {
-            return;
-        }
-        
+        if (m_PointSet == nullptr) { return; }
+
         m_Width = m_Camera->GetViewPort().x;
         m_Height = m_Camera->GetViewPort().y;
         m_DevicePixelRatio = m_Camera->GetDevicePixelRatio();
 
-        // ÆÁÄ»×ø±ê
+        // ï¿½ï¿½Ä»ï¿½ï¿½ï¿½ï¿½
         float width = (float) m_Width / m_DevicePixelRatio;
         float height = (float) m_Height / m_DevicePixelRatio;
 
-        // ½«ÆÁÄ»×ø±ê×ªÎªNDC×ø±ê[-1,1]
+        // ï¿½ï¿½ï¿½ï¿½Ä»ï¿½ï¿½ï¿½ï¿½×ªÎªNDCï¿½ï¿½ï¿½ï¿½[-1,1]
         float x = 2.0f * pos.x / width - 1.0f;
         float y = 1.0f - (2.0f * pos.y / height);
 
-        auto mvp = (m_Scene->MVP().viewporj * m_Scene->MVP().model);
+        auto mvp =
+                (m_Scene->CameraData().projview * m_Scene->ObjectData().model);
         auto mvp_invert = mvp.invert();
 
-        // NDC×ø±ê×ªÎª²Ã¼ô×ø±ê
-        igm::vec4 point(x, y, 0, 1);      // ½üÆ½Ãæµã
-        igm::vec4 pointEnd(x, y, 1.0, 1); // Ô¶Æ½Ãæµã
+        // NDCï¿½ï¿½ï¿½ï¿½×ªÎªï¿½Ã¼ï¿½ï¿½ï¿½ï¿½ï¿½
+        igm::vec4 point(x, y, 0, 1);      // ï¿½ï¿½Æ½ï¿½ï¿½ï¿½
+        igm::vec4 pointEnd(x, y, 1.0, 1); // Ô¶Æ½ï¿½ï¿½ï¿½
 
-        // ²Ã¼ô×ø±ê×ªÎªÊÀ½ç×ø±ê
-        igm::vec4 tpoint = mvp_invert * point;  
+        // ï¿½Ã¼ï¿½ï¿½ï¿½ï¿½ï¿½×ªÎªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+        igm::vec4 tpoint = mvp_invert * point;
         igm::vec4 tpointEnd = mvp_invert * pointEnd;
 
-        // 3Î¬µÄÊÀ½ç×ø±ê
+        // 3Î¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
         igm::vec3 point1(tpoint / tpoint.w);
         igm::vec3 point2(tpointEnd / tpointEnd.w);
 
@@ -65,18 +59,9 @@ public:
             m_Scene->AddDataObject(p);
         }
     }
-    void MouseMoveEvent(int posX, int posY) override
-    {
-
-    }
-    void MouseReleaseEvent(int posX, int posY) override
-    {
-
-    }
-    void WheelEvent(double delta) override
-    {
-
-    }
+    void MouseMoveEvent(int posX, int posY) override {}
+    void MouseReleaseEvent(int posX, int posY) override {}
+    void WheelEvent(double delta) override {}
 
 protected:
     PointPickedInteractor() {}

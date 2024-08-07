@@ -20,17 +20,17 @@ public:
     I_OBJECT(Scene);
     static Pointer New() { return new Scene; }
 
-    struct CameraDataBlock {
+    struct CameraDataBuffer {
         alignas(16) igm::mat4 view;
         alignas(16) igm::mat4 proj;
         alignas(16) igm::mat4 projview;
     };
-    struct ObjectDataBlock {
+    struct ObjectDataBuffer {
         alignas(16) igm::mat4 model;
         alignas(16) igm::mat4 normal;
         alignas(16) igm::vec4 spherebounds;
     };
-    struct UniformBufferObjectBlock {
+    struct UniformBufferObjectBuffer {
         alignas(16) igm::vec3 viewPos;
         alignas(4) int useColor{0};
     };
@@ -54,8 +54,9 @@ public:
         SHADERTYPE_COUNT
     };
 
-    CameraDataBlock& CameraData() { return this->m_CameraData; }
-    UniformBufferObjectBlock& UBO() { return this->m_UBO; }
+    CameraDataBuffer& CameraData() { return this->m_CameraData; }
+    ObjectDataBuffer& ObjectData() { return this->m_ObjectData; }
+    UniformBufferObjectBuffer& UBO() { return this->m_UBO; }
     void UpdateUniformBuffer();
 
     void SetShader(IGenum type, GLShaderProgram*);
@@ -111,9 +112,9 @@ protected:
     Light::Pointer m_Light{};
     Axes::Pointer m_Axes{};
 
-    CameraDataBlock m_CameraData;
-    ObjectDataBlock m_ObjectData;
-    UniformBufferObjectBlock m_UBO;
+    CameraDataBuffer m_CameraData;
+    ObjectDataBuffer m_ObjectData;
+    UniformBufferObjectBuffer m_UBO;
 
     igm::mat4 m_ModelRotate{};
     igm::vec3 m_BackgroundColor{};
