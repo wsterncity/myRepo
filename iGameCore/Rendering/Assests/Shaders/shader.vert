@@ -1,13 +1,13 @@
 #version 410 core
 
-layout(std140) uniform MVPMatrix {
-//layout(std140, binding = 0) uniform MVPMatrix {
+layout(std140) uniform MVPMatrixBlock {
+//layout(std140, binding = 0) uniform MVPMatrixBlock {
     mat4 model;
     mat4 normal;// transpose(inverse(model))
     mat4 viewporj;// proj * view
 } mvp;
-layout(std140) uniform UniformBufferObject {
-//layout(std140, binding = 1) uniform UniformBufferObject {
+layout(std140) uniform UniformBufferObjectBlock {
+//layout(std140, binding = 1) uniform UniformBufferObjectBlock {
     vec3 viewPos;
     bool useColor;
 } ubo;

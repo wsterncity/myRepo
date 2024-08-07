@@ -127,6 +127,9 @@ private:
 
 public:
     void Draw(Scene*) override;
+    void DrawPhase1(Scene*) override;
+    void DrawPhase2(Scene*) override;
+    void DrawPhase3(Scene*) override;
     void ConvertToDrawableData() override;
     bool IsDrawable() override { return true; }
     void ViewCloudPicture(int index, int demension = -1) override;

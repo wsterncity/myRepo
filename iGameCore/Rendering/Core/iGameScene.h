@@ -74,7 +74,7 @@ public:
     DataObject* GetCurrentObject();
     std::map<DataObjectId, DataObject::Pointer>& GetModelList();
 
-    GLTexture2d& DepthPyramidTexture() { return m_DepthPyramid; }
+    GLTexture2d& HizTexture() { return m_DepthPyramid; }
 
     // TODO: slove z-buffer Accuracy issues
     GLBuffer& GetDrawCullDataBuffer();
@@ -83,18 +83,20 @@ protected:
     Scene();
     ~Scene() override;
 
+    void UpdateModelsBoundingSphere();
+
     void InitOpenGL();
     void InitFont();
     void InitAxes();
 
     void ResizeFrameBuffer();
-    void ResizeHZBTexture();
+    void ResizeHizTexture();
+    void RefreshHizTexture();
 
     void UpdateUniformData();
     void DrawFrame();
     void DrawModels();
     void DrawAxes();
-    void RefreshHizTexture();
 
     std::map<DataObjectId, DataObject::Pointer> m_Models;
     DataObjectId m_CurrentObjectId{0};
@@ -110,7 +112,7 @@ protected:
     igm::vec3 m_BackgroundColor{};
 
     uint32_t m_VisibleModelsCount = 0;
-    igm::vec4 m_FirstModelCenter{0.0f, 0.0f, 0.0f, 1.0f};
+    igm::vec4 m_ModelsBoundingSphere{0.0f, 0.0f, 0.0f, 1.0f};
 
     GLBuffer m_MVPBlock, m_UBOBlock;
     std::map<IGenum, std::unique_ptr<GLShaderProgram>> m_ShaderPrograms;

@@ -8,14 +8,12 @@
  */
 #pragma once
 
+#include <iGameProgressObserver.h>
+
 #include <QProgressBar>
 #include <QLabel>
 #include <QWidget>
 #include <IQCore/igQtExportModule.h>
-
-namespace iGame {
-    class iGameProgressObserver;
-}
 
 class IG_QT_MODULE_EXPORT igQtProgressBarWidget : public QWidget{
 public:
@@ -29,5 +27,5 @@ private:
 
     QProgressBar* progressBar;
     QLabel *progressBarLabel;
-    iGame::iGameProgressObserver* ProgressObserver{ nullptr };
+    iGame::ProgressObserver* progressObserver;
 };

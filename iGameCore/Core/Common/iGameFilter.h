@@ -3,6 +3,7 @@
 
 #include "iGameObject.h"
 #include "iGameDataObject.h"
+#include "iGameProgressObserver.h"
 
 IGAME_NAMESPACE_BEGIN
 class Filter : public Object {
@@ -47,9 +48,10 @@ protected:
 	Filter();
 	~Filter() override = default;
 
-	DataObjectArray::Pointer m_Inputs;  // Input data object array
-	DataObjectArray::Pointer m_Outputs; // Output data object array
+	DataObjectArray::Pointer m_Inputs{};  // Input data object array
+    DataObjectArray::Pointer m_Outputs{}; // Output data object array
 
+	ProgressObserver* m_ProgressObserver{nullptr};
 	double m_Progress{ 0.0 };           // The current task progress
     double m_ProgressShift{0.0};        // Previous task's progress
     double m_ProgressScale{1.0};        // The current task progress range

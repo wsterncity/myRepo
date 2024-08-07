@@ -85,6 +85,39 @@ public:
     void DeleteFace(const IGsize faceId) override;
     void DeleteVolume(const IGsize volumeId);
 
+    CellArray* GetCells() { return this->GetVolumes(); };
+    void GetCell(igIndex cellId, Cell* cell) {
+        cell = this->GetVolume(cellId);
+    };
+    IntArray* GetCellTypes() {
+        IntArray::Pointer Types = IntArray::New();
+        Types->Resize(this->GetNumberOfVolumes());
+        Types->SetElementSize(this->GetNumberOfVolumes());
+        auto types = Types->RawPointer();
+        igIndex cell[IGAME_CELL_MAX_SIZE];
+        for (int i = 0; i < this->GetNumberOfVolumes(); i++) {
+            int ncells = m_Volumes->GetCellIds(i, cell);
+            switch (ncells) {
+                case 4:
+                    types[i] = IG_TETRA;
+                    break;
+                case 5:
+                    types[i] = IG_PYRAMID;
+                    break;
+                case 6:
+                    types[i] = IG_PRISM;
+                    break;
+                case 8:
+                    types[i] = IG_HEXAHEDRON;
+                    break;
+                default:
+                    break;
+            }
+        }
+        return Types.get();
+    }
+    igIndex GetCellDimension(igIndex CellTyp) { return 3; };
+
 protected:
     VolumeMesh();
     ~VolumeMesh() override = default;

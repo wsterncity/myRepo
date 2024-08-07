@@ -61,15 +61,22 @@ void Interactor::WheelEvent(double delta) {
     if (delta == 0) {
         std::cout << "The wheel movement given to the interactor is 0"
                   << std::endl;
+        return;
     } else if (delta > 0.0) {
         wheelMoveDirection = 1.0f;
     } else {
         wheelMoveDirection = -1.0f;
     }
-    m_Camera->moveZ(static_cast<float>(-wheelMoveDirection *
-                                       m_Scene->m_FirstModelCenter.w *
-                                       m_CameraScaleSpeed));
-    UpdateCameraMoveSpeed(m_Scene->m_FirstModelCenter);
+
+    auto pos = m_Camera->GetCamaraPos();
+    auto center = m_Scene->m_ModelsBoundingSphere.xyz();
+    
+    auto moveSize = static_cast<float>(
+            -wheelMoveDirection * (pos - center).length() * m_CameraScaleSpeed);
+
+    m_Camera->moveZ(moveSize);
+    m_Camera->SetFarPlane(m_Camera->GetFarPlane() + moveSize);
+    UpdateCameraMoveSpeed(m_Scene->m_ModelsBoundingSphere);
 }
 
 void Interactor::Initialize() { m_Camera = m_Scene->m_Camera; }
@@ -107,13 +114,13 @@ void Interactor::ViewTranslation() {
         auto offset = m_NewPoint2D - m_OldPoint2D;
         m_Camera->moveXY(-offset.x * m_CameraMoveSpeed,
                          offset.y * m_CameraMoveSpeed);
-        UpdateCameraMoveSpeed(m_Scene->m_FirstModelCenter);
+        UpdateCameraMoveSpeed(m_Scene->m_ModelsBoundingSphere);
     }
 }
 
 void Interactor::MapToSphere(igm::vec3& old_v3D, igm::vec3& new_v3D) {
     // use the screen coordinates of the first actor for rotation calculation
-    auto center = igm::vec3(m_Scene->m_FirstModelCenter);
+    auto center = igm::vec3(m_Scene->m_ModelsBoundingSphere);
 
     igm::mat4 translateToOrigin = igm::translate(igm::mat4(1.0f), -center);
     igm::mat4 translateBack = igm::translate(igm::mat4(1.0f), center);

@@ -84,6 +84,10 @@ public:
 
 	IdArray::Pointer GetCellIdArray() { return m_Buffer; }
 	UnsignedIntArray::Pointer GetOffset() { return m_Offsets; }
+	void SetData(IdArray* ids,UnsignedIntArray* offsets) { 
+		m_Buffer = ids;
+        m_Offsets = offsets;
+	}
 
 protected:
 	CellArray();

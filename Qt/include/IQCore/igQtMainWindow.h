@@ -6,8 +6,6 @@
 #ifndef OPENIGAME_IGQTMAINWINDOW_H
 #define OPENIGAME_IGQTMAINWINDOW_H
 
-#include "iGameSceneManager.h"
-
 #define QT_NO_OPENGL
 #include <ui_iGameQtMainWindow.h>
 #if __linux__
@@ -43,7 +41,6 @@ public:
     void initAllFilters();
 
 
-
 public:
     igQtModelDrawWidget* rendererWidget;
     igQtFileLoader* fileLoader;
@@ -65,10 +62,8 @@ private slots:
     void updateViewStyleAndCloudPicture();
     void updateCurrentDataObject();
 
-//<<<<<<< HEAD
     void updateCurrentSceneWidget();
-//=======
-//>>>>>>> 5c590c0b5220d077d84cdab81b6eed106d7d4de8
+
 private:
     Ui::MainWindow* ui;
 };

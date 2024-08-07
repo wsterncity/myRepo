@@ -7,6 +7,12 @@
 
 #include <iGameSmartPointer.h>
 
+#ifdef __APPLE__
+#define __gl3_h_
+#define __glext_h_
+#define __glext3_h_
+#endif
+
 #include <IQCore/igQtExportModule.h>
 #include <QOpenGLContext>
 #include <QOpenGLExtraFunctions>
@@ -14,10 +20,10 @@
 
 namespace iGame
 {
-    class Scene;
-    class DataObject;
+class Scene;
+class DataObject;
 
-    class Interactor;
+class Interactor;
 } // namespace iGame
 
 using namespace iGame;
@@ -45,20 +51,14 @@ protected:
     SmartPointer<Scene> m_Scene;
     SmartPointer<Interactor> m_Interactor;
 
- public slots:
-     void MakeCurrent()
-     {
-         makeCurrent();
-     }
-     void DoneCurrent()
-     {
-         doneCurrent();
-     }
+public slots:
+    void MakeCurrent() { makeCurrent(); }
+    void DoneCurrent() { doneCurrent(); }
 
-     void ChangeViewStyle(int index);
-     void ChangeScalarView(int index, int dim = -1);
+    void ChangeViewStyle(int index);
+    void ChangeScalarView(int index, int dim = -1);
 
- signals:
+signals:
     void AddDataObjectToModelList(QString model_name);
     void UpdateCurrentDataObject();
 };

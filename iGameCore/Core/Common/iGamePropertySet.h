@@ -42,9 +42,26 @@ public:
 
     // Delete a property by index
     void DeleteProperty(const IGsize index);
-
     // Get all propertys
     ElementArray<Property>::Pointer GetAllPropertys();
+
+    void AllocateSizeWithCopy(PropertySet* ps,IGsize numCells) {
+        auto& allarray = ps->GetAllPropertys();
+        this->m_Buffer->Resize(allarray->Size());
+        for (int i = 0; i < allarray->Size(); i++) {
+            auto& array = ps->GetProperty(i);
+            if (array.attachmentType == IG_POINT) {
+                this->m_Buffer->AddElement(array);
+            }
+            else {
+                Property EmptyArray;
+                EmptyArray.type = IG_ARRAY_OBJECT;
+                EmptyArray.attachmentType = IG_CELL;
+                EmptyArray.isDeleted = false;
+                this->m_Buffer->AddElement(EmptyArray);
+            }
+        }
+    }
 
 protected:
     PropertySet();

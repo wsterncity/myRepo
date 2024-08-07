@@ -104,6 +104,17 @@ void PointSet::Draw(Scene* scene) {
         m_PointVAO.release();
     }
 }
+// TODO: wait to implement
+void PointSet::DrawPhase1(Scene*) {
+
+};
+void PointSet::DrawPhase2(Scene*) {
+
+};
+void PointSet::DrawPhase3(Scene*) {
+
+};
+
 void PointSet::ConvertToDrawableData() {
     if (m_Positions && m_Positions->GetMTime() > this->GetMTime()) { return; }
     //if (m_Positions)
