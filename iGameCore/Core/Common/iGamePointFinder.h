@@ -6,12 +6,14 @@
 #include "iGamePoints.h"
 #include "iGameElementArray.h"
 #include "iGameIdArray.h"
+#include "iGameFlexArray.h"
 
 IGAME_NAMESPACE_BEGIN
 class PointFinder : public Object {
 public:
     I_OBJECT(PointFinder);
     static Pointer New() { return new PointFinder; }
+    
 
     void SetPoints(Points::Pointer p) {
         m_Points = p;
@@ -63,11 +65,46 @@ public:
     }
 
 protected:
-    PointFinder() { 
- 
-
-    }
+    PointFinder() { }
     ~PointFinder() override = default;
+
+    void GetBoxNeighbors(FlexArray<int>* boxes, const Vector3i ijk,
+                         const Vector3i ndivs, int level) {
+        int i, j, k, min, max;
+        Vector3i minLevel, maxLevel, nei;
+
+        boxes->reset();
+
+        // If at this box
+        if (level == 0) {
+            //boxes->push_back(ijk);
+            return;
+        }
+
+        // 找level邻域内所有的box
+        for (i = 0; i < 3; i++) {
+            min = ijk[i] - level;
+            max = ijk[i] + level;
+            minLevel[i] = (min > 0 ? min : 0);
+            maxLevel[i] = (max < (ndivs[i] - 1) ? max : (ndivs[i] - 1));
+        }
+
+        // 仅找level层的box
+        for (i = minLevel[0]; i <= maxLevel[0]; i++) {
+            for (j = minLevel[1]; j <= maxLevel[1]; j++) {
+                for (k = minLevel[2]; k <= maxLevel[2]; k++) {
+                    if (i == (ijk[0] + level) || i == (ijk[0] - level) ||
+                        j == (ijk[1] + level) || j == (ijk[1] - level) ||
+                        k == (ijk[2] + level) || k == (ijk[2] - level)) {
+                        nei[0] = i;
+                        nei[1] = j;
+                        nei[2] = k;
+                        //boxes->InsertNextPoint(nei);
+                    }
+                }
+            }
+        }
+    }
 
     IGsize GetBoxIndex(const Vector3d& x) const {
         Vector3i ijk = Interize(x);

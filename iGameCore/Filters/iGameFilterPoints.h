@@ -16,6 +16,7 @@ public:
 	}
 
 	bool Execute() override {
+        UpdateProgress(0);
         m_PointSet = DynamicCast<PointSet>(GetInput(0));
         if (m_PointSet == nullptr) { return false; }
         std::random_device rd;
@@ -26,8 +27,13 @@ public:
         for (int i = 0; i < m_PointSet->GetNumberOfPoints(); i++) {
             double random_number = dis(gen);
             if (random_number <= m_FilterRate) { m_PointSet->DeletePoint(i); }
+
+            
         }
+
+        UpdateProgress(0.99);
         m_PointSet->GarbageCollection();
+        UpdateProgress(1);
         SetOutput(0, m_PointSet);
         return true;
     }

@@ -142,9 +142,9 @@ void igQtMainWindow::initToolbarComponent()
 void igQtMainWindow::initAllComponents()
 {
 
-	//// init ProgressBar
-	//progressBarWidget = new igQtProgressBarWidget(this);
-	//this->statusBar()->addPermanentWidget(progressBarWidget);
+	// init ProgressBar
+	progressBarWidget = new igQtProgressBarWidget(this);
+	this->statusBar()->addPermanentWidget(progressBarWidget);
 
 	//connect(ui->action_SaveScreenShot, &QAction::triggered, rendererWidget, &igQtModelDrawWidget::SaveScreenShoot);
 	connect(ui->action_LoadFile, &QAction::triggered, fileLoader, &igQtFileLoader::LoadFile);
@@ -279,12 +279,38 @@ void igQtMainWindow::initAllFilters() {
         rendererWidget->update();
     });
 
-    connect(ui->action_test_05, &QAction::triggered, this, [&](bool checked) {
-        VolumeMeshFilterTest::Pointer fp = VolumeMeshFilterTest::New();
-        fp->SetInput(rendererWidget->GetScene()->GetCurrentObject());
-        fp->Execute();
-        rendererWidget->update();
-    });
+	connect(ui->action_test_05, &QAction::triggered, this, [&](bool checked) {
+		VolumeMeshFilterTest::Pointer fp = VolumeMeshFilterTest::New();
+		fp->SetInput(rendererWidget->GetScene()->GetCurrentObject());
+		fp->Execute();
+		rendererWidget->update();
+
+        igQtFilterDialogDockWidget* dialog = new igQtFilterDialogDockWidget(this);
+        int targetId = dialog->addParameter(igQtFilterDialogDockWidget::QT_LINE_EDIT, "Target number of faces", "1000");
+        int reductionId = dialog->addParameter(igQtFilterDialogDockWidget::QT_LINE_EDIT, "Reduction (0..1)", "0");
+        int thresholdId = dialog->addParameter(igQtFilterDialogDockWidget::QT_LINE_EDIT, "Quality threshold", "0.1");
+        int preserveId = dialog->addParameter(igQtFilterDialogDockWidget::QT_CHECK_BOX, "Preserve Boundary of the mesh", "false");
+        dialog->show();
+        
+		bool ok;
+        std::cout << dialog->getInt(targetId, ok) << std::endl;
+        std::cout << dialog->getDouble(reductionId, ok) << std::endl;
+        std::cout << dialog->getDouble(thresholdId, ok) << std::endl;
+        std::cout << (dialog->getChecked(preserveId, ok) ? "true" : "false") << std::endl;
+
+        dialog->setApplyFunctor([&]() { 
+			std::cout << "123\n";
+        });
+
+
+		});
+
+	//connect(ui->action_test_05, &QAction::triggered, this, [&](bool checked) {
+	//	VolumeMeshFilterTest::Pointer fp = VolumeMeshFilterTest::New();
+	//	fp->SetInput(rendererWidget->GetScene()->GetCurrentObject());
+	//	fp->Execute();
+	//	rendererWidget->update();
+	//	});
 
     connect(ui->action_test_06, &QAction::triggered, this, [&](bool checked) {
         //      LineSource::Pointer source = LineSource::New();
