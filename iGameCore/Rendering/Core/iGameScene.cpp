@@ -136,9 +136,8 @@ void Scene::AddDataObject(DataObject::Pointer obj) {
     m_CurrentObjectId = obj->GetDataObjectId();
     m_CurrentObject = obj.get();
 
-    if (auto visibility = m_CurrentObject->GetVisibility()) {
-        ChangeDataObjectVisibility(m_CurrentObjectId, visibility);
-    }
+    ChangeDataObjectVisibility(m_CurrentObjectId, true);
+    UpdateModelsBoundingSphere();
 }
 
 void Scene::RemoveDataObject(DataObject::Pointer obj) {
@@ -150,6 +149,7 @@ void Scene::RemoveDataObject(DataObject::Pointer obj) {
             break;
         }
     }
+    UpdateModelsBoundingSphere();
 }
 
 void Scene::RemoveCurrentDataObject() {
@@ -161,6 +161,8 @@ void Scene::RemoveCurrentDataObject() {
     if (m_Models.empty()) return;
     m_CurrentObjectId = m_Models.begin()->first;
     m_CurrentObject = m_Models.begin()->second;
+
+    UpdateModelsBoundingSphere();
 }
 
 bool Scene::UpdateCurrentDataObject(int index) {
@@ -180,6 +182,29 @@ bool Scene::UpdateCurrentDataObject(int index) {
         }
     }
     return false;
+}
+
+void Scene::UpdateModelsBoundingSphere() {
+    // update all models bounding sphere
+    igm::vec3 min(FLT_MAX);
+    igm::vec3 max(-FLT_MAX);
+
+    for (auto& [id, obj]: m_Models) {
+        auto box = obj->GetBoundingBox();
+        Vector3f boxMin = box.min;
+        Vector3f boxMax = box.max;
+
+        min = igm::min(igm::vec3{boxMin[0], boxMin[1], boxMin[2]}, min);
+        max = igm::max(igm::vec3{boxMax[0], boxMax[1], boxMax[2]}, max);
+    };
+    igm::vec3 center = (min + max) / 2;
+    float radius = (max - min).length() / 2;
+
+    m_ModelsBoundingSphere = igm::vec4{center, radius};
+
+    // update camera far plane to cover all models
+    auto pos = m_Camera->GetCamaraPos();
+    m_Camera->SetFarPlane((pos - center).length() + m_ModelsBoundingSphere.w);
 }
 
 DataObject* Scene::GetDataObject(int index) {
@@ -208,12 +233,8 @@ void Scene::ChangeDataObjectVisibility(int index, bool visibility) {
         if (m_VisibleModelsCount == 1) {
             Vector3f center = obj->GetBoundingBox().center();
             float radius = obj->GetBoundingBox().diag() / 2;
-
-            m_FirstModelCenter =
-                    igm::vec4{center[0], center[1], center[2], radius};
             m_Camera->SetCamaraPos(center[0], center[1],
                                    center[2] + 2.0f * radius);
-            //m_Camera->SetCamaraPos(0.293951, 21.5821, 228.601);
         }
     } else {
         m_VisibleModelsCount--;
@@ -533,6 +554,7 @@ void Scene::DrawModels() {
 #else
     bool debug = false;
     if (debug) {
+        std::cout << "-------:Draw:-------" << std::endl;
         for (auto& [id, obj]: m_Models) { obj->ConvertToDrawableData(); }
 
         // phase1: draw visible meshlet

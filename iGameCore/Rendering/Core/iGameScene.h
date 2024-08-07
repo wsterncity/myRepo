@@ -83,6 +83,8 @@ protected:
     Scene();
     ~Scene() override;
 
+    void UpdateModelsBoundingSphere();
+
     void InitOpenGL();
     void InitFont();
     void InitAxes();
@@ -110,7 +112,7 @@ protected:
     igm::vec3 m_BackgroundColor{};
 
     uint32_t m_VisibleModelsCount = 0;
-    igm::vec4 m_FirstModelCenter{0.0f, 0.0f, 0.0f, 1.0f};
+    igm::vec4 m_ModelsBoundingSphere{0.0f, 0.0f, 0.0f, 1.0f};
 
     GLBuffer m_MVPBlock, m_UBOBlock;
     std::map<IGenum, std::unique_ptr<GLShaderProgram>> m_ShaderPrograms;

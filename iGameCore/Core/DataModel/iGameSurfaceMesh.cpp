@@ -604,9 +604,9 @@ void SurfaceMesh::DrawPhase1(Scene* scene) {
         m_Meshlets->FinalDrawCommandBuffer().bind();
         glMultiDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, nullptr,
                                     count, 0);
-        //std::cout << "Draw phase 1: [render count: " << count;
-        //std::cout << ", meshlet count: " << m_Meshlets->MeshletsCount() << "]"
-        //          << std::endl;
+        std::cout << "Draw phase 1: [render count: " << count;
+        std::cout << ", meshlet count: " << m_Meshlets->MeshletsCount() << "]"
+                  << std::endl;
 
         m_TriangleVAO.release();
     } else if (m_ViewStyle == IG_SURFACE_WITH_EDGE) {
@@ -682,9 +682,9 @@ void SurfaceMesh::DrawPhase2(Scene* scene) {
         glMultiDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, nullptr,
                                     count, 0);
 
-        //std::cout << "Draw phase 2: [render count: " << count;
-        //std::cout << ", meshlet count: " << m_Meshlets->MeshletsCount() << "]"
-        //          << std::endl;
+        std::cout << "Draw phase 2: [render count: " << count;
+        std::cout << ", meshlet count: " << m_Meshlets->MeshletsCount() << "]"
+                  << std::endl;
 
         m_TriangleVAO.release();
     } else if (m_ViewStyle == IG_SURFACE_WITH_EDGE) {
