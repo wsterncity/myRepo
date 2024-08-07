@@ -18,42 +18,25 @@ void Interactor::MouseMoveEvent(int _eventX, int _eventY) {
     m_NewPoint2D = {(float) _eventX, (float) _eventY};
     if (m_OldPoint2D == m_NewPoint2D) { return; }
 
-    switch (m_EditMode) {
-        case MODELVIEW:
-            switch (m_MouseMode) {
-                case NoButton:
-                    break;
-                case LeftButton:
-                    ModelRotation();
-                    break;
-                case RightButton:
-                    ViewTranslation();
-                    break;
-                case MiddleButton:
-                    break;
-                default:
-                    break;
-            }
-            m_OldPoint2D = m_NewPoint2D;
+    switch (m_MouseMode) {
+        case NoButton:
             break;
-
-        case PICKITEM:
+        case LeftButton:
+            ModelRotation();
+            break;
+        case RightButton:
+            ViewTranslation();
+            break;
+        case MiddleButton:
             break;
         default:
             break;
     }
+    m_OldPoint2D = m_NewPoint2D;
 }
 
 void Interactor::MouseReleaseEvent(int _eventX, int _eventY) {
     m_MouseMode = NoButton;
-    switch (m_EditMode) {
-        case MODELVIEW:
-            break;
-        case PICKITEM:
-            break;
-        default:
-            break;
-    }
 }
 
 void Interactor::WheelEvent(double delta) {
@@ -182,5 +165,10 @@ void Interactor::UpdateCameraMoveSpeed(const igm::vec4& _center) {
 
     m_CameraMoveSpeed = radius / acturalPixel;
 }
+
+//igm::vec3 Interactor::GetWorldCoord(igm::vec3& coord) { 
+//
+//    return igm::vec3();
+//}
 
 IGAME_NAMESPACE_END

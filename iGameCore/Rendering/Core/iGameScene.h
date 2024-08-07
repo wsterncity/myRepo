@@ -23,7 +23,7 @@ public:
     struct MVPMatrix {
         alignas(16) igm::mat4 model;
         alignas(16) igm::mat4 normal;
-        alignas(16) igm::mat4 viewporj;
+        alignas(16) igm::mat4 viewporj; // projection * view
     };
     struct UniformBufferObject {
         alignas(16) igm::vec3 viewPos;

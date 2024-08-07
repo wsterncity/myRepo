@@ -86,9 +86,11 @@
         <file>Icons/VcrReverse.svg</file>
         <file>Icons/VcrDisabledLoop.svg</file>
         <file>Icons/_Manage.png</file>
-
         <file>Icons/Eyeball.svg</file>
         <file>Icons/EyeballClosed.svg</file>
+        <file>Icons/select/select_face.png</file>
+        <file>Icons/select/select_vertex.png</file>
+        <file>Icons/select/select_vertex_geodesic.png</file>
     </qresource>
     <qresource prefix="/shader">
         <file>Shaders/direct_vector.frag</file>
