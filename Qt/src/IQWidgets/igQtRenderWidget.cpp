@@ -23,8 +23,8 @@ igQtRenderWidget::~igQtRenderWidget()
 {
     makeCurrent();
     SceneManager::Pointer sceneManager = SceneManager::Instance();
-    sceneManager->DeleteScene(this->m_Scene);
-    this->m_Scene = nullptr;
+    sceneManager->DeleteScene(m_Scene);
+    m_Scene = nullptr;
     doneCurrent();
 }
 
@@ -34,6 +34,11 @@ void igQtRenderWidget::AddDataObject(SmartPointer<DataObject> obj) {
     m_Scene->AddDataObject(obj);
     Q_EMIT AddDataObjectToModelList(QString::fromStdString(obj->GetName()));
     update();
+}
+
+void igQtRenderWidget::ChangeInteractor(SmartPointer<Interactor> it) {
+    m_Interactor = it;
+    m_Interactor->SetScene(m_Scene);
 }
 
 void igQtRenderWidget::initializeGL() 

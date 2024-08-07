@@ -116,7 +116,6 @@ bool iGame::iGameVTSReader::Parsing() {
                     }
                     arr->AddElement(ps);
                 }
-
                 array = arr;
             }
 

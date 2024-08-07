@@ -214,7 +214,6 @@ void igQtModelListView::AddModel(QString modelName) {
 	currentObjectIdx = curObj->GetDataObjectId();
 
 	if(curObj->HasSubDataObject()){
-		int index = 0;
 		for(auto it = curObj->SubBegin(); it != curObj->SubEnd(); it ++){
 			auto& subObj = it->second;
 			std::string name = subObj->GetName();

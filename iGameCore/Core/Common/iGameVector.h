@@ -193,7 +193,7 @@ public:
 
     inline Self normalized() const {
         Self ret(*this);
-        ret.Normalize();
+        ret.normalize();
         return ret;
     }
 

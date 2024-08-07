@@ -2,6 +2,7 @@
 // Created by m_ky on 2024/4/10.
 //
 
+#include <iGamePointPickedInteractor.h>
 #include <iGameUnstructuredMesh.h>
 #include <iGameFilterPoints.h>
 #include <iGameDataSource.h>
@@ -53,6 +54,10 @@ igQtMainWindow::igQtMainWindow(QWidget* parent) :
 	initAllComponents();
 	initAllFilters();
 	updateRecentFilePaths();
+
+	connect(ui->action_select_points, &QAction::triggered, this,
+            &igQtMainWindow::changePointPicked);
+
 
 }
 void igQtMainWindow::initToolbarComponent()
@@ -186,39 +191,6 @@ igQtMainWindow::~igQtMainWindow() {
 }
 
 void igQtMainWindow::initAllFilters() {
-    //connect(ui->action_LaSmoothing, &QAction::triggered, this, [&](bool checked) {
-    //	iGame::iGameInformationMap* info = iGame::iGameInformationMap::New();
-    //	info->Add("lambda", 0.05);
-    //	info->Add("iterTime", 5);
-    //	iGame::iGameManager::Instance()->ExecuteAlgorithm(iGame::iGameLaplacianSmoothing::New(), info);
-    //	delete info;
-    //	});
-    //connect(ui->action_About, &QAction::triggered, this, [&](bool checked) {
-    //	iGame::iGameInformationMap* info = iGame::iGameInformationMap::New();
-    //	iGame::iGameManager::Instance()->ExecuteAlgorithm(iGame::iGameGenBaseScalar::New(), info);
-    //	delete info;
-    //	ui->widget_ScalarField->getScalarsName();
-    //	});
-
-    //connect(ui->action_Simplification, &QAction::triggered, this, [&](bool checked) {
-    //	iGame::iGameInformationMap* info = iGame::iGameInformationMap::New();
-    //	info->Add("TargetFaceNum", 0);
-    //	info->Add("TargetReduction", 0.5);
-    //	info->Add("NormalCheck", true);
-    //	info->Add("OptimalPosition", true);
-    //	info->Add("PreserveBoundary", true);
-    //	info->Add("QualityCheck", true);
-    //	iGame::iGameManager::Instance()->ExecuteAlgorithm(iGame::iGameQEMSimplification::New(), info);
-    //	delete info;
-    //	});
-
-
-    //connect(ui->action_TetSimplification, &QAction::triggered, this, [&](bool checked) {
-    //	iGame::iGameInformationMap* info = iGame::iGameInformationMap::New();
-    //	iGame::iGameManager::Instance()->ExecuteAlgorithm(iGame::iGameTriDecimation::New(), info);
-    //	delete info;
-    //		});
-
     connect(ui->action_test_01, &QAction::triggered, this, [&](bool checked) {
         PointSet::Pointer points = PointSet::New();
         Points::Pointer ps = Points::New();
@@ -619,4 +591,18 @@ void igQtMainWindow::updateCurrentDataObject()
 
 void igQtMainWindow::updateCurrentSceneWidget() {
 	this->rendererWidget->update();
+}
+
+void igQtMainWindow::changePointPicked() 
+{
+	if (ui->action_select_points->isChecked())
+	{
+		auto interactor = PointPickedInteractor::New();
+		interactor->SetPointSet(DynamicCast<PointSet>(
+			rendererWidget->GetScene()->GetCurrentObject()));
+		rendererWidget->ChangeInteractor(interactor);
+	}
+	else {
+		rendererWidget->ChangeInteractor(Interactor::New());
+	}
 }

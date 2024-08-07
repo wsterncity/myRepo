@@ -33,10 +33,11 @@ class IG_QT_MODULE_EXPORT igQtRenderWidget : public QOpenGLWidget {
 public:
     igQtRenderWidget(QWidget* parent = nullptr);
     ~igQtRenderWidget() override;
-    using a = SmartPointer<Interactor>;
+
     Scene* GetScene();
 
     void AddDataObject(SmartPointer<DataObject> obj);
+    void ChangeInteractor(SmartPointer<Interactor> it);
 
 protected:
     void initializeGL() override;

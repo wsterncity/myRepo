@@ -61,8 +61,9 @@ private slots:
     void ChangeScalarViewDim();
     void updateViewStyleAndCloudPicture();
     void updateCurrentDataObject();
-
     void updateCurrentSceneWidget();
+
+    void changePointPicked();
 
 private:
     Ui::MainWindow* ui;

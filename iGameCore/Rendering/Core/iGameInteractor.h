@@ -16,8 +16,6 @@ enum MouseButton {
     MiddleButton = 0x00000004
 };
 
-enum EditMode { MODELVIEW = 0x00000000, PICKITEM = 0x00000001 };
-
 class Interactor : public Object {
 public:
     I_OBJECT(Interactor);
@@ -31,24 +29,23 @@ public:
         }
     }
 
-    void MousePressEvent(int _eventX, int _eventY, MouseButton _mouseMode);
-    void MouseMoveEvent(int _eventX, int _eventY);
-    void MouseReleaseEvent(int _eventX, int _eventY);
-    void WheelEvent(double delta);
-
-private:
-    void Initialize();
-    void ModelRotation();
-    void ViewTranslation();
-    void MapToSphere(igm::vec3& old_v3D, igm::vec3& new_v3D);
-    void UpdateCameraMoveSpeed(const igm::vec4& center);
+    virtual void MousePressEvent(int _eventX, int _eventY, MouseButton _mouseMode);
+    virtual void MouseMoveEvent(int _eventX, int _eventY);
+    virtual void MouseReleaseEvent(int _eventX, int _eventY);
+    virtual void WheelEvent(double delta);
 
 protected:
     Interactor();
     ~Interactor() override;
 
+    void Initialize();
+    void ModelRotation();
+    void ViewTranslation();
+    void MapToSphere(igm::vec3& old_v3D, igm::vec3& new_v3D);
+    void UpdateCameraMoveSpeed(const igm::vec4& center);
+    //igm::vec3 GetWorldCoord(igm::vec3& coord);
+
     MouseButton m_MouseMode{};
-    EditMode m_EditMode{};
 
     Camera::Pointer m_Camera{};
     Scene::Pointer m_Scene{};

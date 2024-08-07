@@ -16,6 +16,13 @@ public:
 	Cell* GetEdge(const int) override { return nullptr; }
     Cell* GetFace(const int) override { return nullptr; }
 
+	static double ComputePointToLineDis(const Vector3d& linePoint,
+                                        const Vector3d& normal,
+                                        const Vector3d& point) 
+	{
+        return std::fabs(CrossProduct(normal, point - linePoint).length() / normal.length());
+    }
+
 protected:
 	Line()
 	{
