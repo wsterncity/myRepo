@@ -257,25 +257,33 @@ void Scene::InitOpenGL() {
 
     // allocate memory
     {
-        m_MVPBlock.create();
-        m_MVPBlock.target(GL_UNIFORM_BUFFER);
-        m_MVPBlock.allocate(sizeof(MVPMatrix), nullptr, GL_STATIC_DRAW);
+        m_CameraDataBlock.create();
+        m_CameraDataBlock.target(GL_UNIFORM_BUFFER);
+        m_CameraDataBlock.allocate(sizeof(CameraDataBlock), nullptr,
+                                   GL_STATIC_DRAW);
+        m_ObjectDataBlock.create();
+        m_ObjectDataBlock.target(GL_UNIFORM_BUFFER);
+        m_ObjectDataBlock.allocate(sizeof(ObjectDataBlock), nullptr,
+                                   GL_STATIC_DRAW);
         m_UBOBlock.create();
         m_UBOBlock.target(GL_UNIFORM_BUFFER);
-        m_UBOBlock.allocate(sizeof(UniformBufferObject), nullptr,
+        m_UBOBlock.allocate(sizeof(UniformBufferObjectBlock), nullptr,
                             GL_STATIC_DRAW);
 
         auto patchShader = this->GetShader(PATCH);
-        patchShader->mapUniformBlock("MVPMatrixBlock", 0, m_MVPBlock);
-        patchShader->mapUniformBlock("UniformBufferObjectBlock", 1, m_UBOBlock);
+        patchShader->mapUniformBlock("CameraDataBlock", 0, m_CameraDataBlock);
+        patchShader->mapUniformBlock("ObjectDataBLock", 1, m_ObjectDataBlock);
+        patchShader->mapUniformBlock("UniformBufferObjectBlock", 2, m_UBOBlock);
 
         auto noLightShader = this->GetShader(NOLIGHT);
-        noLightShader->mapUniformBlock("MVPMatrixBlock", 0, m_MVPBlock);
-        noLightShader->mapUniformBlock("UniformBufferObjectBlock", 1,
+        noLightShader->mapUniformBlock("CameraDataBlock", 0, m_CameraDataBlock);
+        noLightShader->mapUniformBlock("ObjectDataBlock", 1, m_ObjectDataBlock);
+        noLightShader->mapUniformBlock("UniformBufferObjectBlock", 2,
                                        m_UBOBlock);
 
         auto cullComputeShader = this->GetShader(MESHLETCULL);
-        cullComputeShader->mapUniformBlock("MVPMatrixBlock", 0, m_MVPBlock);
+        cullComputeShader->mapUniformBlock("CameraDataBlock", 0,
+                                           m_CameraDataBlock);
     }
 
     // init screen quad VAO
@@ -479,6 +487,8 @@ void Scene::Draw() {
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
+
+    GLCheckError();
 }
 
 void Scene::RefreshHizTexture() {
@@ -578,27 +588,29 @@ void Scene::DrawModels() {
 }
 
 void Scene::UpdateUniformData() {
-    // update mvp matrix
-    igm::mat4 translateToOrigin =
-            igm::translate(igm::mat4(1.0f), -igm::vec3{0.0f, 0.0f, 0.0f});
-    igm::mat4 translateBack =
-            igm::translate(igm::mat4(1.0f), igm::vec3{0.0f, 0.0f, 0.0f});
-
-    m_MVP.model = translateBack * m_ModelRotate * translateToOrigin;
-    m_MVP.normal = m_MVP.model.invert().transpose();
-    m_MVP.viewporj =
+    // update camera data matrix
+    m_CameraData.view = m_Camera->GetViewMatrix();
+    m_CameraData.proj = m_Camera->GetProjectionMatrix();
+    m_CameraData.projview =
             m_Camera->GetProjectionMatrix() * m_Camera->GetViewMatrix();
+
+    // update object data matrix
+    m_ObjectData.model = m_ModelRotate;
+    m_ObjectData.normal = m_ObjectData.model.invert().transpose();
 
     // update other ubo
     m_UBO.viewPos = m_Camera->GetCamaraPos();
 }
 
 void Scene::UpdateUniformBuffer() {
-    // update mvp matrix
-    m_MVPBlock.subData(0, sizeof(MVPMatrix), &m_MVP);
+    // update camera data matrix
+    m_CameraDataBlock.subData(0, sizeof(CameraDataBlock), &m_CameraData);
+
+    // update object data matrix
+    m_ObjectDataBlock.subData(0, sizeof(ObjectDataBlock), &m_ObjectData);
 
     // update other ubo
-    m_UBOBlock.subData(0, sizeof(UniformBufferObject), &m_UBO);
+    m_UBOBlock.subData(0, sizeof(UniformBufferObjectBlock), &m_UBO);
 }
 
 void Scene::DrawAxes() {

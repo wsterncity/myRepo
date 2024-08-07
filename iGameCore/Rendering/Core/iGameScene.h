@@ -20,12 +20,17 @@ public:
     I_OBJECT(Scene);
     static Pointer New() { return new Scene; }
 
-    struct MVPMatrix {
+    struct CameraDataBlock {
+        alignas(16) igm::mat4 view;
+        alignas(16) igm::mat4 proj;
+        alignas(16) igm::mat4 projview;
+    };
+    struct ObjectDataBlock {
         alignas(16) igm::mat4 model;
         alignas(16) igm::mat4 normal;
-        alignas(16) igm::mat4 viewporj;
+        alignas(16) igm::vec4 spherebounds;
     };
-    struct UniformBufferObject {
+    struct UniformBufferObjectBlock {
         alignas(16) igm::vec3 viewPos;
         alignas(4) int useColor{0};
     };
@@ -49,8 +54,8 @@ public:
         SHADERTYPE_COUNT
     };
 
-    MVPMatrix& MVP() { return this->m_MVP; }
-    UniformBufferObject& UBO() { return this->m_UBO; }
+    CameraDataBlock& CameraData() { return this->m_CameraData; }
+    UniformBufferObjectBlock& UBO() { return this->m_UBO; }
     void UpdateUniformBuffer();
 
     void SetShader(IGenum type, GLShaderProgram*);
@@ -106,15 +111,17 @@ protected:
     Light::Pointer m_Light{};
     Axes::Pointer m_Axes{};
 
-    MVPMatrix m_MVP;
-    UniformBufferObject m_UBO;
+    CameraDataBlock m_CameraData;
+    ObjectDataBlock m_ObjectData;
+    UniformBufferObjectBlock m_UBO;
+
     igm::mat4 m_ModelRotate{};
     igm::vec3 m_BackgroundColor{};
 
     uint32_t m_VisibleModelsCount = 0;
     igm::vec4 m_ModelsBoundingSphere{0.0f, 0.0f, 0.0f, 1.0f};
 
-    GLBuffer m_MVPBlock, m_UBOBlock;
+    GLBuffer m_CameraDataBlock, m_ObjectDataBlock, m_UBOBlock;
     std::map<IGenum, std::unique_ptr<GLShaderProgram>> m_ShaderPrograms;
 
     GLVertexArray m_ScreenQuadVAO;
