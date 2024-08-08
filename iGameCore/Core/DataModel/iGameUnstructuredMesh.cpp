@@ -117,6 +117,7 @@ void UnstructuredMesh::Draw(Scene* scene) {
         glPointSize(m_PointSize);
         glad_glDrawArrays(GL_POINTS, 0, m_Positions->GetNumberOfValues() / 3);
         m_PointVAO.release();
+
     } else if (m_ViewStyle == IG_WIREFRAME) {
         if (m_UseColor) {
             scene->GetShader(Scene::NOLIGHT)->use();
@@ -139,6 +140,13 @@ void UnstructuredMesh::Draw(Scene* scene) {
                             m_TriangleIndices->GetNumberOfValues(),
                             GL_UNSIGNED_INT, 0);
         m_TriangleVAO.release();
+
+        m_VertexVAO.bind();
+        glPointSize(m_PointSize);
+        glad_glDrawElements(GL_POINTS, m_VertexIndices->GetNumberOfValues(),
+                            GL_UNSIGNED_INT, 0);
+        m_PointVAO.release();
+
     } else if (m_ViewStyle == IG_SURFACE_WITH_EDGE) {
         if (m_UseColor) {
             scene->GetShader(Scene::NOLIGHT)->use();
@@ -183,6 +191,9 @@ void UnstructuredMesh::ConvertToDrawableData() {
         int size = GetCellPointIds(id, ids);
         IGenum type = GetCellType(id);
         switch (type) {
+            case IG_VERTEX:
+                m_VertexIndices->AddValue(ids[0]);
+                break;
             case IG_LINE:
             case IG_POLY_LINE: {
                 for (int i = 1; i < size; i++) {
@@ -227,6 +238,11 @@ void UnstructuredMesh::ConvertToDrawableData() {
     GLSetVertexAttrib(m_PointVAO, GL_LOCATION_IDX_0, GL_VBO_IDX_0, 3, GL_FLOAT,
                       GL_FALSE, 0);
 
+    m_VertexVAO.vertexBuffer(GL_VBO_IDX_0, m_PositionVBO, 0, 3 * sizeof(float));
+    GLSetVertexAttrib(m_VertexVAO, GL_LOCATION_IDX_0, GL_VBO_IDX_0, 3, GL_FLOAT,
+        GL_FALSE, 0);
+    m_VertexVAO.elementBuffer(m_VertexEBO);
+
     m_LineVAO.vertexBuffer(GL_VBO_IDX_0, m_PositionVBO, 0, 3 * sizeof(float));
     GLSetVertexAttrib(m_LineVAO, GL_LOCATION_IDX_0, GL_VBO_IDX_0, 3, GL_FLOAT,
                       GL_FALSE, 0);
@@ -241,6 +257,11 @@ void UnstructuredMesh::ConvertToDrawableData() {
     GLAllocateGLBuffer(m_PositionVBO,
                        m_Positions->GetNumberOfValues() * sizeof(float),
                        m_Positions->RawPointer());
+
+    GLAllocateGLBuffer(m_VertexEBO,
+                        m_VertexIndices->GetNumberOfValues() *
+                        sizeof(unsigned int),
+                        m_VertexIndices->RawPointer());
 
     GLAllocateGLBuffer(m_LineEBO,
                        m_LineIndices->GetNumberOfValues() *
@@ -312,6 +333,7 @@ void UnstructuredMesh::SetAttributeWithCellData(ArrayObject::Pointer attr,
 void UnstructuredMesh::Create() {
     if (!m_Flag) {
         m_PointVAO.create();
+        m_VertexVAO.create();
         m_LineVAO.create();
         m_TriangleVAO.create();
 
@@ -324,8 +346,8 @@ void UnstructuredMesh::Create() {
         m_TextureVBO.create();
         m_TextureVBO.target(GL_ARRAY_BUFFER);
 
-        m_PointEBO.create();
-        m_PointEBO.target(GL_ELEMENT_ARRAY_BUFFER);
+        m_VertexEBO.create();
+        m_VertexEBO.target(GL_ELEMENT_ARRAY_BUFFER);
         m_LineEBO.create();
         m_LineEBO.target(GL_ELEMENT_ARRAY_BUFFER);
         m_TriangleEBO.create();

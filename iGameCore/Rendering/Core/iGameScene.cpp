@@ -132,20 +132,24 @@ bool Scene::HasShader(IGenum type) {
 }
 
 void Scene::AddDataObject(DataObject::Pointer obj) {
-    m_Models.insert(std::make_pair<>(obj->GetDataObjectId(), obj));
-    m_CurrentObjectId = obj->GetDataObjectId();
+    Model::Pointer model = Model::New();
+    model->m_DataObject = obj;
+    m_Models.insert(std::make_pair<>(obj->GetDataObjectId(), model));
+    m_CurrentModelId = obj->GetDataObjectId();
+    m_CurrentModel = model.get();
     m_CurrentObject = obj.get();
 
-    ChangeDataObjectVisibility(m_CurrentObjectId, true);
+    ChangeDataObjectVisibility(m_CurrentModelId, true);
     UpdateModelsBoundingSphere();
 }
 
 void Scene::RemoveDataObject(DataObject::Pointer obj) {
     for (auto it = m_Models.begin(); it != m_Models.end(); ++it) {
-        if (it->second == obj) {
+        if (it->second->m_DataObject == obj) {
             m_Models.erase(it);
-            m_CurrentObjectId = m_Models.begin()->first;
-            m_CurrentObject = m_Models.begin()->second;
+            m_CurrentModelId = m_Models.begin()->first;
+            m_CurrentModel = m_Models.begin()->second;
+            m_CurrentObject = m_CurrentModel->m_DataObject;
             break;
         }
     }
@@ -157,25 +161,26 @@ void Scene::RemoveCurrentDataObject() {
         m_VisibleModelsCount--;
     }
 
-    m_Models.erase(m_CurrentObjectId);
+    m_Models.erase(m_CurrentModelId);
     if (m_Models.empty()) return;
-    m_CurrentObjectId = m_Models.begin()->first;
-    m_CurrentObject = m_Models.begin()->second;
-
+    m_CurrentModelId = m_Models.begin()->first;
+    m_CurrentModel = m_Models.begin()->second;
+    m_CurrentObject = m_CurrentModel->m_DataObject;
     UpdateModelsBoundingSphere();
 }
 
 bool Scene::UpdateCurrentDataObject(int index) {
     for (auto& [id, obj]: m_Models) {
         if (id == index) {
-            m_CurrentObjectId = id;
-            m_CurrentObject = obj.get();
+            m_CurrentModelId = id;
+            m_CurrentModel = obj.get();
+            m_CurrentObject = m_CurrentModel->m_DataObject;
             return true;
         }
-        if (obj->HasSubDataObject()) {
-            auto subObj = obj->GetSubDataObject(index);
+        if (obj->m_DataObject->HasSubDataObject()) {
+            auto subObj = obj->m_DataObject->GetSubDataObject(index);
             if (subObj != nullptr) {
-                m_CurrentObjectId = index;
+                m_CurrentModelId = index;
                 m_CurrentObject = subObj.get();
                 return true;
             }
@@ -190,9 +195,9 @@ void Scene::UpdateModelsBoundingSphere() {
     igm::vec3 max(-FLT_MAX);
 
     for (auto& [id, obj]: m_Models) {
-        if (!obj->GetVisibility()) continue;
-        
-        auto box = obj->GetBoundingBox();
+        if (!obj->m_DataObject->GetVisibility()) continue;
+
+        auto box = obj->m_DataObject->GetBoundingBox();
         Vector3f boxMin = box.min;
         Vector3f boxMax = box.max;
 
@@ -223,9 +228,9 @@ void Scene::UpdateModelsBoundingSphere() {
 
 DataObject* Scene::GetDataObject(int index) {
     for (auto& [id, obj]: m_Models) {
-        if (id == index) { return obj.get(); }
-        if (obj->HasSubDataObject()) {
-            auto subObj = obj->GetSubDataObject(index);
+        if (id == index) { return obj->m_DataObject.get(); }
+        if (obj->m_DataObject->HasSubDataObject()) {
+            auto subObj = obj->m_DataObject->GetSubDataObject(index);
             if (subObj != nullptr) { return subObj.get(); }
         }
     }
@@ -233,6 +238,8 @@ DataObject* Scene::GetDataObject(int index) {
 }
 
 DataObject* Scene::GetCurrentObject() { return m_CurrentObject; }
+
+Model* Scene::GetCurrentModel() { return m_CurrentModel; }
 
 void Scene::ChangeViewStyle(IGenum mode) {
     m_CurrentObject->SetViewStyle(mode);
@@ -257,7 +264,7 @@ void Scene::ChangeDataObjectVisibility(int index, bool visibility) {
     UpdateModelsBoundingSphere();
 }
 
-std::map<DataObjectId, DataObject::Pointer>& Scene::GetModelList() {
+std::map<int, Model::Pointer>& Scene::GetModelList() {
     return m_Models;
 }
 
@@ -505,8 +512,6 @@ void Scene::Draw() {
     }
 
     GLCheckError();
-    std::cout << "near: " << m_Camera->GetNearPlane() << std::endl;
-    std::cout << "far: " << m_Camera->GetFarPlane() << std::endl;
 }
 
 void Scene::RefreshHizTexture() {
@@ -580,25 +585,25 @@ void Scene::DrawModels() {
         obj->Draw(this);
     }
 #else
-    bool debug = true;
+    bool debug = false;
     if (debug) {
         std::cout << "-------:Draw:-------" << std::endl;
-        for (auto& [id, obj]: m_Models) { obj->ConvertToDrawableData(); }
+        for (auto& [id, obj]: m_Models) { obj->m_DataObject->ConvertToDrawableData(); }
 
-        for (auto& [id, obj]: m_Models) { obj->TestOcclusionResults(this); }
+        for (auto& [id, obj]: m_Models) { obj->m_DataObject->TestOcclusionResults(this); }
 
         // phase1: draw visible meshlet
-        for (auto& [id, obj]: m_Models) { obj->DrawPhase1(this); }
+        for (auto& [id, obj]: m_Models) { obj->m_DataObject->DrawPhase1(this); }
 
         // phase2: draw invisible meshlet
         RefreshHizTexture();
-        for (auto& [id, obj]: m_Models) { obj->DrawPhase2(this); }
+        for (auto& [id, obj]: m_Models) { obj->m_DataObject->DrawPhase2(this); }
 
         // phase3: generate hierarchical z-buffer
         RefreshHizTexture();
     } else {
         for (auto& [id, obj]: m_Models) {
-            obj->ConvertToDrawableData();
+            obj->m_DataObject->ConvertToDrawableData();
             obj->Draw(this);
         }
     }

@@ -98,4 +98,12 @@ using IGint = int;
 
 using DataObjectType = IGenum;
 using DataObjectId = int;
+
+
+enum Color {
+	None = 0,
+	Red,
+	Green,
+	Blue,
+};
 #endif

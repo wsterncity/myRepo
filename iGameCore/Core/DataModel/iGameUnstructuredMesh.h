@@ -3,8 +3,10 @@
 
 #include "iGamePointSet.h"
 #include "iGameScene.h"
+#include "iGameCellArray.h"
 
 #include "iGameEmptyCell.h"
+#include "iGameVertex.h"
 #include "iGameLine.h"
 #include "iGamePolyLine.h"
 #include "iGameTriangle.h"
@@ -52,6 +54,7 @@ protected:
 private:
     // Used for the returned cell object, which is Thread-Unsafe
     EmptyCell::Pointer m_EmptyCell{};  
+    Vertex::Pointer m_Vertex{};
     Line::Pointer m_Line{};
     PolyLine::Pointer m_PolyLine{};
     Triangle::Pointer m_Triangle{};
@@ -74,13 +77,13 @@ public:
 private:
     void Create();
 
-    GLVertexArray m_PointVAO, m_LineVAO, m_TriangleVAO;
+    GLVertexArray m_PointVAO, m_VertexVAO, m_LineVAO, m_TriangleVAO;
     GLBuffer m_PositionVBO, m_ColorVBO, m_NormalVBO, m_TextureVBO;
-    GLBuffer m_PointEBO, m_LineEBO, m_TriangleEBO;
+    GLBuffer m_VertexEBO, m_LineEBO, m_TriangleEBO;
 
     FloatArray::Pointer m_Positions{};
     FloatArray::Pointer m_Colors{};
-    UnsignedIntArray::Pointer m_PointIndices{};
+    UnsignedIntArray::Pointer m_VertexIndices{};
     UnsignedIntArray::Pointer m_LineIndices{};
     UnsignedIntArray::Pointer m_TriangleIndices{};
 
