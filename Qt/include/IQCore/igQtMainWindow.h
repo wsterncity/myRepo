@@ -24,6 +24,7 @@ class igQtFileLoader;
 class igQtColorManagerWidget;
 class igQtFilterDialogDockWidget;
 class igQtProgressBarWidget;
+class igQtTreeWidget;
 
 using namespace iGame;
 
@@ -44,6 +45,7 @@ public:
 public:
     igQtModelDrawWidget* rendererWidget;
     igQtFileLoader* fileLoader;
+    igQtTreeWidget* modelTreeWidget;
 
     igQtColorManagerWidget* ColorManagerWidget;
     igQtFilterDialogDockWidget* filterDialogDockWidget;

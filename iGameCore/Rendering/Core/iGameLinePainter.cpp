@@ -1,25 +1,25 @@
-#include "iGamePointPainter.h"
+#include "iGameLinePainter.h"
 #include "iGameScene.h"
 
 IGAME_NAMESPACE_BEGIN
-void PointPainter::SetPointSize(int size) { m_PointSize = size; }
-
-void PointPainter::DrawPoint(const Point& p, Color c) {
-    m_Points->AddPoint(p);
+void LinePainter::DrawLine(const Point& p1, const Point& p2, Color c) {
+    m_Points->AddPoint(p1);
+    m_Points->AddPoint(p2);
+    m_Colors->AddElement(ColorMap(c));
     m_Colors->AddElement(ColorMap(c));
     this->Modified();
 }
 
-void PointPainter::Clear() {
+void LinePainter::Clear() {
     m_Points->Initialize();
     m_Colors->Initialize();
     this->Modified();
 }
 
-void PointPainter::Draw(Scene* scene) {
+void LinePainter::Draw(Scene* scene) {
     if (!m_Visibility) { return; }
 
-    if (!m_Points || m_Points->GetMTime() < this->GetMTime()) { 
+    if (!m_Points || m_Points->GetMTime() < this->GetMTime()) {
         VAO.destroy();
         pVBO.destroy();
         cVBO.destroy();
@@ -31,8 +31,7 @@ void PointPainter::Draw(Scene* scene) {
         GLAllocateGLBuffer(pVBO,
                            m_Points->GetNumberOfPoints() * 3 * sizeof(float),
                            m_Points->RawPointer());
-        GLAllocateGLBuffer(cVBO,
-                           m_Colors->GetNumberOfValues() * sizeof(float),
+        GLAllocateGLBuffer(cVBO, m_Colors->GetNumberOfValues() * sizeof(float),
                            m_Colors->RawPointer());
 
         VAO.vertexBuffer(GL_VBO_IDX_0, pVBO, 0, 3 * sizeof(float));
@@ -51,18 +50,16 @@ void PointPainter::Draw(Scene* scene) {
 
     scene->GetShader(Scene::NOLIGHT)->use();
     VAO.bind();
-    glad_glPointSize(m_PointSize);
-    glad_glDepthRange(0, 0.9999);
-    glad_glDrawArrays(GL_POINTS, 0, m_Points->GetNumberOfPoints());
+    glad_glLineWidth(m_LineWidth);
+    glad_glDepthRange(0, 0.999999);
+    glad_glDrawArrays(GL_LINES, 0, m_Points->GetNumberOfPoints() / 2);
     glad_glDepthRange(0, 1);
     VAO.release();
 }
 
-PointPainter::PointPainter() {
+LinePainter::LinePainter() {
     m_Points = Points::New();
     m_Colors = FloatArray::New();
     m_Colors->SetElementSize(3);
 }
 IGAME_NAMESPACE_END
-
-

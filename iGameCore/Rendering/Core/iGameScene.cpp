@@ -495,7 +495,7 @@ void Scene::Draw() {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
-    GLCheckError();
+    //GLCheckError();
 }
 
 void Scene::RefreshHizTexture() {

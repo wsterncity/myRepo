@@ -19,6 +19,7 @@
 #include <IQWidgets/ColorManager/igQtColorManagerWidget.h>
 #include <IQComponents/igQtFilterDialogDockWidget.h>
 #include <IQComponents/igQtProgressBarWidget.h>
+#include <IQComponents/igQtTreeWidget.h>
 #include <IQWidgets/igQtTensorWidget.h>
 #include "iGameFileIO.h"
 
@@ -28,6 +29,7 @@ igQtMainWindow::igQtMainWindow(QWidget* parent) :
 	ui(new Ui::MainWindow)
 {
 	ui->setupUi(this);
+	modelTreeWidget = new igQtTreeWidget(this);
 	rendererWidget = new igQtModelDrawWidget(this);
 	fileLoader = new igQtFileLoader(this);
 	this->setCentralWidget(rendererWidget);
@@ -49,6 +51,8 @@ igQtMainWindow::igQtMainWindow(QWidget* parent) :
 	// Set up the dock window corners to give the vertical docks more room.
 	this->setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);
 	this->setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
+	this->addDockWidget(Qt::LeftDockWidgetArea, modelTreeWidget);
+
 
 	initToolbarComponent();
 	initAllComponents();
@@ -58,7 +62,8 @@ igQtMainWindow::igQtMainWindow(QWidget* parent) :
 	connect(ui->action_select_points, &QAction::triggered, this,
             &igQtMainWindow::changePointPicked);
 
-
+	
+	
 }
 void igQtMainWindow::initToolbarComponent()
 {

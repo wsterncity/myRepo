@@ -27,11 +27,11 @@ public:
         m_Height = m_Camera->GetViewPort().y;
         m_DevicePixelRatio = m_Camera->GetDevicePixelRatio();
 
-        // ��Ļ����
+        // Screen coordinate
         float width = (float) m_Width / m_DevicePixelRatio;
         float height = (float) m_Height / m_DevicePixelRatio;
 
-        // 将屏幕坐标转为NDC坐标[-1,1]
+        // NDC coordinate [-1,1]
         float x = 2.0f * pos.x / width - 1.0f;
         float y = 1.0f - (2.0f * pos.y / height);
 
@@ -39,15 +39,15 @@ public:
                 (m_Scene->CameraData().projview * m_Scene->ObjectData().model);
         auto mvp_invert = mvp.invert();
 
-        // NDC坐标转为裁剪坐标
-        igm::vec4 point(x, y, 0, 1);      // 近平面点
-        igm::vec4 pointEnd(x, y, 1.0, 1); // 远平面点
+        // Clipping coordinate
+        igm::vec4 point(x, y, 0, 1);
+        igm::vec4 pointEnd(x, y, 1.0, 1);
 
-        // 裁剪坐标转为世界坐标
+        // World coordinate
         igm::vec4 tpoint = mvp_invert * point;
         igm::vec4 tpointEnd = mvp_invert * pointEnd;
 
-        // 3维的世界坐标
+        // 3D World coordinate
         igm::vec3 point1(tpoint / tpoint.w);
         igm::vec3 point2(tpointEnd / tpointEnd.w);
 
@@ -60,9 +60,12 @@ public:
                 Vector3d(dir.x, dir.y, dir.z));
 
         m_Model->GetPointPainter()->Clear();
+        m_Model->GetLinePainter()->Clear();
         if (id != -1) 
         {
             m_Model->GetPointPainter()->DrawPoint(m_Points->GetPoint(id));
+            m_Model->GetLinePainter()->DrawLine(m_Points->GetPoint(id),
+                                                m_Points->GetPoint(id + 1));
         }
     }
     void MouseMoveEvent(int posX, int posY) override {}

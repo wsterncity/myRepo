@@ -57,6 +57,7 @@ set(UI_FILES
         "Resources/UI/igVector.ui"
         "Resources/UI/TensorView.ui"
         "Resources/UI/filterDialog.ui"
+        "Resources/UI/layerDialog.ui"
 )
 Qt5_wrap_ui(UI_HEAD_FILES ${UI_FILES})
 

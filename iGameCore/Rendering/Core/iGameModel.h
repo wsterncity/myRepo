@@ -5,6 +5,7 @@
 #include "iGameDataObject.h"
 #include "iGamePoints.h"
 #include "iGamePointPainter.h"
+#include "iGameLinePainter.h"
 
 IGAME_NAMESPACE_BEGIN
 class Scene;
@@ -19,6 +20,7 @@ public:
     PointPainter* GetPointPainter() {
         return m_PickedPointPainter.get();
     }
+    LinePainter* GetLinePainter() { return m_PickedLinePainter.get(); }
 
 protected:
     Model();
@@ -27,6 +29,7 @@ protected:
     DataObject::Pointer m_DataObject{};
 
     PointPainter::Pointer m_PickedPointPainter{};
+    LinePainter::Pointer m_PickedLinePainter{};
 
     friend class Scene;
 };
