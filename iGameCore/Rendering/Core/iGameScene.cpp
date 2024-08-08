@@ -190,6 +190,8 @@ void Scene::UpdateModelsBoundingSphere() {
     igm::vec3 max(-FLT_MAX);
 
     for (auto& [id, obj]: m_Models) {
+        if (!obj->GetVisibility()) continue;
+        
         auto box = obj->GetBoundingBox();
         Vector3f boxMin = box.min;
         Vector3f boxMax = box.max;
@@ -203,8 +205,20 @@ void Scene::UpdateModelsBoundingSphere() {
     m_ModelsBoundingSphere = igm::vec4{center, radius};
 
     // update camera far plane to cover all models
-    auto pos = m_Camera->GetCamaraPos();
-    m_Camera->SetFarPlane((pos - center).length() + m_ModelsBoundingSphere.w);
+    {
+        auto pos = m_Camera->GetCameraPos();
+        auto center = m_ModelsBoundingSphere.xyz();
+        auto length = (pos - center).length();
+        if (length <= m_ModelsBoundingSphere.w) {
+            // inside the bounding sphere
+            m_Camera->SetNearPlane(0.1f);
+            m_Camera->SetFarPlane(length + m_ModelsBoundingSphere.w);
+        } else {
+            // outside the bounding sphere
+            m_Camera->SetNearPlane(length - m_ModelsBoundingSphere.w);
+            m_Camera->SetFarPlane(length + m_ModelsBoundingSphere.w);
+        }
+    }
 }
 
 DataObject* Scene::GetDataObject(int index) {
@@ -233,12 +247,14 @@ void Scene::ChangeDataObjectVisibility(int index, bool visibility) {
         if (m_VisibleModelsCount == 1) {
             Vector3f center = obj->GetBoundingBox().center();
             float radius = obj->GetBoundingBox().diag() / 2;
-            m_Camera->SetCamaraPos(center[0], center[1],
+            m_Camera->SetCameraPos(center[0], center[1],
                                    center[2] + 2.0f * radius);
         }
     } else {
         m_VisibleModelsCount--;
     }
+
+    UpdateModelsBoundingSphere();
 }
 
 std::map<DataObjectId, DataObject::Pointer>& Scene::GetModelList() {
@@ -489,6 +505,8 @@ void Scene::Draw() {
     }
 
     GLCheckError();
+    std::cout << "near: " << m_Camera->GetNearPlane() << std::endl;
+    std::cout << "far: " << m_Camera->GetFarPlane() << std::endl;
 }
 
 void Scene::RefreshHizTexture() {
@@ -562,10 +580,12 @@ void Scene::DrawModels() {
         obj->Draw(this);
     }
 #else
-    bool debug = false;
+    bool debug = true;
     if (debug) {
         std::cout << "-------:Draw:-------" << std::endl;
         for (auto& [id, obj]: m_Models) { obj->ConvertToDrawableData(); }
+
+        for (auto& [id, obj]: m_Models) { obj->TestOcclusionResults(this); }
 
         // phase1: draw visible meshlet
         for (auto& [id, obj]: m_Models) { obj->DrawPhase1(this); }
@@ -574,10 +594,8 @@ void Scene::DrawModels() {
         RefreshHizTexture();
         for (auto& [id, obj]: m_Models) { obj->DrawPhase2(this); }
 
-        // phase3: record all visible meshlet
+        // phase3: generate hierarchical z-buffer
         RefreshHizTexture();
-        for (auto& [id, obj]: m_Models) { obj->DrawPhase3(this); }
-
     } else {
         for (auto& [id, obj]: m_Models) {
             obj->ConvertToDrawableData();
@@ -599,7 +617,7 @@ void Scene::UpdateUniformData() {
     m_ObjectData.normal = m_ObjectData.model.invert().transpose();
 
     // update other ubo
-    m_UBO.viewPos = m_Camera->GetCamaraPos();
+    m_UBO.viewPos = m_Camera->GetCameraPos();
 }
 
 void Scene::UpdateUniformBuffer() {

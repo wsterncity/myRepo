@@ -29,7 +29,8 @@ public:
         }
     }
 
-    virtual void MousePressEvent(int _eventX, int _eventY, MouseButton _mouseMode);
+    virtual void MousePressEvent(int _eventX, int _eventY,
+                                 MouseButton _mouseMode);
     virtual void MouseMoveEvent(int _eventX, int _eventY);
     virtual void MouseReleaseEvent(int _eventX, int _eventY);
     virtual void WheelEvent(double delta);
@@ -43,7 +44,6 @@ protected:
     void ViewTranslation();
     void MapToSphere(igm::vec3& old_v3D, igm::vec3& new_v3D);
     void UpdateCameraMoveSpeed(const igm::vec4& center);
-    //igm::vec3 GetWorldCoord(igm::vec3& coord);
 
     MouseButton m_MouseMode{};
 
