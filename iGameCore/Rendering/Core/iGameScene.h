@@ -23,11 +23,11 @@ public:
     struct CameraDataBuffer {
         alignas(16) igm::mat4 view;
         alignas(16) igm::mat4 proj;
-        alignas(16) igm::mat4 projview;
+        alignas(16) igm::mat4 projview; // proj * view
     };
     struct ObjectDataBuffer {
         alignas(16) igm::mat4 model;
-        alignas(16) igm::mat4 normal;
+        alignas(16) igm::mat4 normal; // transpose(inverse(model))
         alignas(16) igm::vec4 spherebounds;
     };
     struct UniformBufferObjectBuffer {
@@ -95,7 +95,7 @@ protected:
     ~Scene() override;
 
     void UpdateModelsBoundingSphere();
-
+    
     void InitOpenGL();
     void InitFont();
     void InitAxes();

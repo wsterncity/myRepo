@@ -1,12 +1,5 @@
 #version 410 core
 
-//layout(std140) uniform MVPMatrixBlock {
-////layout(std140, binding = 0) uniform MVPMatrixBlock {
-//    mat4 model;
-//    mat4 normal;// transpose(inverse(model))
-//    mat4 viewporj;// proj * view
-//} mvp;
-
 layout(std140) uniform CameraDataBlock {
 //layout(std140, binding = 0) uniform CameraDataBlock {
     mat4 view;
@@ -14,7 +7,7 @@ layout(std140) uniform CameraDataBlock {
     mat4 projview;// proj * view
 } cameraData;
 
-layout(std140) uniform ObjectDataBLock {
+layout(std140) uniform ObjectDataBlock {
 //layout(std140, binding = 1) uniform ObjectDataBLock {
     mat4 model;
     mat4 normal;// transpose(inverse(model))

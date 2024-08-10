@@ -51,14 +51,32 @@ void Interactor::WheelEvent(double delta) {
         wheelMoveDirection = -1.0f;
     }
 
-    auto pos = m_Camera->GetCamaraPos();
-    auto center = m_Scene->m_ModelsBoundingSphere.xyz();
-    
-    auto moveSize = static_cast<float>(
-            -wheelMoveDirection * (pos - center).length() * m_CameraScaleSpeed);
-
+    m_CameraScaleSpeed = m_Scene->m_ModelsBoundingSphere.w * 0.1;
+    auto moveSize =
+            static_cast<float>(-wheelMoveDirection * m_CameraScaleSpeed);
     m_Camera->moveZ(moveSize);
-    m_Camera->SetFarPlane(m_Camera->GetFarPlane() + moveSize);
+
+    auto pos = m_Camera->GetCameraPos();
+    auto center = m_Scene->m_ModelsBoundingSphere.xyz();
+    auto t = (pos - center).length();
+    if ((pos - center).length() <= m_Scene->m_ModelsBoundingSphere.w) {
+        // inside the bounding sphere
+        m_Camera->SetNearPlane(0.1f);
+        m_Camera->SetFarPlane((pos - center).length() +
+                              m_Scene->m_ModelsBoundingSphere.w);
+    } else {
+        // outside the bounding sphere
+        auto near = m_Camera->GetNearPlane() + moveSize;
+        auto far = m_Camera->GetFarPlane() + moveSize;
+        
+        if (near < 0.1) {
+            m_Camera->SetNearPlane(0.1f);
+        } else {
+            m_Camera->SetNearPlane(near);
+        }
+        m_Camera->SetFarPlane(far);
+    }
+
     UpdateCameraMoveSpeed(m_Scene->m_ModelsBoundingSphere);
 }
 
@@ -159,7 +177,7 @@ void Interactor::UpdateCameraMoveSpeed(const igm::vec4& _center) {
     auto radius = _center.w;
 
     auto p1 = igm::vec4{center, 1.0f};
-    auto p2 = igm::vec4{center + m_Camera->GetCamaraUp().normalize() * radius,
+    auto p2 = igm::vec4{center + m_Camera->GetCameraUp().normalize() * radius,
                         1.0f};
     auto p1_mvp = (proj * view * p1);
     p1_mvp /= p1_mvp.w;
@@ -173,7 +191,7 @@ void Interactor::UpdateCameraMoveSpeed(const igm::vec4& _center) {
     m_CameraMoveSpeed = radius / acturalPixel;
 }
 
-//igm::vec3 Interactor::GetWorldCoord(igm::vec3& coord) { 
+//igm::vec3 Interactor::GetWorldCoord(igm::vec3& coord) {
 //
 //    return igm::vec3();
 //}
