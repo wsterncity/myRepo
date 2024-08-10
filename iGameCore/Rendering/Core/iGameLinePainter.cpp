@@ -52,7 +52,7 @@ void LinePainter::Draw(Scene* scene) {
     VAO.bind();
     glad_glLineWidth(m_LineWidth);
     glad_glDepthRange(0, 0.999999);
-    glad_glDrawArrays(GL_LINES, 0, m_Points->GetNumberOfPoints() / 2);
+    glad_glDrawArrays(GL_LINES, 0, m_Points->GetNumberOfPoints());
     glad_glDepthRange(0, 1);
     VAO.release();
 }

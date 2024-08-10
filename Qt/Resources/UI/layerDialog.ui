@@ -16,7 +16,7 @@
   <widget class="QWidget" name="dockWidgetContents">
    <layout class="QVBoxLayout" name="verticalLayout" stretch="2,1">
     <item>
-     <widget class="QTreeWidget" name="modelTreeWidget">
+     <widget class="igQtModelTreeWidget" name="modelTreeWidget">
       <column>
        <property name="text">
         <string>1</string>
@@ -27,16 +27,6 @@
         <string>2</string>
        </property>
       </column>
-      <column>
-       <property name="text">
-        <string>3</string>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>4</string>
-       </property>
-      </column>
      </widget>
     </item>
     <item>
@@ -45,6 +35,13 @@
    </layout>
   </widget>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>igQtModelTreeWidget</class>
+   <extends>QTreeWidget</extends>
+   <header location="global">IQComponents/igQtmodelTreeWidget.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>
