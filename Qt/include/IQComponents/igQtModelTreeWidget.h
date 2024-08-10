@@ -33,6 +33,10 @@ public:
         cancelFunctor = std::bind(functor, args...);
     }
 
+    bool isChecked() const {
+        return m_checked;
+    }
+
 protected:
     void init() {
         defaultStyle = "width:24px;height:24px;border-style:solid;border-width:1px;border-color:rgba(0,0,0,0);border-radius:2px;";
@@ -41,10 +45,6 @@ protected:
         setAttribute(Qt::WA_Hover, true);
         setFlat(true);
         setStyleSheet(defaultStyle);
-    }
-
-    bool isChecked() const {
-        return m_checked;
     }
 
     void setChecked(bool flag) {
@@ -145,6 +145,7 @@ public:
         view_fill->setConcernFunctor(&ModelTreeWidgetItem::showFill, this);
         view_fill->setCancelFunctor(&ModelTreeWidgetItem::hideFill, this);
 
+
     }
 
     void setModel(iGame::Model::Pointer model) {
@@ -167,20 +168,45 @@ public:
     void show() {
         visibility = true;
         this->setIcon(0, QIcon(":/Ticon/Icons/select/eye-open.png"));
+        if (!model) {
+            return;
+        }
+
+        model->Show();
+
+        if (view_bbox->isChecked()) {
+            model->ShowBoundingBox();
+        }
+        else {
+            model->HideBoundingBox();
+        }
+
+        update();
     }
 
     void hide() {
         visibility = false;
         this->setIcon(0, QIcon(":/Ticon/Icons/select/eye-close.png"));
+        if (!model) {
+            return;
+        }
+
+        model->Hide();
+        model->HideBoundingBox();
+        update();
     }
 
     void showBoundingBox() {
-        std::cout << "show bbox\n";
-        model->ShowBoundingBox();
+        if (visibility) {
+            model->ShowBoundingBox();
+            update();
+        }
     }
     void hideBoundingBox() {
-        std::cout << "hide bbox\n";
-        model->HideBoundingBox();
+        if (visibility) {
+            model->HideBoundingBox();
+            update();
+        }
     }
 
     void showPoints() {
@@ -202,6 +228,12 @@ public:
     }
     void hideFill() {
         std::cout << "hide bbox\n";
+    }
+
+    void update() {
+        if (model) {
+            model->Update();
+        }
     }
 
 private:

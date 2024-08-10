@@ -38,11 +38,13 @@ public:
 
     void AddDataObject(SmartPointer<DataObject> obj);
     void ChangeInteractor(SmartPointer<Interactor> it);
+    void update() { QOpenGLWidget::update(); }
 
 protected:
     void initializeGL() override;
     void resizeGL(int w, int h) override;
     void paintGL() override;
+    
 
     void mousePressEvent(QMouseEvent* event) override;
     void mouseReleaseEvent(QMouseEvent* event) override;

@@ -19,7 +19,7 @@
 #include <IQWidgets/ColorManager/igQtColorManagerWidget.h>
 #include <IQComponents/igQtFilterDialogDockWidget.h>
 #include <IQComponents/igQtProgressBarWidget.h>
-#include <IQComponents/igQtTreeWidget.h>
+#include <IQComponents/igQtModelDialogWidget.h>
 #include <IQWidgets/igQtTensorWidget.h>
 #include "iGameFileIO.h"
 
@@ -29,7 +29,7 @@ igQtMainWindow::igQtMainWindow(QWidget* parent) :
 	ui(new Ui::MainWindow)
 {
 	ui->setupUi(this);
-	modelTreeWidget = new igQtTreeWidget(this);
+	modelTreeWidget = new igQtModelDialogWidget(this);
 	rendererWidget = new igQtModelDrawWidget(this);
 	fileLoader = new igQtFileLoader(this);
 	this->setCentralWidget(rendererWidget);
@@ -43,6 +43,7 @@ igQtMainWindow::igQtMainWindow(QWidget* parent) :
 	ui->dockWidget_QualityDetection->hide();
 	ui->dockWidget_EditMode->hide();
 	ui->dockWidget_Animation->hide();
+	ui->dockWidget_ModelList->hide();
 	ui->dockWidget_ModelList->setWidget(ui->modelTreeView);
 	// Setup default GUI layout.
 	this->setTabPosition(Qt::LeftDockWidgetArea, QTabWidget::North);
@@ -411,7 +412,7 @@ void igQtMainWindow::initAllMySignalConnections()
 {
 	//connect(rendererWidget, &igQtModelDrawWidget::insertToModelListView, ui->modelTreeView, &igQtModelListView::InsertModel);
 
-	connect(fileLoader, &igQtFileLoader::FinishReading, modelTreeWidget, &igQtTreeWidget::add);
+	connect(fileLoader, &igQtFileLoader::FinishReading, modelTreeWidget, &igQtModelDialogWidget::add);
 	connect(fileLoader, &igQtFileLoader::FinishReading, this, &igQtMainWindow::updateRecentFilePaths);
 	connect(fileLoader, &igQtFileLoader::FinishReading, this, &igQtMainWindow::updateViewStyleAndCloudPicture);
 	connect(fileLoader, &igQtFileLoader::FinishReading, this, &igQtMainWindow::updateCurrentSceneWidget);

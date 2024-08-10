@@ -22,13 +22,16 @@ public:
     }
     LinePainter* GetLinePainter() { return m_PickedLinePainter.get(); }
 
+    void Show() { 
+        m_DataObject->SetVisibility(true);
+    }
+    void Hide() { 
+        m_DataObject->SetVisibility(false);
+    }
+
     void ShowBoundingBox() { 
         m_BoundingBoxPainter->SetVisibility(true);
         auto& bbox = m_DataObject->GetBoundingBox();
-
-        //BoundingBox bbox;
-        //bbox.min = Vector3d(0, 0, 0);
-        //bbox.max = Vector3d(1, 1, 1);
 
         double length = bbox.max[0] - bbox.min[0];
         double width = bbox.max[1] - bbox.min[1];
@@ -60,14 +63,18 @@ public:
         m_BoundingBoxPainter->DrawLine(p7, p8);
         m_BoundingBoxPainter->DrawLine(p8, p5);
     }
-    void HideBoundingBox() { m_BoundingBoxPainter->SetVisibility(false); }
+    void HideBoundingBox() { 
+        m_BoundingBoxPainter->SetVisibility(false);
+    }
+
+    void Update();
 
 protected:
     Model();
     ~Model() override = default;
 
     DataObject::Pointer m_DataObject{};
-
+    Scene* m_Scene{nullptr};
     PointPainter::Pointer m_PickedPointPainter{};
     LinePainter::Pointer m_PickedLinePainter{};
     LinePainter::Pointer m_BoundingBoxPainter{};

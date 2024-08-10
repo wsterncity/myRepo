@@ -12,11 +12,11 @@
 #include <QTreeWidget>
 #include <iostream>
 
-class IG_QT_MODULE_EXPORT igQtTreeWidget : public QDockWidget {
+class IG_QT_MODULE_EXPORT igQtModelDialogWidget : public QDockWidget {
 	Q_OBJECT
 public:
-	igQtTreeWidget(QWidget* parent);
-	~igQtTreeWidget() override = default;
+	igQtModelDialogWidget(QWidget* parent);
+	~igQtModelDialogWidget() override = default;
 
 public slots:
 	void add() {

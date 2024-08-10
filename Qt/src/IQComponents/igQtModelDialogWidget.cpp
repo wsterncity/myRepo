@@ -1,12 +1,12 @@
 #include<iGameSceneManager.h>
 
-#include <IQComponents/igQtTreeWidget.h>
+#include <IQComponents/igQtModelDialogWidget.h>
 #include <qdebug.h>
 #include <QQueue>
 #include <qmenu.h>
 #include <qaction.h>
 
-igQtTreeWidget::igQtTreeWidget(QWidget* parent) 
+igQtModelDialogWidget::igQtModelDialogWidget(QWidget* parent)
 	: QDockWidget(parent),
 	ui(new Ui::LayerDialog)
 {

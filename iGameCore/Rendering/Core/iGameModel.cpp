@@ -11,6 +11,12 @@ void Model::Draw(Scene* scene)
     m_BoundingBoxPainter->Draw(scene);
 }
 
+void Model::Update() {
+    if (m_Scene) {
+        m_Scene->Update();
+    }
+}
+
 Model::Model() {
 	m_PickedPointPainter = PointPainter::New();
     m_PickedPointPainter->SetPointSize(8);

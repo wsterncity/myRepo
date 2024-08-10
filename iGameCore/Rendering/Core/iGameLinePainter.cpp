@@ -48,7 +48,7 @@ void LinePainter::Draw(Scene* scene) {
     scene->UBO().useColor = true;
     scene->UpdateUniformBuffer();
 
-    scene->GetShader(Scene::NOLIGHT)->use();
+    scene->GetShader(Scene::PATCH)->use();
     VAO.bind();
     glad_glLineWidth(m_LineWidth);
     glad_glDepthRange(0, 0.999999);
