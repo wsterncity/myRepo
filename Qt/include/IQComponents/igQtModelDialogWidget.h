@@ -25,11 +25,13 @@ public slots:
 	void addDataObjectToModelTree(DataObject::Pointer obj, ItemSource source) {
 		// 创建一个项目
 		ModelTreeWidgetItem* item = new ModelTreeWidgetItem(modelTreeWidget);
-		auto model = iGame::SceneManager::Instance()->GetCurrentScene()->AddDataObject(obj);
+		auto scene = iGame::SceneManager::Instance()->GetCurrentScene();
+		auto model = scene->CreateModel(obj);
+		int id = scene->AddModel(model);
 
 		item->setName(QString::fromStdString(obj->GetName()));
 		item->setModel(model);
-
+		
 		//QTreeWidgetItem* child = new QTreeWidgetItem(item);
 		//child->setText(0, "Source");
 		//child->setText(1, "File");

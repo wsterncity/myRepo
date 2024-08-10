@@ -9,7 +9,6 @@
 
 IGAME_NAMESPACE_BEGIN
 class Scene;
-
 class Model : public Object {
 public:
     I_OBJECT(Model);
@@ -17,72 +16,40 @@ public:
 
     void Draw(Scene*);
 
-    PointPainter* GetPointPainter() {
-        return m_PickedPointPainter.get();
-    }
+    DataObject::Pointer GetDataObject() { return m_DataObject; }
+    bool GetVisibility() { return m_DataObject->GetVisibility(); }
+    PointPainter* GetPointPainter() { return m_PickedPointPainter.get();}
     LinePainter* GetLinePainter() { return m_PickedLinePainter.get(); }
 
-    void Show() { 
-        m_DataObject->SetVisibility(true);
-    }
-    void Hide() { 
-        m_DataObject->SetVisibility(false);
-    }
+    void Show();
+    void Hide();
+    void SetBoundingBoxSwitch(bool action);
+    void SetPickedItemSwitch(bool action);
+    void SetViewPointsSwitch(bool action);
+    void SetViewWireframeSwitch(bool action);
+    void SetViewFillSwitch(bool action);
 
-    void ShowBoundingBox() { 
-        m_BoundingBoxPainter->SetVisibility(true);
-        auto& bbox = m_DataObject->GetBoundingBox();
-
-        double length = bbox.max[0] - bbox.min[0];
-        double width = bbox.max[1] - bbox.min[1];
-        double height = bbox.max[2] - bbox.min[2];
-
-        Vector3d p1 = bbox.min;
-        Vector3d p2(bbox.min[0] + length, bbox.min[1], bbox.min[2]);
-        Vector3d p3(bbox.min[0] + length, bbox.min[1] + width, bbox.min[2]);
-        Vector3d p4(bbox.min[0], bbox.min[1] + width, bbox.min[2]);
-        Vector3d p5(bbox.min[0], bbox.min[1], bbox.min[2] + height);
-        Vector3d p6(bbox.max[0], bbox.max[1] - width, bbox.max[2]);
-        Vector3d p7 = bbox.max;
-        Vector3d p8(bbox.max[0] - length, bbox.max[1], bbox.max[2]);
-
-        m_BoundingBoxPainter->Clear();
-
-        m_BoundingBoxPainter->DrawLine(p1, p2);
-        m_BoundingBoxPainter->DrawLine(p2, p3);
-        m_BoundingBoxPainter->DrawLine(p3, p4);
-        m_BoundingBoxPainter->DrawLine(p4, p1);
-
-        m_BoundingBoxPainter->DrawLine(p1, p5);
-        m_BoundingBoxPainter->DrawLine(p2, p6);
-        m_BoundingBoxPainter->DrawLine(p3, p7);
-        m_BoundingBoxPainter->DrawLine(p4, p8);
-
-        m_BoundingBoxPainter->DrawLine(p5, p6);
-        m_BoundingBoxPainter->DrawLine(p6, p7);
-        m_BoundingBoxPainter->DrawLine(p7, p8);
-        m_BoundingBoxPainter->DrawLine(p8, p5);
-    }
-    void HideBoundingBox() { 
-        m_BoundingBoxPainter->SetVisibility(false);
-    }
-
-    void ShowPoints() { m_DataObject->SetViewStyle(IG_POINTS);}
-    void HidePoints() { m_DataObject->SetViewStyle2(IG_POINTS); }
-
-    void ShowWireframe() { m_DataObject->SetViewStyle(IG_WIREFRAME); }
-    void HideWireframe() { m_DataObject->SetViewStyle2(IG_WIREFRAME); }
     void Update();
 
 protected:
     Model();
     ~Model() override = default;
 
+    enum ViewSwitch{
+        BoundingBox = 0,
+        PickedItem
+    };
+
+    void SwitchOn(ViewSwitch type) { m_Switch |= (1ull << type); }
+    void SwitchOff(ViewSwitch type) { m_Switch &= ~(1ull << type); }
+    bool GetSwitch(ViewSwitch type) { return m_Switch & (1ull << type); }
+
     DataObject::Pointer m_DataObject{};
     Scene* m_Scene{nullptr};
     PointPainter::Pointer m_PickedPointPainter{};
     LinePainter::Pointer m_PickedLinePainter{};
-    LinePainter::Pointer m_BoundingBoxPainter{};
+    LinePainter::Pointer m_BBoxPainter{};
+    unsigned long long m_Switch{0ull};
 
     friend class Scene;
 };

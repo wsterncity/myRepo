@@ -109,6 +109,7 @@ enum Color {
 	Red,
 	Green,
 	Blue,
+	LightBlue,
 	White,
 };
 #endif

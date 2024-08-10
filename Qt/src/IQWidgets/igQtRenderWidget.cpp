@@ -31,9 +31,9 @@ igQtRenderWidget::~igQtRenderWidget()
 Scene* igQtRenderWidget::GetScene() { return m_Scene; }
 
 void igQtRenderWidget::AddDataObject(SmartPointer<DataObject> obj) {
-    m_Scene->AddDataObject(obj);
-    Q_EMIT AddDataObjectToModelList(QString::fromStdString(obj->GetName()));
-    update();
+    //m_Scene->AddDataObject(obj);
+    //Q_EMIT AddDataObjectToModelList(QString::fromStdString(obj->GetName()));
+    //update();
 }
 
 void igQtRenderWidget::ChangeInteractor(SmartPointer<Interactor> it) {
@@ -101,17 +101,17 @@ void igQtRenderWidget::wheelEvent(QWheelEvent* event)
     update();
 }
 
-void igQtRenderWidget::ChangeViewStyle(int index) {
-    if (m_Scene->GetCurrentObject()) {
-    m_Scene->GetCurrentObject()->SetViewStyleOfModel(index);
-    }
-    update();
-}
-void igQtRenderWidget::ChangeScalarView(int index, int dim) {
-    makeCurrent();
-    if (m_Scene->GetCurrentObject()) {
-    m_Scene->GetCurrentObject()->ViewCloudPictureOfModel(index - 1, dim);
-    }
-    doneCurrent();
-    update();
-}
+//void igQtRenderWidget::ChangeViewStyle(int index) {
+//    if (m_Scene->GetCurrentObject()) {
+//    m_Scene->GetCurrentObject()->SetViewStyleOfModel(index);
+//    }
+//    update();
+//}
+//void igQtRenderWidget::ChangeScalarView(int index, int dim) {
+//    makeCurrent();
+//    if (m_Scene->GetCurrentObject()) {
+//    m_Scene->GetCurrentObject()->ViewCloudPictureOfModel(index - 1, dim);
+//    }
+//    doneCurrent();
+//    update();
+//}

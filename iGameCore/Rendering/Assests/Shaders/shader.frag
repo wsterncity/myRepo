@@ -7,7 +7,7 @@ layout(std140) uniform CameraDataBlock {
     mat4 projview;// proj * view
 } cameraData;
 
-layout(std140) uniform ObjectDataBLock {
+layout(std140) uniform ObjectDataBlock {
 //layout(std140, binding = 1) uniform ObjectDataBLock {
     mat4 model;
     mat4 normal;// transpose(inverse(model))
@@ -56,8 +56,8 @@ vec3 BlinnPhong(vec3 normal, vec3 fragPos, Light light)
     spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);
     vec3 specular = spec * light.color * 0.5f;
 
-    return diffuse + specular;
-    //    return diffuse;
+    //return diffuse + specular;
+    return diffuse;
 }
 
 void main() {

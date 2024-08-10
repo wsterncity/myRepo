@@ -15,6 +15,147 @@ Scene::Scene() {
 }
 Scene::~Scene() {}
 
+int Scene::AddModel(Model::Pointer model) {
+    int newModelId = m_IncrementModelId++;
+    m_Models.insert(std::make_pair<>(newModelId, model));
+    m_CurrentModelId = newModelId;
+    m_CurrentModel = model.get();
+    model->m_Scene = this;
+
+    ChangeModelVisibility(model.get(), true);
+    UpdateModelsBoundingSphere();
+    return newModelId;
+}
+
+Model::Pointer Scene::CreateModel(DataObject::Pointer obj) {
+    Model::Pointer model = Model::New();
+    model->m_DataObject = obj;
+    return model;
+}
+
+void Scene::RemoveModel(int index) {
+    m_Models.erase(index);
+    if (index == m_CurrentModelId) {
+        if (m_Models.empty()) {
+            m_CurrentModelId = -1;
+            m_CurrentModel = nullptr;
+        } else {
+            m_CurrentModelId = m_Models.begin()->first;
+            m_CurrentModel = m_Models.begin()->second;
+        }
+    }
+    UpdateModelsBoundingSphere();
+}
+
+void Scene::RemoveModel(Model* model) {
+    for (auto it = m_Models.begin(); it != m_Models.end(); ++it) {
+        if (it->second.get() == model) {
+            m_Models.erase(it);
+            if (it->first == m_CurrentModelId) {
+                if (m_Models.empty()) {
+                    m_CurrentModelId = -1;
+                    m_CurrentModel = nullptr;
+                } 
+                else {
+                    m_CurrentModelId = m_Models.begin()->first;
+                    m_CurrentModel = m_Models.begin()->second;
+                }
+            }
+            break;
+        }
+    }
+    UpdateModelsBoundingSphere();
+}
+
+void Scene::RemoveCurrentModel() {
+    if (auto visibility = m_CurrentModel->GetVisibility()) {
+        m_VisibleModelsCount--;
+    }
+
+    m_Models.erase(m_CurrentModelId);
+    if (m_Models.empty()) {
+        m_CurrentModelId = -1;
+        m_CurrentModel = nullptr;
+    } else {
+        m_CurrentModelId = m_Models.begin()->first;
+        m_CurrentModel = m_Models.begin()->second;
+    }
+    UpdateModelsBoundingSphere();
+}
+
+void Scene::SetCurrentModel(int index) {
+    for (auto& [id, model]: m_Models) {
+        if (id == index) {
+            m_CurrentModelId = id;
+            m_CurrentModel = model.get();
+            return;
+        }
+        //if (obj->m_DataObject->HasSubDataObject()) {
+        //    auto subObj = obj->m_DataObject->GetSubDataObject(index);
+        //    if (subObj != nullptr) {
+        //        m_CurrentModelId = index;
+        //        m_CurrentObject = subObj.get();
+        //        return true;
+        //    }
+        //}
+    }
+}
+
+void Scene::SetCurrentModel(Model* _model) {
+    for (auto& [id, model]: m_Models) {
+        if (model == _model) {
+            m_CurrentModelId = id;
+            m_CurrentModel = model.get();
+            return;
+        }
+    }
+}
+
+Model* Scene::GetCurrentModel() { return m_CurrentModel; }
+
+Model* Scene::GetModelById(int index) {
+    for (auto& [id, model]: m_Models) {
+        if (id == index) { return model; }
+        //if (obj->m_DataObject->HasSubDataObject()) {
+        //    auto subObj = obj->m_DataObject->GetSubDataObject(index);
+        //    if (subObj != nullptr) { return subObj.get(); }
+        //}
+    }
+    return nullptr;
+}
+
+DataObject* Scene::GetDataObjectById(int index) {
+    for (auto& [id, model]: m_Models) {
+        if (id == index) { return model->m_DataObject; }
+    }
+    return nullptr;
+}
+
+std::map<int, Model::Pointer>& Scene::GetModelList() { return m_Models; }
+
+void Scene::ChangeModelVisibility(int index, bool visibility) {
+    auto* model = GetModelById(index);
+    if (model != nullptr) { 
+        ChangeModelVisibility(model, visibility);
+    }
+}
+
+void Scene::ChangeModelVisibility(Model* model, bool visibility) {
+    if (visibility) {
+        m_VisibleModelsCount++;
+        if (m_VisibleModelsCount == 1) {
+            Vector3f center = model->m_DataObject->GetBoundingBox().center();
+            float radius = model->m_DataObject->GetBoundingBox().diag() / 2;
+            m_Camera->SetCameraPos(center[0], center[1],
+                                   center[2] + 2.0f * radius);
+        }
+    } else {
+        m_VisibleModelsCount--;
+    }
+
+    UpdateModelsBoundingSphere();
+}
+
 void Scene::SetShader(IGenum type, GLShaderProgram* sp) {
     if (sp == nullptr) { return; }
     m_ShaderPrograms[type] = std::unique_ptr<GLShaderProgram>(sp);
@@ -130,143 +271,6 @@ GLShaderProgram* Scene::GetShader(IGenum type) {
 bool Scene::HasShader(IGenum type) {
     return this->GetShaderWithType(type) != nullptr;
 }
-
-Model::Pointer Scene::AddDataObject(DataObject::Pointer obj) {
-    Model::Pointer model = Model::New();
-    model->m_DataObject = obj;
-    m_Models.insert(std::make_pair<>(obj->GetDataObjectId(), model));
-    m_CurrentModelId = obj->GetDataObjectId();
-    m_CurrentModel = model.get();
-    m_CurrentObject = obj.get();
-    model->m_Scene = this;
-
-    ChangeDataObjectVisibility(m_CurrentModelId, true);
-    UpdateModelsBoundingSphere();
-    return model;
-}
-
-void Scene::RemoveDataObject(DataObject::Pointer obj) {
-    for (auto it = m_Models.begin(); it != m_Models.end(); ++it) {
-        if (it->second->m_DataObject == obj) {
-            m_Models.erase(it);
-            m_CurrentModelId = m_Models.begin()->first;
-            m_CurrentModel = m_Models.begin()->second;
-            m_CurrentObject = m_CurrentModel->m_DataObject;
-            break;
-        }
-    }
-    UpdateModelsBoundingSphere();
-}
-
-void Scene::RemoveCurrentDataObject() {
-    if (auto visibility = m_CurrentObject->GetVisibility()) {
-        m_VisibleModelsCount--;
-    }
-
-    m_Models.erase(m_CurrentModelId);
-    if (m_Models.empty()) return;
-    m_CurrentModelId = m_Models.begin()->first;
-    m_CurrentModel = m_Models.begin()->second;
-    m_CurrentObject = m_CurrentModel->m_DataObject;
-    UpdateModelsBoundingSphere();
-}
-
-bool Scene::UpdateCurrentDataObject(int index) {
-    for (auto& [id, obj]: m_Models) {
-        if (id == index) {
-            m_CurrentModelId = id;
-            m_CurrentModel = obj.get();
-            m_CurrentObject = m_CurrentModel->m_DataObject;
-            return true;
-        }
-        if (obj->m_DataObject->HasSubDataObject()) {
-            auto subObj = obj->m_DataObject->GetSubDataObject(index);
-            if (subObj != nullptr) {
-                m_CurrentModelId = index;
-                m_CurrentObject = subObj.get();
-                return true;
-            }
-        }
-    }
-    return false;
-}
-
-void Scene::UpdateModelsBoundingSphere() {
-    // update all models bounding sphere
-    igm::vec3 min(FLT_MAX);
-    igm::vec3 max(-FLT_MAX);
-
-    for (auto& [id, obj]: m_Models) {
-        if (!obj->m_DataObject->GetVisibility()) continue;
-
-        auto box = obj->m_DataObject->GetBoundingBox();
-        Vector3f boxMin = box.min;
-        Vector3f boxMax = box.max;
-
-        min = igm::min(igm::vec3{boxMin[0], boxMin[1], boxMin[2]}, min);
-        max = igm::max(igm::vec3{boxMax[0], boxMax[1], boxMax[2]}, max);
-    };
-    igm::vec3 center = (min + max) / 2;
-    float radius = (max - min).length() / 2;
-
-    m_ModelsBoundingSphere = igm::vec4{center, radius};
-
-    // update camera far plane to cover all models
-    {
-        auto pos = m_Camera->GetCameraPos();
-        auto center = m_ModelsBoundingSphere.xyz();
-        auto length = (pos - center).length();
-        if (length <= m_ModelsBoundingSphere.w) {
-            // inside the bounding sphere
-            m_Camera->SetNearPlane(0.1f);
-            m_Camera->SetFarPlane(length + m_ModelsBoundingSphere.w);
-        } else {
-            // outside the bounding sphere
-            m_Camera->SetNearPlane(length - m_ModelsBoundingSphere.w);
-            m_Camera->SetFarPlane(length + m_ModelsBoundingSphere.w);
-        }
-    }
-}
-
-DataObject* Scene::GetDataObject(int index) {
-    for (auto& [id, obj]: m_Models) {
-        if (id == index) { return obj->m_DataObject.get(); }
-        if (obj->m_DataObject->HasSubDataObject()) {
-            auto subObj = obj->m_DataObject->GetSubDataObject(index);
-            if (subObj != nullptr) { return subObj.get(); }
-        }
-    }
-    return nullptr;
-}
-
-DataObject* Scene::GetCurrentObject() { return m_CurrentObject; }
-
-Model* Scene::GetCurrentModel() { return m_CurrentModel; }
-
-void Scene::ChangeViewStyle(IGenum mode) {
-    m_CurrentObject->SetViewStyle(mode);
-}
-
-void Scene::ChangeDataObjectVisibility(int index, bool visibility) {
-    auto* obj = GetDataObject(index);
-    obj->SetVisibility(visibility);
-
-    if (visibility) {
-        m_VisibleModelsCount++;
-        if (m_VisibleModelsCount == 1) {
-            Vector3f center = obj->GetBoundingBox().center();
-            float radius = obj->GetBoundingBox().diag() / 2;
-            m_Camera->SetCameraPos(center[0], center[1],
-                                   center[2] + 2.0f * radius);
-        }
-    } else {
-        m_VisibleModelsCount--;
-    }
-
-    UpdateModelsBoundingSphere();
-}
-
-std::map<int, Model::Pointer>& Scene::GetModelList() { return m_Models; }
 
 void Scene::InitOpenGL() {
     if (!gladLoadGL()) {
@@ -523,7 +527,7 @@ void Scene::Draw() {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
-    GLCheckError();
+    //GLCheckError();
 }
 
 void Scene::RefreshHizTexture() {
@@ -714,4 +718,40 @@ GLBuffer& Scene::GetDrawCullDataBuffer() {
     return m_DrawCullData;
 }
 
+void Scene::UpdateModelsBoundingSphere() {
+    // update all models bounding sphere
+    igm::vec3 min(FLT_MAX);
+    igm::vec3 max(-FLT_MAX);
+
+    for (auto& [id, obj]: m_Models) {
+        if (!obj->m_DataObject->GetVisibility()) continue;
+
+        auto box = obj->m_DataObject->GetBoundingBox();
+        Vector3f boxMin = box.min;
+        Vector3f boxMax = box.max;
+
+        min = igm::min(igm::vec3{boxMin[0], boxMin[1], boxMin[2]}, min);
+        max = igm::max(igm::vec3{boxMax[0], boxMax[1], boxMax[2]}, max);
+    };
+    igm::vec3 center = (min + max) / 2;
+    float radius = (max - min).length() / 2;
+
+    m_ModelsBoundingSphere = igm::vec4{center, radius};
+
+    // update camera far plane to cover all models
+    {
+        auto pos = m_Camera->GetCameraPos();
+        auto center = m_ModelsBoundingSphere.xyz();
+        auto length = (pos - center).length();
+        if (length <= m_ModelsBoundingSphere.w) {
+            // inside the bounding sphere
+            m_Camera->SetNearPlane(0.1f);
+            m_Camera->SetFarPlane(length + m_ModelsBoundingSphere.w);
+        } else {
+            // outside the bounding sphere
+            m_Camera->SetNearPlane(length - m_ModelsBoundingSphere.w);
+            m_Camera->SetFarPlane(length + m_ModelsBoundingSphere.w);
+        }
+    }
+}
 IGAME_NAMESPACE_END

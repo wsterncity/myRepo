@@ -29,7 +29,7 @@ igQtModelListView::igQtModelListView(QWidget* parent) : QTreeView(parent) {
 			ReverseItemVisibility(item);
 			int id = GetObjectIdFromItem(item);
 
-            m_Manager->GetCurrentScene()->ChangeDataObjectVisibility(id, itemVisibleList[item]);
+            //m_Manager->GetCurrentScene()->ChangeDataObjectVisibility(id, itemVisibleList[item]);
 			//auto* obj = m_Manager->GetCurrentScene()->GetDataObject(id);
 			//obj->SetVisibility(itemVisibleList[item]);
 
@@ -69,7 +69,7 @@ igQtModelListView::igQtModelListView(QWidget* parent) : QTreeView(parent) {
 			}
 			this->currentObjectIdx = newId;
 
-			m_Manager->GetCurrentScene()->UpdateCurrentDataObject(currentObjectIdx);
+			//m_Manager->GetCurrentScene()->UpdateCurrentDataObject(currentObjectIdx);
 			Q_EMIT UpdateCurrentItemToOtherQtModule();
 		}
 		});
@@ -208,18 +208,18 @@ void igQtModelListView::AddModel(QString modelName) {
 	QStandardItem* newModel = new QStandardItem(QIcon(":/Ticon/Icons/Eyeball.svg"), modelName);
 	rootItem->appendRow(newModel);
 	this->setCurrentIndex(newModel->index());
-	auto curObj = m_Manager->GetCurrentScene()->GetCurrentObject();
+	//auto curObj = m_Manager->GetCurrentScene()->GetCurrentObject();
 	itemVisibleList[newModel] = true;
-	itemObjectIds[newModel] = curObj->GetDataObjectId();
-	currentObjectIdx = curObj->GetDataObjectId();
+	//itemObjectIds[newModel] = curObj->GetDataObjectId();
+	//currentObjectIdx = curObj->GetDataObjectId();
 
-	if(curObj->HasSubDataObject()){
-		for(auto it = curObj->SubBegin(); it != curObj->SubEnd(); it ++){
-			auto& subObj = it->second;
-			std::string name = subObj->GetName();
-			AddChildToItem(newModel, QString::fromStdString(name), subObj->GetDataObjectId());
-		}
-	}
+	//if(curObj->HasSubDataObject()){
+	//	for(auto it = curObj->SubBegin(); it != curObj->SubEnd(); it ++){
+	//		auto& subObj = it->second;
+	//		std::string name = subObj->GetName();
+	//		AddChildToItem(newModel, QString::fromStdString(name), subObj->GetDataObjectId());
+	//	}
+	//}
 }
 
 void igQtModelListView::DeleteCurrentFile() {
@@ -240,7 +240,7 @@ void igQtModelListView::DeleteCurrentFile() {
         itemVisibleList.remove(item);
         itemObjectIds.remove(item);
 	}
-    m_Manager->GetCurrentScene()->RemoveCurrentDataObject();
+    //m_Manager->GetCurrentScene()->RemoveCurrentDataObject();
 	item = model->itemFromIndex(this->currentIndex());
 	if (item) {
         this->currentObjectIdx = GetObjectIdFromItem(item);

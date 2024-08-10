@@ -60,12 +60,9 @@ public:
                 Vector3d(dir.x, dir.y, dir.z));
 
         m_Model->GetPointPainter()->Clear();
-        m_Model->GetLinePainter()->Clear();
         if (id != -1) 
         {
             m_Model->GetPointPainter()->DrawPoint(m_Points->GetPoint(id));
-            m_Model->GetLinePainter()->DrawLine(m_Points->GetPoint(id),
-                                                m_Points->GetPoint(id + 1));
         }
     }
     void MouseMoveEvent(int posX, int posY) override {}

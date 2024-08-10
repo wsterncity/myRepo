@@ -114,7 +114,7 @@ igQtAnimationWidget::igQtAnimationWidget(QWidget *parent) : QWidget(parent), ui(
 void igQtAnimationWidget::playAnimation_snap(int keyframe_idx){
     using namespace iGame;
     auto currentScene = SceneManager::Instance()->GetCurrentScene();
-    auto currentObject = currentScene->GetCurrentObject();
+    auto currentObject = currentScene->GetCurrentModel()->GetDataObject();
     if(currentObject == nullptr || currentObject->GetTimeFrames()->GetArrays().empty())  return;
     std::cout << "current obj id : " << currentObject << '\n';
     auto& frameSubFiles = currentObject->GetTimeFrames()->GetTargetTimeFrame(keyframe_idx).SubFileNames;
@@ -128,8 +128,8 @@ void igQtAnimationWidget::playAnimation_snap(int keyframe_idx){
     else if(frameSubFiles->Size() == 1){
         auto newDataObject = FileIO::ReadFile(frameSubFiles->GetElement(0));
         newDataObject->SetTimeFrames(currentObject->GetTimeFrames());
-        currentScene->RemoveCurrentDataObject();
-        currentScene->AddDataObject(newDataObject);
+        currentScene->RemoveCurrentModel();
+        currentScene->AddModel(currentScene->CreateModel(newDataObject));
         newDataObject->SwitchToCurrentTimeframe(keyframe_idx);
     }
     Q_EMIT UpdateScene();
@@ -166,8 +166,8 @@ void igQtAnimationWidget::changeAnimationMode() {
 }
 
 void igQtAnimationWidget::initAnimationComponents() {
-    if(iGame::SceneManager::Instance()->GetCurrentScene()->GetCurrentObject()->GetTimeFrames() == nullptr)  return;
-    auto timeArrays = iGame::SceneManager::Instance()->GetCurrentScene()->GetCurrentObject()->GetTimeFrames()->GetArrays();
+    if(iGame::SceneManager::Instance()->GetCurrentScene()->GetCurrentModel()->GetDataObject()->GetTimeFrames() == nullptr)  return;
+    auto timeArrays = iGame::SceneManager::Instance()->GetCurrentScene()->GetCurrentModel()->GetDataObject()->GetTimeFrames()->GetArrays();
     if(timeArrays.empty()) return;
     std::vector<float> timeValues;
     timeValues.reserve(timeArrays.size());
