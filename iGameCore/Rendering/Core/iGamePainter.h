@@ -16,6 +16,8 @@ public:
 
     virtual void Draw(Scene*) = 0;
 
+    virtual void SetVisibility(bool f) { m_Visibility = f; }
+
 protected:
     Painter();
     ~Painter() override = default;

@@ -138,6 +138,7 @@ void Scene::AddDataObject(DataObject::Pointer obj) {
     m_CurrentModelId = obj->GetDataObjectId();
     m_CurrentModel = model.get();
     m_CurrentObject = obj.get();
+    model->m_Scene = this;
 
     ChangeDataObjectVisibility(m_CurrentModelId, true);
     UpdateModelsBoundingSphere();
@@ -568,7 +569,11 @@ void Scene::RefreshHizTexture() {
     }
 };
 
-void Scene::Update() { this->Draw(); }
+void Scene::Update() {
+    if (m_UpdateFunctor) { 
+        m_UpdateFunctor();
+    }
+}
 
 void Scene::Resize(int width, int height, int pixelRatio) {
     m_Camera->SetViewPort(width, height);

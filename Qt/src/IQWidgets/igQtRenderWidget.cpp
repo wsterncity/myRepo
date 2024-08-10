@@ -46,7 +46,7 @@ void igQtRenderWidget::initializeGL()
     // 目前当窗口
     SceneManager::Pointer sceneManager = SceneManager::Instance();
     m_Scene = sceneManager->NewScene();
-
+    m_Scene->SetUpdateFunctor(&igQtRenderWidget::update, this);
     m_Interactor = Interactor::New();
     m_Interactor->SetScene(m_Scene);
 }

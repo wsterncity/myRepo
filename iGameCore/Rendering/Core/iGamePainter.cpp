@@ -16,6 +16,8 @@ Vector3f Painter::ColorMap(Color c) {
             return Vector3f(0, 1, 0);
         case Color::Blue:
             return Vector3f(0, 0, 1);
+        case Color::White:
+            return Vector3f(1, 1, 1);
         default:
             return Vector3f(0, 0, 0);
     }

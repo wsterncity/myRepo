@@ -71,6 +71,10 @@ public:
     void Draw();
     void Resize(int width, int height, int pixelRatio);
     void Update();
+    template<typename Functor, typename... Args>
+    void SetUpdateFunctor(Functor&& functor, Args&&... args) {
+        m_UpdateFunctor = std::bind(functor, args...);
+    }
 
     void AddDataObject(DataObject::Pointer obj);
     void RemoveDataObject(DataObject::Pointer obj);
@@ -104,6 +108,8 @@ protected:
     void DrawFrame();
     void DrawModels();
     void DrawAxes();
+
+    std::function<void()> m_UpdateFunctor;
 
     std::map<int, Model::Pointer> m_Models;
     int m_CurrentModelId{0};
