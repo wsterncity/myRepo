@@ -2,15 +2,18 @@
 
 #include <iGameSceneManager.h>
 
-#include <ui_layerDialog.h>
-
 #include <IQComponents/igQtModelTreeWidget.h>
 #include <IQCore/igQtExportModule.h>
+
+#include <ui_layerDialog.h>
+
 #include <QString>
 #include <QMouseEvent>
 #include <QDockWidget>
 #include <QTreeWidget>
 #include <iostream>
+
+using namespace iGame;
 
 class IG_QT_MODULE_EXPORT igQtModelDialogWidget : public QDockWidget {
 	Q_OBJECT
@@ -19,13 +22,19 @@ public:
 	~igQtModelDialogWidget() override = default;
 
 public slots:
-	void add() {
+	void addDataObjectToModelTree(DataObject::Pointer obj, ItemSource source) {
 		// 创建一个项目
 		ModelTreeWidgetItem* item = new ModelTreeWidgetItem(modelTreeWidget);
+		auto model = iGame::SceneManager::Instance()->GetCurrentScene()->AddDataObject(obj);
 
-		item->setText(0, "bladefem_poly");
-		item->setModel(iGame::SceneManager::Instance()->GetCurrentScene()->GetCurrentModel());
+		item->setName(QString::fromStdString(obj->GetName()));
+		item->setModel(model);
+
+		//QTreeWidgetItem* child = new QTreeWidgetItem(item);
+		//child->setText(0, "Source");
+		//child->setText(1, "File");
 		modelTreeWidget->addTopLevelItem(item);
+		modelTreeWidget->setCurrentItem(item);
 	}
 
 private:

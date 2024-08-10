@@ -412,7 +412,7 @@ void igQtMainWindow::initAllMySignalConnections()
 {
 	//connect(rendererWidget, &igQtModelDrawWidget::insertToModelListView, ui->modelTreeView, &igQtModelListView::InsertModel);
 
-	connect(fileLoader, &igQtFileLoader::FinishReading, modelTreeWidget, &igQtModelDialogWidget::add);
+	connect(fileLoader, &igQtFileLoader::NewModel, modelTreeWidget, &igQtModelDialogWidget::addDataObjectToModelTree);
 	connect(fileLoader, &igQtFileLoader::FinishReading, this, &igQtMainWindow::updateRecentFilePaths);
 	connect(fileLoader, &igQtFileLoader::FinishReading, this, &igQtMainWindow::updateViewStyleAndCloudPicture);
 	connect(fileLoader, &igQtFileLoader::FinishReading, this, &igQtMainWindow::updateCurrentSceneWidget);

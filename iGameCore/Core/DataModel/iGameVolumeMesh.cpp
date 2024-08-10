@@ -768,7 +768,8 @@ void VolumeMesh::Draw(Scene* scene)
 		glad_glDrawElements(GL_TRIANGLES, m_TriangleIndices->GetNumberOfIds(), GL_UNSIGNED_INT, 0);
 		m_TriangleVAO.release();
 	}
-	else if (m_ViewStyle == IG_SURFACE_WITH_EDGE)
+	
+	/*if (m_ViewStyle == IG_SURFACE_WITH_EDGE)
 	{
 		if (m_UseColor)
 		{
@@ -790,7 +791,7 @@ void VolumeMesh::Draw(Scene* scene)
 		m_TriangleVAO.bind();
 		glad_glDrawElements(GL_TRIANGLES, m_TriangleIndices->GetNumberOfIds(), GL_UNSIGNED_INT, 0);
 		m_TriangleVAO.release();
-	}
+	}*/
 }
 
 void VolumeMesh::ConvertToDrawableData()

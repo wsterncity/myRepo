@@ -131,7 +131,7 @@ bool Scene::HasShader(IGenum type) {
     return this->GetShaderWithType(type) != nullptr;
 }
 
-void Scene::AddDataObject(DataObject::Pointer obj) {
+Model::Pointer Scene::AddDataObject(DataObject::Pointer obj) {
     Model::Pointer model = Model::New();
     model->m_DataObject = obj;
     m_Models.insert(std::make_pair<>(obj->GetDataObjectId(), model));
@@ -142,6 +142,7 @@ void Scene::AddDataObject(DataObject::Pointer obj) {
 
     ChangeDataObjectVisibility(m_CurrentModelId, true);
     UpdateModelsBoundingSphere();
+    return model;
 }
 
 void Scene::RemoveDataObject(DataObject::Pointer obj) {

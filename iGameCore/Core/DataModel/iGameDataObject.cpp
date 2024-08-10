@@ -116,7 +116,13 @@ void DataObject::ViewCloudPictureOfModel(int index, int demension) {
 }
 
 void DataObject::SetViewStyle(IGenum mode) {
-    m_ViewStyle = mode;
+    m_ViewStyle |= mode;
+    ProcessSubDataObjects(&DataObject::SetViewStyle, mode);
+}
+
+void DataObject::SetViewStyle2(IGenum mode)
+{
+    m_ViewStyle &= ~mode;
     ProcessSubDataObjects(&DataObject::SetViewStyle, mode);
 }
 
@@ -129,9 +135,9 @@ void DataObject::SetViewStyleOfModel(IGenum mode) {
     }
 }
 
-IGenum DataObject::GetViewStyle() { return m_ViewStyle; }
+unsigned int DataObject::GetViewStyle() { return m_ViewStyle; }
 
-IGenum DataObject::GetViewStyleOfModel() {
+unsigned int DataObject::GetViewStyleOfModel() {
     auto* parent = FindParent();
     if (parent != this) {
         return parent->GetViewStyle();

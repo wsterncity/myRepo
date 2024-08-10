@@ -76,7 +76,7 @@ public:
         m_UpdateFunctor = std::bind(functor, args...);
     }
 
-    void AddDataObject(DataObject::Pointer obj);
+    Model::Pointer AddDataObject(DataObject::Pointer obj);
     void RemoveDataObject(DataObject::Pointer obj);
     void RemoveCurrentDataObject();
     bool UpdateCurrentDataObject(int index);
@@ -131,6 +131,7 @@ protected:
     igm::vec4 m_ModelsBoundingSphere{0.0f, 0.0f, 0.0f, 1.0f};
 
     GLBuffer m_CameraDataBlock, m_ObjectDataBlock, m_UBOBlock;
+    GLBuffer m_CameraDataBlock2, m_ObjectDataBlock2, m_UBOBlock2;
     std::map<IGenum, std::unique_ptr<GLShaderProgram>> m_ShaderPrograms;
 
     GLVertexArray m_ScreenQuadVAO;

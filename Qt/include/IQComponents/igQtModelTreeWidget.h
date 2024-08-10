@@ -152,6 +152,10 @@ public:
         this->model = model;
     }
 
+    void setName(const QString& name) {
+        setText(0, name);
+    }
+
     void changeVisibility() {
         if (getVisibility()) {
             hide();
@@ -210,17 +214,21 @@ public:
     }
 
     void showPoints() {
-        std::cout << "show bbox\n";
+        model->ShowPoints();
+        update();
     }
     void hidePoints() {
-        std::cout << "hide bbox\n";
+        model->HidePoints();
+        update();
     }
 
     void showWireframe() {
-        std::cout << "show bbox\n";
+        model->ShowWireframe();
+        update();
     }
     void hideWireframe() {
-        std::cout << "hide bbox\n";
+        model->HideWireframe();
+        update();
     }
 
     void showFill() {

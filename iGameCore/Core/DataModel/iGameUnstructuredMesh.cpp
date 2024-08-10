@@ -147,7 +147,8 @@ void UnstructuredMesh::Draw(Scene* scene) {
                             GL_UNSIGNED_INT, 0);
         m_PointVAO.release();
 
-    } else if (m_ViewStyle == IG_SURFACE_WITH_EDGE) {
+    } 
+    /*if (m_ViewStyle == IG_SURFACE_WITH_EDGE) {
         if (m_UseColor) {
             scene->GetShader(Scene::NOLIGHT)->use();
         } else {
@@ -169,7 +170,7 @@ void UnstructuredMesh::Draw(Scene* scene) {
                             m_TriangleIndices->GetNumberOfValues(),
                             GL_UNSIGNED_INT, 0);
         m_TriangleVAO.release();
-    }
+    }*/
 }
 void UnstructuredMesh::ConvertToDrawableData() {
     if (m_Positions && m_Positions->GetMTime() > this->GetMTime()) { return; }

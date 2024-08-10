@@ -67,6 +67,11 @@ public:
         m_BoundingBoxPainter->SetVisibility(false);
     }
 
+    void ShowPoints() { m_DataObject->SetViewStyle(IG_POINTS);}
+    void HidePoints() { m_DataObject->SetViewStyle2(IG_POINTS); }
+
+    void ShowWireframe() { m_DataObject->SetViewStyle(IG_WIREFRAME); }
+    void HideWireframe() { m_DataObject->SetViewStyle2(IG_WIREFRAME); }
     void Update();
 
 protected:

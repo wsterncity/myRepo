@@ -160,10 +160,11 @@ public:
     virtual void ViewCloudPicture(int index, int dimension = -1);
     void ViewCloudPictureOfModel(int index, int dimension = -1);
 
-    virtual void SetViewStyle(IGenum mode);
+    void SetViewStyle(IGenum mode);
+    void SetViewStyle2(IGenum mode);
     void SetViewStyleOfModel(IGenum mode);
-    IGenum GetViewStyle();
-    IGenum GetViewStyleOfModel();
+    unsigned int GetViewStyle();
+    unsigned int GetViewStyleOfModel();
     void SetVisibility(bool f);
     bool GetVisibility() { return m_Visibility; }
     int GetAttributeIndex();
@@ -174,7 +175,7 @@ public:
 
 
 protected:
-    IGenum m_ViewStyle{IG_NONE};
+    unsigned int m_ViewStyle{0};
     int m_AttributeIndex{-1};
     int m_AttributeDimension{-1};
     bool m_Visibility{true};
