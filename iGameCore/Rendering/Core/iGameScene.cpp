@@ -264,9 +264,7 @@ void Scene::ChangeDataObjectVisibility(int index, bool visibility) {
     UpdateModelsBoundingSphere();
 }
 
-std::map<int, Model::Pointer>& Scene::GetModelList() {
-    return m_Models;
-}
+std::map<int, Model::Pointer>& Scene::GetModelList() { return m_Models; }
 
 void Scene::InitOpenGL() {
     if (!gladLoadGL()) {
@@ -293,20 +291,32 @@ void Scene::InitOpenGL() {
         m_UBOBlock.allocate(sizeof(UniformBufferObjectBuffer), nullptr,
                             GL_STATIC_DRAW);
 
-        auto patchShader = this->GetShader(PATCH);
-        patchShader->mapUniformBlock("CameraDataBlock", 0, m_CameraDataBlock);
-        patchShader->mapUniformBlock("ObjectDataBLock", 1, m_ObjectDataBlock);
-        patchShader->mapUniformBlock("UniformBufferObjectBlock", 2, m_UBOBlock);
-
-        auto noLightShader = this->GetShader(NOLIGHT);
-        noLightShader->mapUniformBlock("CameraDataBlock", 0, m_CameraDataBlock);
-        noLightShader->mapUniformBlock("ObjectDataBlock", 1, m_ObjectDataBlock);
-        noLightShader->mapUniformBlock("UniformBufferObjectBlock", 2,
-                                       m_UBOBlock);
-
-        auto cullComputeShader = this->GetShader(MESHLETCULL);
-        cullComputeShader->mapUniformBlock("CameraDataBlock", 0,
-                                           m_CameraDataBlock);
+        // map shader block
+        {
+            auto shader = this->GetShader(PATCH);
+            shader->mapUniformBlock("CameraDataBlock", 0, m_CameraDataBlock);
+            shader->mapUniformBlock("ObjectDataBlock", 1, m_ObjectDataBlock);
+            shader->mapUniformBlock("UniformBufferObjectBlock", 2, m_UBOBlock);
+        }
+        // map no light shader block
+        {
+            auto shader = this->GetShader(NOLIGHT);
+            shader->mapUniformBlock("CameraDataBlock", 0, m_CameraDataBlock);
+            shader->mapUniformBlock("ObjectDataBlock", 1, m_ObjectDataBlock);
+            shader->mapUniformBlock("UniformBufferObjectBlock", 2, m_UBOBlock);
+        }
+        // map pure color shader block
+        {
+            auto shader = this->GetShader(PURECOLOR);
+            shader->mapUniformBlock("CameraDataBlock", 0, m_CameraDataBlock);
+            shader->mapUniformBlock("ObjectDataBlock", 1, m_ObjectDataBlock);
+            shader->mapUniformBlock("UniformBufferObjectBlock", 2, m_UBOBlock);
+        }
+        // map culling computer shader block
+        {
+            auto shader = this->GetShader(MESHLETCULL);
+            shader->mapUniformBlock("CameraDataBlock", 0, m_CameraDataBlock);
+        }
     }
 
     // init screen quad VAO
@@ -588,9 +598,13 @@ void Scene::DrawModels() {
     bool debug = false;
     if (debug) {
         std::cout << "-------:Draw:-------" << std::endl;
-        for (auto& [id, obj]: m_Models) { obj->m_DataObject->ConvertToDrawableData(); }
+        for (auto& [id, obj]: m_Models) {
+            obj->m_DataObject->ConvertToDrawableData();
+        }
 
-        for (auto& [id, obj]: m_Models) { obj->m_DataObject->TestOcclusionResults(this); }
+        for (auto& [id, obj]: m_Models) {
+            obj->m_DataObject->TestOcclusionResults(this);
+        }
 
         // phase1: draw visible meshlet
         for (auto& [id, obj]: m_Models) { obj->m_DataObject->DrawPhase1(this); }

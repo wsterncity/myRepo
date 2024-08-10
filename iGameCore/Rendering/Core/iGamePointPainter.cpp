@@ -19,43 +19,46 @@ void PointPainter::Clear() {
 void PointPainter::Draw(Scene* scene) {
     if (!m_Visibility) { return; }
 
-    if (!m_Points || m_Points->GetMTime() < this->GetMTime()) { 
-        VAO.destroy();
-        pVBO.destroy();
-        cVBO.destroy();
+    if (!m_Points) {
+        if (m_Points->GetMTime() > this->GetMTime()) {
+            VAO.destroy();
+            pVBO.destroy();
+            cVBO.destroy();
 
-        VAO.create();
-        pVBO.create();
-        cVBO.create();
+            VAO.create();
+            pVBO.create();
+            pVBO.target(GL_ARRAY_BUFFER);
+            cVBO.create();
+            cVBO.target(GL_ARRAY_BUFFER);
 
-        GLAllocateGLBuffer(pVBO,
-                           m_Points->GetNumberOfPoints() * 3 * sizeof(float),
-                           m_Points->RawPointer());
-        GLAllocateGLBuffer(cVBO,
-                           m_Colors->GetNumberOfValues() * sizeof(float),
-                           m_Colors->RawPointer());
+            GLAllocateGLBuffer(
+                    pVBO, m_Points->GetNumberOfPoints() * 3 * sizeof(float),
+                    m_Points->RawPointer());
+            GLAllocateGLBuffer(cVBO,
+                               m_Colors->GetNumberOfValues() * sizeof(float),
+                               m_Colors->RawPointer());
 
-        VAO.vertexBuffer(GL_VBO_IDX_0, pVBO, 0, 3 * sizeof(float));
-        GLSetVertexAttrib(VAO, GL_LOCATION_IDX_0, GL_VBO_IDX_0, 3, GL_FLOAT,
-                          GL_FALSE, 0);
+            VAO.vertexBuffer(GL_VBO_IDX_0, pVBO, 0, 3 * sizeof(float));
+            GLSetVertexAttrib(VAO, GL_LOCATION_IDX_0, GL_VBO_IDX_0, 3, GL_FLOAT,
+                              GL_FALSE, 0);
 
-        VAO.vertexBuffer(GL_VBO_IDX_1, cVBO, 0, 3 * sizeof(float));
-        GLSetVertexAttrib(VAO, GL_LOCATION_IDX_1, GL_VBO_IDX_1, 3, GL_FLOAT,
-                          GL_FALSE, 0);
+            VAO.vertexBuffer(GL_VBO_IDX_1, cVBO, 0, 3 * sizeof(float));
+            GLSetVertexAttrib(VAO, GL_LOCATION_IDX_1, GL_VBO_IDX_1, 3, GL_FLOAT,
+                              GL_FALSE, 0);
 
-        m_Points->Modified();
+            m_Points->Modified();
+        }
+
+        scene->UBO().useColor = true;
+        scene->UpdateUniformBuffer();
+        scene->GetShader(Scene::NOLIGHT)->use();
+        VAO.bind();
+        glad_glPointSize(m_PointSize);
+        glad_glDepthRange(0, 0.9999);
+        glad_glDrawArrays(GL_POINTS, 0, m_Points->GetNumberOfPoints());
+        glad_glDepthRange(0, 1);
+        VAO.release();
     }
-
-    scene->UBO().useColor = true;
-    scene->UpdateUniformBuffer();
-
-    scene->GetShader(Scene::NOLIGHT)->use();
-    VAO.bind();
-    glad_glPointSize(m_PointSize);
-    glad_glDepthRange(0, 0.9999);
-    glad_glDrawArrays(GL_POINTS, 0, m_Points->GetNumberOfPoints());
-    glad_glDepthRange(0, 1);
-    VAO.release();
 }
 
 PointPainter::PointPainter() {
@@ -64,5 +67,3 @@ PointPainter::PointPainter() {
     m_Colors->SetElementSize(3);
 }
 IGAME_NAMESPACE_END
-
-
