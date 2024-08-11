@@ -2,7 +2,7 @@
 // Created by m_ky on 2024/2/27.
 //
 
-#include "include/IQCore/igQtAnimationVcrController.h"
+#include "IQCore/igQtAnimationVcrController.h"
 //#include "QApplication"
 #include "qdebug.h"
 igQtAnimationVcrController::igQtAnimationVcrController(QObject *parent) : QObject(parent) {

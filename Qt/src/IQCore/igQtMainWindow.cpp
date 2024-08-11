@@ -2,7 +2,8 @@
 // Created by m_ky on 2024/4/10.
 //
 
-#include <iGamePointPickedInteractor.h>
+#include "Interactor/iGamePointPickedInteractor.h"
+#include "Interactor/iGamePointDragInteractor.h"
 #include <iGameUnstructuredMesh.h>
 #include <iGameFilterPoints.h>
 #include <iGameDataSource.h>
@@ -22,6 +23,7 @@
 #include <IQWidgets/igQtTensorWidget.h>
 #include "iGameFileIO.h"
 
+#include <Sources/iGameLineTypePointsSource.h>
 
 igQtMainWindow::igQtMainWindow(QWidget* parent) :
 	QMainWindow(parent), 
@@ -53,6 +55,7 @@ igQtMainWindow::igQtMainWindow(QWidget* parent) :
 	initToolbarComponent();
 	initAllComponents();
 	initAllFilters();
+    initAllSources();
 	updateRecentFilePaths();
 
 	connect(ui->action_select_points, &QAction::triggered, this,
@@ -605,4 +608,27 @@ void igQtMainWindow::changePointPicked()
 	else {
 		rendererWidget->ChangeInteractor(Interactor::New());
 	}
+}
+
+void igQtMainWindow::initAllSources() {
+    connect(ui->action_LineSource, &QAction::triggered, this, [&](){
+        UnstructuredMesh::Pointer newLinePointSet = UnstructuredMesh::New();
+        newLinePointSet->AddPoint(Point(0.f, 0.f, 0.f));
+        igIndex cell[1] = {0};
+        newLinePointSet->AddCell(cell, 1, IG_VERTEX);
+        SceneManager::Instance()->GetCurrentScene()->AddDataObject(newLinePointSet);
+
+//        auto interactor = PointDragInteractor::New();
+//        interactor->SetPointSet(DynamicCast<PointSet>(
+//                rendererWidget->GetScene()->GetCurrentObject()));
+//        rendererWidget->ChangeInteractor(interactor);
+
+
+//        LineTypePointsSource::Pointer lineSource = LineTypePointsSource::New();
+//        lineSource->SetInput(newLinePointSet);
+//        lineSource->Execute();
+//        lineSource->GetOutput();
+
+    });
+
 }

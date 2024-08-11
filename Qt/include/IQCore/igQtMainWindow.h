@@ -39,7 +39,7 @@ public:
     void initAllDockWidgetConnectWithAction();
     void initAllMySignalConnections();
     void initAllFilters();
-
+    void initAllSources();
 
 public:
     igQtModelDrawWidget* rendererWidget;

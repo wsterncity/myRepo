@@ -51,6 +51,8 @@ IGenum UnstructuredMesh::GetCellType(const IGsize cellId) const {
 UnstructuredMesh::UnstructuredMesh() 
 {
     m_ViewStyle = IG_SURFACE;
+    m_Cells = CellArray::New();
+    m_Types = UnsignedIntArray::New();
 }
 
 Cell* UnstructuredMesh::GetTypedCell(const IGsize cellId) {
