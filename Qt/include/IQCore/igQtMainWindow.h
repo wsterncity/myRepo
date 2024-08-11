@@ -24,6 +24,7 @@ class igQtFileLoader;
 class igQtColorManagerWidget;
 class igQtFilterDialogDockWidget;
 class igQtProgressBarWidget;
+class igQtModelDialogWidget;
 
 using namespace iGame;
 
@@ -44,6 +45,7 @@ public:
 public:
     igQtModelDrawWidget* rendererWidget;
     igQtFileLoader* fileLoader;
+    igQtModelDialogWidget* modelTreeWidget;
 
     igQtColorManagerWidget* ColorManagerWidget;
     igQtFilterDialogDockWidget* filterDialogDockWidget;
@@ -56,12 +58,13 @@ public:
 private slots:
     void updateRecentFilePaths();
     void updateColorBarShow();
-    void ChangeViewStyle();
-    void ChangeScalarView();
-    void ChangeScalarViewDim();
-    void updateViewStyleAndCloudPicture();
-    void updateCurrentDataObject();
-    void updateCurrentSceneWidget();
+
+    //void ChangeViewStyle();
+    //void ChangeScalarView();
+    //void ChangeScalarViewDim();
+    //void updateViewStyleAndCloudPicture();
+    //void updateCurrentDataObject();
+    //void updateCurrentSceneWidget();
 
     void changePointPicked();
 

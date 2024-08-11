@@ -12,7 +12,7 @@
 #include "iGameCamera.h"
 #include "iGameFontSet.h"
 #include "iGameLight.h"
-#include "iGameSurfaceMesh.h"
+#include "iGameModel.h"
 
 IGAME_NAMESPACE_BEGIN
 class Scene : public Object {
@@ -20,12 +20,35 @@ public:
     I_OBJECT(Scene);
     static Pointer New() { return new Scene; }
 
-    struct MVPMatrix {
-        alignas(16) igm::mat4 model;
-        alignas(16) igm::mat4 normal;
-        alignas(16) igm::mat4 viewporj; // projection * view
+    /* Model Related */
+    int AddModel(Model::Pointer);
+    Model::Pointer CreateModel(DataObject::Pointer);
+    void RemoveModel(int index);
+    void RemoveModel(Model*);
+    void RemoveCurrentModel();
+    void SetCurrentModel(int index);
+    void SetCurrentModel(Model*);
+    
+    Model* GetCurrentModel();
+    Model* GetModelById(int index);
+    DataObject* GetDataObjectById(int index);
+    std::map<int, Model::Pointer>& GetModelList();
+
+    void ChangeModelVisibility(int index, bool visibility);
+    void ChangeModelVisibility(Model* m, bool visibility);
+
+    /* Rendering Related */
+    struct CameraDataBuffer {
+        alignas(16) igm::mat4 view;
+        alignas(16) igm::mat4 proj;
+        alignas(16) igm::mat4 projview; // proj * view
     };
-    struct UniformBufferObject {
+    struct ObjectDataBuffer {
+        alignas(16) igm::mat4 model;
+        alignas(16) igm::mat4 normal; // transpose(inverse(model))
+        alignas(16) igm::vec4 spherebounds;
+    };
+    struct UniformBufferObjectBuffer {
         alignas(16) igm::vec3 viewPos;
         alignas(4) int useColor{0};
     };
@@ -49,8 +72,9 @@ public:
         SHADERTYPE_COUNT
     };
 
-    MVPMatrix& MVP() { return this->m_MVP; }
-    UniformBufferObject& UBO() { return this->m_UBO; }
+    CameraDataBuffer& CameraData() { return m_CameraData; }
+    ObjectDataBuffer& ObjectData() { return m_ObjectData; }
+    UniformBufferObjectBuffer& UBO() { return m_UBO; }
     void UpdateUniformBuffer();
 
     void SetShader(IGenum type, GLShaderProgram*);
@@ -59,20 +83,13 @@ public:
     GLShaderProgram* GetShader(IGenum type);
     bool HasShader(IGenum type);
 
-    void ChangeViewStyle(IGenum mode);
-    void ChangeDataObjectVisibility(int index, bool visibility);
-
     void Draw();
     void Resize(int width, int height, int pixelRatio);
     void Update();
-
-    void AddDataObject(DataObject::Pointer obj);
-    void RemoveDataObject(DataObject::Pointer obj);
-    void RemoveCurrentDataObject();
-    bool UpdateCurrentDataObject(int index);
-    DataObject* GetDataObject(int index);
-    DataObject* GetCurrentObject();
-    std::map<DataObjectId, DataObject::Pointer>& GetModelList();
+    template<typename Functor, typename... Args>
+    void SetUpdateFunctor(Functor&& functor, Args&&... args) {
+        m_UpdateFunctor = std::bind(functor, args...);
+    }
 
     GLTexture2d& HizTexture() { return m_DepthPyramid; }
 
@@ -84,7 +101,7 @@ protected:
     ~Scene() override;
 
     void UpdateModelsBoundingSphere();
-
+    
     void InitOpenGL();
     void InitFont();
     void InitAxes();
@@ -98,23 +115,33 @@ protected:
     void DrawModels();
     void DrawAxes();
 
-    std::map<DataObjectId, DataObject::Pointer> m_Models;
-    DataObjectId m_CurrentObjectId{0};
-    DataObject* m_CurrentObject{nullptr};
+    
+    /* Data Object Related */
+    std::map<int, Model::Pointer> m_Models;
+    int m_IncrementModelId{0};
+    int m_CurrentModelId{-1};
+    Model* m_CurrentModel{nullptr};
+    //DataObject* m_CurrentObject{nullptr};
+
+    std::function<void()> m_UpdateFunctor;
 
     Camera::Pointer m_Camera{};
     Light::Pointer m_Light{};
     Axes::Pointer m_Axes{};
 
-    MVPMatrix m_MVP;
-    UniformBufferObject m_UBO;
+
+    /* Rendering related */
+    CameraDataBuffer m_CameraData;
+    ObjectDataBuffer m_ObjectData;
+    UniformBufferObjectBuffer m_UBO;
+
     igm::mat4 m_ModelRotate{};
     igm::vec3 m_BackgroundColor{};
 
     uint32_t m_VisibleModelsCount = 0;
     igm::vec4 m_ModelsBoundingSphere{0.0f, 0.0f, 0.0f, 1.0f};
 
-    GLBuffer m_MVPBlock, m_UBOBlock;
+    GLBuffer m_CameraDataBlock, m_ObjectDataBlock, m_UBOBlock;
     std::map<IGenum, std::unique_ptr<GLShaderProgram>> m_ShaderPrograms;
 
     GLVertexArray m_ScreenQuadVAO;

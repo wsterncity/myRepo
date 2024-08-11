@@ -104,7 +104,8 @@ void igQtFileLoader::OpenFile(const std::string& filePath)
 //	m_SceneManager->GetCurrentScene()->AddDataObject(multiData);
 
 	auto obj = iGame::FileIO::ReadFile(filePath);
-
+	auto filename = filePath.substr(filePath.find_last_of('/') + 1);
+	obj->SetName(filename.substr(0, filename.find_last_of('.')).c_str());
 	//PointSet::Pointer mesh = DynamicCast<PointSet>(obj);
 	//FloatArray::Pointer points = mesh->GetPoints()->ConvertToDataArray();
 	//FloatArray::Pointer pointScalar = FloatArray::New();
@@ -143,11 +144,12 @@ void igQtFileLoader::OpenFile(const std::string& filePath)
 //
 //    }
 
-	m_SceneManager->GetCurrentScene()->AddDataObject(obj);
-	this->SaveCurrentFileToRecentFile(QString::fromStdString(filePath));
-	Q_EMIT AddFileToModelList(QString(filePath.substr(filePath.find_last_of('/') + 1).c_str()));
-	Q_EMIT FinishReading();
+	//m_SceneManager->GetCurrentScene()->AddDataObject(obj);
+	//this->SaveCurrentFileToRecentFile(QString::fromStdString(filePath));
+	//Q_EMIT AddFileToModelList(QString(filePath.substr(filePath.find_last_of('/') + 1).c_str()));
+	//Q_EMIT FinishReading();
 
+	emit NewModel(obj, ItemSource::File);
 }
 
 void igQtFileLoader::SaveFile() {

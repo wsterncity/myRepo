@@ -15,6 +15,147 @@ Scene::Scene() {
 }
 Scene::~Scene() {}
 
+int Scene::AddModel(Model::Pointer model) {
+    int newModelId = m_IncrementModelId++;
+    m_Models.insert(std::make_pair<>(newModelId, model));
+    m_CurrentModelId = newModelId;
+    m_CurrentModel = model.get();
+    model->m_Scene = this;
+
+    ChangeModelVisibility(model.get(), true);
+    UpdateModelsBoundingSphere();
+    return newModelId;
+}
+
+Model::Pointer Scene::CreateModel(DataObject::Pointer obj) {
+    Model::Pointer model = Model::New();
+    model->m_DataObject = obj;
+    return model;
+}
+
+void Scene::RemoveModel(int index) {
+    m_Models.erase(index);
+    if (index == m_CurrentModelId) {
+        if (m_Models.empty()) {
+            m_CurrentModelId = -1;
+            m_CurrentModel = nullptr;
+        } else {
+            m_CurrentModelId = m_Models.begin()->first;
+            m_CurrentModel = m_Models.begin()->second;
+        }
+    }
+    UpdateModelsBoundingSphere();
+}
+
+void Scene::RemoveModel(Model* model) {
+    for (auto it = m_Models.begin(); it != m_Models.end(); ++it) {
+        if (it->second.get() == model) {
+            m_Models.erase(it);
+            if (it->first == m_CurrentModelId) {
+                if (m_Models.empty()) {
+                    m_CurrentModelId = -1;
+                    m_CurrentModel = nullptr;
+                } 
+                else {
+                    m_CurrentModelId = m_Models.begin()->first;
+                    m_CurrentModel = m_Models.begin()->second;
+                }
+            }
+            break;
+        }
+    }
+    UpdateModelsBoundingSphere();
+}
+
+void Scene::RemoveCurrentModel() {
+    if (auto visibility = m_CurrentModel->GetVisibility()) {
+        m_VisibleModelsCount--;
+    }
+
+    m_Models.erase(m_CurrentModelId);
+    if (m_Models.empty()) {
+        m_CurrentModelId = -1;
+        m_CurrentModel = nullptr;
+    } else {
+        m_CurrentModelId = m_Models.begin()->first;
+        m_CurrentModel = m_Models.begin()->second;
+    }
+    UpdateModelsBoundingSphere();
+}
+
+void Scene::SetCurrentModel(int index) {
+    for (auto& [id, model]: m_Models) {
+        if (id == index) {
+            m_CurrentModelId = id;
+            m_CurrentModel = model.get();
+            return;
+        }
+        //if (obj->m_DataObject->HasSubDataObject()) {
+        //    auto subObj = obj->m_DataObject->GetSubDataObject(index);
+        //    if (subObj != nullptr) {
+        //        m_CurrentModelId = index;
+        //        m_CurrentObject = subObj.get();
+        //        return true;
+        //    }
+        //}
+    }
+}
+
+void Scene::SetCurrentModel(Model* _model) {
+    for (auto& [id, model]: m_Models) {
+        if (model == _model) {
+            m_CurrentModelId = id;
+            m_CurrentModel = model.get();
+            return;
+        }
+    }
+}
+
+Model* Scene::GetCurrentModel() { return m_CurrentModel; }
+
+Model* Scene::GetModelById(int index) {
+    for (auto& [id, model]: m_Models) {
+        if (id == index) { return model; }
+        //if (obj->m_DataObject->HasSubDataObject()) {
+        //    auto subObj = obj->m_DataObject->GetSubDataObject(index);
+        //    if (subObj != nullptr) { return subObj.get(); }
+        //}
+    }
+    return nullptr;
+}
+
+DataObject* Scene::GetDataObjectById(int index) {
+    for (auto& [id, model]: m_Models) {
+        if (id == index) { return model->m_DataObject; }
+    }
+    return nullptr;
+}
+
+std::map<int, Model::Pointer>& Scene::GetModelList() { return m_Models; }
+
+void Scene::ChangeModelVisibility(int index, bool visibility) {
+    auto* model = GetModelById(index);
+    if (model != nullptr) { 
+        ChangeModelVisibility(model, visibility);
+    }
+}
+
+void Scene::ChangeModelVisibility(Model* model, bool visibility) {
+    if (visibility) {
+        m_VisibleModelsCount++;
+        if (m_VisibleModelsCount == 1) {
+            Vector3f center = model->m_DataObject->GetBoundingBox().center();
+            float radius = model->m_DataObject->GetBoundingBox().diag() / 2;
+            m_Camera->SetCameraPos(center[0], center[1],
+                                   center[2] + 2.0f * radius);
+        }
+    } else {
+        m_VisibleModelsCount--;
+    }
+
+    UpdateModelsBoundingSphere();
+}
+
 void Scene::SetShader(IGenum type, GLShaderProgram* sp) {
     if (sp == nullptr) { return; }
     m_ShaderPrograms[type] = std::unique_ptr<GLShaderProgram>(sp);
@@ -131,120 +272,6 @@ bool Scene::HasShader(IGenum type) {
     return this->GetShaderWithType(type) != nullptr;
 }
 
-void Scene::AddDataObject(DataObject::Pointer obj) {
-    m_Models.insert(std::make_pair<>(obj->GetDataObjectId(), obj));
-    m_CurrentObjectId = obj->GetDataObjectId();
-    m_CurrentObject = obj.get();
-
-    ChangeDataObjectVisibility(m_CurrentObjectId, true);
-    UpdateModelsBoundingSphere();
-}
-
-void Scene::RemoveDataObject(DataObject::Pointer obj) {
-    for (auto it = m_Models.begin(); it != m_Models.end(); ++it) {
-        if (it->second == obj) {
-            m_Models.erase(it);
-            m_CurrentObjectId = m_Models.begin()->first;
-            m_CurrentObject = m_Models.begin()->second;
-            break;
-        }
-    }
-    UpdateModelsBoundingSphere();
-}
-
-void Scene::RemoveCurrentDataObject() {
-    if (auto visibility = m_CurrentObject->GetVisibility()) {
-        m_VisibleModelsCount--;
-    }
-
-    m_Models.erase(m_CurrentObjectId);
-    if (m_Models.empty()) return;
-    m_CurrentObjectId = m_Models.begin()->first;
-    m_CurrentObject = m_Models.begin()->second;
-
-    UpdateModelsBoundingSphere();
-}
-
-bool Scene::UpdateCurrentDataObject(int index) {
-    for (auto& [id, obj]: m_Models) {
-        if (id == index) {
-            m_CurrentObjectId = id;
-            m_CurrentObject = obj.get();
-            return true;
-        }
-        if (obj->HasSubDataObject()) {
-            auto subObj = obj->GetSubDataObject(index);
-            if (subObj != nullptr) {
-                m_CurrentObjectId = index;
-                m_CurrentObject = subObj.get();
-                return true;
-            }
-        }
-    }
-    return false;
-}
-
-void Scene::UpdateModelsBoundingSphere() {
-    // update all models bounding sphere
-    igm::vec3 min(FLT_MAX);
-    igm::vec3 max(-FLT_MAX);
-
-    for (auto& [id, obj]: m_Models) {
-        auto box = obj->GetBoundingBox();
-        Vector3f boxMin = box.min;
-        Vector3f boxMax = box.max;
-
-        min = igm::min(igm::vec3{boxMin[0], boxMin[1], boxMin[2]}, min);
-        max = igm::max(igm::vec3{boxMax[0], boxMax[1], boxMax[2]}, max);
-    };
-    igm::vec3 center = (min + max) / 2;
-    float radius = (max - min).length() / 2;
-
-    m_ModelsBoundingSphere = igm::vec4{center, radius};
-
-    // update camera far plane to cover all models
-    auto pos = m_Camera->GetCamaraPos();
-    m_Camera->SetFarPlane((pos - center).length() + m_ModelsBoundingSphere.w);
-}
-
-DataObject* Scene::GetDataObject(int index) {
-    for (auto& [id, obj]: m_Models) {
-        if (id == index) { return obj.get(); }
-        if (obj->HasSubDataObject()) {
-            auto subObj = obj->GetSubDataObject(index);
-            if (subObj != nullptr) { return subObj.get(); }
-        }
-    }
-    return nullptr;
-}
-
-DataObject* Scene::GetCurrentObject() { return m_CurrentObject; }
-
-void Scene::ChangeViewStyle(IGenum mode) {
-    m_CurrentObject->SetViewStyle(mode);
-}
-
-void Scene::ChangeDataObjectVisibility(int index, bool visibility) {
-    auto* obj = GetDataObject(index);
-    obj->SetVisibility(visibility);
-
-    if (visibility) {
-        m_VisibleModelsCount++;
-        if (m_VisibleModelsCount == 1) {
-            Vector3f center = obj->GetBoundingBox().center();
-            float radius = obj->GetBoundingBox().diag() / 2;
-            m_Camera->SetCamaraPos(center[0], center[1],
-                                   center[2] + 2.0f * radius);
-        }
-    } else {
-        m_VisibleModelsCount--;
-    }
-}
-
-std::map<DataObjectId, DataObject::Pointer>& Scene::GetModelList() {
-    return m_Models;
-}
-
 void Scene::InitOpenGL() {
     if (!gladLoadGL()) {
         throw std::runtime_error("Failed to initialize GLAD");
@@ -257,25 +284,45 @@ void Scene::InitOpenGL() {
 
     // allocate memory
     {
-        m_MVPBlock.create();
-        m_MVPBlock.target(GL_UNIFORM_BUFFER);
-        m_MVPBlock.allocate(sizeof(MVPMatrix), nullptr, GL_STATIC_DRAW);
+        m_CameraDataBlock.create();
+        m_CameraDataBlock.target(GL_UNIFORM_BUFFER);
+        m_CameraDataBlock.allocate(sizeof(CameraDataBuffer), nullptr,
+                                   GL_STATIC_DRAW);
+        m_ObjectDataBlock.create();
+        m_ObjectDataBlock.target(GL_UNIFORM_BUFFER);
+        m_ObjectDataBlock.allocate(sizeof(ObjectDataBuffer), nullptr,
+                                   GL_STATIC_DRAW);
         m_UBOBlock.create();
         m_UBOBlock.target(GL_UNIFORM_BUFFER);
-        m_UBOBlock.allocate(sizeof(UniformBufferObject), nullptr,
+        m_UBOBlock.allocate(sizeof(UniformBufferObjectBuffer), nullptr,
                             GL_STATIC_DRAW);
 
-        auto patchShader = this->GetShader(PATCH);
-        patchShader->mapUniformBlock("MVPMatrixBlock", 0, m_MVPBlock);
-        patchShader->mapUniformBlock("UniformBufferObjectBlock", 1, m_UBOBlock);
-
-        auto noLightShader = this->GetShader(NOLIGHT);
-        noLightShader->mapUniformBlock("MVPMatrixBlock", 0, m_MVPBlock);
-        noLightShader->mapUniformBlock("UniformBufferObjectBlock", 1,
-                                       m_UBOBlock);
-
-        auto cullComputeShader = this->GetShader(MESHLETCULL);
-        cullComputeShader->mapUniformBlock("MVPMatrixBlock", 0, m_MVPBlock);
+        // map shader block
+        {
+            auto shader = this->GetShader(PATCH);
+            shader->mapUniformBlock("CameraDataBlock", 0, m_CameraDataBlock);
+            shader->mapUniformBlock("ObjectDataBlock", 1, m_ObjectDataBlock);
+            shader->mapUniformBlock("UniformBufferObjectBlock", 2, m_UBOBlock);
+        }
+        // map no light shader block
+        {
+            auto shader = this->GetShader(NOLIGHT);
+            shader->mapUniformBlock("CameraDataBlock", 0, m_CameraDataBlock);
+            shader->mapUniformBlock("ObjectDataBlock", 1, m_ObjectDataBlock);
+            shader->mapUniformBlock("UniformBufferObjectBlock", 2, m_UBOBlock);
+        }
+        // map pure color shader block
+        {
+            auto shader = this->GetShader(PURECOLOR);
+            shader->mapUniformBlock("CameraDataBlock", 0, m_CameraDataBlock);
+            shader->mapUniformBlock("ObjectDataBlock", 1, m_ObjectDataBlock);
+            shader->mapUniformBlock("UniformBufferObjectBlock", 2, m_UBOBlock);
+        }
+        // map culling computer shader block
+        {
+            auto shader = this->GetShader(MESHLETCULL);
+            shader->mapUniformBlock("CameraDataBlock", 0, m_CameraDataBlock);
+        }
     }
 
     // init screen quad VAO
@@ -479,6 +526,8 @@ void Scene::Draw() {
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
+
+    //GLCheckError();
 }
 
 void Scene::RefreshHizTexture() {
@@ -525,7 +574,11 @@ void Scene::RefreshHizTexture() {
     }
 };
 
-void Scene::Update() { this->Draw(); }
+void Scene::Update() {
+    if (m_UpdateFunctor) { 
+        m_UpdateFunctor();
+    }
+}
 
 void Scene::Resize(int width, int height, int pixelRatio) {
     m_Camera->SetViewPort(width, height);
@@ -555,22 +608,26 @@ void Scene::DrawModels() {
     bool debug = false;
     if (debug) {
         std::cout << "-------:Draw:-------" << std::endl;
-        for (auto& [id, obj]: m_Models) { obj->ConvertToDrawableData(); }
+        for (auto& [id, obj]: m_Models) {
+            obj->m_DataObject->ConvertToDrawableData();
+        }
+
+        for (auto& [id, obj]: m_Models) {
+            obj->m_DataObject->TestOcclusionResults(this);
+        }
 
         // phase1: draw visible meshlet
-        for (auto& [id, obj]: m_Models) { obj->DrawPhase1(this); }
+        for (auto& [id, obj]: m_Models) { obj->m_DataObject->DrawPhase1(this); }
 
         // phase2: draw invisible meshlet
         RefreshHizTexture();
-        for (auto& [id, obj]: m_Models) { obj->DrawPhase2(this); }
+        for (auto& [id, obj]: m_Models) { obj->m_DataObject->DrawPhase2(this); }
 
-        // phase3: record all visible meshlet
+        // phase3: generate hierarchical z-buffer
         RefreshHizTexture();
-        for (auto& [id, obj]: m_Models) { obj->DrawPhase3(this); }
-
     } else {
         for (auto& [id, obj]: m_Models) {
-            obj->ConvertToDrawableData();
+            obj->m_DataObject->ConvertToDrawableData();
             obj->Draw(this);
         }
     }
@@ -578,27 +635,29 @@ void Scene::DrawModels() {
 }
 
 void Scene::UpdateUniformData() {
-    // update mvp matrix
-    igm::mat4 translateToOrigin =
-            igm::translate(igm::mat4(1.0f), -igm::vec3{0.0f, 0.0f, 0.0f});
-    igm::mat4 translateBack =
-            igm::translate(igm::mat4(1.0f), igm::vec3{0.0f, 0.0f, 0.0f});
-
-    m_MVP.model = translateBack * m_ModelRotate * translateToOrigin;
-    m_MVP.normal = m_MVP.model.invert().transpose();
-    m_MVP.viewporj =
+    // update camera data matrix
+    m_CameraData.view = m_Camera->GetViewMatrix();
+    m_CameraData.proj = m_Camera->GetProjectionMatrix();
+    m_CameraData.projview =
             m_Camera->GetProjectionMatrix() * m_Camera->GetViewMatrix();
 
+    // update object data matrix
+    m_ObjectData.model = m_ModelRotate;
+    m_ObjectData.normal = m_ObjectData.model.invert().transpose();
+
     // update other ubo
-    m_UBO.viewPos = m_Camera->GetCamaraPos();
+    m_UBO.viewPos = m_Camera->GetCameraPos();
 }
 
 void Scene::UpdateUniformBuffer() {
-    // update mvp matrix
-    m_MVPBlock.subData(0, sizeof(MVPMatrix), &m_MVP);
+    // update camera data matrix
+    m_CameraDataBlock.subData(0, sizeof(CameraDataBuffer), &m_CameraData);
+
+    // update object data matrix
+    m_ObjectDataBlock.subData(0, sizeof(ObjectDataBuffer), &m_ObjectData);
 
     // update other ubo
-    m_UBOBlock.subData(0, sizeof(UniformBufferObject), &m_UBO);
+    m_UBOBlock.subData(0, sizeof(UniformBufferObjectBuffer), &m_UBO);
 }
 
 void Scene::DrawAxes() {
@@ -659,4 +718,40 @@ GLBuffer& Scene::GetDrawCullDataBuffer() {
     return m_DrawCullData;
 }
 
+void Scene::UpdateModelsBoundingSphere() {
+    // update all models bounding sphere
+    igm::vec3 min(FLT_MAX);
+    igm::vec3 max(-FLT_MAX);
+
+    for (auto& [id, obj]: m_Models) {
+        if (!obj->m_DataObject->GetVisibility()) continue;
+
+        auto box = obj->m_DataObject->GetBoundingBox();
+        Vector3f boxMin = box.min;
+        Vector3f boxMax = box.max;
+
+        min = igm::min(igm::vec3{boxMin[0], boxMin[1], boxMin[2]}, min);
+        max = igm::max(igm::vec3{boxMax[0], boxMax[1], boxMax[2]}, max);
+    };
+    igm::vec3 center = (min + max) / 2;
+    float radius = (max - min).length() / 2;
+
+    m_ModelsBoundingSphere = igm::vec4{center, radius};
+
+    // update camera far plane to cover all models
+    {
+        auto pos = m_Camera->GetCameraPos();
+        auto center = m_ModelsBoundingSphere.xyz();
+        auto length = (pos - center).length();
+        if (length <= m_ModelsBoundingSphere.w) {
+            // inside the bounding sphere
+            m_Camera->SetNearPlane(0.1f);
+            m_Camera->SetFarPlane(length + m_ModelsBoundingSphere.w);
+        } else {
+            // outside the bounding sphere
+            m_Camera->SetNearPlane(length - m_ModelsBoundingSphere.w);
+            m_Camera->SetFarPlane(length + m_ModelsBoundingSphere.w);
+        }
+    }
+}
 IGAME_NAMESPACE_END

@@ -112,13 +112,13 @@ public:
         updateCameraVectors();
     }
 
-    void SetCamaraPos(igm::vec3 pos) { m_Position = pos; }
+    void SetCameraPos(igm::vec3 pos) { m_Position = pos; }
 
-    void SetCamaraPos(float x, float y, float z) { m_Position = {x, y, z}; }
+    void SetCameraPos(float x, float y, float z) { m_Position = {x, y, z}; }
 
-    igm::vec3 GetCamaraPos() const { return m_Position; }
+    igm::vec3 GetCameraPos() const { return m_Position; }
 
-    igm::vec3 GetCamaraUp() const { return m_Up; }
+    igm::vec3 GetCameraUp() const { return m_Up; }
 
     igm::mat4 GetViewMatrix() {
         return igm::lookAt(m_Position, m_Position + m_Front, m_Up);
