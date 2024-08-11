@@ -46,7 +46,7 @@ public:
         float x = 2.0f * pos.x / width - 1.0f;
         float y = 1.0f - (2.0f * pos.y / height);
 
-        auto mvp = (m_Scene->MVP().viewporj * m_Scene->MVP().model);
+        auto mvp = (m_Scene->CameraData().projview * m_Scene->ObjectData().model);
         if(mvp.determinant() == 0) return;
         auto mvp_invert = mvp.invert();
         if(m_MouseMode == NoButton){

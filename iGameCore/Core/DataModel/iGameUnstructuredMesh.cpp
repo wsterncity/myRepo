@@ -181,7 +181,7 @@ void UnstructuredMesh::ConvertToDrawableData() {
 
     m_Positions = m_Points->ConvertToArray();
     m_Positions->Modified();
-
+    m_VertexIndices = UnsignedIntArray::New();
     //m_PointIndices = UnsignedIntArray::New();
     m_LineIndices = UnsignedIntArray::New();
     m_TriangleIndices = UnsignedIntArray::New();

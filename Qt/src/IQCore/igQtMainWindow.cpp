@@ -623,11 +623,11 @@ void igQtMainWindow::initAllSources() {
         newLinePointSet->AddPoint(Point(0.f, 0.f, 0.f));
         igIndex cell[1] = {0};
         newLinePointSet->AddCell(cell, 1, IG_VERTEX);
-        SceneManager::Instance()->GetCurrentScene()->AddDataObject(newLinePointSet);
-
+        SceneManager::Instance()->GetCurrentScene()->CreateModel(newLinePointSet);
+        modelTreeWidget->addDataObjectToModelTree(newLinePointSet, ItemSource::File);
 //        auto interactor = PointDragInteractor::New();
 //        interactor->SetPointSet(DynamicCast<PointSet>(
-//                rendererWidget->GetScene()->GetCurrentObject()));
+//                rendererWidget->GetScene()->GetCurrentModel()->GetDataObject()));
 //        rendererWidget->ChangeInteractor(interactor);
 
 
