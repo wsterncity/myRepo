@@ -21,10 +21,10 @@ public:
 
     CellArray::Pointer Lines{};
 
-    // 表面结构
+    // Surface struct
     CellArray::Pointer Faces{};
 
-    // 体结构
+    // Volume struct
     CellArray::Pointer Volumes{};
 
     IGenum Type{};

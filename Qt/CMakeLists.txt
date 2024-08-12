@@ -85,7 +85,7 @@ get_filename_component(_qt_bin_dir "${_qmake_executable}" DIRECTORY)
 find_program(DEPLOYQT_EXECUTABLE NAMES windeployqt macdeployqt HINTS "${_qt_bin_dir}")
 
 
-file(GLOB_RECURSE QT_SRCS CONFIGURE_DEPENDS src/*.cpp include/*.h)
+file(GLOB_RECURSE QT_SRCS CONFIGURE_DEPENDS src/*.cpp include/*.h Plugin/*)
 
 
 add_library(${MODULE_NAME} SHARED
@@ -93,9 +93,6 @@ add_library(${MODULE_NAME} SHARED
         # ${UI_FILES}
         ${UI_HEAD_FILES}
         ${QT_SRCS}
-        ${QTPROPERTY_FILES}
-        src/IQCore/iGameFileDialog.cpp
-        include/IQCore/iGameFileDialog.h
 )
 
 

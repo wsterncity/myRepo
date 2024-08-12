@@ -51,6 +51,8 @@ IGenum UnstructuredMesh::GetCellType(const IGsize cellId) const {
 UnstructuredMesh::UnstructuredMesh() 
 {
     m_ViewStyle = IG_SURFACE;
+    m_Cells = CellArray::New();
+    m_Types = UnsignedIntArray::New();
 }
 
 Cell* UnstructuredMesh::GetTypedCell(const IGsize cellId) {
@@ -111,14 +113,16 @@ void UnstructuredMesh::Draw(Scene* scene) {
     }
     scene->UpdateUniformBuffer();
 
-    if (m_ViewStyle == IG_POINTS) {
+    if (m_ViewStyle & IG_POINTS) {
         scene->GetShader(Scene::NOLIGHT)->use();
         m_PointVAO.bind();
-        glPointSize(m_PointSize);
+//        glPointSize(m_PointSize);
+        glPointSize(9);
         glad_glDrawArrays(GL_POINTS, 0, m_Positions->GetNumberOfValues() / 3);
         m_PointVAO.release();
 
-    } else if (m_ViewStyle == IG_WIREFRAME) {
+    }
+    if (m_ViewStyle & IG_WIREFRAME) {
         if (m_UseColor) {
             scene->GetShader(Scene::NOLIGHT)->use();
         } else {
@@ -133,7 +137,8 @@ void UnstructuredMesh::Draw(Scene* scene) {
         glad_glDrawElements(GL_LINES, m_LineIndices->GetNumberOfValues(),
                             GL_UNSIGNED_INT, 0);
         m_LineVAO.release();
-    } else if (m_ViewStyle == IG_SURFACE) {
+    }
+    if (m_ViewStyle & IG_SURFACE) {
         scene->GetShader(Scene::PATCH)->use();
         m_TriangleVAO.bind();
         glad_glDrawElements(GL_TRIANGLES,
@@ -179,7 +184,7 @@ void UnstructuredMesh::ConvertToDrawableData() {
 
     m_Positions = m_Points->ConvertToArray();
     m_Positions->Modified();
-
+    m_VertexIndices = UnsignedIntArray::New();
     //m_PointIndices = UnsignedIntArray::New();
     m_LineIndices = UnsignedIntArray::New();
     m_TriangleIndices = UnsignedIntArray::New();

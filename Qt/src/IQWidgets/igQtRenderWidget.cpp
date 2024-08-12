@@ -7,7 +7,7 @@
  * @brief   iGameQtGLFWWindow's brief
  */
 #include "iGameSceneManager.h"
-#include "iGameInteractor.h"
+#include "Core/Interactor/iGameInteractor.h"
 
 #include <IQWidgets/igQtRenderWidget.h>
 #include <qdebug.h>
@@ -15,6 +15,7 @@
 
 igQtRenderWidget::igQtRenderWidget(QWidget* parent) : QOpenGLWidget(parent) 
 {
+    setMouseTracking(true);
     setMinimumHeight(185);
     setMinimumWidth(320);
 }

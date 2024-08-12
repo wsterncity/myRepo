@@ -2,7 +2,8 @@
 // Created by m_ky on 2024/4/10.
 //
 
-#include <iGamePointPickedInteractor.h>
+#include "Interactor/iGamePointPickedInteractor.h"
+#include "Interactor/iGamePointDragInteractor.h"
 #include <iGameUnstructuredMesh.h>
 #include <iGameFilterPoints.h>
 #include <iGameDataSource.h>
@@ -23,6 +24,7 @@
 #include <IQWidgets/igQtTensorWidget.h>
 #include "iGameFileIO.h"
 
+#include <Sources/iGameLineTypePointsSource.h>
 
 igQtMainWindow::igQtMainWindow(QWidget* parent) :
 	QMainWindow(parent), 
@@ -58,6 +60,7 @@ igQtMainWindow::igQtMainWindow(QWidget* parent) :
 	initToolbarComponent();
 	initAllComponents();
 	initAllFilters();
+    initAllSources();
 	updateRecentFilePaths();
 
 	connect(ui->action_select_points, &QAction::triggered, this,
@@ -358,7 +361,9 @@ void igQtMainWindow::initAllFilters() {
         mesh->SetPoints(points);
         mesh->SetCells(cells, types);
         mesh->SetName("undefined_unstructured_mesh");
-        rendererWidget->AddDataObject(mesh);
+
+        SceneManager::Instance()->GetCurrentScene()->CreateModel(mesh);
+        modelTreeWidget->addDataObjectToModelTree(mesh, ItemSource::File);
         //this->updateCurrentDataObject();
     });
     auto action = ui->menuTest->addAction("surfaceExtractTest");
@@ -612,4 +617,31 @@ void igQtMainWindow::changePointPicked()
 	else {
 		rendererWidget->ChangeInteractor(Interactor::New());
 	}
+}
+
+void igQtMainWindow::initAllSources() {
+    connect(ui->action_LineSource, &QAction::triggered, this, [&](){
+        UnstructuredMesh::Pointer newLinePointSet = UnstructuredMesh::New();
+        newLinePointSet->AddPoint(Point(0.f, 0.f, 0.f));
+        newLinePointSet->AddPoint(Point(1.f, 1.0f, 1.f));
+        igIndex cell[1] = {0};
+        newLinePointSet->AddCell(cell, 1, IG_VERTEX);
+        cell[0] = 1;
+        newLinePointSet->AddCell(cell, 1, IG_VERTEX);
+        SceneManager::Instance()->GetCurrentScene()->CreateModel(newLinePointSet);
+        modelTreeWidget->addDataObjectToModelTree(newLinePointSet, ItemSource::File);
+
+        auto interactor = PointDragInteractor::New();
+        interactor->SetPointSet(DynamicCast<PointSet>(
+                rendererWidget->GetScene()->GetCurrentModel()->GetDataObject()));
+        rendererWidget->ChangeInteractor(interactor);
+
+
+//        LineTypePointsSource::Pointer lineSource = LineTypePointsSource::New();
+//        lineSource->SetInput(newLinePointSet);
+//        lineSource->Execute();
+//        lineSource->GetOutput();
+
+    });
+
 }
