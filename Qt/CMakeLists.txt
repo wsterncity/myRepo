@@ -9,8 +9,8 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
     message(STATUS "Compiler is MSVC")
     #设置QT的目录
-    set(QT_CMAKE_PATH "E:/Software/Visualsoft/Qt/Qt5.14.2/5.14.2/msvc2017_64/lib/cmake")
-    set(CMAKE_PREFIX_PATH "E:/Software/Visualsoft/Qt/Qt5.14.2/5.14.2/msvc2017_64/lib/cmake")
+    set(QT_CMAKE_PATH "D:/Software/Qt/Qt5.14.20/5.14.2/msvc2017_64/lib/cmake")
+    set(CMAKE_PREFIX_PATH "D:/Software/Qt/Qt5.14.20/5.14.2/msvc2017_64/lib/cmake")
     # set(QT_CMAKE_PATH "D:/Software/Qt/5.14.2/msvc2017_64/lib/cmake")
     # set(CMAKE_PREFIX_PATH "D:/Software/Qt/5.14.2/msvc2017_64/lib/cmake")
     # set(QT_CMAKE_PATH "D:/Qt/5.14.2/msvc2017_64/lib/cmake")
@@ -36,6 +36,25 @@ set(CMAKE_AUTORCC ON) # resource files
 set(CMAKE_AUTOUIC ON) # UI files
 set(CMAKE_AUTOUIC_SEARCH_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/Resources/UI")
 # 查找 Qt
+
+set(QTPROPERTY_FILES
+    Resources/qtpropertybrowser/qtbuttonpropertybrowser.cpp
+    Resources/qtpropertybrowser/qtbuttonpropertybrowser.h
+    Resources/qtpropertybrowser/qteditorfactory.cpp
+    Resources/qtpropertybrowser/qteditorfactory.h
+    Resources/qtpropertybrowser/qtgroupboxpropertybrowser.cpp
+    Resources/qtpropertybrowser/qtgroupboxpropertybrowser.h
+    Resources/qtpropertybrowser/qtpropertybrowser.cpp
+    Resources/qtpropertybrowser/qtpropertybrowser.h
+    Resources/qtpropertybrowser/qtpropertybrowserutils.cpp
+    Resources/qtpropertybrowser/qtpropertybrowserutils_p.h
+    Resources/qtpropertybrowser/qtpropertymanager.cpp
+    Resources/qtpropertybrowser/qtpropertymanager.h
+    Resources/qtpropertybrowser/qttreepropertybrowser.cpp
+    Resources/qtpropertybrowser/qttreepropertybrowser.h
+    Resources/qtpropertybrowser/qtvariantproperty.cpp
+    Resources/qtpropertybrowser/qtvariantproperty.h
+)
 
 #find_package(Qt5 COMPONENTS Core Gui Widgets OpenGL OpenGLWidgets REQUIRED)
 find_package(Qt5 COMPONENTS Core Gui Widgets OpenGL REQUIRED)
@@ -74,6 +93,7 @@ add_library(${MODULE_NAME} SHARED
         # ${UI_FILES}
         ${UI_HEAD_FILES}
         ${QT_SRCS}
+        ${QTPROPERTY_FILES}
         src/IQCore/iGameFileDialog.cpp
         include/IQCore/iGameFileDialog.h
 )
@@ -81,8 +101,7 @@ add_library(${MODULE_NAME} SHARED
 
 set_source_files_properties(${QRC_FILES} PROPERTIES GENERATED ON)
 
-target_include_directories(${MODULE_NAME} PUBLIC
-        include
+target_include_directories(${MODULE_NAME} PUBLIC include
         "${CMAKE_BINARY_DIR}/Qt"
 )
 set(LINK_LIBS)

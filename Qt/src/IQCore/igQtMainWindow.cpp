@@ -96,59 +96,59 @@ void igQtMainWindow::initToolbarComponent()
 		"}"
 	);
 
-	connect(viewStyleCombox, SIGNAL(currentIndexChanged(QString)), this, SLOT(ChangeViewStyle()));
+	//connect(viewStyleCombox, SIGNAL(currentIndexChanged(QString)), this, SLOT(ChangeViewStyle()));
 	ui->toolBar_meshview->addWidget(viewStyleCombox);
 	
-	attributeViewIndexCombox = new QComboBox(this);
-	attributeViewIndexCombox->addItem("None        ");
-	attributeViewIndexCombox->setStyleSheet("QComboBox {"
-		"background-color: #f0f0f0;"
-		"color: #202020;"              // 设置文本颜色为浅白色
-		"border: 1px solid #ffffff;"   // 设置边框样式为灰色实线边框
-		"padding: 5px;"                // 设置内边距
-		"font-size: 16px;"              // 设置下拉菜单项字体大小为14px
-		"}"
-		"QComboBox QAbstractItemView {"
-		"font-family: Arial;"           // 设置下拉菜单项字体为Arial
-		"color: #404040;"               // 设置下拉菜单项字体颜色为浅灰色
-		"}"
-		"QComboBox::drop-down {"
-		"subcontrol-origin: padding;"
-		"subcontrol-position: top right;"
-		"width: 20px;"
-		"border-left: 1px solid #202020;"
-		"border-color: #eeeeee;"
-		"}"
-	);
+	//attributeViewIndexCombox = new QComboBox(this);
+	//attributeViewIndexCombox->addItem("None        ");
+	//attributeViewIndexCombox->setStyleSheet("QComboBox {"
+	//	"background-color: #f0f0f0;"
+	//	"color: #202020;"              // 设置文本颜色为浅白色
+	//	"border: 1px solid #ffffff;"   // 设置边框样式为灰色实线边框
+	//	"padding: 5px;"                // 设置内边距
+	//	"font-size: 16px;"              // 设置下拉菜单项字体大小为14px
+	//	"}"
+	//	"QComboBox QAbstractItemView {"
+	//	"font-family: Arial;"           // 设置下拉菜单项字体为Arial
+	//	"color: #404040;"               // 设置下拉菜单项字体颜色为浅灰色
+	//	"}"
+	//	"QComboBox::drop-down {"
+	//	"subcontrol-origin: padding;"
+	//	"subcontrol-position: top right;"
+	//	"width: 20px;"
+	//	"border-left: 1px solid #202020;"
+	//	"border-color: #eeeeee;"
+	//	"}"
+	//);
 
-	connect(attributeViewIndexCombox, SIGNAL(activated(int)), this, SLOT(ChangeScalarView()));
-	ui->toolBar_attribute_view_index->addWidget(attributeViewIndexCombox);
+	//connect(attributeViewIndexCombox, SIGNAL(activated(int)), this, SLOT(ChangeScalarView()));
+	//ui->toolBar_attribute_view_index->addWidget(attributeViewIndexCombox);
 
 
-	attributeViewDimCombox = new QComboBox(this);
-	attributeViewDimCombox->addItem("magnitude");
-	attributeViewDimCombox->setStyleSheet("QComboBox {"
-		"background-color: #f0f0f0;"
-		"color: #202020;"              // 设置文本颜色为浅白色
-		"border: 1px solid #ffffff;"   // 设置边框样式为灰色实线边框
-		"padding: 5px;"                // 设置内边距
-		"font-size: 16px;"              // 设置下拉菜单项字体大小为14px
-		"}"
-		"QComboBox QAbstractItemView {"
-		"font-family: Arial;"           // 设置下拉菜单项字体为Arial
-		"color: #404040;"               // 设置下拉菜单项字体颜色为浅灰色
-		"}"
-		"QComboBox::drop-down {"
-		"subcontrol-origin: padding;"
-		"subcontrol-position: top right;"
-		"width: 10px;"
-		"border-left: 1px solid #202020;"
-		"border-color: #eeeeee;"
-		"}"
-	);
+	//attributeViewDimCombox = new QComboBox(this);
+	//attributeViewDimCombox->addItem("magnitude");
+	//attributeViewDimCombox->setStyleSheet("QComboBox {"
+	//	"background-color: #f0f0f0;"
+	//	"color: #202020;"              // 设置文本颜色为浅白色
+	//	"border: 1px solid #ffffff;"   // 设置边框样式为灰色实线边框
+	//	"padding: 5px;"                // 设置内边距
+	//	"font-size: 16px;"              // 设置下拉菜单项字体大小为14px
+	//	"}"
+	//	"QComboBox QAbstractItemView {"
+	//	"font-family: Arial;"           // 设置下拉菜单项字体为Arial
+	//	"color: #404040;"               // 设置下拉菜单项字体颜色为浅灰色
+	//	"}"
+	//	"QComboBox::drop-down {"
+	//	"subcontrol-origin: padding;"
+	//	"subcontrol-position: top right;"
+	//	"width: 10px;"
+	//	"border-left: 1px solid #202020;"
+	//	"border-color: #eeeeee;"
+	//	"}"
+	//);
 
-	connect(attributeViewDimCombox, SIGNAL(activated(int)), this, SLOT(ChangeScalarViewDim()));
-	ui->toolBar_attribute_view_dim->addWidget(attributeViewDimCombox);
+	//connect(attributeViewDimCombox, SIGNAL(activated(int)), this, SLOT(ChangeScalarViewDim()));
+	//ui->toolBar_attribute_view_dim->addWidget(attributeViewDimCombox);
 }
 void igQtMainWindow::initAllComponents()
 {
