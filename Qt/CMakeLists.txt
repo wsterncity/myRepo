@@ -81,6 +81,7 @@ set_source_files_properties(${QRC_FILES} PROPERTIES GENERATED ON)
 
 target_include_directories(${MODULE_NAME} PUBLIC
         include
+        Plugin
         "${CMAKE_BINARY_DIR}/Qt"
 )
 set(LINK_LIBS)
