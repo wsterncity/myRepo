@@ -33,8 +33,6 @@
 
 #### Scene
 
-
-
 Scene场景包含了需要渲染的各类信息和渲染对象，有光源、摄像机、背景、Shader、交互器、数据对象列表。需要在OpenGL的上下文中进行渲染，默认会调用DataObject的ConvertToDrawableData和Draw进行绘制。成员变量有：
 
 1. m_Models：std::map<DataObjectId, DataObject::Pointer> 数据对象列表
@@ -160,7 +158,7 @@ int GetPointToNeighborFaces(const IGsize ptId, igIndex* faceIds); // 获取顶�
 int GetEdgeToNeighborFaces(const IGsize edgeId, igIndex* faceIds);// 获取边的邻接面(共享边)
 int GetEdgeToOneRingFaces(const IGsize edgeId, igIndex* faceIds); // 获取边的1邻域面(共享顶点)
 int GetFaceToNeighborFaces(const IGsize faceId, igIndex* faceIds);// 获取边的邻接面(共享边)
-int GetFaceToOneRingFaces(const IGsize faceId, igIndex* faceIds); // 获取边的1邻域面(共享顶点)、
+int GetFaceToOneRingFaces(const IGsize faceId, igIndex* faceIds); // 获取边的1邻域面(共享顶点)
 
 void MakeEditStatusOn();
 void MakeEditStatusOff();

@@ -27,13 +27,13 @@ public:
 	virtual Cell* GetEdge(const int edgeId) = 0;
     virtual Cell* GetFace(const int faceId) = 0;
 
-	Points::Pointer Points{};
-    IdArray::Pointer PointIds{};
-
     void Reset() {
         this->PointIds->Reset();
         this->Points->Reset();
     }
+
+	Points::Pointer Points{};
+	IdArray::Pointer PointIds{};
 
 protected:
 	Cell() 

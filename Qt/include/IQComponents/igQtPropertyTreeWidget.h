@@ -14,9 +14,9 @@
 #include <QStyledItemDelegate>
 #include <QPainter>
 #include <iostream>
-#include <Resources/qtpropertybrowser/qteditorfactory.h>
-#include <Resources/qtpropertybrowser/qttreepropertybrowser.h>
-#include <Resources/qtpropertybrowser/qtvariantproperty.h>
+#include <Plugin/qtpropertybrowser/qteditorfactory.h>
+#include <Plugin/qtpropertybrowser/qttreepropertybrowser.h>
+#include <Plugin/qtpropertybrowser/qtvariantproperty.h>
 
 class PropertyLineEdit : public QLineEdit {
     Q_OBJECT
@@ -224,5 +224,4 @@ public:
         }
     }
 
-    
 };

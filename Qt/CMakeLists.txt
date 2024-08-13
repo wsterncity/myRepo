@@ -37,24 +37,7 @@ set(CMAKE_AUTOUIC ON) # UI files
 set(CMAKE_AUTOUIC_SEARCH_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/Resources/UI")
 # 查找 Qt
 
-set(QTPROPERTY_FILES
-    Resources/qtpropertybrowser/qtbuttonpropertybrowser.cpp
-    Resources/qtpropertybrowser/qtbuttonpropertybrowser.h
-    Resources/qtpropertybrowser/qteditorfactory.cpp
-    Resources/qtpropertybrowser/qteditorfactory.h
-    Resources/qtpropertybrowser/qtgroupboxpropertybrowser.cpp
-    Resources/qtpropertybrowser/qtgroupboxpropertybrowser.h
-    Resources/qtpropertybrowser/qtpropertybrowser.cpp
-    Resources/qtpropertybrowser/qtpropertybrowser.h
-    Resources/qtpropertybrowser/qtpropertybrowserutils.cpp
-    Resources/qtpropertybrowser/qtpropertybrowserutils_p.h
-    Resources/qtpropertybrowser/qtpropertymanager.cpp
-    Resources/qtpropertybrowser/qtpropertymanager.h
-    Resources/qtpropertybrowser/qttreepropertybrowser.cpp
-    Resources/qtpropertybrowser/qttreepropertybrowser.h
-    Resources/qtpropertybrowser/qtvariantproperty.cpp
-    Resources/qtpropertybrowser/qtvariantproperty.h
-)
+
 
 #find_package(Qt5 COMPONENTS Core Gui Widgets OpenGL OpenGLWidgets REQUIRED)
 find_package(Qt5 COMPONENTS Core Gui Widgets OpenGL REQUIRED)

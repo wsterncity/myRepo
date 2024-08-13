@@ -36,17 +36,8 @@
      </widget>
     </item>
     <item>
-     <widget class="igQtPropertyTreeWidget" name="propertyTreeWidget">
-      <column>
-       <property name="text">
-        <string>1</string>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>2</string>
-       </property>
-      </column>
+     <widget class="QtTreePropertyBrowser" name="propertyTreeWidget" native="true">
+      <layout class="QFormLayout" name="propertyTreeWidget_2"/>
      </widget>
     </item>
    </layout>
@@ -59,9 +50,10 @@
    <header location="global">IQComponents/igQtmodelTreeWidget.h</header>
   </customwidget>
   <customwidget>
-   <class>igQtPropertyTreeWidget</class>
-   <extends>QTreeWidget</extends>
-   <header location="global">IQComponents/igqtpropertytreewidget.h</header>
+   <class>QtTreePropertyBrowser</class>
+   <extends>QWidget</extends>
+   <header location="global">Plugin/qtpropertybrowser/qttreepropertybrowser.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>

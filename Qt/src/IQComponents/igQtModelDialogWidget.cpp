@@ -19,37 +19,58 @@ igQtModelDialogWidget::igQtModelDialogWidget(QWidget* parent)
     modelTreeWidget->setColumnWidth(0, 150);
 
     propertyTreeWidget = ui->propertyTreeWidget;
-    propertyTreeWidget->setColumnCount(2);
-    propertyTreeWidget->header()->setSectionResizeMode(0, QHeaderView::Stretch);
-    propertyTreeWidget->header()->setSectionResizeMode(1, QHeaderView::Stretch);
-    propertyTreeWidget->setColumnWidth(1, 1);
-    propertyTreeWidget->setHeaderLabels(QStringList() << "Property" << "Value");
 
-    ////Global options
-    //QTreeWidgetItem* Global = new QTreeWidgetItem(QStringList() << "Global Options");
+    //this->setStyleSheet(
+    //    "QtPropertyEditorView{"
+    //    "border: 1px solid #a0a0a0;"
+    //    "background - color: red;"
+    //    "}"
+    //    "QtPropertyEditorView::item{"
+    //    "border: none;"
+    //    "background - color: red;"
+    //    "margin - top: 1px;"
+    //    "margin - bottom: 1px;"
+    //    "padding: 5px;"
+    //    "font - size: 14px;"
+    //    "}"
+    //    "QtPropertyEditorView::item:selected, QtPropertyEditorView::branch : selected{"
+    //    "background - color: red;"
+    //    "color: black;"
+    //    "}"
+    //    "QtPropertyEditorView QHeaderView::section{"
+    //    "background - color: #c0c0c0;"
+    //    "border: 1px;"
+    //    "color: #292727;"
+    //    "font - size: 18px;"
+    //    "font - weight:bold;"
+    //    "}"
+    //);
 
-    //QTreeWidgetItem* FixedFrame = new QTreeWidgetItem(QStringList() << "Fixed Frame");
-    //Global->addChild(FixedFrame);
+    
+    QtVariantPropertyManager* varManager = new QtVariantPropertyManager(propertyTreeWidget);
+    QtVariantEditorFactory* editFactory = new QtVariantEditorFactory(propertyTreeWidget);
+    propertyTreeWidget->setFactoryForManager(varManager, editFactory);
 
-    //propertyTreeWidget->addTopLevelItem(Global);
+    QtProperty* groupItem1 = varManager->addProperty(QtVariantPropertyManager::groupTypeId(), QStringLiteral("分组1"));
+    
+    QtVariantProperty* item = varManager->addProperty(QVariant::Int, QStringLiteral("Int: "));
+    item->setValue(100);
+    //item->setEnabled(false);
+    groupItem1->addSubProperty(item);
 
-    QTreeWidgetItem*  global = propertyTreeWidget->addCategory("Global Options");
-    propertyTreeWidget->addTextProperty(global, "Editable", "True");
-    propertyTreeWidget->addIntegerProperty(global, "Size", 10);
-    propertyTreeWidget->addEnumProperty(global, "Color", QStringList{ "Red", "Green", "Blue" }, "Red");
+    QtVariantProperty* item2 = varManager->addProperty(QVariant::Bool, QStringLiteral("Bool: "));
+    item2->setValue(true);
+    item->addSubProperty(item2);
 
+    item = varManager->addProperty(QVariant::Double, QStringLiteral("Double: "));
+    item->setValue(12.34);
+    groupItem1->addSubProperty(item);
 
+    item = varManager->addProperty(QVariant::String, QStringLiteral("String: "));
+    item->setValue(QStringLiteral("TestTest"));
+    groupItem1->addSubProperty(item);
 
-
-    //// 创建一个项目
-    //ModelTreeWidgetItem* item = new ModelTreeWidgetItem(modelTreeWidget);
-    //ModelTreeWidgetItem* item2 = new ModelTreeWidgetItem(modelTreeWidget);
-
-    //item->setText(0, "bladefem_poly");
-    //item2->setText(0, "bladefem_poly2");
-
-    //modelTreeWidget->addTopLevelItem(item);
-    //modelTreeWidget->addTopLevelItem(item2);
+    propertyTreeWidget->addProperty(groupItem1);
     
 }
 
