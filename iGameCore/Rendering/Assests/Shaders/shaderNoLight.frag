@@ -7,7 +7,7 @@ layout(std140) uniform CameraDataBlock {
     mat4 projview;// proj * view
 } cameraData;
 
-layout(std140) uniform ObjectDataBLock {
+layout(std140) uniform ObjectDataBlock {
 //layout(std140, binding = 1) uniform ObjectDataBLock {
     mat4 model;
     mat4 normal;// transpose(inverse(model))

@@ -2,7 +2,8 @@
 // Created by m_ky on 2024/4/10.
 //
 
-#include <iGamePointPickedInteractor.h>
+#include "Interactor/iGamePointPickedInteractor.h"
+#include "Interactor/iGamePointDragInteractor.h"
 #include <iGameUnstructuredMesh.h>
 #include <iGameFilterPoints.h>
 #include <iGameDataSource.h>
@@ -23,6 +24,7 @@
 #include <IQWidgets/igQtTensorWidget.h>
 #include "iGameFileIO.h"
 
+#include <Sources/iGameLineTypePointsSource.h>
 
 igQtMainWindow::igQtMainWindow(QWidget* parent) :
 	QMainWindow(parent), 
@@ -58,6 +60,7 @@ igQtMainWindow::igQtMainWindow(QWidget* parent) :
 	initToolbarComponent();
 	initAllComponents();
 	initAllFilters();
+    initAllSources();
 	updateRecentFilePaths();
 
 	connect(ui->action_select_points, &QAction::triggered, this,
@@ -177,7 +180,7 @@ void igQtMainWindow::initAllComponents()
 	//	rendererWidget->update();
 	//	});
 	connect(ui->action_DeleteMesh, &QAction::triggered, ui->modelTreeView, &igQtModelListView::DeleteCurrentFile);
-	connect(ui->action_DeleteMesh, &QAction::triggered, this, &igQtMainWindow::updateCurrentSceneWidget);
+	//connect(ui->action_DeleteMesh, &QAction::triggered, this, &igQtMainWindow::updateCurrentSceneWidget);
 	//connect(ui->action_NextMesh, &QAction::triggered, ui->modelTreeView, &igQtModelListView::ChangeSelected2NextItem);
 	//connect(ui->action_NextMesh, &QAction::triggered, rendererWidget, &igQtModelDrawWidget::changeCurrentModel2Next);
 	//connect(ui->action_LastMesh, &QAction::triggered, ui->modelTreeView, &igQtModelListView::ChangeSelected2LastItem);
@@ -228,7 +231,7 @@ void igQtMainWindow::initAllFilters() {
 
     connect(ui->action_test_02, &QAction::triggered, this, [&](bool checked) {
         FilterPoints::Pointer fp = FilterPoints::New();
-        fp->SetInput(rendererWidget->GetScene()->GetCurrentObject());
+        fp->SetInput(rendererWidget->GetScene()->GetCurrentModel()->GetDataObject());
         fp->SetFilterRate(0.5);
         fp->Execute();
         rendererWidget->update();
@@ -252,14 +255,14 @@ void igQtMainWindow::initAllFilters() {
 
     connect(ui->action_test_04, &QAction::triggered, this, [&](bool checked) {
         SurfaceMeshFilterTest::Pointer fp = SurfaceMeshFilterTest::New();
-        fp->SetInput(rendererWidget->GetScene()->GetCurrentObject());
+        fp->SetInput(rendererWidget->GetScene()->GetCurrentModel()->GetDataObject());
         fp->Execute();
         rendererWidget->update();
     });
 
 	connect(ui->action_test_05, &QAction::triggered, this, [&](bool checked) {
 		VolumeMeshFilterTest::Pointer fp = VolumeMeshFilterTest::New();
-		fp->SetInput(rendererWidget->GetScene()->GetCurrentObject());
+		fp->SetInput(rendererWidget->GetScene()->GetCurrentModel()->GetDataObject());
 		fp->Execute();
 		rendererWidget->update();
 
@@ -358,20 +361,22 @@ void igQtMainWindow::initAllFilters() {
         mesh->SetPoints(points);
         mesh->SetCells(cells, types);
         mesh->SetName("undefined_unstructured_mesh");
-        rendererWidget->AddDataObject(mesh);
-        this->updateCurrentDataObject();
+
+        SceneManager::Instance()->GetCurrentScene()->CreateModel(mesh);
+        modelTreeWidget->addDataObjectToModelTree(mesh, ItemSource::File);
+        //this->updateCurrentDataObject();
     });
     auto action = ui->menuTest->addAction("surfaceExtractTest");
+
     connect(action, &QAction::triggered, this,
             [&](bool checked) {
 			auto fp = iGameModelGeometryFilter::New();
-        auto input = rendererWidget->GetScene()->GetCurrentObject();
+        auto input = rendererWidget->GetScene()->GetCurrentModel()->GetDataObject();
         fp->Execute(input);
-        SceneManager::Instance()->GetCurrentScene()->ChangeDataObjectVisibility(
+        SceneManager::Instance()->GetCurrentScene()->ChangeModelVisibility(
                 0, false);
         auto mesh = fp->GetOutPut();
         rendererWidget->AddDataObject(mesh);
-
     });
 
 }
@@ -412,13 +417,11 @@ void igQtMainWindow::initAllMySignalConnections()
 {
 	//connect(rendererWidget, &igQtModelDrawWidget::insertToModelListView, ui->modelTreeView, &igQtModelListView::InsertModel);
 
-	connect(fileLoader, &igQtFileLoader::FinishReading, modelTreeWidget, &igQtModelDialogWidget::add);
+	connect(fileLoader, &igQtFileLoader::NewModel, modelTreeWidget, &igQtModelDialogWidget::addDataObjectToModelTree);
 	connect(fileLoader, &igQtFileLoader::FinishReading, this, &igQtMainWindow::updateRecentFilePaths);
-	connect(fileLoader, &igQtFileLoader::FinishReading, this, &igQtMainWindow::updateViewStyleAndCloudPicture);
-	connect(fileLoader, &igQtFileLoader::FinishReading, this, &igQtMainWindow::updateCurrentSceneWidget);
+	//connect(fileLoader, &igQtFileLoader::FinishReading, this, &igQtMainWindow::updateViewStyleAndCloudPicture);
+	//connect(fileLoader, &igQtFileLoader::FinishReading, this, &igQtMainWindow::updateCurrentSceneWidget);
 	connect(fileLoader, &igQtFileLoader::FinishReading, ui->widget_Animation, &igQtAnimationWidget::initAnimationComponents);
-    connect(fileLoader, &igQtFileLoader::EmitMakeCurrent, rendererWidget,&igQtRenderWidget::MakeCurrent);
-    connect(fileLoader, &igQtFileLoader::EmitDoneCurrent, rendererWidget,&igQtRenderWidget::DoneCurrent);
 
 	//connect(fileLoader, &igQtFileLoader::FinishReading, ui->widget_ScalarField, &igQtScalarViewWidget::getScalarsName);
 	//connect(fileLoader, &igQtFileLoader::FinishReading, ui->widget_TensorField, [&]() {
@@ -427,12 +430,14 @@ void igQtMainWindow::initAllMySignalConnections()
 	//connect(fileLoader, &igQtFileLoader::FinishReading, ui->widget_SearchInfo, &igQtSearchInfoWidget::updateDataProducer);
 
 	connect(fileLoader, &igQtFileLoader::AddFileToModelList, ui->modelTreeView, &igQtModelListView::AddModel);
-	connect(rendererWidget, &igQtRenderWidget::AddDataObjectToModelList, ui->modelTreeView, &igQtModelListView::AddModel);
-	connect(rendererWidget, &igQtRenderWidget::UpdateCurrentDataObject, this, &igQtMainWindow::updateCurrentDataObject);
+	//connect(rendererWidget, &igQtRenderWidget::AddDataObjectToModelList, ui->modelTreeView, &igQtModelListView::AddModel);
+	//connect(rendererWidget, &igQtRenderWidget::UpdateCurrentDataObject, this, &igQtMainWindow::updateCurrentDataObject);
 	
 	//connect(fileLoader, &igQtFileLoader::LoadAnimationFile, ui->widget_Animation, &igQtAnimationWidget::initAnimationComponents);
 
-	connect(ui->widget_Animation, &igQtAnimationWidget::UpdateScene, this, &igQtMainWindow::updateCurrentSceneWidget);
+	//connect(ui->widget_Animation, &igQtAnimationWidget::UpdateScene, this, &igQtMainWindow::updateCurrentSceneWidget);
+
+
 //	connect(ui->widget_Animation, &igQtAnimationWidget::UpdateScene, ui->modelTreeView, &igQtModelListView::UpdateModelList);
 	//connect(ui->widget_Animation, &igQtAnimationWidget::PlayAnimation_interpolate, rendererWidget, &igQtModelDrawWidget::PlayAnimation_interpolate);
 //	connect(ui->widget_Animation, &igQtAnimationWidget::PlayAnimation_snap, this, [&](int keyframe){
@@ -461,8 +466,8 @@ void igQtMainWindow::initAllMySignalConnections()
 	//connect(ui->widget_FlowField, &igQtStreamTracerWidget::sendstreams, rendererWidget, &igQtModelDrawWidget::DrawStreamline);
 	//connect(ui->widget_FlowField, &igQtStreamTracerWidget::updatestreams, rendererWidget, &igQtModelDrawWidget::UpdateStreamline);
 
-	connect(ui->modelTreeView, &igQtModelListView::UpdateCurrentScene, this, &igQtMainWindow::updateCurrentSceneWidget);
-	connect(ui->modelTreeView, &igQtModelListView::UpdateCurrentItemToOtherQtModule, this, &igQtMainWindow::updateCurrentDataObject);
+	//connect(ui->modelTreeView, &igQtModelListView::UpdateCurrentScene, this, &igQtMainWindow::updateCurrentSceneWidget);
+	//connect(ui->modelTreeView, &igQtModelListView::UpdateCurrentItemToOtherQtModule, this, &igQtMainWindow::updateCurrentDataObject);
 
 	//connect(ui->modelTreeView, &igQtModelListView::ChangeModelVisible, rendererWidget, &igQtModelDrawWidget::changeTargetModelVisible);
 	//connect(ui->widget_ScalarField, &igQtScalarViewWidget::updateCurrentModelColor, rendererWidget, &igQtModelDrawWidget::UpdateCurrentModel);
@@ -520,85 +525,85 @@ void igQtMainWindow::updateColorBarShow()
 	//	colorBar->hide();
 	//}
 }
-void igQtMainWindow::ChangeViewStyle()
-{
-	int item = viewStyleCombox->currentIndex();
-	if (item < 0) return;
-	this->rendererWidget->ChangeViewStyle(item);
-}
-
-void igQtMainWindow::ChangeScalarView()
-{
-	int item1 = attributeViewIndexCombox->currentIndex();
-	int item2 = attributeViewDimCombox->currentIndex();
-	if (item1 < 0) return;
-	this->rendererWidget->ChangeScalarView(item1, item2 - 1);
-
-	static const char* name[3] = { "x", "y", "z" };
-	auto* current = rendererWidget->GetScene()->GetCurrentObject();
-	attributeViewDimCombox->clear();
-	attributeViewDimCombox->addItem("magnitude");
-	int index = item1;
-	if (index == 0) {
-		attributeViewDimCombox->setCurrentIndex(0);
-	}
-	else {
-		int num = current->GetPropertySet()->GetProperty(index - 1).pointer->GetElementSize();
-		for (int i = 0; i < num; i++)
-		{
-			attributeViewDimCombox->addItem(name[i]);
-		}
-		attributeViewDimCombox->setCurrentIndex(current->GetAttributeDimension() + 1);
-	}
-}
-
-void igQtMainWindow::ChangeScalarViewDim()
-{
-	int item1 = attributeViewIndexCombox->currentIndex();
-	int item2 = attributeViewDimCombox->currentIndex();
-	if (item1 < 0) return;
-	if (item2 < 0) {
-		this->rendererWidget->ChangeScalarView(item1, -1);
-	}
-	else {
-		this->rendererWidget->ChangeScalarView(item1, item2 - 1);
-	}
-}
-void igQtMainWindow::updateViewStyleAndCloudPicture()
-{
-	auto* current = rendererWidget->GetScene()->GetCurrentObject();
-	if (current)
-	{
-		// Update View Style
-		IGenum defaultViewStyle = current->GetViewStyle();
-		viewStyleCombox->setCurrentIndex(defaultViewStyle);
-
-		// Update Attribute View Index
-		attributeViewIndexCombox->clear();
-		attributeViewIndexCombox->addItem("None        ");
-
-		StringArray::Pointer nameArray =
-			current->GetMetadata()->GetStringArray(ATTRIBUTE_NAME_ARRAY);
-		if (nameArray != nullptr)
-		{
-			for (int i = 0; i < nameArray->Size(); i++)
-			{
-				attributeViewIndexCombox->addItem(QString::fromStdString(nameArray->GetElement(i)));
-			}
-		}
-		attributeViewIndexCombox->setCurrentIndex(current->GetAttributeIndex() + 1);
-	}
-}
-
-void igQtMainWindow::updateCurrentDataObject()
-{
-	updateViewStyleAndCloudPicture();
-	
-}
-
-void igQtMainWindow::updateCurrentSceneWidget() {
-	this->rendererWidget->update();
-}
+//void igQtMainWindow::ChangeViewStyle()
+//{
+//	int item = viewStyleCombox->currentIndex();
+//	if (item < 0) return;
+//	this->rendererWidget->ChangeViewStyle(item);
+//}
+//
+//void igQtMainWindow::ChangeScalarView()
+//{
+//	int item1 = attributeViewIndexCombox->currentIndex();
+//	int item2 = attributeViewDimCombox->currentIndex();
+//	if (item1 < 0) return;
+//	this->rendererWidget->ChangeScalarView(item1, item2 - 1);
+//
+//	static const char* name[3] = { "x", "y", "z" };
+//	auto* current = rendererWidget->GetScene()->GetCurrentObject();
+//	attributeViewDimCombox->clear();
+//	attributeViewDimCombox->addItem("magnitude");
+//	int index = item1;
+//	if (index == 0) {
+//		attributeViewDimCombox->setCurrentIndex(0);
+//	}
+//	else {
+//		int num = current->GetPropertySet()->GetProperty(index - 1).pointer->GetElementSize();
+//		for (int i = 0; i < num; i++)
+//		{
+//			attributeViewDimCombox->addItem(name[i]);
+//		}
+//		attributeViewDimCombox->setCurrentIndex(current->GetAttributeDimension() + 1);
+//	}
+//}
+//
+//void igQtMainWindow::ChangeScalarViewDim()
+//{
+//	int item1 = attributeViewIndexCombox->currentIndex();
+//	int item2 = attributeViewDimCombox->currentIndex();
+//	if (item1 < 0) return;
+//	if (item2 < 0) {
+//		this->rendererWidget->ChangeScalarView(item1, -1);
+//	}
+//	else {
+//		this->rendererWidget->ChangeScalarView(item1, item2 - 1);
+//	}
+//}
+//void igQtMainWindow::updateViewStyleAndCloudPicture()
+//{
+//	auto* current = rendererWidget->GetScene()->GetCurrentObject();
+//	if (current)
+//	{
+//		// Update View Style
+//		IGenum defaultViewStyle = current->GetViewStyle();
+//		viewStyleCombox->setCurrentIndex(defaultViewStyle);
+//
+//		// Update Attribute View Index
+//		attributeViewIndexCombox->clear();
+//		attributeViewIndexCombox->addItem("None        ");
+//
+//		StringArray::Pointer nameArray =
+//			current->GetMetadata()->GetStringArray(ATTRIBUTE_NAME_ARRAY);
+//		if (nameArray != nullptr)
+//		{
+//			for (int i = 0; i < nameArray->Size(); i++)
+//			{
+//				attributeViewIndexCombox->addItem(QString::fromStdString(nameArray->GetElement(i)));
+//			}
+//		}
+//		attributeViewIndexCombox->setCurrentIndex(current->GetAttributeIndex() + 1);
+//	}
+//}
+//
+//void igQtMainWindow::updateCurrentDataObject()
+//{
+//	updateViewStyleAndCloudPicture();
+//	
+//}
+//
+//void igQtMainWindow::updateCurrentSceneWidget() {
+//	this->rendererWidget->update();
+//}
 
 void igQtMainWindow::changePointPicked() 
 {
@@ -606,10 +611,37 @@ void igQtMainWindow::changePointPicked()
 	{
 		auto interactor = PointPickedInteractor::New();
 		interactor->SetPointSet(DynamicCast<PointSet>(
-			rendererWidget->GetScene()->GetCurrentObject()), rendererWidget->GetScene()->GetCurrentModel());
+			rendererWidget->GetScene()->GetCurrentModel()->GetDataObject()), rendererWidget->GetScene()->GetCurrentModel());
 		rendererWidget->ChangeInteractor(interactor);
 	}
 	else {
 		rendererWidget->ChangeInteractor(Interactor::New());
 	}
+}
+
+void igQtMainWindow::initAllSources() {
+    connect(ui->action_LineSource, &QAction::triggered, this, [&](){
+        UnstructuredMesh::Pointer newLinePointSet = UnstructuredMesh::New();
+        newLinePointSet->AddPoint(Point(0.f, 0.f, 0.f));
+        newLinePointSet->AddPoint(Point(1.f, 1.0f, 1.f));
+        igIndex cell[1] = {0};
+        newLinePointSet->AddCell(cell, 1, IG_VERTEX);
+        cell[0] = 1;
+        newLinePointSet->AddCell(cell, 1, IG_VERTEX);
+        SceneManager::Instance()->GetCurrentScene()->CreateModel(newLinePointSet);
+        modelTreeWidget->addDataObjectToModelTree(newLinePointSet, ItemSource::File);
+
+        auto interactor = PointDragInteractor::New();
+        interactor->SetPointSet(DynamicCast<PointSet>(
+                rendererWidget->GetScene()->GetCurrentModel()->GetDataObject()));
+        rendererWidget->ChangeInteractor(interactor);
+
+
+//        LineTypePointsSource::Pointer lineSource = LineTypePointsSource::New();
+//        lineSource->SetInput(newLinePointSet);
+//        lineSource->Execute();
+//        lineSource->GetOutput();
+
+    });
+
 }

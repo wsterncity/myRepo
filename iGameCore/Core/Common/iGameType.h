@@ -18,6 +18,11 @@ inline constexpr const char* FILE_SUFFIX = "FILE_SUFFIX";
 inline constexpr const char* ATTRIBUTE_NAME_ARRAY = "ATTRIBUTE_NAME_ARRAY";
 inline constexpr const char* TIME_FRAME_ARRAY = "TIME_FRAME_ARRAY";
 
+enum ItemSource {
+	File = 0,
+	Algorithm
+};
+
 // DataObjectType
 inline constexpr int IG_NONE = -1;
 enum {
@@ -37,11 +42,10 @@ enum {
 
 // DrawMode
 enum {
-	IG_POINTS = 0,
-	IG_WIREFRAME,
-	IG_SURFACE,
-	IG_SURFACE_WITH_EDGE,
-	IG_VOLUME,
+	IG_POINTS = 1 << 0,
+	IG_WIREFRAME = 1 << 1,
+	IG_SURFACE = 1 << 2,
+	IG_VOLUME = 1 << 3,
 	IG_DRAW_MODE_COUNT,
 };
 
@@ -105,6 +109,7 @@ enum Color {
 	Red,
 	Green,
 	Blue,
+	LightBlue,
 	White,
 };
 #endif

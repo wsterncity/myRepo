@@ -45,7 +45,6 @@ protected:
     void resizeGL(int w, int h) override;
     void paintGL() override;
     
-
     void mousePressEvent(QMouseEvent* event) override;
     void mouseReleaseEvent(QMouseEvent* event) override;
     void mouseMoveEvent(QMouseEvent* event) override;
@@ -54,14 +53,14 @@ protected:
     SmartPointer<Scene> m_Scene;
     SmartPointer<Interactor> m_Interactor;
 
-public slots:
-    void MakeCurrent() { makeCurrent(); }
-    void DoneCurrent() { doneCurrent(); }
-
-    void ChangeViewStyle(int index);
-    void ChangeScalarView(int index, int dim = -1);
-
-signals:
-    void AddDataObjectToModelList(QString model_name);
-    void UpdateCurrentDataObject();
+//public slots:
+//    void MakeCurrent() { makeCurrent(); }
+//    void DoneCurrent() { doneCurrent(); }
+//
+//    void ChangeViewStyle(int index);
+//    void ChangeScalarView(int index, int dim = -1);
+//
+//signals:
+//    void AddDataObjectToModelList(QString model_name);
+//    void UpdateCurrentDataObject();
 };

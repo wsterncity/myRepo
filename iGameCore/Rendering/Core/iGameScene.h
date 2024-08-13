@@ -20,6 +20,24 @@ public:
     I_OBJECT(Scene);
     static Pointer New() { return new Scene; }
 
+    /* Model Related */
+    int AddModel(Model::Pointer);
+    Model::Pointer CreateModel(DataObject::Pointer);
+    void RemoveModel(int index);
+    void RemoveModel(Model*);
+    void RemoveCurrentModel();
+    void SetCurrentModel(int index);
+    void SetCurrentModel(Model*);
+    
+    Model* GetCurrentModel();
+    Model* GetModelById(int index);
+    DataObject* GetDataObjectById(int index);
+    std::map<int, Model::Pointer>& GetModelList();
+
+    void ChangeModelVisibility(int index, bool visibility);
+    void ChangeModelVisibility(Model* m, bool visibility);
+
+    /* Rendering Related */
     struct CameraDataBuffer {
         alignas(16) igm::mat4 view;
         alignas(16) igm::mat4 proj;
@@ -54,9 +72,9 @@ public:
         SHADERTYPE_COUNT
     };
 
-    CameraDataBuffer& CameraData() { return this->m_CameraData; }
-    ObjectDataBuffer& ObjectData() { return this->m_ObjectData; }
-    UniformBufferObjectBuffer& UBO() { return this->m_UBO; }
+    CameraDataBuffer& CameraData() { return m_CameraData; }
+    ObjectDataBuffer& ObjectData() { return m_ObjectData; }
+    UniformBufferObjectBuffer& UBO() { return m_UBO; }
     void UpdateUniformBuffer();
 
     void SetShader(IGenum type, GLShaderProgram*);
@@ -65,9 +83,6 @@ public:
     GLShaderProgram* GetShader(IGenum type);
     bool HasShader(IGenum type);
 
-    void ChangeViewStyle(IGenum mode);
-    void ChangeDataObjectVisibility(int index, bool visibility);
-
     void Draw();
     void Resize(int width, int height, int pixelRatio);
     void Update();
@@ -75,15 +90,6 @@ public:
     void SetUpdateFunctor(Functor&& functor, Args&&... args) {
         m_UpdateFunctor = std::bind(functor, args...);
     }
-
-    void AddDataObject(DataObject::Pointer obj);
-    void RemoveDataObject(DataObject::Pointer obj);
-    void RemoveCurrentDataObject();
-    bool UpdateCurrentDataObject(int index);
-    DataObject* GetDataObject(int index);
-    DataObject* GetCurrentObject();
-    Model* GetCurrentModel();
-    std::map<int, Model::Pointer>& GetModelList();
 
     GLTexture2d& HizTexture() { return m_DepthPyramid; }
 
@@ -109,17 +115,22 @@ protected:
     void DrawModels();
     void DrawAxes();
 
-    std::function<void()> m_UpdateFunctor;
-
+    
+    /* Data Object Related */
     std::map<int, Model::Pointer> m_Models;
-    int m_CurrentModelId{0};
+    int m_IncrementModelId{0};
+    int m_CurrentModelId{-1};
     Model* m_CurrentModel{nullptr};
-    DataObject* m_CurrentObject{nullptr};
+    //DataObject* m_CurrentObject{nullptr};
+
+    std::function<void()> m_UpdateFunctor;
 
     Camera::Pointer m_Camera{};
     Light::Pointer m_Light{};
     Axes::Pointer m_Axes{};
 
+
+    /* Rendering related */
     CameraDataBuffer m_CameraData;
     ObjectDataBuffer m_ObjectData;
     UniformBufferObjectBuffer m_UBO;

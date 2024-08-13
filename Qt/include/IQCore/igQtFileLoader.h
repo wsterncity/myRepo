@@ -33,6 +33,8 @@ public:
 	QList<QAction*> GetRecentActionList() { return this->recentFileActionList; };
 
 signals:
+	void NewModel(DataObject::Pointer obj, ItemSource source);
+
 	void FinishReading();
 	void EmitMakeCurrent();
 	void EmitDoneCurrent();

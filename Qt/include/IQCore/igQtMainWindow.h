@@ -40,7 +40,7 @@ public:
     void initAllDockWidgetConnectWithAction();
     void initAllMySignalConnections();
     void initAllFilters();
-
+    void initAllSources();
 
 public:
     igQtModelDrawWidget* rendererWidget;
@@ -58,12 +58,13 @@ public:
 private slots:
     void updateRecentFilePaths();
     void updateColorBarShow();
-    void ChangeViewStyle();
-    void ChangeScalarView();
-    void ChangeScalarViewDim();
-    void updateViewStyleAndCloudPicture();
-    void updateCurrentDataObject();
-    void updateCurrentSceneWidget();
+
+    //void ChangeViewStyle();
+    //void ChangeScalarView();
+    //void ChangeScalarViewDim();
+    //void updateViewStyleAndCloudPicture();
+    //void updateCurrentDataObject();
+    //void updateCurrentSceneWidget();
 
     void changePointPicked();
 

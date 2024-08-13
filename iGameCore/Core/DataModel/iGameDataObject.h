@@ -158,24 +158,25 @@ public:
   virtual void ViewCloudPicture(int index, int dimension = -1);
   void ViewCloudPictureOfModel(int index, int dimension = -1);
 
-  virtual void SetViewStyle(IGenum mode);
-  void SetViewStyleOfModel(IGenum mode);
-  IGenum GetViewStyle();
-  IGenum GetViewStyleOfModel();
-  void SetVisibility(bool f);
-  bool GetVisibility() { return m_Visibility; }
-  int GetAttributeIndex();
-  int GetAttributeDimension();
+    void SetViewStyle(IGenum mode);
+    void SetViewStyle2(IGenum mode);
+    void SetViewStyleOfModel(IGenum mode);
+    unsigned int GetViewStyle();
+    unsigned int GetViewStyleOfModel();
+    void SetVisibility(bool f);
+    bool GetVisibility() { return m_Visibility; }
+    int GetAttributeIndex();
+    int GetAttributeDimension();
 
   int GetTimeframeIndex();
   void SwitchToCurrentTimeframe(int timeIndex);
 
 protected:
-  IGenum m_ViewStyle{IG_NONE};
-  int m_AttributeIndex{-1};
-  int m_AttributeDimension{-1};
-  bool m_Visibility{true};
-  bool m_Drawable{false};
+    unsigned int m_ViewStyle{0};
+    int m_AttributeIndex{-1};
+    int m_AttributeDimension{-1};
+    bool m_Visibility{true};
+    bool m_Drawable{false};
 
   int m_CurrentTimeframeIndex{-1};
 };

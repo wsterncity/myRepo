@@ -37,16 +37,6 @@ public:
         return m_checked;
     }
 
-protected:
-    void init() {
-        defaultStyle = "width:24px;height:24px;border-style:solid;border-width:1px;border-color:rgba(0,0,0,0);border-radius:2px;";
-        honorStyle = "width:24px;height:24px;border-style:solid;border-width:1px;border-color:rgba(0,0,0,0);border-radius:2px;background-color: #cce8ff;";
-        checkedStyle = "width:24px;height:24px;border-style:solid;border-width:1px;border-color:#99d1ff;border-radius:2px;background-color: #cce8ff;";
-        setAttribute(Qt::WA_Hover, true);
-        setFlat(true);
-        setStyleSheet(defaultStyle);
-    }
-
     void setChecked(bool flag) {
         if (m_checked != flag) {
             m_checked = flag;
@@ -57,6 +47,16 @@ protected:
                 setStyleSheet(honorStyle);
             }
         }
+    }
+
+protected:
+    void init() {
+        defaultStyle = "width:24px;height:24px;border-style:solid;border-width:1px;border-color:rgba(0,0,0,0);border-radius:2px;";
+        honorStyle = "width:24px;height:24px;border-style:solid;border-width:1px;border-color:rgba(0,0,0,0);border-radius:2px;background-color: #cce8ff;";
+        checkedStyle = "width:24px;height:24px;border-style:solid;border-width:1px;border-color:#99d1ff;border-radius:2px;background-color: #cce8ff;";
+        setAttribute(Qt::WA_Hover, true);
+        setFlat(true);
+        setStyleSheet(defaultStyle);
     }
 
     void mousePressEvent(QMouseEvent* event) override {
@@ -115,11 +115,13 @@ public:
         view_points = new HoverButton(buttonWidget);
         view_wireframe = new HoverButton(buttonWidget);
         view_fill = new HoverButton(buttonWidget);
+        view_pickedItem = new HoverButton(buttonWidget);
 
         view_bbox->setIcon(QIcon(":/Ticon/Icons/select/bbox.png"));
         view_points->setIcon(QIcon(":/Ticon/Icons/select/points.png"));
         view_wireframe->setIcon(QIcon(":/Ticon/Icons/select/wireframe.png"));
         view_fill->setIcon(QIcon(":/Ticon/Icons/select/fill.png"));
+        view_pickedItem->setIcon(QIcon(":/Ticon/Icons/select/selected.png"));
 
         layout->setSpacing(0);
         layout->addStretch();
@@ -127,6 +129,7 @@ public:
         layout->addWidget(view_points);
         layout->addWidget(view_wireframe);
         layout->addWidget(view_fill);
+        layout->addWidget(view_pickedItem);
         layout->setContentsMargins(0, 2, 2, 2);
 
         parent->setItemWidget(this, 1, buttonWidget);
@@ -145,11 +148,22 @@ public:
         view_fill->setConcernFunctor(&ModelTreeWidgetItem::showFill, this);
         view_fill->setCancelFunctor(&ModelTreeWidgetItem::hideFill, this);
 
-
+        view_pickedItem->setConcernFunctor(&ModelTreeWidgetItem::showPickedItem, this);
+        view_pickedItem->setCancelFunctor(&ModelTreeWidgetItem::hidePickedItem, this);
     }
 
     void setModel(iGame::Model::Pointer model) {
         this->model = model;
+        view_wireframe->setChecked(true);
+        view_fill->setChecked(true);
+        view_pickedItem->setChecked(true);
+        showWireframe();
+        showFill();
+        showPickedItem();
+    }
+
+    void setName(const QString& name) {
+        setText(0, name);
     }
 
     void changeVisibility() {
@@ -161,6 +175,7 @@ public:
         }
     }
 
+protected:
     bool getVisibility() const {
         return visibility;
     }
@@ -173,14 +188,6 @@ public:
         }
 
         model->Show();
-
-        if (view_bbox->isChecked()) {
-            model->ShowBoundingBox();
-        }
-        else {
-            model->HideBoundingBox();
-        }
-
         update();
     }
 
@@ -192,42 +199,52 @@ public:
         }
 
         model->Hide();
-        model->HideBoundingBox();
         update();
     }
 
     void showBoundingBox() {
-        if (visibility) {
-            model->ShowBoundingBox();
-            update();
-        }
+        model->SetBoundingBoxSwitch(true);
+        update();
     }
     void hideBoundingBox() {
-        if (visibility) {
-            model->HideBoundingBox();
-            update();
-        }
+        model->SetBoundingBoxSwitch(false);
+        update();
     }
 
     void showPoints() {
-        std::cout << "show bbox\n";
+        model->SetViewPointsSwitch(true);
+        update();
     }
     void hidePoints() {
-        std::cout << "hide bbox\n";
+        model->SetViewPointsSwitch(false);
+        update();
     }
 
     void showWireframe() {
-        std::cout << "show bbox\n";
+        model->SetViewWireframeSwitch(true);
+        update();
     }
     void hideWireframe() {
-        std::cout << "hide bbox\n";
+        model->SetViewWireframeSwitch(false);
+        update();
     }
 
     void showFill() {
-        std::cout << "show bbox\n";
+        model->SetViewFillSwitch(true);
+        update();
     }
     void hideFill() {
-        std::cout << "hide bbox\n";
+        model->SetViewFillSwitch(false);
+        update();
+    }
+
+    void showPickedItem() {
+        model->SetPickedItemSwitch(true);
+        update();
+    }
+    void hidePickedItem() {
+        model->SetPickedItemSwitch(false);
+        update();
     }
 
     void update() {
@@ -242,7 +259,9 @@ private:
     HoverButton* view_points;
     HoverButton* view_wireframe;
     HoverButton* view_fill;
+    HoverButton* view_pickedItem;
 
+    int modelId;
     iGame::Model::Pointer model;
 };
 
