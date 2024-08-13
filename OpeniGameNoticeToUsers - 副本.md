@@ -31,9 +31,7 @@
 
 <img src=".\Resources\Images\image-20240802170152717.png" alt="image-20240802170152717" style="zoom:50%;" />
 
-####Scene
-
-
+#### Scene
 
 Scene场景包含了需要渲染的各类信息和渲染对象，有光源、摄像机、背景、Shader、交互器、数据对象列表。需要在OpenGL的上下文中进行渲染，默认会调用DataObject的ConvertToDrawableData和Draw进行绘制。成员变量有：
 
@@ -47,26 +45,30 @@ Scene场景包含了需要渲染的各类信息和渲染对象，有光源、摄
 
 Object是整个框架的基类，管理对象的生命周期、时间戳等，如果需要使用框架内的智能指针，必须继承Object
 
-1. 生命周期：通过具有原子性的ReferenceCount来管理生命周期，对应有Register和UnRegister函数对对象进行使用，需要配合指针指针SmartPointer使用。有一个非常重要的概念：工厂模式，即对外不暴露构造函数和析构函数，只暴露New函数，New函数返回该对象的智能指针，这可以保证所有的指针都是智能指针，确保不会内存泄漏。
+1.
+生命周期：通过具有原子性的ReferenceCount来管理生命周期，对应有Register和UnRegister函数对对象进行使用，需要配合指针指针SmartPointer使用。有一个非常重要的概念：工厂模式，即对外不暴露构造函数和析构函数，只暴露New函数，New函数返回该对象的智能指针，这可以保证所有的指针都是智能指针，确保不会内存泄漏。
 
-   ```
-   mutable std::atomic<int> m_ReferenceCount{};
-   virtual void Register() const {
-       ++m_ReferenceCount;
-   }
-   virtual void UnRegister() const noexcept {
-       if (--m_ReferenceCount <= 0)
-       {
-           delete this;
-       }
-   }
-   ```
+```
+mutable std::atomic<int> m_ReferenceCount{};
+virtual void Register() const {
+    ++m_ReferenceCount;
+}
+virtual void UnRegister() const noexcept {
+    if (--m_ReferenceCount <= 0)
+    {
+        delete this;
+    }
+}
+```
 
-2. 时间戳（TimeStamp）：时间戳有一个极其重要的功能，即控制数据的自动更新，所有对象的时间戳都是系统唯一的。例如一个对象A依赖于对象B，当对象A检测到对象B发生变化时，更新对象A的状态，其关键就是对象A如何检测到对象B的变化，可以通过比较对象A和对象B的时间戳，来判断对象A是否比对象B状态新，如果对象A的时间戳 < 对象B的时间戳，说明对象B已经更新过了，那么对象A也需要更新。当对象发生变化时，则需要调用
+2.
+时间戳（TimeStamp）：时间戳有一个极其重要的功能，即控制数据的自动更新，所有对象的时间戳都是系统唯一的。例如一个对象A依赖于对象B，当对象A检测到对象B发生变化时，更新对象A的状态，其关键就是对象A如何检测到对象B的变化，可以通过比较对象A和对象B的时间戳，来判断对象A是否比对象B状态新，如果对象A的时间戳 <
+对象B的时间戳，说明对象B已经更新过了，那么对象A也需要更新。当对象发生变化时，则需要调用
 
-   > obj->Modified()
+> obj->Modified()
 
-3. I_OBJECT宏：是类定义中最基本的宏，主要是删除类的赋值构造，防止对象复制。还定义了Pointer，所有对象的"类名::Pointer" 都是"SmartPointer<类名>" 的别称，用于简化代码
+3. I_OBJECT宏：是类定义中最基本的宏，主要是删除类的赋值构造，防止对象复制。还定义了Pointer，所有对象的"类名::Pointer" 都是"
+   SmartPointer<类名>" 的别称，用于简化代码
 
    ```
    #define I_OBJECT(TypeName)                         \
@@ -102,8 +104,6 @@ Object是整个框架的基类，管理对象的生命周期、时间戳等，�
    IGAME_NAMESPACE_END
    #endif
    ```
-   
-   
 
 #### DataObject
 
@@ -169,7 +169,8 @@ void RequestEditStatus();  // 开启编辑模式，并生成邻接关系等数�
 void GarbageCollection();  // 回收删除的数据
 ```
 
-#####注意：算法在使用数据结构之前一定要先RequestEditStatus，如果数据发生变化需要调用Modified()来更新状态，使其重新映射为渲染数据；如果删除了某些元素，一定要调用GarbageCollection垃圾回收，否则会渲染出错。
+#####注意：算法在使用数据结构之前一定要先RequestEditStatus，如果数据发生变化需要调用Modified()
+来更新状态，使其重新映射为渲染数据；如果删除了某些元素，一定要调用GarbageCollection垃圾回收，否则会渲染出错。
 
 当前网格结构的继承关系：
 
@@ -226,8 +227,6 @@ IGAME_NAMESPACE_END
 #endif
 ```
 
-
-
 ## 算法
 
 #### Filter（未完）
@@ -244,7 +243,7 @@ Filter是所有算法的基类，控制算法的输入输出、算法的执行�
 
 ### 如何实现自己的算法
 
-1. 在Filters目录下新建文件夹或者是头文件以及cpp文件，注意好命名规范。 
+1. 在Filters目录下新建文件夹或者是头文件以及cpp文件，注意好命名规范。
 
 2. 需要继承Filter或其子类
 
@@ -315,7 +314,8 @@ IGAME_NAMESPACE_END
 
 4. 在QtMainWindow中添加代码逻辑
 
-在ui界面的某个成员（按钮、动作等都可以）进行该算法的调用执行，需要自己编写connect函数，具体可以查看示例。在igQtMainWindow中的initAllFilters()函数内部定义具体的connect，可以使用lambda表达式。
+在ui界面的某个成员（按钮、动作等都可以）进行该算法的调用执行，需要自己编写connect函数，具体可以查看示例。在igQtMainWindow中的initAllFilters()
+函数内部定义具体的connect，可以使用lambda表达式。
 
 ```
 connect(ui->action_test_04, &QAction::triggered, this, [&](bool checked) {
@@ -345,8 +345,6 @@ connect(ui->action_test_04, &QAction::triggered, this, [&](bool checked) {
 		rendererWidget->AddDataObject(mesh);// 把新的数据对象添加到Scene中
 		});
 
-
-
 1. 生成一个Dialog
 
 ```
@@ -355,9 +353,9 @@ igQtFilterDialogDockWidget* dialog = new igQtFilterDialogDockWidget(this);
 
 2. 设置算法名称和介绍
 
-> void setFilterTitle(const QString& title);                // 设置名称
+> void setFilterTitle(const QString& title); // 设置名称
 
->  void setFilterDescription(const QString& text);  // 设置介绍
+> void setFilterDescription(const QString& text); // 设置介绍
 
 2. 设置参数
 
@@ -415,8 +413,6 @@ dialog->setApplyFunctor([&]() {
 });
 ```
 
-
-
 ## 数据存储对象
 
 #### ArrayObject、FlatArray
@@ -425,10 +421,10 @@ ArrayObject是FlatArray的基类，其有两种元素：Value和Element，Value�
 
 其提供抽象数据数组接口，方便在不知道其存储是何类型下获取数据：
 
-> virtual double GetValue(const IGsize _Pos) = 0;          // 获取默认为double类型的Value
+> virtual double GetValue(const IGsize _Pos) = 0; // 获取默认为double类型的Value
 > virtual void SetValue(IGsize _Pos, double value) = 0;
 >
-> virtual void GetElement(const IGsize _Pos, float* _Element) = 0;    // 获取默认为float类型的Element传入一个足够大的指针，可以
+> virtual void GetElement(const IGsize _Pos, float* _Element) = 0; // 获取默认为float类型的Element传入一个足够大的指针，可以
 > virtual void GetElement(const IGsize _Pos, double* _Element) = 0;// 是栈数组指针，也可以是vector<>的指针
 
 常见使用方法：
@@ -460,11 +456,11 @@ FlatArray是存储数据的模版类，其类定义：
 
 预申请空间，注意参数是Element的数量，如果ElementSize=3，则真正申请的空间大小为3*_NewElementNum
 
-> void Resize(const IGsize _NewElementNum) 
+> void Resize(const IGsize _NewElementNum)
 
 重新申请空间，注意参数是Element的数量
 
-> void Reset() 
+> void Reset()
 
 空间大小不会发生变化，只是标识元素个数的变量初始化，该方法在获取动态数据时十分有用，例如
 
@@ -480,7 +476,7 @@ FlatArray是存储数据的模版类，其类定义：
     	ids...
     }
 
-> void Squeeze() 
+> void Squeeze()
 
 释放多余的空间
 
@@ -496,8 +492,6 @@ FlatArray是存储数据的模版类，其类定义：
 
 ArrayObject只作为通用接口使用
 
-
-
 #### ElementArray
 
 ElementArray和上面那个数组不同，主要代替std::vector<>的作用，Element可以是任何类型数据
@@ -509,21 +503,17 @@ ElementArray和上面那个数组不同，主要代替std::vector<>的作用，E
 
 > StringArray，IdArray等，具体实现见代码
 
-
-
 #### CellArray
 
 CellArray用于保存Cell元素的索引，如面的顶点索引、面的边索引。CellArray中有Offsets和Buffer数组，Offsets用于存储元素在Buffer数组中的初始位置。在添加元素时，当所有元素的大小都一致时，不会使用Offsets数组，只有遇到不同大小的元素才会初始化Offsets数组，目的是减少单一元素的存储空间
 
-> IGsize AddCellIds(igIndex* cell, int ncell)  
+> IGsize AddCellIds(igIndex* cell, int ncell)
 
 添加一系列的id，需要指定大小
 
 > int GetCellIds(const IGsize cellId, igIndex* cell)
 
 获取元素的一系列id，返回大小，需要传入一个足够大的指针
-
-
 
 ###模型导入导出
 
@@ -535,157 +525,6 @@ ScalarData);
 关于iGameMeshView可以生成一个点坐标的标量和类似于曲率的标量。目前暂时只支持点数据，因为面数据渲染规则不一样还未做适配（但是可以自己手动绘制）
 
 ### 渲染
-
-如果有渲染需求，在iGameModelDraw中，构建一个VertexInputStateInfo，并放置自己的数据，VertexInputStateInfo的数据格式如下：
-
-```c++
-struct VertexInputStateInfo {
-    PointInputStateInfo pointInfo;
-    LineInputStateInfo lineInfo;
-    TriangleInputStateInfo triangleInfo;
-};
-
-// 采用VBO绘制还是EBO绘制
-typedef enum DataType {
-    POSITION_NULL = 0x00000000,
-    POSITION_ARRAY = 0x00000001,
-    POSITION_ELEMENT = 0x00000002
-} DataType;
-
-struct PointInputStateInfo {
-    DataType dataType = DataType::POSITION_ARRAY;
-
-    float* positions = nullptr;
-    float* colors = nullptr;
-    uint64_t positionSize = 0;
-    float unifiedColor[3]{-1.0f, -1.0f, -1.0f};
-
-    uint32_t* indices = nullptr;
-    uint32_t indexSize = 0;
-};
-
-struct LineInputStateInfo {
-    DataType dataType = DataType::POSITION_ARRAY;
-
-    float* positions = nullptr;
-    float* colors = nullptr;
-    uint64_t positionSize = 0;
-    float unifiedColor[3]{-1.0f, -1.0f, -1.0f};
-
-    uint32_t* indices = nullptr;
-    uint32_t indexSize = 0;
-};
-
-struct TriangleInputStateInfo {
-    DataType dataType = DataType::POSITION_ARRAY;
-
-    float* positions = nullptr;
-    float* colors = nullptr;
-    float* normals = nullptr;
-    float* textures = nullptr;
-    uint64_t positionSize = 0;
-
-    uint32_t* indices = nullptr;
-    uint32_t indexSize = 0;
-
-    // quad may be removed in a future version
-    DataType quadDataType = DataType::POSITION_NULL;
-    uint32_t* quadIndices = nullptr;
-    uint32_t quadIndexSize = 0;
-};
-```
-
-其中输入数据结构中的Size（positionSize、indexSize）均为数组的大小，例如float position[3]，传入给Size的值即为3。
-
-添加渲染数据主要有以下函数：
-
-```c++
-// 实例，注意在QT中操作实例时需要用makeCurrent();和doneCurrent();包围
-iGameRenderer::OpenGLRenderer *igOpenGLRenderer;
-```
-
-1. 添加一个新模型，在QT中的包装类为``igQtRenderWidget::AddRendererData``
-
-   ```c++
-   igOpenGLRenderer->addActor(VertexInputStateInfo& vertexInputInfo);
-   ```
-
-2. 更新模型数据，在QT中的包装类为``igQtRenderWidget::UpdateRendererData``
-
-   ```c++
-   // actorIndex为需要更改数据模型的索引，也就是左边模型列表的索引
-   igOpenGLRenderer->updateActorData(int actorIndex, VertexInputStateInfo& vertexInputInfo);
-   ```
-
-   ``updateActorData``函数只修改提供的数据，例如只改变了三角面片的索引，则只需要提供索引数据即可
-
-   ```c++
-   // 构造更改数据的结构体
-   iGameRenderer::TriangleInputStateInfo triInfo{};
-   triInfo.indices = triIndices;
-   triInfo.indexSize = 3;
-   
-   // 打包为VertexInputStateInfo结构体
-   iGameRenderer::VertexInputStateInfo info{};
-   info.triangleInfo = triInfo;
-   
-   // 执行updateActorData函数更改数据
-   makeCurrent();
-   igOpenGLRenderer->updateActorData(int actorIndex, VertexInputStateInfo& vertexInputInfo);
-   doneCurrent();
-   ```
-
-3. 在模型中添加/删除点线面
-
-   ```c++
-   // actorIndex为需要更改数据模型的索引，也就是左边模型列表的索引
-   
-   // 添加点线面数据
-   // 下列函数返回一个int值，为所添加点线面的标识符，后续需要通过该标识符删除指定的点线面数据
-   igOpenGLRenderer->addPointSet(int actorIndex, PointInputStateInfo pointInputInfo);
-   igOpenGLRenderer->addLineSet(int actorIndex, LineInputStateInfo lineInputInfo);
-   igOpenGLRenderer->addTriangleSet(int actorIndex, TriangleInputStateInfo triangleInputInfo);
-   // 删除点线面数据
-   // 通过add操作获取的标识符进行删除
-   igOpenGLRenderer->removePointSet(int actorIndex, int pointSetIndex);
-   igOpenGLRenderer->removeLineSet(int actorIndex, int lineSetIndex);
-   igOpenGLRenderer->removeTriangleSet(int actorIndex, int triangleSetIndex);
-   ```
-
-   示例：
-
-   ```cpp
-   // 渲染数据
-   float pointPosition[6] = {1.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f};
-   uint32_t pointIndices[2] = {0, 1};
-   
-   // 构造点集结构体
-   iGameRenderer::PointInputStateInfo pointInfo{};
-   pointInfo.dataType = iGameRenderer::DataType::POSITION_ELEMENT;
-   pointInfo.positions = pointPosition;
-   pointInfo.positionSize = 6;
-   pointInfo.indices = pointIndices;
-   pointInfo.indexSize = 2;
-   
-   // 添加点集
-   makeCurrent();
-   auto pointIndex = igOpenGLRenderer->addPointSet(manager->GetCurrentModelIdx(), pointInfo);
-   doneCurrent();
-   
-   // 删除添加的点集
-   makeCurrent();
-   igOpenGLRenderer->removePointSet(manager->GetCurrentModelIdx(), pointIndex);
-   doneCurrent();
-   ```
-
-4. 一些具体的例子可以参考如下函数写法
-   ```cpp
-   文件路径: Qt/src/IQWidgets/igQtModelDrawWidget.cpp
-   1. void igQtModelDrawWidget::DrawSelectedPoint(iGame::iGameFloatArray* points)
-   2. void igQtModelDrawWidget::DrawStreamline();
-   3. void igQtModelDrawWidget::UpdateStreamline();
-   4. void igQtModelDrawWidget::UpdateCurrentModel();
-   ```
 
 ### About
 
