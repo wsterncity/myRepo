@@ -5,6 +5,7 @@
 #include <QQueue>
 #include <qmenu.h>
 #include <qaction.h>
+#include <QSplitter>
 
 igQtModelDialogWidget::igQtModelDialogWidget(QWidget* parent)
 	: QDockWidget(parent),
@@ -12,12 +13,17 @@ igQtModelDialogWidget::igQtModelDialogWidget(QWidget* parent)
 {
 	ui->setupUi(this);
     this->setMinimumWidth(parent->width() / 4);
-    
+
+    QSplitter* splitter = new QSplitter(Qt::Vertical, this);
+    this->setWidget(splitter);
+    splitter->addWidget(ui->modelTreeWidget);
+    splitter->addWidget(ui->logPlainTextEdit);
+
+
 	modelTreeWidget = ui->modelTreeWidget;
 	modelTreeWidget->setColumnCount(2);  // 设置列数
     modelTreeWidget->header()->hide();
     modelTreeWidget->setColumnWidth(0, 150);
-
 
     //// 创建一个项目
     //ModelTreeWidgetItem* item = new ModelTreeWidgetItem(modelTreeWidget);

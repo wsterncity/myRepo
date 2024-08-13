@@ -56,7 +56,6 @@ igQtMainWindow::igQtMainWindow(QWidget* parent) :
 	this->setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
 	this->addDockWidget(Qt::LeftDockWidgetArea, modelTreeWidget);
 
-
 	initToolbarComponent();
 	initAllComponents();
 	initAllFilters();
@@ -66,8 +65,7 @@ igQtMainWindow::igQtMainWindow(QWidget* parent) :
 	connect(ui->action_select_points, &QAction::triggered, this,
             &igQtMainWindow::changePointPicked);
 
-	
-	
+
 }
 void igQtMainWindow::initToolbarComponent()
 {
@@ -635,8 +633,10 @@ void igQtMainWindow::initAllSources() {
         curScene->AddModel(model);
 
         LineTypePointsSource::Pointer lineSource = LineTypePointsSource::New();
+
         lineSource->SetInput(newLinePointSet);
         lineSource->SetResolution(10);
+        lineSource->GetOutput()->SetName("lineSource");
         modelTreeWidget->addDataObjectToModelTree(lineSource->GetOutput(), ItemSource::File);
 
         auto interactor = LineSourceInteractor::New();
