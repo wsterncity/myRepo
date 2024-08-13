@@ -3,7 +3,7 @@
 //
 
 #include "Interactor/iGamePointPickedInteractor.h"
-#include "Interactor/iGamePointDragInteractor.h"
+#include "Interactor/iGameLineSourceInteractor.h"
 #include <iGameUnstructuredMesh.h>
 #include <iGameFilterPoints.h>
 #include <iGameDataSource.h>
@@ -620,28 +620,30 @@ void igQtMainWindow::changePointPicked()
 }
 
 void igQtMainWindow::initAllSources() {
+    
     connect(ui->action_LineSource, &QAction::triggered, this, [&](){
         UnstructuredMesh::Pointer newLinePointSet = UnstructuredMesh::New();
+        newLinePointSet->SetViewStyle(IG_POINTS);
         newLinePointSet->AddPoint(Point(0.f, 0.f, 0.f));
         newLinePointSet->AddPoint(Point(1.f, 1.0f, 1.f));
         igIndex cell[1] = {0};
         newLinePointSet->AddCell(cell, 1, IG_VERTEX);
         cell[0] = 1;
         newLinePointSet->AddCell(cell, 1, IG_VERTEX);
-        SceneManager::Instance()->GetCurrentScene()->CreateModel(newLinePointSet);
-        modelTreeWidget->addDataObjectToModelTree(newLinePointSet, ItemSource::File);
+        auto curScene = SceneManager::Instance()->GetCurrentScene();
+        auto model = curScene->CreateModel(newLinePointSet);
+        curScene->AddModel(model);
 
-        auto interactor = PointDragInteractor::New();
-        interactor->SetPointSet(DynamicCast<PointSet>(
-                rendererWidget->GetScene()->GetCurrentModel()->GetDataObject()));
+        LineTypePointsSource::Pointer lineSource = LineTypePointsSource::New();
+        lineSource->SetInput(newLinePointSet);
+        lineSource->SetResolution(10);
+        modelTreeWidget->addDataObjectToModelTree(lineSource->GetOutput(), ItemSource::File);
+
+        auto interactor = LineSourceInteractor::New();
+        interactor->SetPointSet(DynamicCast<PointSet>(newLinePointSet));
+        interactor->SetFilter(lineSource);
+
         rendererWidget->ChangeInteractor(interactor);
-
-
-//        LineTypePointsSource::Pointer lineSource = LineTypePointsSource::New();
-//        lineSource->SetInput(newLinePointSet);
-//        lineSource->Execute();
-//        lineSource->GetOutput();
-
     });
 
 }

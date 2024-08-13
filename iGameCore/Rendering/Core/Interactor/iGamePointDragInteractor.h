@@ -17,7 +17,7 @@ public:
 
     static Pointer New(){ return new PointDragInteractor;}
 
-    void SetPointSet(PointSet::Pointer ps){
+    virtual void SetPointSet(PointSet::Pointer ps){
         m_PointSet = ps;
         pointPicker = PointPicker::New();
         pointPicker->SetPointSet(m_PointSet);
@@ -27,10 +27,10 @@ public:
 //        m_MouseMode = _mouseMode;
 //    }
 //
-//    void MouseReleaseEvent(int _eventX, int _eventY) override {
-//        m_MouseMode = NoButton;
-//        Interactor::MouseReleaseEvent(_eventX, _eventY);
-//    }
+    void MouseReleaseEvent(int _eventX, int _eventY) override {
+        m_MouseMode = NoButton;
+        Interactor::MouseReleaseEvent(_eventX, _eventY);
+    }
 
     void MouseMoveEvent(int posX, int posY) override {
         igm::vec2 pos = {float(posX), (float) posY};
@@ -74,6 +74,7 @@ public:
             return;
         } else if(m_MouseMode == LeftButton){
             if(Selected_Point_Index == -1) {Interactor::MouseMoveEvent(posX, posY);return;}
+
             igm::vec4 Point_NDC{x, y, Selected_NDC_Z, 1.f};
             igm::vec4 newPoint_WorldCoord = mvp_invert * Point_NDC;
             newPoint_WorldCoord /= newPoint_WorldCoord.w;

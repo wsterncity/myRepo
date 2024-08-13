@@ -13,23 +13,40 @@ IGAME_NAMESPACE_BEGIN
 bool LineTypePointsSource::Execute() {
     if(this->GetInput(0) != nullptr){
         UnstructuredMesh::Pointer ps = DynamicCast<UnstructuredMesh>(this->GetInput(0));
-        if(ps != nullptr) m_OutPut_PointSet = ps;
+        if(ps == nullptr) return false;
+        SetPoint_0(ps->GetPoint(0));
+        SetPoint_1(ps->GetPoint(1));
     }
-
-
-    return PointSource::Execute();
+    unsigned int subPointsNum = m_Resolution - 1;
+    uint32_t totalNum = m_OutPut_PointSet->GetNumberOfPoints();
+    int cellId = totalNum;
+    int cell[1] = {};
+    for(size_t i = 1; i <= subPointsNum; i ++){
+        float resolution = (float)i / (float)m_Resolution;
+        Point newPoint = resolution * m_Point_0 + m_Point_1 * (1.0 - resolution);
+        if(i > totalNum) {
+            cell[0] = cellId ++;
+            m_OutPut_PointSet->AddPoint(newPoint);
+            m_OutPut_PointSet->AddCell(cell, 1, IG_VERTEX);
+        }else {
+            m_OutPut_PointSet->SetPoint(i - 1, newPoint);
+        }
+    }
+    m_OutPut_PointSet->Modified();
+    return true;
 }
 
-void LineTypePointsSource::SetPoint_0(const float point0[3]) {
-    m_Point_0[0] = point0[0];
-    m_Point_0[1] = point0[1];
-    m_Point_0[2] = point0[2];
+void LineTypePointsSource::SetPoint_0(const Point& point0) {
+    m_Point_0 = point0;
 }
 
-void LineTypePointsSource::SetPoint_1(const float point1[3]) {
-    m_Point_1[0] = point1[0];
-    m_Point_1[1] = point1[1];
-    m_Point_1[2] = point1[2];
+void LineTypePointsSource::SetPoint_1(const Point& point1) {
+    m_Point_1 = point1;
+}
+
+void LineTypePointsSource::SetResolution(unsigned int Resolution) {
+    if(Resolution == 0) m_Resolution = 1;
+    m_Resolution = Resolution;
 }
 
 

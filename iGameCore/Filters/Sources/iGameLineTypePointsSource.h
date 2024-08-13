@@ -16,16 +16,19 @@ public:
 
     bool Execute() override;
 
-    void SetPoint_0(const float point0[3]);
+    void SetPoint_0(const Point& point0);
 
-    void SetPoint_1(const float point1[3]);
+    void SetPoint_1(const Point& point1);
 
+    void SetResolution(unsigned int Resolution);
 
 protected:
     LineTypePointsSource() = default;
 
-    float m_Point_0[3];
-    float m_Point_1[3];
+    Point m_Point_0;
+    Point m_Point_1;
+
+    uint32_t m_Resolution{1};
 };
 
 
