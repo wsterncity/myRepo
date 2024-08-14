@@ -629,18 +629,18 @@ void igQtMainWindow::initAllSources() {
         cell[0] = 1;
         newLinePointSet->AddCell(cell, 1, IG_VERTEX);
         auto curScene = SceneManager::Instance()->GetCurrentScene();
-        auto model = curScene->CreateModel(newLinePointSet);
-        curScene->AddModel(model);
 
         LineTypePointsSource::Pointer lineSource = LineTypePointsSource::New();
 
         lineSource->SetInput(newLinePointSet);
-        lineSource->SetResolution(10);
+//        lineSource->SetResolution(20);
         lineSource->GetOutput()->SetName("lineSource");
-        modelTreeWidget->addDataObjectToModelTree(lineSource->GetOutput(), ItemSource::File);
+
+        auto model = curScene->CreateModel(lineSource->GetOutput());
+        modelTreeWidget->addModelToModelTree(model);
 
         auto interactor = LineSourceInteractor::New();
-        interactor->SetPointSet(DynamicCast<PointSet>(newLinePointSet));
+        interactor->SetPointSet(DynamicCast<PointSet>(newLinePointSet), model);
         interactor->SetFilter(lineSource);
 
         rendererWidget->ChangeInteractor(interactor);

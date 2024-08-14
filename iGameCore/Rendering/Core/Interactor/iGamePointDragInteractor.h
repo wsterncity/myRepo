@@ -17,8 +17,9 @@ public:
 
     static Pointer New(){ return new PointDragInteractor;}
 
-    virtual void SetPointSet(PointSet::Pointer ps){
+    virtual void SetPointSet(PointSet::Pointer ps, Model::Pointer model = nullptr){
         m_PointSet = ps;
+        m_Model = model;
         pointPicker = PointPicker::New();
         pointPicker->SetPointSet(m_PointSet);
     }
@@ -90,6 +91,7 @@ protected:
 
     PointPicker::Pointer pointPicker{};
     PointSet::Pointer m_PointSet{};
+    Model::Pointer m_Model{};
     igIndex Selected_Point_Index {-1};
 
     float Selected_NDC_Z{0};

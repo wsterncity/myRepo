@@ -43,6 +43,17 @@ public slots:
 		modelTreeWidget->setCurrentItem(item);
 	}
 
+    void addModelToModelTree(Model::Pointer model){
+        auto* item = new ModelTreeWidgetItem(modelTreeWidget);
+        auto scene = iGame::SceneManager::Instance()->GetCurrentScene();
+        int id = scene->AddModel(model);
+
+        item->setName(QString::fromStdString(model->GetDataObject()->GetName()));
+        item->setModel(model);
+        modelTreeWidget->addTopLevelItem(item);
+        modelTreeWidget->setCurrentItem(item);
+    }
+
 private:
 	igQtModelTreeWidget* modelTreeWidget;
 	QtTreePropertyBrowser* propertyTreeWidget;

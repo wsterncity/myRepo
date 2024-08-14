@@ -25,12 +25,18 @@ public:
 
     void MouseMoveEvent(int posX, int posY) override {
         PointDragInteractor::MouseMoveEvent(posX, posY);
+        if(m_Model != nullptr){
+            m_Model->GetPointPainter()->Clear();
+            for(int i = 0; i < m_PointSet->GetNumberOfPoints(); i ++)
+                m_Model->GetPointPainter()->DrawPoint(m_PointSet->GetPoint(i));
+        }
         if(~Selected_Point_Index && m_Filter != nullptr) m_Filter->Execute();
     }
 
 protected:
 
     LineSourceInteractor(){}
+
 
     Filter::Pointer m_Filter{nullptr};
 };

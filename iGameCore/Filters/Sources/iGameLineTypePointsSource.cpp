@@ -17,19 +17,18 @@ bool LineTypePointsSource::Execute() {
         SetPoint_0(ps->GetPoint(0));
         SetPoint_1(ps->GetPoint(1));
     }
-    unsigned int subPointsNum = m_Resolution - 1;
     uint32_t totalNum = m_OutPut_PointSet->GetNumberOfPoints();
     int cellId = totalNum;
     int cell[1] = {};
-    for(size_t i = 1; i <= subPointsNum; i ++){
-        float resolution = (float)i / (float)m_Resolution;
-        Point newPoint = resolution * m_Point_0 + m_Point_1 * (1.0 - resolution);
-        if(i > totalNum) {
+    for(size_t i = 0; i <= m_Resolution; i ++){
+        float resolution = (float)(i) / (float)m_Resolution;
+        Point newPoint = resolution * m_Point_0 + m_Point_1 * (1.f - resolution);
+        if(i >= totalNum) {
             cell[0] = cellId ++;
             m_OutPut_PointSet->AddPoint(newPoint);
             m_OutPut_PointSet->AddCell(cell, 1, IG_VERTEX);
         }else {
-            m_OutPut_PointSet->SetPoint(i - 1, newPoint);
+            m_OutPut_PointSet->SetPoint(i, newPoint);
         }
     }
     m_OutPut_PointSet->Modified();
@@ -44,7 +43,7 @@ void LineTypePointsSource::SetPoint_1(const Point& point1) {
     m_Point_1 = point1;
 }
 
-void LineTypePointsSource::SetResolution(unsigned int Resolution) {
+void LineTypePointsSource::SetResolution(unsigned int& Resolution) {
     if(Resolution == 0) m_Resolution = 1;
     m_Resolution = Resolution;
 }
