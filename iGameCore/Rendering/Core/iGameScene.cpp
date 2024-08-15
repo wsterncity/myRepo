@@ -610,7 +610,7 @@ void Scene::DrawModels() {
         obj->Draw(this);
     }
 #else
-    bool debug = true;
+    bool debug = false;
     if (debug) {
         std::cout << "-------:Draw:-------" << std::endl;
         RefreshDrawCullDataBuffer();

@@ -53,8 +53,6 @@ protected:
     igm::vec2 m_OldPoint2D{};
     igm::vec2 m_NewPoint2D{};
 
-    int count = 0;
-
     float m_CameraScaleSpeed{0.1f};
     float m_CameraMoveSpeed{0.01f};
 };

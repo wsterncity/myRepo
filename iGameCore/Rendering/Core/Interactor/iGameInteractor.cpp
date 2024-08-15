@@ -33,7 +33,6 @@ void Interactor::MouseMoveEvent(int _eventX, int _eventY) {
             break;
     }
     m_OldPoint2D = m_NewPoint2D;
-    std::cout << "mouse move: " << count++ << std::endl;
 }
 
 void Interactor::MouseReleaseEvent(int _eventX, int _eventY) {
@@ -112,7 +111,6 @@ void Interactor::ModelRotation() {
 
 
 void Interactor::ViewTranslation() {
-    std::cout << 1 << std::endl;
     if (m_Camera) {
         auto offset = m_NewPoint2D - m_OldPoint2D;
         m_Camera->moveXY(-offset.x * m_CameraMoveSpeed,
@@ -143,7 +141,6 @@ void Interactor::MapToSphere(igm::vec3& old_v3D, igm::vec3& new_v3D) {
     const double rsqr = trackballradius * trackballradius;
 
     // calculate old hit sphere point3D
-    std::cout << 2 << std::endl;
     double oldX = (2.0 * m_OldPoint2D.x - width) / width - p1_mvp.x;
     double oldY = -(2.0 * m_OldPoint2D.y - height) / height - p1_mvp.y;
     double old_x2y2 = oldX * oldX + oldY * oldY;

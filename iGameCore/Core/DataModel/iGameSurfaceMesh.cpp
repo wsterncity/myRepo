@@ -932,17 +932,17 @@ void SurfaceMesh::ConvertToDrawableData() {
                      m_LineIndices->GetNumberOfIds() * sizeof(igIndex),
                      m_LineIndices->RawPointer());
 
-  // GLAllocateGLBuffer(m_TriangleEBO,
-  //                    m_TriangleIndices->GetNumberOfIds() * sizeof(igIndex),
-  //                    m_TriangleIndices->RawPointer());
-
-  m_Meshlets->BuildMeshlet(
-      m_Positions->RawPointer(), m_Positions->GetNumberOfValues() / 3,
-      m_TriangleIndices->RawPointer(), m_TriangleIndices->GetNumberOfIds());
-
   GLAllocateGLBuffer(m_TriangleEBO,
-                     m_Meshlets->GetMeshletIndexCount() * sizeof(igIndex),
-                     m_Meshlets->GetMeshletIndices());
+                     m_TriangleIndices->GetNumberOfIds() * sizeof(igIndex),
+                     m_TriangleIndices->RawPointer());
+
+  // m_Meshlets->BuildMeshlet(
+  //     m_Positions->RawPointer(), m_Positions->GetNumberOfValues() / 3,
+  //     m_TriangleIndices->RawPointer(), m_TriangleIndices->GetNumberOfIds());
+  //
+  // GLAllocateGLBuffer(m_TriangleEBO,
+  //                    m_Meshlets->GetMeshletIndexCount() * sizeof(igIndex),
+  //                    m_Meshlets->GetMeshletIndices());
 }
 
 void SurfaceMesh::ViewCloudPicture(int index, int demension) {
