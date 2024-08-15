@@ -105,6 +105,7 @@ void igQtFileLoader::OpenFile(const std::string& filePath)
 
 	auto obj = iGame::FileIO::ReadFile(filePath);
 	auto filename = filePath.substr(filePath.find_last_of('/') + 1);
+	obj->GetDataObjectType();
 	obj->SetName(filename.substr(0, filename.find_last_of('.')).c_str());
 	//PointSet::Pointer mesh = DynamicCast<PointSet>(obj);
 	//FloatArray::Pointer points = mesh->GetPoints()->ConvertToDataArray();

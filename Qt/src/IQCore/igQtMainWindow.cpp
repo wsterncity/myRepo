@@ -3,7 +3,7 @@
 //
 
 #include "Interactor/iGamePointPickedInteractor.h"
-#include "Interactor/iGamePointDragInteractor.h"
+#include "Interactor/iGameLineSourceInteractor.h"
 #include <iGameUnstructuredMesh.h>
 #include <iGameFilterPoints.h>
 #include <iGameDataSource.h>
@@ -56,7 +56,6 @@ igQtMainWindow::igQtMainWindow(QWidget* parent) :
 	this->setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
 	this->addDockWidget(Qt::LeftDockWidgetArea, modelTreeWidget);
 
-
 	initToolbarComponent();
 	initAllComponents();
 	initAllFilters();
@@ -66,8 +65,7 @@ igQtMainWindow::igQtMainWindow(QWidget* parent) :
 	connect(ui->action_select_points, &QAction::triggered, this,
             &igQtMainWindow::changePointPicked);
 
-	
-	
+
 }
 void igQtMainWindow::initToolbarComponent()
 {
@@ -99,59 +97,59 @@ void igQtMainWindow::initToolbarComponent()
 		"}"
 	);
 
-	connect(viewStyleCombox, SIGNAL(currentIndexChanged(QString)), this, SLOT(ChangeViewStyle()));
+	//connect(viewStyleCombox, SIGNAL(currentIndexChanged(QString)), this, SLOT(ChangeViewStyle()));
 	ui->toolBar_meshview->addWidget(viewStyleCombox);
 	
-	attributeViewIndexCombox = new QComboBox(this);
-	attributeViewIndexCombox->addItem("None        ");
-	attributeViewIndexCombox->setStyleSheet("QComboBox {"
-		"background-color: #f0f0f0;"
-		"color: #202020;"              // 设置文本颜色为浅白色
-		"border: 1px solid #ffffff;"   // 设置边框样式为灰色实线边框
-		"padding: 5px;"                // 设置内边距
-		"font-size: 16px;"              // 设置下拉菜单项字体大小为14px
-		"}"
-		"QComboBox QAbstractItemView {"
-		"font-family: Arial;"           // 设置下拉菜单项字体为Arial
-		"color: #404040;"               // 设置下拉菜单项字体颜色为浅灰色
-		"}"
-		"QComboBox::drop-down {"
-		"subcontrol-origin: padding;"
-		"subcontrol-position: top right;"
-		"width: 20px;"
-		"border-left: 1px solid #202020;"
-		"border-color: #eeeeee;"
-		"}"
-	);
+	//attributeViewIndexCombox = new QComboBox(this);
+	//attributeViewIndexCombox->addItem("None        ");
+	//attributeViewIndexCombox->setStyleSheet("QComboBox {"
+	//	"background-color: #f0f0f0;"
+	//	"color: #202020;"              // 设置文本颜色为浅白色
+	//	"border: 1px solid #ffffff;"   // 设置边框样式为灰色实线边框
+	//	"padding: 5px;"                // 设置内边距
+	//	"font-size: 16px;"              // 设置下拉菜单项字体大小为14px
+	//	"}"
+	//	"QComboBox QAbstractItemView {"
+	//	"font-family: Arial;"           // 设置下拉菜单项字体为Arial
+	//	"color: #404040;"               // 设置下拉菜单项字体颜色为浅灰色
+	//	"}"
+	//	"QComboBox::drop-down {"
+	//	"subcontrol-origin: padding;"
+	//	"subcontrol-position: top right;"
+	//	"width: 20px;"
+	//	"border-left: 1px solid #202020;"
+	//	"border-color: #eeeeee;"
+	//	"}"
+	//);
 
-	connect(attributeViewIndexCombox, SIGNAL(activated(int)), this, SLOT(ChangeScalarView()));
-	ui->toolBar_attribute_view_index->addWidget(attributeViewIndexCombox);
+	//connect(attributeViewIndexCombox, SIGNAL(activated(int)), this, SLOT(ChangeScalarView()));
+	//ui->toolBar_attribute_view_index->addWidget(attributeViewIndexCombox);
 
 
-	attributeViewDimCombox = new QComboBox(this);
-	attributeViewDimCombox->addItem("magnitude");
-	attributeViewDimCombox->setStyleSheet("QComboBox {"
-		"background-color: #f0f0f0;"
-		"color: #202020;"              // 设置文本颜色为浅白色
-		"border: 1px solid #ffffff;"   // 设置边框样式为灰色实线边框
-		"padding: 5px;"                // 设置内边距
-		"font-size: 16px;"              // 设置下拉菜单项字体大小为14px
-		"}"
-		"QComboBox QAbstractItemView {"
-		"font-family: Arial;"           // 设置下拉菜单项字体为Arial
-		"color: #404040;"               // 设置下拉菜单项字体颜色为浅灰色
-		"}"
-		"QComboBox::drop-down {"
-		"subcontrol-origin: padding;"
-		"subcontrol-position: top right;"
-		"width: 10px;"
-		"border-left: 1px solid #202020;"
-		"border-color: #eeeeee;"
-		"}"
-	);
+	//attributeViewDimCombox = new QComboBox(this);
+	//attributeViewDimCombox->addItem("magnitude");
+	//attributeViewDimCombox->setStyleSheet("QComboBox {"
+	//	"background-color: #f0f0f0;"
+	//	"color: #202020;"              // 设置文本颜色为浅白色
+	//	"border: 1px solid #ffffff;"   // 设置边框样式为灰色实线边框
+	//	"padding: 5px;"                // 设置内边距
+	//	"font-size: 16px;"              // 设置下拉菜单项字体大小为14px
+	//	"}"
+	//	"QComboBox QAbstractItemView {"
+	//	"font-family: Arial;"           // 设置下拉菜单项字体为Arial
+	//	"color: #404040;"               // 设置下拉菜单项字体颜色为浅灰色
+	//	"}"
+	//	"QComboBox::drop-down {"
+	//	"subcontrol-origin: padding;"
+	//	"subcontrol-position: top right;"
+	//	"width: 10px;"
+	//	"border-left: 1px solid #202020;"
+	//	"border-color: #eeeeee;"
+	//	"}"
+	//);
 
-	connect(attributeViewDimCombox, SIGNAL(activated(int)), this, SLOT(ChangeScalarViewDim()));
-	ui->toolBar_attribute_view_dim->addWidget(attributeViewDimCombox);
+	//connect(attributeViewDimCombox, SIGNAL(activated(int)), this, SLOT(ChangeScalarViewDim()));
+	//ui->toolBar_attribute_view_dim->addWidget(attributeViewDimCombox);
 }
 void igQtMainWindow::initAllComponents()
 {
@@ -620,28 +618,32 @@ void igQtMainWindow::changePointPicked()
 }
 
 void igQtMainWindow::initAllSources() {
+    
     connect(ui->action_LineSource, &QAction::triggered, this, [&](){
         UnstructuredMesh::Pointer newLinePointSet = UnstructuredMesh::New();
+        newLinePointSet->SetViewStyle(IG_POINTS);
         newLinePointSet->AddPoint(Point(0.f, 0.f, 0.f));
         newLinePointSet->AddPoint(Point(1.f, 1.0f, 1.f));
         igIndex cell[1] = {0};
         newLinePointSet->AddCell(cell, 1, IG_VERTEX);
         cell[0] = 1;
         newLinePointSet->AddCell(cell, 1, IG_VERTEX);
-        SceneManager::Instance()->GetCurrentScene()->CreateModel(newLinePointSet);
-        modelTreeWidget->addDataObjectToModelTree(newLinePointSet, ItemSource::File);
+        auto curScene = SceneManager::Instance()->GetCurrentScene();
 
-        auto interactor = PointDragInteractor::New();
-        interactor->SetPointSet(DynamicCast<PointSet>(
-                rendererWidget->GetScene()->GetCurrentModel()->GetDataObject()));
+        LineTypePointsSource::Pointer lineSource = LineTypePointsSource::New();
+
+        lineSource->SetInput(newLinePointSet);
+//        lineSource->SetResolution(20);
+        lineSource->GetOutput()->SetName("lineSource");
+
+        auto model = curScene->CreateModel(lineSource->GetOutput());
+        modelTreeWidget->addModelToModelTree(model);
+
+        auto interactor = LineSourceInteractor::New();
+        interactor->SetPointSet(DynamicCast<PointSet>(newLinePointSet), model);
+        interactor->SetFilter(lineSource);
+
         rendererWidget->ChangeInteractor(interactor);
-
-
-//        LineTypePointsSource::Pointer lineSource = LineTypePointsSource::New();
-//        lineSource->SetInput(newLinePointSet);
-//        lineSource->Execute();
-//        lineSource->GetOutput();
-
     });
 
 }

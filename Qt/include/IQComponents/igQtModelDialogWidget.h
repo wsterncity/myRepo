@@ -3,6 +3,7 @@
 #include <iGameSceneManager.h>
 
 #include <IQComponents/igQtModelTreeWidget.h>
+#include <IQComponents/igQtPropertyTreeWidget.h>
 #include <IQCore/igQtExportModule.h>
 
 #include <ui_layerDialog.h>
@@ -12,6 +13,9 @@
 #include <QDockWidget>
 #include <QTreeWidget>
 #include <iostream>
+#include <Plugin/qtpropertybrowser/qteditorfactory.h>
+#include <Plugin/qtpropertybrowser/qttreepropertybrowser.h>
+#include <Plugin/qtpropertybrowser/qtvariantproperty.h>
 
 using namespace iGame;
 
@@ -39,8 +43,21 @@ public slots:
 		modelTreeWidget->setCurrentItem(item);
 	}
 
+    void addModelToModelTree(Model::Pointer model){
+        auto* item = new ModelTreeWidgetItem(modelTreeWidget);
+        auto scene = iGame::SceneManager::Instance()->GetCurrentScene();
+        int id = scene->AddModel(model);
+
+        item->setName(QString::fromStdString(model->GetDataObject()->GetName()));
+        item->setModel(model);
+        modelTreeWidget->addTopLevelItem(item);
+        modelTreeWidget->setCurrentItem(item);
+    }
+
 private:
 	igQtModelTreeWidget* modelTreeWidget;
+	QtTreePropertyBrowser* propertyTreeWidget;
+	
 	Ui::LayerDialog* ui;
 };
 

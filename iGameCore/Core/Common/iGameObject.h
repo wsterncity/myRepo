@@ -29,6 +29,18 @@ public:
 
 	using CommandPointer = SmartPointer<Command>;
 
+	// Update TimeStamp
+	void Modified();
+
+	// Get object's TimeStamp
+	TimeStamp& GetMTime() { return m_MTime; }
+
+	// Set/Get object's name
+	void SetName(const std::string& name) { this->m_Name = name; }
+
+	const std::string& GetName() const { return this->m_Name; }
+
+
 	unsigned long AddObserver(unsigned long event, CommandPointer cmd, float priority = 0.0f);
 	unsigned long AddObserver(const char* event, CommandPointer cmd, float priority = 0.0f);
 
@@ -66,17 +78,6 @@ public:
 	bool InvokeEvent(const char* event, void* callData);
 	bool InvokeEvent(unsigned long event) { return this->InvokeEvent(event, nullptr); }
 	bool InvokeEvent(const char* event) { return this->InvokeEvent(event, nullptr); }
-	
-
-	// Update TimeStamp
-	void Modified();
-
-	// Get object's TimeStamp
-	TimeStamp& GetMTime() { return m_MTime; }
-
-	// Set/Get object's name
-	void SetName(const std::string& name) { this->m_Name = name; }
-	const std::string& GetName() const { return this->m_Name; }
 
 protected:
 	Object() {}

@@ -14,25 +14,42 @@
    <string>Layer Dialog</string>
   </property>
   <widget class="QWidget" name="dockWidgetContents">
-   <layout class="QVBoxLayout" name="verticalLayout" stretch="2,1">
-    <item>
-     <widget class="igQtModelTreeWidget" name="modelTreeWidget">
-      <column>
-       <property name="text">
-        <string>1</string>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>2</string>
-       </property>
-      </column>
-     </widget>
-    </item>
-    <item>
-     <widget class="QPlainTextEdit" name="logPlainTextEdit"/>
-    </item>
-   </layout>
+   <widget class="igQtModelTreeWidget" name="modelTreeWidget">
+    <property name="geometry">
+     <rect>
+      <x>9</x>
+      <y>9</y>
+      <width>256</width>
+      <height>192</height>
+     </rect>
+    </property>
+    <property name="minimumSize">
+     <size>
+      <width>0</width>
+      <height>0</height>
+     </size>
+    </property>
+    <column>
+     <property name="text">
+      <string>1</string>
+     </property>
+    </column>
+    <column>
+     <property name="text">
+      <string>2</string>
+     </property>
+    </column>
+   </widget>
+   <widget class="QtTreePropertyBrowser" name="propertyTreeWidget" native="true">
+    <property name="geometry">
+     <rect>
+      <x>9</x>
+      <y>320</y>
+      <width>402</width>
+      <height>391</height>
+     </rect>
+    </property>
+   </widget>
   </widget>
  </widget>
  <customwidgets>
@@ -40,6 +57,12 @@
    <class>igQtModelTreeWidget</class>
    <extends>QTreeWidget</extends>
    <header location="global">IQComponents/igQtmodelTreeWidget.h</header>
+  </customwidget>
+  <customwidget>
+   <class>QtTreePropertyBrowser</class>
+   <extends>QWidget</extends>
+   <header location="global">Plugin/qtpropertybrowser/qttreepropertybrowser.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>

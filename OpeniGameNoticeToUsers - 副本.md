@@ -160,7 +160,7 @@ int GetPointToNeighborFaces(const IGsize ptId, igIndex* faceIds); // 获取顶�
 int GetEdgeToNeighborFaces(const IGsize edgeId, igIndex* faceIds);// 获取边的邻接面(共享边)
 int GetEdgeToOneRingFaces(const IGsize edgeId, igIndex* faceIds); // 获取边的1邻域面(共享顶点)
 int GetFaceToNeighborFaces(const IGsize faceId, igIndex* faceIds);// 获取边的邻接面(共享边)
-int GetFaceToOneRingFaces(const IGsize faceId, igIndex* faceIds); // 获取边的1邻域面(共享顶点)、
+int GetFaceToOneRingFaces(const IGsize faceId, igIndex* faceIds); // 获取边的1邻域面(共享顶点)
 
 void MakeEditStatusOn();
 void MakeEditStatusOff();
