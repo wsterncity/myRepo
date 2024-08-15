@@ -73,6 +73,49 @@ template<typename T>
 mat<4, 4, T> lookAt(const vec<3, T>& eye, const vec<3, T>& center,
                     const vec<3, T>& up);
 
+///**
+// * Creates a perspective projection matrix for a right-handed coordinate system
+// * with a zero to one depth range.
+// * @param fovy Field of view in the y direction, in radians.
+// * @param aspect Aspect ratio, defined as width divided by height.
+// * @param zNear The near clipping plane.
+// * @param zFar The far clipping plane.
+// * @return A perspective projection matrix.
+// */
+//template<typename T>
+//mat<4, 4, T> perspective(T fovy, T aspect, T zNear, T zFar);
+//
+///**
+// * Creates a perspective projection matrix with default near and far clipping planes.
+// * @param fovy Field of view in the y direction, in radians.
+// * @param aspect Aspect ratio, defined as width divided by height.
+// * @param zNear The near clipping plane.
+// * @return A perspective projection matrix.
+// */
+//template<typename T>
+//mat<4, 4, T> perspective(T fovy, T aspect, T zNear);
+//
+///**
+// * Creates a perspective projection matrix for a reversed Z-buffer (zero to one depth range).
+// * @param fovy Field of view in the y direction, in radians.
+// * @param aspect Aspect ratio, defined as width divided by height.
+// * @param zNear The near clipping plane.
+// * @param zFar The far clipping plane.
+// * @return A perspective projection matrix.
+// */
+//template<typename T>
+//mat<4, 4, T> perspectiveReversedZ(T fovy, T aspect, T zNear, T zFar);
+//
+///**
+// * Creates a perspective projection matrix for a reversed Z-buffer with default near clipping plane.
+// * @param fovy Field of view in the y direction, in radians.
+// * @param aspect Aspect ratio, defined as width divided by height.
+// * @param zNear The near clipping plane.
+// * @return A perspective projection matrix.
+// */
+//template<typename T>
+//mat<4, 4, T> perspectiveReversedZ(T fovy, T aspect, T zNear);
+
 /**
  * Creates a perspective projection matrix for a right-handed coordinate system
  * with a zero to one depth range.
@@ -86,17 +129,130 @@ template<typename T>
 mat<4, 4, T> perspectiveRH_ZO(T fovy, T aspect, T zNear, T zFar);
 
 /**
- * Creates a perspective projection matrix. The handedness of the coordinate
- * system and depth range are implementation-defined.
+ * Creates a perspective projection matrix for a right-handed coordinate system
+ * with a zero to one depth range and default infinite far plane.
+ * @param fovy Field of view in the y direction, in radians.
+ * @param aspect Aspect ratio, defined as width divided by height.
+ * @param zNear The near clipping plane.
+ * @return A perspective projection matrix.
+ */
+template<typename T>
+mat<4, 4, T> perspectiveRH_ZO(T fovy, T aspect, T zNear);
+
+/**
+ * Creates a perspective projection matrix for a right-handed coordinate system
+ * with a near to one depth range.
  * @param fovy Field of view in the y direction, in radians.
  * @param aspect Aspect ratio, defined as width divided by height.
  * @param zNear The near clipping plane.
  * @param zFar The far clipping plane.
  * @return A perspective projection matrix.
- * @note Default right-handed coordinate system
  */
 template<typename T>
-mat<4, 4, T> perspective(T fovy, T aspect, T zNear, T zFar);
+mat<4, 4, T> perspectiveRH_NO(T fovy, T aspect, T zNear, T zFar);
+
+/**
+ * Creates a perspective projection matrix for a right-handed coordinate system
+ * with a near to one depth range and default infinite far plane.
+ * @param fovy Field of view in the y direction, in radians.
+ * @param aspect Aspect ratio, defined as width divided by height.
+ * @param zNear The near clipping plane.
+ * @return A perspective projection matrix.
+ */
+template<typename T>
+mat<4, 4, T> perspectiveRH_NO(T fovy, T aspect, T zNear);
+
+/**
+ * Creates a perspective projection matrix for a right-handed coordinate system
+ * with a one to zero depth range.
+ * @param fovy Field of view in the y direction, in radians.
+ * @param aspect Aspect ratio, defined as width divided by height.
+ * @param zNear The near clipping plane.
+ * @param zFar The far clipping plane.
+ * @return A perspective projection matrix.
+ */
+template<typename T>
+mat<4, 4, T> perspectiveRH_OZ(T fovy, T aspect, T zNear, T zFar);
+
+/**
+ * Creates a perspective projection matrix for a right-handed coordinate system
+ * with a one to zero depth range and default infinite far plane.
+ * @param fovy Field of view in the y direction, in radians.
+ * @param aspect Aspect ratio, defined as width divided by height.
+ * @param zNear The near clipping plane.
+ * @return A perspective projection matrix.
+ */
+template<typename T>
+mat<4, 4, T> perspectiveRH_OZ(T fovy, T aspect, T zNear);
+
+/**
+ * Creates a perspective projection matrix for a left-handed coordinate system
+ * with a zero to one depth range.
+ * @param fovy Field of view in the y direction, in radians.
+ * @param aspect Aspect ratio, defined as width divided by height.
+ * @param zNear The near clipping plane.
+ * @param zFar The far clipping plane.
+ * @return A perspective projection matrix.
+ */
+template<typename T>
+mat<4, 4, T> perspectiveLH_ZO(T fovy, T aspect, T zNear, T zFar);
+
+/**
+ * Creates a perspective projection matrix for a left-handed coordinate system
+ * with a zero to one depth range and default infinite far plane.
+ * @param fovy Field of view in the y direction, in radians.
+ * @param aspect Aspect ratio, defined as width divided by height.
+ * @param zNear The near clipping plane.
+ * @return A perspective projection matrix.
+ */
+template<typename T>
+mat<4, 4, T> perspectiveLH_ZO(T fovy, T aspect, T zNear);
+
+/**
+ * Creates a perspective projection matrix for a left-handed coordinate system
+ * with a near to one depth range.
+ * @param fovy Field of view in the y direction, in radians.
+ * @param aspect Aspect ratio, defined as width divided by height.
+ * @param zNear The near clipping plane.
+ * @param zFar The far clipping plane.
+ * @return A perspective projection matrix.
+ */
+template<typename T>
+mat<4, 4, T> perspectiveLH_NO(T fovy, T aspect, T zNear, T zFar);
+
+/**
+ * Creates a perspective projection matrix for a left-handed coordinate system
+ * with a near to one depth range and default infinite far plane.
+ * @param fovy Field of view in the y direction, in radians.
+ * @param aspect Aspect ratio, defined as width divided by height.
+ * @param zNear The near clipping plane.
+ * @return A perspective projection matrix.
+ */
+template<typename T>
+mat<4, 4, T> perspectiveLH_NO(T fovy, T aspect, T zNear);
+
+/**
+ * Creates a perspective projection matrix for a left-handed coordinate system
+ * with a one to zero depth range.
+ * @param fovy Field of view in the y direction, in radians.
+ * @param aspect Aspect ratio, defined as width divided by height.
+ * @param zNear The near clipping plane.
+ * @param zFar The far clipping plane.
+ * @return A perspective projection matrix.
+ */
+template<typename T>
+mat<4, 4, T> perspectiveLH_OZ(T fovy, T aspect, T zNear, T zFar);
+
+/**
+ * Creates a perspective projection matrix for a left-handed coordinate system
+ * with a one to zero depth range and default infinite far plane.
+ * @param fovy Field of view in the y direction, in radians.
+ * @param aspect Aspect ratio, defined as width divided by height.
+ * @param zNear The near clipping plane.
+ * @return A perspective projection matrix.
+ */
+template<typename T>
+mat<4, 4, T> perspectiveLH_OZ(T fovy, T aspect, T zNear);
 
 /**
  * Creates an orthogonal projection matrix for a right-handed coordinate system

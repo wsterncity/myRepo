@@ -60,19 +60,24 @@ public:
 
 public:
     void SetNearPlane(float near) { nearPlane = near; };
-    void SetFarPlane(float far) { farPlane = far; };
+    //void SetFarPlane(float far) { farPlane = far; };
     float GetNearPlane() { return nearPlane; };
-    float GetFarPlane() { return farPlane; };
+    //float GetFarPlane() { return farPlane; };
 
     igm::mat4 GetProjectionMatrix() {
-        return igm::perspective(static_cast<float>(igm::radians(fov)),
-                                aspect<float>(), nearPlane, farPlane);
+        return igm::perspectiveRH_ZO(static_cast<float>(igm::radians(fov)),
+                                     aspect<float>(), nearPlane);
     };
+
+    igm::mat4 GetProjectionMatrixReversedZ() {
+        return igm::perspectiveRH_OZ(static_cast<float>(igm::radians(fov)),
+                                     aspect<float>(), nearPlane);
+    }
 
 protected:
     float fov = 45.0f;
     float nearPlane = 0.1f;
-    float farPlane = 100.0f;
+    //float farPlane = 100.0f;
 
 protected:
     Viewer() = default;

@@ -138,7 +138,8 @@ igm::mat4 Axes::ViewMatrix() {
                        igm::vec3{0.0f, 1.0f, 0.0f});
 }
 igm::mat4 Axes::ProjMatrix() {
-    return igm::perspective(45.0f, 1.0f, 0.1f, 100.0f);
+    // reversed-z buffer
+    return igm::perspectiveRH_OZ(45.0f, 1.0f, 0.1f);
 }
 
 void Axes::initialize() {

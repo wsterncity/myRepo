@@ -24,8 +24,13 @@ void main() {
     float depth_2 = textureLod(sampler2D(inImage), (vec2(pos_2) + vec2(0.5)) / vec2(inImageSize), preLevel).x;
     float depth_3 = textureLod(sampler2D(inImage), (vec2(pos_3) + vec2(0.5)) / vec2(inImageSize), preLevel).x;
 
+    // default z-buffer
     // depth range: 0.0(near plane) -> 1.0(far plane)
-    float maxDepth = max(max(depth_0, depth_1), max(depth_2, depth_3));
-    
-    imageStore(outImage, ivec2(pos), vec4(maxDepth));
+    // float maxDepth = max(max(depth_0, depth_1), max(depth_2, depth_3));
+    // imageStore(outImage, ivec2(pos), vec4(maxDepth));
+
+    // reversed-z buffer
+    // depth range: 1.0(near plane) -> 0.0(far plane)
+    float minDepth = min(min(depth_0, depth_1), max(depth_2, depth_3));
+    imageStore(outImage, ivec2(pos), vec4(minDepth));
 }

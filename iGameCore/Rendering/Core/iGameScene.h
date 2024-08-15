@@ -28,7 +28,7 @@ public:
     void RemoveCurrentModel();
     void SetCurrentModel(int index);
     void SetCurrentModel(Model*);
-    
+
     Model* GetCurrentModel();
     Model* GetModelById(int index);
     DataObject* GetDataObjectById(int index);
@@ -41,12 +41,12 @@ public:
     struct CameraDataBuffer {
         alignas(16) igm::mat4 view;
         alignas(16) igm::mat4 proj;
-        alignas(16) igm::mat4 projview; // proj * view
+        alignas(16) igm::mat4 proj_view; // proj * view
     };
     struct ObjectDataBuffer {
         alignas(16) igm::mat4 model;
         alignas(16) igm::mat4 normal; // transpose(inverse(model))
-        alignas(16) igm::vec4 spherebounds;
+        alignas(16) igm::vec4 sphereBounds;
     };
     struct UniformBufferObjectBuffer {
         alignas(16) igm::vec3 viewPos;
@@ -54,10 +54,12 @@ public:
     };
 
     struct DrawCullData {
-        igm::mat4 modelview;
-        float P00, P11, znear, zfar; // symmetric projection parameters
-        float frustum[4]; // data for left/right/top/bottom frustum planes
-        float pyramidWidth, pyramidHeight; // depth pyramid size in texels
+        alignas(16) igm::mat4 view_model;
+        alignas(4) float P00, P11, zNear; // symmetric projection parameters
+        alignas(16) igm::vec4
+                frustum; // data for left/right/top/bottom frustum planes
+        alignas(4) float pyramidWidth,
+                pyramidHeight; // depth pyramid size in texels
     };
 
     enum ShaderType {
@@ -94,14 +96,14 @@ public:
     GLTexture2d& HizTexture() { return m_DepthPyramid; }
 
     // TODO: slove z-buffer Accuracy issues
-    GLBuffer& GetDrawCullDataBuffer();
+    GLBuffer& GetDrawCullDataBuffer() { return m_DrawCullData; }
 
 protected:
     Scene();
     ~Scene() override;
 
     void UpdateModelsBoundingSphere();
-    
+
     void InitOpenGL();
     void InitFont();
     void InitAxes();
@@ -109,13 +111,14 @@ protected:
     void ResizeFrameBuffer();
     void ResizeHizTexture();
     void RefreshHizTexture();
+    void RefreshDrawCullDataBuffer();
 
     void UpdateUniformData();
     void DrawFrame();
     void DrawModels();
     void DrawAxes();
 
-    
+
     /* Data Object Related */
     std::map<int, Model::Pointer> m_Models;
     int m_IncrementModelId{0};

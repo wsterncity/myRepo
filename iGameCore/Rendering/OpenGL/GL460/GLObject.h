@@ -6,7 +6,7 @@ IGAME_NAMESPACE_BEGIN
 template<typename Helper>
 class GLObject {
 protected:
-    GLuint handle;
+    GLuint handle = 0;
     GLObject(GLuint _handle) : handle{_handle} {}
 
 private:

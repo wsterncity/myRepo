@@ -4,14 +4,14 @@ layout(std140) uniform CameraDataBlock {
 //layout(std140, binding = 0) uniform CameraDataBlock {
     mat4 view;
     mat4 proj;
-    mat4 projview;// proj * view
+    mat4 proj_view;// proj * view
 } cameraData;
 
 layout(std140) uniform ObjectDataBlock {
 //layout(std140, binding = 1) uniform ObjectDataBLock {
     mat4 model;
     mat4 normal;// transpose(inverse(model))
-    vec4 spherebounds;// not set now, do not use
+    vec4 sphereBounds;// not set now, do not use
 } objectData;
 
 layout(std140) uniform UniformBufferObjectBlock {
@@ -47,7 +47,7 @@ void main() {
     // gl_ClipDistance[4] = dot(plane[4], vec4(inPosition, 1.0));
     // gl_ClipDistance[5] = dot(plane[5], vec4(inPosition, 1.0));
 
-    gl_Position = cameraData.projview * objectData.model * vec4(inPosition, 1.0);
+    gl_Position = cameraData.proj_view * objectData.model * vec4(inPosition, 1.0);
     fragPosition = vec3(objectData.model * vec4(inPosition, 1.0));
     if (ubo.useColor) {
         fragColor = inColor;

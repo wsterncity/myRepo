@@ -13,14 +13,14 @@
 #include <qdebug.h>
 #include <QMouseEvent>
 
-igQtRenderWidget::igQtRenderWidget(QWidget* parent) : QOpenGLWidget(parent) 
+igQtRenderWidget::igQtRenderWidget(QWidget* parent) : QOpenGLWidget(parent)
 {
     setMouseTracking(true);
     setMinimumHeight(185);
     setMinimumWidth(320);
 }
 
-igQtRenderWidget::~igQtRenderWidget() 
+igQtRenderWidget::~igQtRenderWidget()
 {
     makeCurrent();
     SceneManager::Pointer sceneManager = SceneManager::Instance();
@@ -42,7 +42,7 @@ void igQtRenderWidget::ChangeInteractor(SmartPointer<Interactor> it) {
     m_Interactor->SetScene(m_Scene);
 }
 
-void igQtRenderWidget::initializeGL() 
+void igQtRenderWidget::initializeGL()
 {
     // 目前当窗口
     SceneManager::Pointer sceneManager = SceneManager::Instance();
@@ -52,19 +52,19 @@ void igQtRenderWidget::initializeGL()
     m_Interactor->SetScene(m_Scene);
 }
 
-void igQtRenderWidget::resizeGL(int w, int h) 
+void igQtRenderWidget::resizeGL(int w, int h)
 {
     auto ratio = this->devicePixelRatio();
     m_Scene->Resize(width(), height(), ratio);
 }
 
-void igQtRenderWidget::paintGL() 
-{ 
+void igQtRenderWidget::paintGL()
+{
     m_Scene->Draw();
 }
 
 
-void igQtRenderWidget::mousePressEvent(QMouseEvent* event) 
+void igQtRenderWidget::mousePressEvent(QMouseEvent* event)
 {
     MouseButton mode{};
     switch (event->button()) {
@@ -84,19 +84,19 @@ void igQtRenderWidget::mousePressEvent(QMouseEvent* event)
     update();
 }
 
-void igQtRenderWidget::mouseMoveEvent(QMouseEvent* event) 
+void igQtRenderWidget::mouseMoveEvent(QMouseEvent* event)
 {
     m_Interactor->MouseMoveEvent(event->pos().x(), event->pos().y());
     update();
 }
 
-void igQtRenderWidget::mouseReleaseEvent(QMouseEvent* event) 
+void igQtRenderWidget::mouseReleaseEvent(QMouseEvent* event)
 {
     m_Interactor->MouseReleaseEvent(event->pos().x(), event->pos().y());
     update();
 }
 
-void igQtRenderWidget::wheelEvent(QWheelEvent* event) 
+void igQtRenderWidget::wheelEvent(QWheelEvent* event)
 {
     m_Interactor->WheelEvent(event->delta());
     update();

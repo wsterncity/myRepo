@@ -76,10 +76,10 @@ void Meshlet::BuildMeshlet(const float* vertex_positions, size_t vertex_count,
                 igm::vec4{0.0f}};
         drawCommands[i] = {m.triangle_count * 3, 0, m.triangle_offset, 0, 0};
 
-        for (auto i = m.triangle_offset;
-             i < m.triangle_offset + m.triangle_count * 3; i++) {
-            m_MeshletIndices[i] =
-                    m_MeshletVertices[m.vertex_offset + m_MeshletTriangles[i]];
+        for (auto j = m.triangle_offset;
+             j < m.triangle_offset + m.triangle_count * 3; j++) {
+            m_MeshletIndices[j] =
+                    m_MeshletVertices[m.vertex_offset + m_MeshletTriangles[j]];
         }
     }
 

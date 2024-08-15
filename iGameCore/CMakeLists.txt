@@ -1,7 +1,5 @@
 set(MODULE_NAME iGameCore_module)
 
-
-
 file(GLOB_RECURSE IGAME_CORE_FILE CONFIGURE_DEPENDS ./*.h ./*.cpp)
 add_library(${MODULE_NAME} STATIC ${IGAME_CORE_FILE}
         Rendering/Core/Interactor/iGameLineSourceInteractor.h)
