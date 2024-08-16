@@ -44,13 +44,19 @@ mat<4, 4, T> rotate(mat<4, 4, T> const& m, T angle, vec<3, T> const& v) {
 }
 
 template<typename T>
+mat<4, 4, T> lookAt(const vec<3, T>& eye, const vec<3, T>& center,
+                    const vec<3, T>& up) {
+    return lookAtRH(eye, center, up);
+}
+
+template<typename T>
 mat<4, 4, T> lookAtRH(const vec<3, T>& eye, const vec<3, T>& center,
                       const vec<3, T>& up) {
     vec<3, T> const f((center - eye).normalized());
     vec<3, T> const s((cross(f, up)).normalized());
     vec<3, T> const u(cross(s, f));
 
-    mat<4, 4, T> Result(1.0f);
+    mat<4, 4, T> Result(static_cast<T>(1));
     Result[0][0] = s.x;
     Result[1][0] = s.y;
     Result[2][0] = s.z;
@@ -73,7 +79,7 @@ mat<4, 4, T> lookAtLH(const vec<3, T>& eye, const vec<3, T>& center,
     vec<3, T> const s((cross(f, up)).normalized());
     vec<3, T> const u(cross(f, s));
 
-    mat<4, 4, T> Result(1.0f);
+    mat<4, 4, T> Result(static_cast<T>(1));
     Result[0][0] = s.x;
     Result[1][0] = s.y;
     Result[2][0] = s.z;
@@ -89,35 +95,215 @@ mat<4, 4, T> lookAtLH(const vec<3, T>& eye, const vec<3, T>& center,
     return Result;
 }
 
-template<typename T>
-mat<4, 4, T> lookAt(const vec<3, T>& eye, const vec<3, T>& center,
-                    const vec<3, T>& up) {
-    return lookAtRH(eye, center, up);
-}
+//template<typename T>
+//mat<4, 4, T> perspective(T fovy, T aspect, T zNear) {
+//    return perspectiveRH_ZO(fovy, aspect, zNear);
+//}
+//
+//template<typename T>
+//mat<4, 4, T> perspective(T fovy, T aspect, T zNear, T zFar) {
+//    return perspectiveRH_ZO(fovy, aspect, zNear, zFar);
+//}
+//
+//template<typename T>
+//mat<4, 4, T> perspectiveReversedZ(T fovy, T aspect, T zNear) {
+//    return perspectiveRH_OZ(fovy, aspect, zNear);
+//}
+//
+//template<typename T>
+//mat<4, 4, T> perspectiveReversedZ(T fovy, T aspect, T zNear, T zFar) {
+//    return perspectiveRH_OZ(fovy, aspect, zNear, zFar);
+//}
 
 template<typename T>
+// depth range: 0.0(near plane) -> 1.0(far plane)
 mat<4, 4, T> perspectiveRH_ZO(T fovy, T aspect, T zNear, T zFar) {
     assert(abs(aspect - std::numeric_limits<T>::epsilon()) > static_cast<T>(0));
 
-    T const tanHalfFovy = std::tan(fovy / static_cast<T>(2));
+    T const tanHalfFovy = tan(fovy / static_cast<T>(2));
 
-    mat<4, 4, T> Result(0.0f);
-    Result[0][0] = 1.0f / (aspect * tanHalfFovy);
-    Result[1][1] = 1.0f / (tanHalfFovy);
+    mat<4, 4, T> Result(static_cast<T>(0));
+    Result[0][0] = static_cast<T>(1) / (aspect * tanHalfFovy);
+    Result[1][1] = static_cast<T>(1) / (tanHalfFovy);
     Result[2][2] = zFar / (zNear - zFar);
-    Result[2][3] = -1.0f;
+    Result[2][3] = -static_cast<T>(1);
     Result[3][2] = -(zFar * zNear) / (zFar - zNear);
-    //        Result(0, 0) = 1.0f / (aspect * tanHalfFovy);
-    //        Result(1, 1) = 1.0f / (tanHalfFovy);
-    //        Result(2, 2) = zFar / (zNear - zFar);
-    //        Result(2, 3) = - 1.0f;
-    //        Result(3, 2) = -(zFar * zNear) / (zFar - zNear);
     return Result;
 }
 
 template<typename T>
-mat<4, 4, T> perspective(T fovy, T aspect, T zNear, T zFar) {
-    return perspectiveRH_ZO(fovy, aspect, zNear, zFar);
+// depth range: 0.0(near plane) -> 1.0(far plane)
+mat<4, 4, T> perspectiveRH_ZO(T fovy, T aspect, T zNear) {
+    assert(abs(aspect - std::numeric_limits<T>::epsilon()) > static_cast<T>(0));
+
+    T const tanHalfFovy = tan(fovy / static_cast<T>(2));
+
+    mat<4, 4, T> Result(static_cast<T>(0));
+    Result[0][0] = static_cast<T>(1) / (aspect * tanHalfFovy);
+    Result[1][1] = static_cast<T>(1) / (tanHalfFovy);
+    Result[2][2] = -static_cast<T>(1);
+    Result[2][3] = -static_cast<T>(1);
+    Result[3][2] = -zNear;
+    return Result;
+}
+
+template<typename T>
+// depth range: -1.0(near plane) -> 1.0(far plane)
+mat<4, 4, T> perspectiveRH_NO(T fovy, T aspect, T zNear, T zFar) {
+    assert(abs(aspect - std::numeric_limits<T>::epsilon()) > static_cast<T>(0));
+
+    T const tanHalfFovy = tan(fovy / static_cast<T>(2));
+
+    mat<4, 4, T> Result(static_cast<T>(0));
+    Result[0][0] = static_cast<T>(1) / (aspect * tanHalfFovy);
+    Result[1][1] = static_cast<T>(1) / (tanHalfFovy);
+    Result[2][2] = -(zFar + zNear) / (zFar - zNear);
+    Result[2][3] = -static_cast<T>(1);
+    Result[3][2] = -(static_cast<T>(2) * zFar * zNear) / (zFar - zNear);
+    return Result;
+}
+
+template<typename T>
+// depth range: -1.0(near plane) -> 1.0(far plane)
+mat<4, 4, T> perspectiveRH_NO(T fovy, T aspect, T zNear) {
+    assert(abs(aspect - std::numeric_limits<T>::epsilon()) > static_cast<T>(0));
+
+    T const tanHalfFovy = tan(fovy / static_cast<T>(2));
+
+    mat<4, 4, T> Result(static_cast<T>(0));
+    Result[0][0] = static_cast<T>(1) / (aspect * tanHalfFovy);
+    Result[1][1] = static_cast<T>(1) / (tanHalfFovy);
+    Result[2][2] = -static_cast<T>(1);
+    Result[2][3] = -static_cast<T>(1);
+    Result[3][2] = -(static_cast<T>(2) * zNear);
+    return Result;
+}
+
+template<typename T>
+// depth range: 1.0(near plane) -> 0.0(far plane)
+mat<4, 4, T> perspectiveRH_OZ(T fovy, T aspect, T zNear, T zFar) {
+    assert(abs(aspect - std::numeric_limits<T>::epsilon()) > static_cast<T>(0));
+
+    T const tanHalfFovy = std::tan(fovy / static_cast<T>(2));
+
+    mat<4, 4, T> Result(static_cast<T>(0));
+    Result[0][0] = static_cast<T>(1) / (aspect * tanHalfFovy);
+    Result[1][1] = static_cast<T>(1) / (tanHalfFovy);
+    Result[2][2] = zNear / (zFar - zNear);
+    Result[2][3] = -static_cast<T>(1);
+    Result[3][2] = (zFar * zNear) / (zFar - zNear);
+    return Result;
+}
+
+template<typename T>
+// depth range: 1.0(near plane) -> 0.0(far plane)
+mat<4, 4, T> perspectiveRH_OZ(T fovy, T aspect, T zNear) {
+    assert(abs(aspect - std::numeric_limits<T>::epsilon()) > static_cast<T>(0));
+
+    T const tanHalfFovy = std::tan(fovy / static_cast<T>(2));
+
+    mat<4, 4, T> Result(static_cast<T>(0));
+    Result[0][0] = static_cast<T>(1) / (aspect * tanHalfFovy);
+    Result[1][1] = static_cast<T>(1) / (tanHalfFovy);
+    Result[2][3] = -static_cast<T>(1);
+    Result[3][2] = zNear;
+    return Result;
+}
+
+template<typename T>
+mat<4, 4, T> perspectiveLH_ZO(T fovy, T aspect, T zNear, T zFar) {
+    assert(abs(aspect - std::numeric_limits<T>::epsilon()) > static_cast<T>(0));
+
+    T const tanHalfFovy = tan(fovy / static_cast<T>(2));
+
+    mat<4, 4, T> Result(static_cast<T>(0));
+    Result[0][0] = static_cast<T>(1) / (aspect * tanHalfFovy);
+    Result[1][1] = static_cast<T>(1) / (tanHalfFovy);
+    Result[2][2] = zFar / (zFar - zNear);
+    Result[2][3] = static_cast<T>(1);
+    Result[3][2] = -(zFar * zNear) / (zFar - zNear);
+    return Result;
+}
+
+template<typename T>
+mat<4, 4, T> perspectiveLH_ZO(T fovy, T aspect, T zNear) {
+    assert(abs(aspect - std::numeric_limits<T>::epsilon()) > static_cast<T>(0));
+
+    T const tanHalfFovy = tan(fovy / static_cast<T>(2));
+
+    mat<4, 4, T> Result(static_cast<T>(0));
+    Result[0][0] = static_cast<T>(1) / (aspect * tanHalfFovy);
+    Result[1][1] = static_cast<T>(1) / (tanHalfFovy);
+    Result[2][2] = static_cast<T>(1);
+    Result[2][3] = static_cast<T>(1);
+    Result[3][2] = -zNear;
+    return Result;
+}
+
+template<typename T>
+mat<4, 4, T> perspectiveLH_NO(T fovy, T aspect, T zNear, T zFar) {
+    assert(abs(aspect - std::numeric_limits<T>::epsilon()) > static_cast<T>(0));
+
+    T const tanHalfFovy = tan(fovy / static_cast<T>(2));
+
+    mat<4, 4, T> Result(static_cast<T>(0));
+    Result[0][0] = static_cast<T>(1) / (aspect * tanHalfFovy);
+    Result[1][1] = static_cast<T>(1) / (tanHalfFovy);
+    Result[2][2] = (zFar + zNear) / (zFar - zNear);
+    Result[2][3] = static_cast<T>(1);
+    Result[3][2] = -(static_cast<T>(2) * zFar * zNear) / (zFar - zNear);
+    return Result;
+}
+
+template<typename T>
+mat<4, 4, T> perspectiveLH_NO(T fovy, T aspect, T zNear) {
+    assert(abs(aspect - std::numeric_limits<T>::epsilon()) > static_cast<T>(0));
+
+    T const tanHalfFovy = tan(fovy / static_cast<T>(2));
+
+    mat<4, 4, T> Result(static_cast<T>(0));
+    Result[0][0] = static_cast<T>(1) / (aspect * tanHalfFovy);
+    Result[1][1] = static_cast<T>(1) / (tanHalfFovy);
+    Result[2][2] = static_cast<T>(1);
+    Result[2][3] = static_cast<T>(1);
+    Result[3][2] = -(static_cast<T>(2) * zNear);
+    return Result;
+}
+
+template<typename T>
+// TODO: Waiting for verification
+mat<4, 4, T> perspectiveLH_OZ(T fovy, T aspect, T zNear, T zFar) {
+    assert(abs(aspect - std::numeric_limits<T>::epsilon()) > static_cast<T>(0));
+
+    T const tanHalfFovy = tan(fovy / static_cast<T>(2));
+
+    mat<4, 4, T> Result(static_cast<T>(0));
+    Result[0][0] = static_cast<T>(1) / (aspect * tanHalfFovy);
+    Result[1][1] = static_cast<T>(1) / (tanHalfFovy);
+    Result[2][2] = -(zNear) / (zFar - zNear);
+    Result[2][3] = static_cast<T>(1);
+    Result[3][2] = (zFar * zNear) / (zFar - zNear);
+    return Result;
+}
+
+template<typename T>
+// TODO: Waiting for verification
+mat<4, 4, T> perspectiveLH_OZ(T fovy, T aspect, T zNear) {
+    assert(abs(aspect - std::numeric_limits<T>::epsilon()) > static_cast<T>(0));
+
+    T const tanHalfFovy = tan(fovy / static_cast<T>(2));
+
+    mat<4, 4, T> Result(static_cast<T>(0));
+    Result[0][0] = static_cast<T>(1) / (aspect * tanHalfFovy);
+    Result[1][1] = static_cast<T>(1) / (tanHalfFovy);
+    Result[2][3] = static_cast<T>(1);
+    Result[3][2] = zNear;
+    return Result;
+}
+
+template<typename T>
+mat<4, 4, T> ortho(T left, T right, T bottom, T top, T zNear, T zFar) {
+    return orthoRH_NO(left, right, bottom, top, zNear, zFar);
 }
 
 template<typename T>
@@ -132,8 +318,4 @@ mat<4, 4, T> orthoRH_NO(T left, T right, T bottom, T top, T zNear, T zFar) {
     return Result;
 }
 
-template<typename T>
-mat<4, 4, T> ortho(T left, T right, T bottom, T top, T zNear, T zFar) {
-    return orthoRH_NO(left, right, bottom, top, zNear, zFar);
-}
 } // namespace igm

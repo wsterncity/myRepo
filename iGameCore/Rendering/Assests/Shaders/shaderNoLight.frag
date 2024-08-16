@@ -4,14 +4,14 @@ layout(std140) uniform CameraDataBlock {
 //layout(std140, binding = 0) uniform CameraDataBlock {
     mat4 view;
     mat4 proj;
-    mat4 projview;// proj * view
+    mat4 proj_view;// proj * view
 } cameraData;
 
 layout(std140) uniform ObjectDataBlock {
 //layout(std140, binding = 1) uniform ObjectDataBLock {
     mat4 model;
     mat4 normal;// transpose(inverse(model))
-    vec4 spherebounds;// not set now, do not use
+    vec4 sphereBounds;// not set now, do not use
 } objectData;
 
 layout(std140) uniform UniformBufferObjectBlock {

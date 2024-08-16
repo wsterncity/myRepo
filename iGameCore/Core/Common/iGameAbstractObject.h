@@ -23,7 +23,7 @@ public:
 		++m_ReferenceCount;
 	}
 
-	// The reference count is decremented by one.If the 
+	// The reference count is decremented by one.If the
 	// reference count reaches 0, the object is deleted
 	virtual void UnRegister() const noexcept
 	{
@@ -37,8 +37,8 @@ protected:
 	AbstractObject() {}
 	virtual ~AbstractObject() {};
 
-	// Reference count: One keeps track of how many times 
-	// an object has been referenced so that memory is 
+	// Reference count: One keeps track of how many times
+	// an object has been referenced so that memory is
 	// automatically freed when it is no longer needed.
 	mutable std::atomic<int> m_ReferenceCount{};
 };

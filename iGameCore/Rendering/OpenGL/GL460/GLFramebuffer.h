@@ -13,10 +13,10 @@ private:
 
 private:
     friend class GLObject<GLFramebuffer>;
-    static void _create(GLsizei count, GLuint* handles) {
+    static void createHandle(GLsizei count, GLuint* handles) {
         glCreateFramebuffers(count, handles);
     }
-    static void _destroy(GLsizei count, GLuint* handles) {
+    static void destroyHandle(GLsizei count, GLuint* handles) {
         glDeleteFramebuffers(count, handles);
     }
 
@@ -36,7 +36,7 @@ public:
 
     void bind() const { glBindFramebuffer(m_Target, handle); }
     void release() const { glBindFramebuffer(m_Target, 0); }
-    
+
     void drawBuffers(size_t count, GLenum* buffers) {
         glNamedFramebufferDrawBuffers(handle, count, buffers);
     }

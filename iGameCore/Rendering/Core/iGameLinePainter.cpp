@@ -17,10 +17,8 @@ void LinePainter::Clear() {
 void LinePainter::Draw(Scene* scene) {
     if (!m_Visibility) { return; }
 
-    if (m_Points == nullptr) { 
-        return;
-    }
-        
+    if (m_Points == nullptr) { return; }
+
     if (this->GetMTime() < m_Points->GetMTime()) {
         VAO.destroy();
         pVBO.destroy();
@@ -49,6 +47,7 @@ void LinePainter::Draw(Scene* scene) {
         this->Modified();
     }
 
+    if (!VAO) return;
     scene->UBO().useColor = true;
     scene->UpdateUniformBuffer();
     scene->GetShader(Scene::NOLIGHT)->use();
