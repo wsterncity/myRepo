@@ -1,11 +1,14 @@
 #ifndef OPENIGAME_MODEL_H
 #define OPENIGAME_MODEL_H
 
+#include <utility>
+
 #include "iGameObject.h"
 #include "iGameDataObject.h"
 #include "iGamePoints.h"
 #include "iGamePointPainter.h"
 #include "iGameLinePainter.h"
+#include "iGameFilter.h"
 
 IGAME_NAMESPACE_BEGIN
 class Scene;
@@ -20,7 +23,8 @@ public:
     bool GetVisibility() { return m_DataObject->GetVisibility(); }
     PointPainter* GetPointPainter() { return m_PickedPointPainter.get();}
     LinePainter* GetLinePainter() { return m_PickedLinePainter.get(); }
-
+    Filter* GetModelFilter(){ return m_Filter; }
+    void SetModelFilter(Filter* _filter){ m_Filter = _filter; }
     void Show();
     void Hide();
     void SetBoundingBoxSwitch(bool action);
@@ -44,6 +48,7 @@ protected:
     void SwitchOff(ViewSwitch type) { m_Switch &= ~(1ull << type); }
     bool GetSwitch(ViewSwitch type) { return m_Switch & (1ull << type); }
 
+    Filter* m_Filter{nullptr};
     DataObject::Pointer m_DataObject{};
     Scene* m_Scene{nullptr};
     PointPainter::Pointer m_PickedPointPainter{};

@@ -43,7 +43,7 @@ void LineTypePointsSource::SetPoint_1(const Point& point1) {
     m_Point_1 = point1;
 }
 
-void LineTypePointsSource::SetResolution(unsigned int& Resolution) {
+void LineTypePointsSource::SetResolution(unsigned int Resolution) {
     if(Resolution == 0) m_Resolution = 1;
     m_Resolution = Resolution;
 }

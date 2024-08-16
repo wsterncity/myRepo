@@ -13,8 +13,7 @@ class LineTypePointsSource : public PointSource{
 public:
     I_OBJECT(LineTypePointsSource)
     static Pointer New(){
-        uint32_t resolution = 1;
-        return new LineTypePointsSource(resolution);
+        return new LineTypePointsSource();
     }
 
     bool Execute() override;
@@ -23,15 +22,15 @@ public:
 
     void SetPoint_1(const Point& point1);
 
-    void SetResolution(unsigned int& Resolution);
+    void SetResolution(unsigned int Resolution);
 
 protected:
-    LineTypePointsSource(uint32_t &mResolution) : m_Resolution(mResolution) {};
+    LineTypePointsSource(){};
 
     Point m_Point_0;
     Point m_Point_1;
 
-    uint32_t& m_Resolution;
+    uint32_t m_Resolution{1};
 };
 
 

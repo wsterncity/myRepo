@@ -35,7 +35,7 @@ public slots:
 
 		item->setName(QString::fromStdString(obj->GetName()));
 		item->setModel(model);
-		
+        UpdateCurrentModel(model);
 		//QTreeWidgetItem* child = new QTreeWidgetItem(item);
 		//child->setText(0, "Source");
 		//child->setText(1, "File");
@@ -50,14 +50,19 @@ public slots:
 
         item->setName(QString::fromStdString(model->GetDataObject()->GetName()));
         item->setModel(model);
+        UpdateCurrentModel(model);
         modelTreeWidget->addTopLevelItem(item);
         modelTreeWidget->setCurrentItem(item);
+
     }
+protected:
+    void UpdateCurrentModel(Model::Pointer model);
 
 private:
+    Model* currentModel;
+
 	igQtModelTreeWidget* modelTreeWidget;
 	QtTreePropertyBrowser* propertyTreeWidget;
-	
 	Ui::LayerDialog* ui;
 };
 

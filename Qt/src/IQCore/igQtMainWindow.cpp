@@ -631,17 +631,21 @@ void igQtMainWindow::initAllSources() {
         auto curScene = SceneManager::Instance()->GetCurrentScene();
 
         LineTypePointsSource::Pointer lineSource = LineTypePointsSource::New();
-
         lineSource->SetInput(newLinePointSet);
-//        lineSource->SetResolution(20);
+//        lineSource->SetInput(1, 20);
+        lineSource->SetResolution(20);
         lineSource->GetOutput()->SetName("lineSource");
-
+        lineSource->GetOutput()->GetMetadata()->AddInt("Resolution", 20);
         auto model = curScene->CreateModel(lineSource->GetOutput());
+        model->SetModelFilter(lineSource.get());
         modelTreeWidget->addModelToModelTree(model);
 
         auto interactor = LineSourceInteractor::New();
         interactor->SetPointSet(DynamicCast<PointSet>(newLinePointSet), model);
         interactor->SetFilter(lineSource);
+
+//        auto interactor = PointDragInteractor::New();
+//        interactor->SetPointSet(DynamicCast<PointSet>(SceneManager::Instance()->GetCurrentScene()->GetCurrentModel()->GetDataObject()));
 
         rendererWidget->ChangeInteractor(interactor);
     });
