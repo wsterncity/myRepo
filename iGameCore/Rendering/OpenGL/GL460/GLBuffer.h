@@ -10,10 +10,10 @@ private:
 
 private:
     friend class GLObject<GLBuffer>;
-    static void _create(GLsizei count, GLuint* handles) {
+    static void createHandle(GLsizei count, GLuint* handles) {
         glCreateBuffers(count, handles);
     }
-    static void _destroy(GLsizei count, GLuint* handles) {
+    static void destroyHandle(GLsizei count, GLuint* handles) {
         glDeleteBuffers(count, handles);
     }
 

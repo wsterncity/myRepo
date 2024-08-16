@@ -2,7 +2,7 @@
 
 #include "GLBuffer.h"
 #include "GLObject.h"
-#include <map>
+#include "GLVertexArrayManager.h"
 
 IGAME_NAMESPACE_BEGIN
 
@@ -19,10 +19,10 @@ public:
 class GLVertexArray : public GLObject<GLVertexArray> {
 private:
     friend class GLObject<GLVertexArray>;
-    static void _create(GLsizei count, GLuint* handles) {
+    static void createHandle(GLsizei count, GLuint* handles) {
         glGenVertexArrays(count, handles);
     }
-    static void _destroy(GLsizei count, GLuint* handles) {
+    static void destroyHandle(GLsizei count, GLuint* handles) {
         glDeleteVertexArrays(count, handles);
     }
 
@@ -34,11 +34,18 @@ public:
                       ptrdiff_t offset, size_t stride) {
         if (offset != 0) {
             throw std::runtime_error(
-                    "You are trying to offset the VBO in the opengl410 "
+                    "You are trying to offset the VBO in the opengl330 "
                     "version, which is illegal. Please check your code.");
         }
-        m_VBO[vbo_binding_index] = &buffer;
-        m_VBOStride[vbo_binding_index] = stride;
+        GLVertexArrayManager::Instance().RegisterPair(handle, vbo_binding_index,
+                                                      buffer, stride);
+        //if (offset != 0) {
+        //    throw std::runtime_error(
+        //            "You are trying to offset the VBO in the opengl330 "
+        //            "version, which is illegal. Please check your code.");
+        //}
+        //m_VBO[vbo_binding_index] = &buffer;
+        //m_VBOStride[vbo_binding_index] = stride;
     }
 
     void elementBuffer(GLBuffer& buffer) {
@@ -58,18 +65,38 @@ public:
                              unsigned int vbo_binding_index, int size,
                              GLenum type, bool normalized,
                              unsigned int relative_offset) {
+        auto buffer = GLVertexArrayManager::Instance().GetBuffer(
+                handle, vbo_binding_index);
+        auto stride = GLVertexArrayManager::Instance().GetStride(
+                handle, vbo_binding_index);
+        GLintptr offset = static_cast<uintptr_t>(relative_offset);
+
         glBindVertexArray(handle);
-        m_VBO[vbo_binding_index]->target(GL_ARRAY_BUFFER);
-        m_VBO[vbo_binding_index]->bind();
-        glVertexAttribPointer(attribute.index(), size, type, normalized,
-                              m_VBOStride[vbo_binding_index],
-                              (void*) relative_offset);
+        glBindBuffer(GL_ARRAY_BUFFER, buffer);
+        glVertexAttribPointer(attribute.index(), size, type, normalized, stride,
+                              reinterpret_cast<void*>(offset));
         glBindVertexArray(0);
+
+        //if (m_VBO.find(vbo_binding_index) == m_VBO.end()) {
+        //    throw std::runtime_error("Binding index not found in m_VBO");
+        //}
+        //
+        ////if (!m_VBO[vbo_binding_index]->isAllocated()) {
+        ////    throw std::runtime_error("VBO is not allocated.");
+        ////}
+        //
+        //glBindVertexArray(handle);
+        //m_VBO[vbo_binding_index]->target(GL_ARRAY_BUFFER);
+        //m_VBO[vbo_binding_index]->bind();
+        //glVertexAttribPointer(attribute.index(), size, type, normalized,
+        //                      m_VBOStride[vbo_binding_index],
+        //                      (void*) relative_offset);
+        //glBindVertexArray(0);
     }
 
 private:
-    std::map<unsigned int, GLBuffer*> m_VBO;
-    std::map<unsigned int, size_t> m_VBOStride;
+    //std::map<unsigned int, GLBuffer*> m_VBO;
+    //std::map<unsigned int, size_t> m_VBOStride;
 };
 
 //Per-vertex attributes binding indices

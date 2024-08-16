@@ -563,7 +563,7 @@ void SurfaceMesh::ReplacePointReference(const IGsize fromPtId,
   m_FaceLinks->SetLink(toPtId, link2.pointer, link2.size);
 }
 
-SurfaceMesh::SurfaceMesh() { m_ViewStyle = IG_SURFACE; };
+SurfaceMesh::SurfaceMesh(){};
 
 void SurfaceMesh::Draw(Scene *scene) {
   if (!m_Visibility) {
@@ -647,6 +647,7 @@ void SurfaceMesh::Draw(Scene *scene) {
 }
 
 void SurfaceMesh::DrawPhase1(Scene *scene) {
+#ifdef IGAME_OPENGL_VERSION_460
   // std::cout << "Draw phase 1:" << std::endl;
   if (!m_Visibility) {
     return;
@@ -688,10 +689,11 @@ void SurfaceMesh::DrawPhase1(Scene *scene) {
 
     m_TriangleVAO.release();
   }
-  // else if (m_ViewStyle == IG_SURFACE_WITH_EDGE) {
-  // }
-};
+#endif
+}
+
 void SurfaceMesh::DrawPhase2(Scene *scene) {
+#ifdef IGAME_OPENGL_VERSION_460
   // std::cout << "Draw phase 2:" << std::endl;
   if (!m_Visibility) {
     return;
@@ -768,10 +770,12 @@ void SurfaceMesh::DrawPhase2(Scene *scene) {
 
     m_TriangleVAO.release();
   }
-  // else if (m_ViewStyle == IG_SURFACE_WITH_EDGE) {
-  // }
-};
+
+#endif
+}
+
 void SurfaceMesh::TestOcclusionResults(Scene *scene) {
+#ifdef IGAME_OPENGL_VERSION_460
   // std::cout << "Draw phase 3:" << std::endl;
   if (m_UseColor && m_ColorWithCell) {
   }
@@ -835,6 +839,7 @@ void SurfaceMesh::TestOcclusionResults(Scene *scene) {
   //     //std::cout << "baseVertex: " << cmd.baseVertex << std::endl;
   //     //std::cout << "baseInstance: " << cmd.baseInstance << std::endl;
   // }
+#endif
 }
 
 void SurfaceMesh::ConvertToDrawableData() {
@@ -867,25 +872,15 @@ void SurfaceMesh::ConvertToDrawableData() {
     m_CellColorVBO.create();
     m_CellColorVBO.target(GL_ARRAY_BUFFER);
 
+#ifdef IGAME_OPENGL_VERSION_460
     m_Meshlets->CreateBuffer();
+#endif
 
     m_Flag = true;
   }
 
   m_Positions = m_Points->ConvertToArray();
   m_Positions->Modified();
-
-  // std::cout << m_Positions->GetMTime() << "  " << GetMTime() << std::endl;
-  // m_PointVAO.destroy();
-  // m_LineVAO.destroy();
-  // m_TriangleVAO.destroy();
-  // m_PositionVBO.destroy();
-  // m_ColorVBO.destroy();
-  // m_NormalVBO.destroy();
-  // m_TextureVBO.destroy();
-  // m_PointEBO.destroy();
-  // m_LineEBO.destroy();
-  // m_TriangleEBO.destroy();
 
   // set line indices
   if (this->GetEdges() == nullptr) {
@@ -908,41 +903,49 @@ void SurfaceMesh::ConvertToDrawableData() {
   }
   m_TriangleIndices = triangleIndices;
 
-  m_PointVAO.vertexBuffer(GL_VBO_IDX_0, m_PositionVBO, 0, 3 * sizeof(float));
-  GLSetVertexAttrib(m_PointVAO, GL_LOCATION_IDX_0, GL_VBO_IDX_0, 3, GL_FLOAT,
-                    GL_FALSE, 0);
+  // allocate buffer
+  {
+    GLAllocateGLBuffer(m_PositionVBO,
+                       m_Positions->GetNumberOfValues() * sizeof(float),
+                       m_Positions->RawPointer());
 
-  // line
-  m_LineVAO.vertexBuffer(GL_VBO_IDX_0, m_PositionVBO, 0, 3 * sizeof(float));
-  GLSetVertexAttrib(m_LineVAO, GL_LOCATION_IDX_0, GL_VBO_IDX_0, 3, GL_FLOAT,
-                    GL_FALSE, 0);
-  m_LineVAO.elementBuffer(m_LineEBO);
+    GLAllocateGLBuffer(m_LineEBO,
+                       m_LineIndices->GetNumberOfIds() * sizeof(igIndex),
+                       m_LineIndices->RawPointer());
 
-  // triangle
-  m_TriangleVAO.vertexBuffer(GL_VBO_IDX_0, m_PositionVBO, 0, 3 * sizeof(float));
-  GLSetVertexAttrib(m_TriangleVAO, GL_LOCATION_IDX_0, GL_VBO_IDX_0, 3, GL_FLOAT,
-                    GL_FALSE, 0);
-  m_TriangleVAO.elementBuffer(m_TriangleEBO);
+    GLAllocateGLBuffer(m_TriangleEBO,
+                       m_TriangleIndices->GetNumberOfIds() * sizeof(igIndex),
+                       m_TriangleIndices->RawPointer());
+  }
 
-  GLAllocateGLBuffer(m_PositionVBO,
-                     m_Positions->GetNumberOfValues() * sizeof(float),
-                     m_Positions->RawPointer());
+  // set vertex attribute pointer
+  {
+    // point
+    m_PointVAO.vertexBuffer(GL_VBO_IDX_0, m_PositionVBO, 0, 3 * sizeof(float));
+    GLSetVertexAttrib(m_PointVAO, GL_LOCATION_IDX_0, GL_VBO_IDX_0, 3, GL_FLOAT,
+                      GL_FALSE, 0);
 
-  GLAllocateGLBuffer(m_LineEBO,
-                     m_LineIndices->GetNumberOfIds() * sizeof(igIndex),
-                     m_LineIndices->RawPointer());
+    // line
+    m_LineVAO.vertexBuffer(GL_VBO_IDX_0, m_PositionVBO, 0, 3 * sizeof(float));
+    GLSetVertexAttrib(m_LineVAO, GL_LOCATION_IDX_0, GL_VBO_IDX_0, 3, GL_FLOAT,
+                      GL_FALSE, 0);
+    m_LineVAO.elementBuffer(m_LineEBO);
 
-  GLAllocateGLBuffer(m_TriangleEBO,
-                     m_TriangleIndices->GetNumberOfIds() * sizeof(igIndex),
-                     m_TriangleIndices->RawPointer());
+    // triangle
+    m_TriangleVAO.vertexBuffer(GL_VBO_IDX_0, m_PositionVBO, 0,
+                               3 * sizeof(float));
+    GLSetVertexAttrib(m_TriangleVAO, GL_LOCATION_IDX_0, GL_VBO_IDX_0, 3,
+                      GL_FLOAT, GL_FALSE, 0);
+    m_TriangleVAO.elementBuffer(m_TriangleEBO);
 
-  // m_Meshlets->BuildMeshlet(
-  //     m_Positions->RawPointer(), m_Positions->GetNumberOfValues() / 3,
-  //     m_TriangleIndices->RawPointer(), m_TriangleIndices->GetNumberOfIds());
-  //
-  // GLAllocateGLBuffer(m_TriangleEBO,
-  //                    m_Meshlets->GetMeshletIndexCount() * sizeof(igIndex),
-  //                    m_Meshlets->GetMeshletIndices());
+    //     m_Positions->RawPointer(), m_Positions->GetNumberOfValues() / 3,
+    //     m_TriangleIndices->RawPointer(),
+    //     m_TriangleIndices->GetNumberOfIds());
+    //
+    // GLAllocateGLBuffer(m_TriangleEBO,
+    //                    m_Meshlets->GetMeshletIndexCount() * sizeof(igIndex),
+    //                    m_Meshlets->GetMeshletIndices());
+  }
 }
 
 void SurfaceMesh::ViewCloudPicture(int index, int demension) {

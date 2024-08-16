@@ -27,7 +27,7 @@ public:
 
 public slots:
 	void addDataObjectToModelTree(DataObject::Pointer obj, ItemSource source) {
-		// 创建一个项目
+		// 锟斤拷锟斤拷一锟斤拷锟斤拷目
 		ModelTreeWidgetItem* item = new ModelTreeWidgetItem(modelTreeWidget);
 		auto scene = iGame::SceneManager::Instance()->GetCurrentScene();
 		auto model = scene->CreateModel(obj);

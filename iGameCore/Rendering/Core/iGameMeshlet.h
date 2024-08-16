@@ -6,6 +6,7 @@
 
 IGAME_NAMESPACE_BEGIN
 
+#ifdef IGAME_OPENGL_VERSION_460
 class Meshlet : public Object {
 public:
     I_OBJECT(Meshlet);
@@ -50,5 +51,6 @@ private:
     GLBuffer m_FinalDrawCommandBuffer;
     std::vector<unsigned int> m_MeshletIndices;
 };
+#endif
 
 IGAME_NAMESPACE_END

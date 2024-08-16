@@ -52,7 +52,6 @@ void PointPainter::Draw(Scene* scene) {
     scene->UBO().useColor = true;
     scene->UpdateUniformBuffer();
     scene->GetShader(Scene::NOLIGHT)->use();
-    std::cout << m_Points << std::endl;
     VAO.bind();
     glad_glPointSize(m_PointSize);
     glad_glDepthRange(0, 0.9999);

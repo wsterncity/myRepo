@@ -10,10 +10,10 @@ private:
 
 private:
     friend class GLObject<GLBuffer>;
-    static void _create(GLsizei count, GLuint* handles) {
+    static void createHandle(GLsizei count, GLuint* handles) {
         glGenBuffers(count, handles);
     }
-    static void _destroy(GLsizei count, GLuint* handles) {
+    static void destroyHandle(GLsizei count, GLuint* handles) {
         glDeleteBuffers(count, handles);
     }
 
@@ -30,6 +30,8 @@ public:
     }
 
 public:
+    //bool isAllocated() const { return bufferAllocated; }
+
     // GLenum usage: GL_STATIC_DRAW, GL_DYNAMIC_DRAW, GL_STREAM_DRAW
     // GLenum usage: GL_STATIC_READ, GL_DYNAMIC_READ, GL_STREAM_READ
     // GLenum usage: GL_STATIC_COPY, GL_DYNAMIC_COPY, GL_STREAM_COPY
@@ -41,7 +43,7 @@ public:
 
     void storage(size_t size, const void* data, GLbitfield flags) {
         throw std::runtime_error(
-                "You called the GLBuffer::storage function on the opengl410. "
+                "You called the GLBuffer::storage function on the opengl330. "
                 "This function is currently not supported.");
         //glNamedBufferStorage(handle, size, data, flags);
     }

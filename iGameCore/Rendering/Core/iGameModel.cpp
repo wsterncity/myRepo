@@ -6,9 +6,13 @@ IGAME_NAMESPACE_BEGIN
 void Model::Draw(Scene* scene) 
 {
 	m_DataObject->Draw(scene);
+    GLCheckError();
     m_PickedPointPainter->Draw(scene);
+    GLCheckError();
     m_PickedLinePainter->Draw(scene);
+    GLCheckError();
     m_BBoxPainter->Draw(scene);
+    GLCheckError();
 }
 
 void Model::Update() {

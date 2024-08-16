@@ -3,6 +3,8 @@
 
 IGAME_NAMESPACE_BEGIN
 
+#ifdef IGAME_OPENGL_VERSION_460
+
 void Meshlet::CreateBuffer() {
     m_MeshletsBuffer.create();
     m_DrawCommandBuffer.create();
@@ -130,5 +132,7 @@ GLBuffer& Meshlet::DrawCommandBuffer() { return m_DrawCommandBuffer; };
 GLBuffer& Meshlet::FinalDrawCommandBuffer() {
     return m_FinalDrawCommandBuffer;
 };
+
+#endif
 
 IGAME_NAMESPACE_END

@@ -155,7 +155,10 @@ private:
   IdArray::Pointer m_PointIndices{};
   IdArray::Pointer m_LineIndices{};
   IdArray::Pointer m_TriangleIndices{};
+
+#ifdef IGAME_OPENGL_VERSION_460
   Meshlet::Pointer m_Meshlets{Meshlet::New()};
+#endif
 
   bool m_Flag{false};
   bool m_UseColor{false};

@@ -448,11 +448,10 @@ void Scene::ResizeFrameBuffer() {
                       << std::endl;
     }
 
-#ifndef __APPLE__
     ResizeHizTexture();
-#endif
 }
 void Scene::ResizeHizTexture() {
+#ifdef IGAME_OPENGL_VERSION_460
     uint32_t width = m_Camera->GetViewPort().x;
     uint32_t height = m_Camera->GetViewPort().y;
 
@@ -473,6 +472,7 @@ void Scene::ResizeHizTexture() {
 
     m_DepthPyramid = std::move(texture);
     m_DepthPyramid.getTextureHandle().makeResident();
+#endif
 }
 
 void Scene::Draw() {
@@ -540,6 +540,7 @@ void Scene::Draw() {
 }
 
 void Scene::RefreshHizTexture() {
+#ifdef IGAME_OPENGL_VERSION_460
     // blit multisampled z-buffer to normal z-buffer
     {
         GLFramebuffer::blit(m_FramebufferMultisampled, m_Framebuffer, 0, 0,
@@ -581,7 +582,8 @@ void Scene::RefreshHizTexture() {
         glDispatchCompute((levelWidth + 15) / 16, (levelHeight + 15) / 16, 1);
         glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
     }
-};
+#endif
+}
 
 void Scene::Update() {
     if (m_UpdateFunctor) { m_UpdateFunctor(); }
@@ -604,12 +606,12 @@ void Scene::DrawFrame() {
 void Scene::DrawModels() {
     glViewport(0, 0, m_Camera->GetViewPort().x, m_Camera->GetViewPort().y);
 
-#ifdef __APPLE__
+#ifdef IGAME_OPENGL_VERSION_330
     for (auto& [id, obj]: m_Models) {
-        obj->ConvertToDrawableData();
+        obj->m_DataObject->ConvertToDrawableData();
         obj->Draw(this);
     }
-#else
+#elif IGAME_OPENGL_VERSION_460
     bool debug = false;
     if (debug) {
         std::cout << "-------:Draw:-------" << std::endl;
