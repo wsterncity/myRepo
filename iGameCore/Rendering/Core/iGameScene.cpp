@@ -615,27 +615,30 @@ void Scene::DrawModels() {
     bool debug = false;
     if (debug) {
         std::cout << "-------:Draw:-------" << std::endl;
+        GLCheckError();
         RefreshDrawCullDataBuffer();
+        GLCheckError();
 
         for (auto& [id, obj]: m_Models) {
             obj->m_DataObject->ConvertToDrawableData();
         }
-
+        GLCheckError();
         for (auto& [id, obj]: m_Models) {
             obj->m_DataObject->TestOcclusionResults(this);
         }
-
+        GLCheckError();
         // draw phase1: draw visible meshlet
         for (auto& [id, obj]: m_Models) { obj->m_DataObject->DrawPhase1(this); }
-
+        GLCheckError();
         // refresh phase1: generate loacl hierarchical z-buffer
         RefreshHizTexture();
-
+        GLCheckError();
         // draw phase2: draw invisible meshlet
         for (auto& [id, obj]: m_Models) { obj->m_DataObject->DrawPhase2(this); }
-
+        GLCheckError();
         // refresh phase2: generate global hierarchical z-buffer
         RefreshHizTexture();
+        GLCheckError();
     } else {
         for (auto& [id, obj]: m_Models) {
             obj->m_DataObject->ConvertToDrawableData();
