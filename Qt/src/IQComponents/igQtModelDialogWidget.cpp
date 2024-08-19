@@ -39,7 +39,7 @@ igQtModelDialogWidget::igQtModelDialogWidget(QWidget* parent)
     
 }
 
-void igQtModelDialogWidget::addDataObjectToModelTree(DataObject::Pointer obj, ItemSource source) {
+int igQtModelDialogWidget::addDataObjectToModelTree(DataObject::Pointer obj, ItemSource source) {
 	// 创建一个项目
 	ModelTreeWidgetItem* item = new ModelTreeWidgetItem(modelTreeWidget);
 	auto scene = iGame::SceneManager::Instance()->GetCurrentScene();
@@ -74,4 +74,17 @@ void igQtModelDialogWidget::addDataObjectToModelTree(DataObject::Pointer obj, It
 			item->addSubProperty(subItem);
 		}
 	}
+	return id;
+}
+
+int igQtModelDialogWidget::addModelToModelTree(Model::Pointer model) {
+	ModelTreeWidgetItem* item = new ModelTreeWidgetItem(modelTreeWidget);
+	auto scene = iGame::SceneManager::Instance()->GetCurrentScene();
+	int id = scene->AddModel(model);
+
+	item->setName(QString::fromStdString(model->GetDataObject()->GetName()));
+	item->setModel(model);
+	modelTreeWidget->addTopLevelItem(item);
+	modelTreeWidget->setCurrentItem(item);
+	return id;
 }

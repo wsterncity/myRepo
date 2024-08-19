@@ -24,7 +24,7 @@ public:
                  m_Camera->GetDevicePixelRatio();
 
         mvp_invert =
-                (m_Scene->CameraData().projview * m_Scene->ObjectData().model).invert();
+                (m_Scene->CameraData().proj_view * m_Scene->ObjectData().model).invert();
     }
 
 
