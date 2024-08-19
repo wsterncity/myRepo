@@ -584,19 +584,18 @@ void SurfaceMesh::Draw(Scene *scene) {
   }
   scene->UpdateUniformBuffer();
 
-  // if (m_UseColor && m_ColorWithCell) {
-  //     scene->GetShader(Scene::PATCH)->use();
-  //     m_CellVAO.bind();
-  //     int a = this->GetNumberOfFaces();
-  //     glad_glDrawArrays(GL_TRIANGLES, 0, m_CellPositionSize);
-  //     m_CellVAO.release();
-  //     return;
-  // }
+   if (m_UseColor && m_ColorWithCell) {
+       scene->GetShader(Scene::PATCH)->use();
+       m_CellVAO.bind();
+       glad_glDrawArrays(GL_TRIANGLES, 0, m_CellPositionSize);
+       m_CellVAO.release();
+       return;
+   }
 
   if (m_ViewStyle & IG_POINTS) {
     scene->GetShader(Scene::NOLIGHT)->use();
     m_PointVAO.bind();
-    glPointSize(8);
+    glad_glPointSize(8);
     glad_glDepthRange(0, 0.99999);
     glad_glDrawArrays(GL_POINTS, 0, m_Positions->GetNumberOfValues() / 3);
     glad_glDepthRange(0, 1);
@@ -604,7 +603,7 @@ void SurfaceMesh::Draw(Scene *scene) {
   }
   if (m_ViewStyle & IG_WIREFRAME) {
     if (m_UseColor) {
-      scene->GetShader(Scene::PATCH)->use();
+      scene->GetShader(Scene::NOLIGHT)->use();
     } else {
       auto shader = scene->GetShader(Scene::PURECOLOR);
       shader->use();
@@ -613,11 +612,11 @@ void SurfaceMesh::Draw(Scene *scene) {
     }
 
     m_LineVAO.bind();
-    glLineWidth(m_LineWidth);
-    glDepthFunc(GL_GEQUAL);
+    glad_glLineWidth(m_LineWidth);
+    glad_glDepthFunc(GL_GEQUAL);
     glad_glDrawElements(GL_LINES, m_LineIndices->GetNumberOfIds(),
                         GL_UNSIGNED_INT, 0);
-    glDepthFunc(GL_GREATER);
+    glad_glDepthFunc(GL_GREATER);
     m_LineVAO.release();
   }
   if (m_ViewStyle & IG_SURFACE) {
@@ -954,14 +953,16 @@ void SurfaceMesh::ConvertToDrawableData() {
   }
 }
 
-void SurfaceMesh::ViewCloudPicture(int index, int demension) {
+void SurfaceMesh::ViewCloudPicture(Scene* scene, int index, int demension) {
   if (index == -1) {
     m_UseColor = false;
     m_ViewAttribute = nullptr;
     m_ViewDemension = -1;
     m_ColorWithCell = false;
+    scene->Update();
     return;
   }
+  scene->MakeCurrent();
   m_AttributeIndex = index;
   auto &attr = this->GetAttributeSet()->GetAttribute(index);
   if (!attr.isDeleted) {
@@ -970,12 +971,13 @@ void SurfaceMesh::ViewCloudPicture(int index, int demension) {
     else if (attr.attachmentType == IG_CELL)
       this->SetAttributeWithCellData(attr.pointer, demension);
   }
+  scene->DoneCurrent();
+  scene->Update();
 }
 
 void SurfaceMesh::SetAttributeWithPointData(ArrayObject::Pointer attr,
                                             igIndex i) {
   if (m_ViewAttribute != attr || m_ViewDemension != i) {
-    std::cout << 1 << std::endl;
     m_ViewAttribute = attr;
     m_ViewDemension = i;
     m_UseColor = true;
@@ -1014,7 +1016,6 @@ void SurfaceMesh::SetAttributeWithPointData(ArrayObject::Pointer attr,
 void SurfaceMesh::SetAttributeWithCellData(ArrayObject::Pointer attr,
                                            igIndex i) {
   if (m_ViewAttribute != attr || m_ViewDemension != i) {
-    std::cout << 1 << std::endl;
     m_ViewAttribute = attr;
     m_ViewDemension = i;
     m_UseColor = true;
@@ -1037,22 +1038,18 @@ void SurfaceMesh::SetAttributeWithCellData(ArrayObject::Pointer attr,
     newPositions->SetElementSize(3);
     newColors->SetElementSize(3);
 
-    // std::cout << this->GetNumberOfFaces() << std::endl;
-    // std::cout << colors->GetNumberOfElements() << std::endl;
     float color[3]{};
     for (int i = 0; i < this->GetNumberOfFaces(); i++) {
       Face *face = this->GetFace(i);
+      colors->GetElement(i, color);
       for (int j = 2; j < face->GetCellSize(); j++) {
         auto &p0 = face->Points->GetPoint(0);
         newPositions->AddElement3(p0[0], p0[1], p0[2]);
-
         auto &p1 = face->Points->GetPoint(j - 1);
         newPositions->AddElement3(p1[0], p1[1], p1[2]);
-
         auto &p2 = face->Points->GetPoint(j);
         newPositions->AddElement3(p2[0], p2[1], p2[2]);
 
-        colors->GetElement(i, color);
         newColors->AddElement3(color[0], color[1], color[2]);
         newColors->AddElement3(color[0], color[1], color[2]);
         newColors->AddElement3(color[0], color[1], color[2]);

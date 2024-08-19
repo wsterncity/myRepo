@@ -49,11 +49,18 @@ int igQtModelDialogWidget::addDataObjectToModelTree(DataObject::Pointer obj, Ite
 	item->setName(QString::fromStdString(obj->GetName()));
 	item->setModel(model);
 
-	QTreeWidgetItem* child = new QTreeWidgetItem(item);
-	child->setText(0, "Source");
-	child->setText(1, "File");
+	auto attrSet = obj->GetAttributeSet()->GetAllAttributes();
+	for (int i = 0; i < attrSet->GetNumberOfElements(); i++) {
+		auto& attr = attrSet->GetElement(i);
+		if (attr.isDeleted) continue;
+		QTreeWidgetItem* child = new QTreeWidgetItem(item);
+		child->setText(0, QString::fromStdString(attr.pointer->GetName()));
+		child->setIcon(0, QIcon(":/Ticon/Icons/select/file.png"));
+		child->setData(0, Qt::UserRole, i);
+		//int index = child->data(0, Qt::UserRole).toInt();
+		//std::cout << index << std::endl;
+	}
 
-	
 
 	modelTreeWidget->addTopLevelItem(item);
 	modelTreeWidget->setCurrentItem(item);

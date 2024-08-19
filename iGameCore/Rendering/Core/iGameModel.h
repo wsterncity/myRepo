@@ -33,6 +33,10 @@ public:
 
     void Update();
 
+    void ViewCloudPicture(int index, int dimension = -1) {
+        m_DataObject->ViewCloudPicture(m_Scene, index, dimension);
+    }
+
 protected:
     Model();
     ~Model() override = default;

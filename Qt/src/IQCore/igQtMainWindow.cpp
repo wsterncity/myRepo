@@ -317,7 +317,8 @@ void igQtMainWindow::initAllFilters() {
         //      }
         //      polylines->AddCellIds(pl);
 
-        //IGsize ptId0 = points->AddPoint(Point{0, 0, 0});
+        //IGsize ptId0 = points->A
+		// ddPoint(Point{0, 0, 0});
         //IGsize ptId1 = points->AddPoint(Point{0, 0, 1});
         //      colors->AddValue(0.3);
         //      colors->AddValue(0.4);
