@@ -14,7 +14,7 @@
    <string>Layer Dialog</string>
   </property>
   <widget class="QWidget" name="dockWidgetContents">
-   <layout class="QVBoxLayout" name="verticalLayout" stretch="2,0">
+   <layout class="QVBoxLayout" name="verticalLayout" stretch="3,2">
     <item>
      <widget class="igQtModelTreeWidget" name="modelTreeWidget">
       <property name="minimumSize">

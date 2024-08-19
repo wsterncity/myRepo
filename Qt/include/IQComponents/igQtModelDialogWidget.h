@@ -26,27 +26,15 @@ public:
 	~igQtModelDialogWidget() override = default;
 
 public slots:
-	void addDataObjectToModelTree(DataObject::Pointer obj, ItemSource source) {
-		// 创建一个项目
-		ModelTreeWidgetItem* item = new ModelTreeWidgetItem(modelTreeWidget);
-		auto scene = iGame::SceneManager::Instance()->GetCurrentScene();
-		auto model = scene->CreateModel(obj);
-		int id = scene->AddModel(model);
-
-		item->setName(QString::fromStdString(obj->GetName()));
-		item->setModel(model);
-		
-		//QTreeWidgetItem* child = new QTreeWidgetItem(item);
-		//child->setText(0, "Source");
-		//child->setText(1, "File");
-		modelTreeWidget->addTopLevelItem(item);
-		modelTreeWidget->setCurrentItem(item);
-	}
+	void addDataObjectToModelTree(DataObject::Pointer obj, ItemSource source);
 
 private:
 	igQtModelTreeWidget* modelTreeWidget;
 	QtTreePropertyBrowser* propertyTreeWidget;
 	
+	QtVariantPropertyManager* propertyManager;
+	QtVariantEditorFactory* editFactory;
+	QtProperty* objectGroup;
 	Ui::LayerDialog* ui;
 };
 

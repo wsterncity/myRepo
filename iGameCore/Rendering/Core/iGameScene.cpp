@@ -272,6 +272,10 @@ bool Scene::HasShader(IGenum type) {
     return this->GetShaderWithType(type) != nullptr;
 }
 
+void Scene::UseShader(IGenum type) {
+    this->GetShader(type)->use();
+}
+
 void Scene::InitOpenGL() {
     if (!gladLoadGL()) {
         throw std::runtime_error("Failed to initialize GLAD");
@@ -647,6 +651,10 @@ void Scene::UpdateUniformData() {
 
     // update other ubo
     m_UBO.viewPos = m_Camera->GetCameraPos();
+}
+
+void Scene::UseColor() {
+    this->UBO().useColor = true;
 }
 
 void Scene::UpdateUniformBuffer() {

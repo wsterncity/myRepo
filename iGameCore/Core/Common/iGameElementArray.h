@@ -78,6 +78,10 @@ public:
         this->VectorType::operator[](_Pos) = _Element;
     }
 
+    Iterator Remove(ConstIterator _Where) {
+        return this->VectorType::erase(_Where);
+    }
+
     Iterator Begin() {
         return this->VectorType::begin();
     }

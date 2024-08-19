@@ -24,6 +24,10 @@ Line *SurfaceMesh::GetEdge(const IGsize edgeId) {
   const igIndex *cell;
   int ncells = m_Edges->GetCellIds(edgeId, cell);
 
+  if (m_Edge == nullptr) {
+      m_Edge = Line::New();
+  }
+
   m_Edge->PointIds->Reset();
   m_Edge->PointIds->AddId(cell[0]);
   m_Edge->PointIds->AddId(cell[1]);
@@ -563,7 +567,9 @@ void SurfaceMesh::ReplacePointReference(const IGsize fromPtId,
   m_FaceLinks->SetLink(toPtId, link2.pointer, link2.size);
 }
 
-SurfaceMesh::SurfaceMesh() { m_ViewStyle = IG_SURFACE; };
+SurfaceMesh::SurfaceMesh() { 
+    m_ViewStyle = IG_SURFACE; 
+};
 
 void SurfaceMesh::Draw(Scene *scene) {
   if (!m_Visibility) {

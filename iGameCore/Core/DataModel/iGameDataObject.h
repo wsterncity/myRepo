@@ -6,6 +6,7 @@
 #include "iGamePropertySet.h"
 #include "iGameScalarsToColors.h"
 #include "iGameStreamingData.h"
+#include "iGamePropertyTree.h"
 
 #include "OpenGL/GLBuffer.h"
 #include "OpenGL/GLShader.h"
@@ -36,6 +37,7 @@ public:
   void SetPropertySet(PropertySet::Pointer p) { m_Propertys = p; }
   PropertySet *GetPropertySet() { return m_Propertys.get(); }
   Metadata *GetMetadata() { return m_Metadata.get(); }
+  PropertyTree* GetPropertys() { return m_Propertys2.get(); }
   const BoundingBox &GetBoundingBox() {
     ComputeBoundingBox();
     return m_Bounding;
@@ -122,21 +124,38 @@ protected:
     //        m_TimeFrames = StreamingData::New();
     m_UniqueId = GetIncrementDataObjectId();
     m_BoundingHelper = Object::New();
+    m_Propertys2 = PropertyTree::New();
+
+    auto prop1 = m_Propertys2->AddProperty(Variant::Int, "Size");
+    prop1->SetValue(0);
+    prop1->SetEnabled(true);
+    auto prop2 = prop1->AddSubProperty(Variant::Int, "x");
+    prop2->SetValue(1);
+    prop2->SetEnabled(true);
+    auto prop3 = prop1->AddSubProperty(Variant::Int, "y");
+    prop3->SetValue(1);
+    prop3->SetEnabled(true);
+
+    m_Propertys2->AddProperty(Variant::Int, "Width");
+    m_Propertys2->AddProperty(Variant::Int, "Height");
+    m_Propertys2->AddProperty(Variant::Int, "Length");
+
   }
   ~DataObject() override = default;
 
   virtual void ComputeBoundingBox() {}
 
   DataObjectId m_UniqueId{};
-  StreamingData::Pointer m_TimeFrames{nullptr};
-  PropertySet::Pointer m_Propertys{nullptr};
-  Metadata::Pointer m_Metadata{nullptr};
+  StreamingData::Pointer m_TimeFrames{};
+  PropertySet::Pointer m_Propertys{};
+  Metadata::Pointer m_Metadata{};
+  PropertyTree::Pointer m_Propertys2{};
 
   BoundingBox m_Bounding{};
   Object::Pointer m_BoundingHelper{};
 
   friend class SubDataObjectsHelper;
-  SmartPointer<SubDataObjectsHelper> m_SubDataObjectsHelper{nullptr};
+  SmartPointer<SubDataObjectsHelper> m_SubDataObjectsHelper{};
   DataObject *m_Parent{nullptr};
 
   template <typename Functor, typename... Args>

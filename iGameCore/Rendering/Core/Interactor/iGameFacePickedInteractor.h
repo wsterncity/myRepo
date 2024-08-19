@@ -1,24 +1,25 @@
-#ifndef OPENIGAME_POINT_PICKED_INTERACTOR_H
-#define OPENIGAME_POINT_PICKED_INTERACTOR_H
+#ifndef OPENIGAME_FACE_PICKED_INTERACTOR_H
+#define OPENIGAME_FACE_PICKED_INTERACTOR_H
 
 #include "iGameInteractor.h"
-#include "iGamePointPicker.h"
-#include "iGamePointSet.h"
+#include "iGameSurfaceMesh.h"
 
 IGAME_NAMESPACE_BEGIN
-class PointPickedInteractor : public Interactor {
+class FacePickedInteractor : public Interactor {
 public:
-    I_OBJECT(PointPickedInteractor);
-    static Pointer New() { return new PointPickedInteractor; }
+    I_OBJECT(FacePickedInteractor);
+    static Pointer New() { return new FacePickedInteractor; }
 
-    void SetPointSet(PointSet* set, Model* model) {
-        m_Points = set;
-        m_Model = model;
+    void SetModel(Model* model) {
+        if (model) {
+            m_Model = model;
+            m_Mesh = DynamicCast<SurfaceMesh>(model->GetDataObject());
+        }
     }
 
     void MousePressEvent(int posX, int posY, MouseButton mouseMode) override {
         igm::vec2 pos = {float(posX), (float) posY};
-        if (m_Points == nullptr || m_Model == nullptr)
+        if (m_Mesh == nullptr || m_Model == nullptr)
         {
             return;
         }
@@ -52,27 +53,27 @@ public:
 
         igm::vec3 dir = (point1 - point2).normalized();
 
-        PointPicker::Pointer picker = PointPicker::New();
-        picker->SetPointSet(m_Points);
-        igIndex id = picker->PickClosetPointWithLine(
-                Vector3d(point1.x, point1.y, point1.z),
-                Vector3d(dir.x, dir.y, dir.z));
+        //PointPicker::Pointer picker = PointPicker::New();
+        //picker->SetPointSet(m_Points);
+        //igIndex id = picker->PickClosetPointWithLine(
+        //        Vector3d(point1.x, point1.y, point1.z),
+        //        Vector3d(dir.x, dir.y, dir.z));
 
-        m_Model->GetPointPainter()->Clear();
-        if (id != -1) 
-        {
-            m_Model->GetPointPainter()->DrawPoint(m_Points->GetPoint(id));
-        }
+        //m_Model->GetPointPainter()->Clear();
+        //if (id != -1) 
+        //{
+        //    m_Model->GetPointPainter()->DrawPoint(m_Points->GetPoint(id));
+        //}
     }
     void MouseMoveEvent(int posX, int posY) override {}
     void MouseReleaseEvent(int posX, int posY) override {}
     void WheelEvent(double delta) override {}
 
 protected:
-    PointPickedInteractor() {}
-    ~PointPickedInteractor() override = default;
+    FacePickedInteractor() {}
+    ~FacePickedInteractor() override = default;
 
-    PointSet* m_Points{nullptr};
+    SurfaceMesh* m_Mesh{nullptr};
     Model* m_Model{nullptr};
 
     int m_Width{}, m_Height{};

@@ -66,7 +66,10 @@ private slots:
     //void updateCurrentDataObject();
     //void updateCurrentSceneWidget();
 
-    void changePointPicked();
+    void changePointSelectionInteractor();
+    void changePointsSelectionInteractor();
+    void changeFaceSelectionInteractor();
+    void changeFacesSelectionInteractor();
 
 private:
     Ui::MainWindow* ui;

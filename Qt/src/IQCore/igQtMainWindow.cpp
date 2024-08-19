@@ -2,6 +2,8 @@
 // Created by m_ky on 2024/4/10.
 //
 
+#include "Interactor/iGameFacesSelection.h"
+#include "Interactor/iGamePointsSelection.h"
 #include "Interactor/iGamePointPickedInteractor.h"
 #include "Interactor/iGamePointDragInteractor.h"
 #include <iGameUnstructuredMesh.h>
@@ -63,44 +65,50 @@ igQtMainWindow::igQtMainWindow(QWidget* parent) :
     initAllSources();
 	updateRecentFilePaths();
 
+	connect(ui->action_select_point, &QAction::triggered, this,
+            &igQtMainWindow::changePointSelectionInteractor);
 	connect(ui->action_select_points, &QAction::triggered, this,
-            &igQtMainWindow::changePointPicked);
+		&igQtMainWindow::changePointsSelectionInteractor);
 
+	connect(ui->action_select_face, &QAction::triggered, this,
+		&igQtMainWindow::changeFaceSelectionInteractor);
+	connect(ui->action_select_faces, &QAction::triggered, this,
+		&igQtMainWindow::changeFacesSelectionInteractor);
 	
 	
 }
 void igQtMainWindow::initToolbarComponent()
 {
-	viewStyleCombox = new QComboBox(this);
-	viewStyleCombox->addItem("Points");
-	viewStyleCombox->addItem("WireFrame");
-	viewStyleCombox->addItem("Surface");
-	viewStyleCombox->addItem("Surface With Edegs");
-	viewStyleCombox->addItem("Volume");
-	viewStyleCombox->addItem("Volume With Edegs");
+	//viewStyleCombox = new QComboBox(this);
+	//viewStyleCombox->addItem("Points");
+	//viewStyleCombox->addItem("WireFrame");
+	//viewStyleCombox->addItem("Surface");
+	//viewStyleCombox->addItem("Surface With Edegs");
+	//viewStyleCombox->addItem("Volume");
+	//viewStyleCombox->addItem("Volume With Edegs");
 
-	viewStyleCombox->setStyleSheet("QComboBox {"
-		"background-color: #f0f0f0;"
-		"color: #202020;"              // 设置文本颜色为浅白色
-		"border: 1px solid #ffffff;"   // 设置边框样式为灰色实线边框
-		"padding: 5px;"                // 设置内边距
-		"font-size: 16px;"              // 设置下拉菜单项字体大小为14px
-		"}"
-		"QComboBox QAbstractItemView {"
-		"font-family: Arial;"           // 设置下拉菜单项字体为Arial
-		"color: #404040;"               // 设置下拉菜单项字体颜色为浅灰色
-		"}"
-		"QComboBox::drop-down {"
-		"subcontrol-origin: padding;"
-		"subcontrol-position: top right;"
-		"width: 20px;"
-		"border-left: 1px solid #202020;"
-		"border-color: #eeeeee;"
-		"}"
-	);
+	//viewStyleCombox->setStyleSheet("QComboBox {"
+	//	"background-color: #f0f0f0;"
+	//	"color: #202020;"              // 设置文本颜色为浅白色
+	//	"border: 1px solid #ffffff;"   // 设置边框样式为灰色实线边框
+	//	"padding: 5px;"                // 设置内边距
+	//	"font-size: 16px;"              // 设置下拉菜单项字体大小为14px
+	//	"}"
+	//	"QComboBox QAbstractItemView {"
+	//	"font-family: Arial;"           // 设置下拉菜单项字体为Arial
+	//	"color: #404040;"               // 设置下拉菜单项字体颜色为浅灰色
+	//	"}"
+	//	"QComboBox::drop-down {"
+	//	"subcontrol-origin: padding;"
+	//	"subcontrol-position: top right;"
+	//	"width: 20px;"
+	//	"border-left: 1px solid #202020;"
+	//	"border-color: #eeeeee;"
+	//	"}"
+	//);
 
 	//connect(viewStyleCombox, SIGNAL(currentIndexChanged(QString)), this, SLOT(ChangeViewStyle()));
-	ui->toolBar_meshview->addWidget(viewStyleCombox);
+	//ui->toolBar_meshview->addWidget(viewStyleCombox);
 	
 	//attributeViewIndexCombox = new QComboBox(this);
 	//attributeViewIndexCombox->addItem("None        ");
@@ -261,10 +269,10 @@ void igQtMainWindow::initAllFilters() {
     });
 
 	connect(ui->action_test_05, &QAction::triggered, this, [&](bool checked) {
-		VolumeMeshFilterTest::Pointer fp = VolumeMeshFilterTest::New();
-		fp->SetInput(rendererWidget->GetScene()->GetCurrentModel()->GetDataObject());
-		fp->Execute();
-		rendererWidget->update();
+		//VolumeMeshFilterTest::Pointer fp = VolumeMeshFilterTest::New();
+		//fp->SetInput(rendererWidget->GetScene()->GetCurrentModel()->GetDataObject());
+		//fp->Execute();
+		//rendererWidget->update();
 
         igQtFilterDialogDockWidget* dialog = new igQtFilterDialogDockWidget(this);
         int targetId = dialog->addParameter(igQtFilterDialogDockWidget::QT_LINE_EDIT, "Target number of faces", "1000");
@@ -605,14 +613,58 @@ void igQtMainWindow::updateColorBarShow()
 //	this->rendererWidget->update();
 //}
 
-void igQtMainWindow::changePointPicked() 
+void igQtMainWindow::changePointSelectionInteractor()
 {
-	if (ui->action_select_points->isChecked())
+	if (ui->action_select_point->isChecked())
 	{
 		auto interactor = PointPickedInteractor::New();
 		interactor->SetPointSet(DynamicCast<PointSet>(
 			rendererWidget->GetScene()->GetCurrentModel()->GetDataObject()), rendererWidget->GetScene()->GetCurrentModel());
 		rendererWidget->ChangeInteractor(interactor);
+
+		if (ui->action_select_points->isChecked()) {
+			ui->action_select_points->setChecked(false);
+		}
+	}
+	else {
+		rendererWidget->ChangeInteractor(Interactor::New());
+	}
+}
+
+void igQtMainWindow::changePointsSelectionInteractor()
+{
+	if (ui->action_select_points->isChecked())
+	{
+		auto interactor = PointsSelection::New();
+		interactor->SetPointSet(DynamicCast<PointSet>(
+			rendererWidget->GetScene()->GetCurrentModel()->GetDataObject()), rendererWidget->GetScene()->GetCurrentModel());
+		rendererWidget->ChangeInteractor(interactor);
+
+		if (ui->action_select_point->isChecked()) {
+			ui->action_select_point->setChecked(false);
+		}
+	}
+	else {
+		rendererWidget->ChangeInteractor(Interactor::New());
+	}
+}
+
+void igQtMainWindow::changeFaceSelectionInteractor()
+{
+
+}
+
+void igQtMainWindow::changeFacesSelectionInteractor()
+{
+	if (ui->action_select_faces->isChecked())
+	{
+		auto interactor = FacesSelection::New();
+		interactor->SetModel(rendererWidget->GetScene()->GetCurrentModel());
+		rendererWidget->ChangeInteractor(interactor);
+
+		if (ui->action_select_face->isChecked()) {
+			ui->action_select_face->setChecked(false);
+		}
 	}
 	else {
 		rendererWidget->ChangeInteractor(Interactor::New());

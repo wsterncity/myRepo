@@ -20,7 +20,7 @@
    <string>MainWindow</string>
   </property>
   <property name="windowIcon">
-   <iconset>
+   <iconset resource="../iGameQtMainWindow.qrc">
     <normaloff>:/Ticon/Icons/iGameLogo.png</normaloff>:/Ticon/Icons/iGameLogo.png</iconset>
   </property>
   <property name="styleSheet">
@@ -63,7 +63,7 @@ border:2px solid #EEF1F7
      <x>0</x>
      <y>0</y>
      <width>1200</width>
-     <height>25</height>
+     <height>27</height>
     </rect>
    </property>
    <widget class="QMenu" name="menua">
@@ -350,7 +350,10 @@ border:2px solid #EEF1F7
    <addaction name="action_ShowCenter"/>
    <addaction name="action_ResetCenter"/>
    <addaction name="action_PickCenter"/>
+   <addaction name="action_select_point"/>
    <addaction name="action_select_points"/>
+   <addaction name="action_select_face"/>
+   <addaction name="action_select_faces"/>
   </widget>
   <widget class="QToolBar" name="toolBar_4">
    <property name="windowTitle">
@@ -574,7 +577,7 @@ border:2px solid #EEF1F7
   </widget>
   <action name="action_SaveMesh">
    <property name="icon">
-    <iconset>
+    <iconset resource="../iGameQtMainWindow.qrc">
      <normaloff>:/Ticon/Icons/icon (5).png</normaloff>:/Ticon/Icons/icon (5).png</iconset>
    </property>
    <property name="text">
@@ -598,7 +601,7 @@ border:2px solid #EEF1F7
   </action>
   <action name="action_LoadFile">
    <property name="icon">
-    <iconset>
+    <iconset resource="../iGameQtMainWindow.qrc">
      <normaloff>:/Ticon/Icons/icon (4).png</normaloff>:/Ticon/Icons/icon (4).png</iconset>
    </property>
    <property name="text">
@@ -623,7 +626,7 @@ border:2px solid #EEF1F7
     <bool>false</bool>
    </property>
    <property name="icon">
-    <iconset>
+    <iconset resource="../iGameQtMainWindow.qrc">
      <normaloff>:/Ticon/Icons/arrow_click_cursor_pointer_icon (1).png</normaloff>:/Ticon/Icons/arrow_click_cursor_pointer_icon (1).png</iconset>
    </property>
    <property name="text">
@@ -637,7 +640,7 @@ border:2px solid #EEF1F7
   </action>
   <action name="action_LastMesh">
    <property name="icon">
-    <iconset>
+    <iconset resource="../iGameQtMainWindow.qrc">
      <normaloff>:/Ticon/Icons/arrow_click_cursor_pointer_icon.png</normaloff>:/Ticon/Icons/arrow_click_cursor_pointer_icon.png</iconset>
    </property>
    <property name="text">
@@ -646,7 +649,7 @@ border:2px solid #EEF1F7
   </action>
   <action name="action_ClearInfomation">
    <property name="icon">
-    <iconset>
+    <iconset resource="../iGameQtMainWindow.qrc">
      <normaloff>:/Ticon/Icons/clear.png</normaloff>:/Ticon/Icons/clear.png</iconset>
    </property>
    <property name="text">
@@ -655,7 +658,7 @@ border:2px solid #EEF1F7
   </action>
   <action name="action_DeleteMesh">
    <property name="icon">
-    <iconset>
+    <iconset resource="../iGameQtMainWindow.qrc">
      <normaloff>:/Ticon/Icons/Delete.png</normaloff>:/Ticon/Icons/Delete.png</iconset>
    </property>
    <property name="text">
@@ -664,7 +667,7 @@ border:2px solid #EEF1F7
   </action>
   <action name="action_ResetView">
    <property name="icon">
-    <iconset>
+    <iconset resource="../iGameQtMainWindow.qrc">
      <normaloff>:/Ticon/Icons/icon (8).png</normaloff>:/Ticon/Icons/icon (8).png</iconset>
    </property>
    <property name="text">
@@ -679,7 +682,7 @@ border:2px solid #EEF1F7
   </action>
   <action name="action_ViewNormal">
    <property name="icon">
-    <iconset>
+    <iconset resource="../iGameQtMainWindow.qrc">
      <normaloff>:/Ticon/Icons/colorPoint.png</normaloff>:/Ticon/Icons/colorPoint.png</iconset>
    </property>
    <property name="text">
@@ -688,7 +691,7 @@ border:2px solid #EEF1F7
   </action>
   <action name="action_ShowFeature">
    <property name="icon">
-    <iconset>
+    <iconset resource="../iGameQtMainWindow.qrc">
      <normaloff>:/Ticon/Icons/icon (13).png</normaloff>:/Ticon/Icons/icon (13).png</iconset>
    </property>
    <property name="text">
@@ -697,7 +700,7 @@ border:2px solid #EEF1F7
   </action>
   <action name="action_FaceCull">
    <property name="icon">
-    <iconset>
+    <iconset resource="../iGameQtMainWindow.qrc">
      <normaloff>:/Ticon/Icons/6610 - View.png</normaloff>:/Ticon/Icons/6610 - View.png</iconset>
    </property>
    <property name="text">
@@ -706,7 +709,7 @@ border:2px solid #EEF1F7
   </action>
   <action name="action_CopyMesh">
    <property name="icon">
-    <iconset>
+    <iconset resource="../iGameQtMainWindow.qrc">
      <normaloff>:/Ticon/Icons/CopyMesh.svg</normaloff>:/Ticon/Icons/CopyMesh.svg</iconset>
    </property>
    <property name="text">
@@ -718,7 +721,7 @@ border:2px solid #EEF1F7
   </action>
   <action name="action_RecoverMesh">
    <property name="icon">
-    <iconset>
+    <iconset resource="../iGameQtMainWindow.qrc">
      <normaloff>:/Ticon/Icons/RecoverMesh.svg</normaloff>:/Ticon/Icons/RecoverMesh.svg</iconset>
    </property>
    <property name="text">
@@ -745,7 +748,7 @@ border:2px solid #EEF1F7
   </action>
   <action name="action_LeftRotate">
    <property name="icon">
-    <iconset>
+    <iconset resource="../iGameQtMainWindow.qrc">
      <normaloff>:/Ticon/Icons/zuoxuanzhuan90du.svg</normaloff>:/Ticon/Icons/zuoxuanzhuan90du.svg</iconset>
    </property>
    <property name="text">
@@ -757,7 +760,7 @@ border:2px solid #EEF1F7
   </action>
   <action name="action_RightRotate">
    <property name="icon">
-    <iconset>
+    <iconset resource="../iGameQtMainWindow.qrc">
      <normaloff>:/Ticon/Icons/youxuanzhuan90du.svg</normaloff>:/Ticon/Icons/youxuanzhuan90du.svg</iconset>
    </property>
    <property name="text">
@@ -769,7 +772,7 @@ border:2px solid #EEF1F7
   </action>
   <action name="action_setViewTo_X">
    <property name="icon">
-    <iconset>
+    <iconset resource="../iGameQtMainWindow.qrc">
      <normaloff>:/Ticon/Icons/+X.svg</normaloff>:/Ticon/Icons/+X.svg</iconset>
    </property>
    <property name="text">
@@ -781,7 +784,7 @@ border:2px solid #EEF1F7
   </action>
   <action name="action_setViewTo_X1">
    <property name="icon">
-    <iconset>
+    <iconset resource="../iGameQtMainWindow.qrc">
      <normaloff>:/Ticon/Icons/-X.svg</normaloff>:/Ticon/Icons/-X.svg</iconset>
    </property>
    <property name="text">
@@ -793,7 +796,7 @@ border:2px solid #EEF1F7
   </action>
   <action name="action_setViewTo_Y">
    <property name="icon">
-    <iconset>
+    <iconset resource="../iGameQtMainWindow.qrc">
      <normaloff>:/Ticon/Icons/+Y.svg</normaloff>:/Ticon/Icons/+Y.svg</iconset>
    </property>
    <property name="text">
@@ -805,7 +808,7 @@ border:2px solid #EEF1F7
   </action>
   <action name="action_setViewTo_Y1">
    <property name="icon">
-    <iconset>
+    <iconset resource="../iGameQtMainWindow.qrc">
      <normaloff>:/Ticon/Icons/-Y.svg</normaloff>:/Ticon/Icons/-Y.svg</iconset>
    </property>
    <property name="text">
@@ -817,7 +820,7 @@ border:2px solid #EEF1F7
   </action>
   <action name="action_setViewTo_Z">
    <property name="icon">
-    <iconset>
+    <iconset resource="../iGameQtMainWindow.qrc">
      <normaloff>:/Ticon/Icons/+Z.svg</normaloff>:/Ticon/Icons/+Z.svg</iconset>
    </property>
    <property name="text">
@@ -829,7 +832,7 @@ border:2px solid #EEF1F7
   </action>
   <action name="action_setViewTo_Z1">
    <property name="icon">
-    <iconset>
+    <iconset resource="../iGameQtMainWindow.qrc">
      <normaloff>:/Ticon/Icons/-Z.svg</normaloff>:/Ticon/Icons/-Z.svg</iconset>
    </property>
    <property name="text">
@@ -841,7 +844,7 @@ border:2px solid #EEF1F7
   </action>
   <action name="action_ShowCenter">
    <property name="icon">
-    <iconset>
+    <iconset resource="../iGameQtMainWindow.qrc">
      <normaloff>:/Ticon/Icons/ShowCenterAxes.svg</normaloff>:/Ticon/Icons/ShowCenterAxes.svg</iconset>
    </property>
    <property name="text">
@@ -853,7 +856,7 @@ border:2px solid #EEF1F7
   </action>
   <action name="action_ResetCenter">
    <property name="icon">
-    <iconset>
+    <iconset resource="../iGameQtMainWindow.qrc">
      <normaloff>:/Ticon/Icons/ResetCenter.svg</normaloff>:/Ticon/Icons/ResetCenter.svg</iconset>
    </property>
    <property name="text">
@@ -865,7 +868,7 @@ border:2px solid #EEF1F7
   </action>
   <action name="action_FaceFlatFill">
    <property name="icon">
-    <iconset>
+    <iconset resource="../iGameQtMainWindow.qrc">
      <normaloff>:/Ticon/Icons/facefill.png</normaloff>:/Ticon/Icons/facefill.png</iconset>
    </property>
    <property name="text">
@@ -877,7 +880,7 @@ border:2px solid #EEF1F7
   </action>
   <action name="action_FaceFill">
    <property name="icon">
-    <iconset>
+    <iconset resource="../iGameQtMainWindow.qrc">
      <normaloff>:/Ticon/Icons/icon (12).png</normaloff>:/Ticon/Icons/icon (12).png</iconset>
    </property>
    <property name="text">
@@ -889,7 +892,7 @@ border:2px solid #EEF1F7
   </action>
   <action name="action_IsometricView">
    <property name="icon">
-    <iconset>
+    <iconset resource="../iGameQtMainWindow.qrc">
      <normaloff>:/Ticon/Icons/IsometricView.svg</normaloff>:/Ticon/Icons/IsometricView.svg</iconset>
    </property>
    <property name="text">
@@ -901,7 +904,7 @@ border:2px solid #EEF1F7
   </action>
   <action name="action_PickCenter">
    <property name="icon">
-    <iconset>
+    <iconset resource="../iGameQtMainWindow.qrc">
      <normaloff>:/Ticon/Icons/PickCenter.svg</normaloff>:/Ticon/Icons/PickCenter.svg</iconset>
    </property>
    <property name="text">
@@ -913,7 +916,7 @@ border:2px solid #EEF1F7
   </action>
   <action name="action_ShowOrientationAxes">
    <property name="icon">
-    <iconset>
+    <iconset resource="../iGameQtMainWindow.qrc">
      <normaloff>:/Ticon/Icons/ShowOrientationAxes.svg</normaloff>:/Ticon/Icons/ShowOrientationAxes.svg</iconset>
    </property>
    <property name="text">
@@ -1085,7 +1088,7 @@ border:2px solid #EEF1F7
   </action>
   <action name="action_ChangeBackground">
    <property name="icon">
-    <iconset>
+    <iconset resource="../iGameQtMainWindow.qrc">
      <normaloff>:/Ticon/Icons/begin.jpg</normaloff>:/Ticon/Icons/begin.jpg</iconset>
    </property>
    <property name="text">
@@ -1108,7 +1111,7 @@ border:2px solid #EEF1F7
     <bool>false</bool>
    </property>
    <property name="icon">
-    <iconset>
+    <iconset resource="../iGameQtMainWindow.qrc">
      <normaloff>:/Ticon/Icons/StreamTracer.svg</normaloff>:/Ticon/Icons/StreamTracer.svg</iconset>
    </property>
    <property name="text">
@@ -1120,7 +1123,7 @@ border:2px solid #EEF1F7
   </action>
   <action name="action_Glyph">
    <property name="icon">
-    <iconset>
+    <iconset resource="../iGameQtMainWindow.qrc">
      <normaloff>:/Ticon/Icons/Glyph.svg</normaloff>:/Ticon/Icons/Glyph.svg</iconset>
    </property>
    <property name="text">
@@ -1152,7 +1155,7 @@ border:2px solid #EEF1F7
   </action>
   <action name="action_IsShowColorBar">
    <property name="icon">
-    <iconset>
+    <iconset resource="../iGameQtMainWindow.qrc">
      <normaloff>:/Ticon/Icons/ScalarBar.svg</normaloff>:/Ticon/Icons/ScalarBar.svg</iconset>
    </property>
    <property name="text">
@@ -1202,13 +1205,33 @@ border:2px solid #EEF1F7
     <string>test_06</string>
    </property>
   </action>
+  <action name="action_select_point">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../iGameQtMainWindow.qrc">
+     <normaloff>:/Ticon/Icons/select/select_vertex_geodesic.png</normaloff>:/Ticon/Icons/select/select_vertex_geodesic.png</iconset>
+   </property>
+   <property name="text">
+    <string>select point</string>
+   </property>
+   <property name="toolTip">
+    <string>select point</string>
+   </property>
+  </action>
+  <action name="action_LineSource">
+   <property name="text">
+    <string>Line</string>
+   </property>
+  </action>
   <action name="action_select_points">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset>
-     <normaloff>:/Ticon/Icons/select/select_vertex_geodesic.png</normaloff>:/Ticon/Icons/select/select_vertex_geodesic.png</iconset>
+    <iconset resource="../iGameQtMainWindow.qrc">
+     <normaloff>:/Ticon/Icons/select/select_vertex.png</normaloff>:/Ticon/Icons/select/select_vertex.png</iconset>
    </property>
    <property name="text">
     <string>select points</string>
@@ -1217,9 +1240,34 @@ border:2px solid #EEF1F7
     <string>select points</string>
    </property>
   </action>
-  <action name="action_LineSource">
+  <action name="action_select_faces">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../iGameQtMainWindow.qrc">
+     <normaloff>:/Ticon/Icons/select/select_face.png</normaloff>:/Ticon/Icons/select/select_face.png</iconset>
+   </property>
    <property name="text">
-    <string>Line</string>
+    <string>select faces</string>
+   </property>
+   <property name="toolTip">
+    <string>select faces</string>
+   </property>
+  </action>
+  <action name="action_select_face">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../iGameQtMainWindow.qrc">
+     <normaloff>:/Ticon/Icons/select/bbox.png</normaloff>:/Ticon/Icons/select/bbox.png</iconset>
+   </property>
+   <property name="text">
+    <string>select face</string>
+   </property>
+   <property name="toolTip">
+    <string>select face</string>
    </property>
   </action>
  </widget>
