@@ -100,6 +100,21 @@ public:
     // TODO: slove z-buffer Accuracy issues
     GLBuffer& GetDrawCullDataBuffer() { return m_DrawCullData; }
 
+    void MakeCurrent() {
+        if (m_MakeCurrentFunctor) { m_MakeCurrentFunctor(); }
+    }
+    void DoneCurrent() {
+        if (m_DoneCurrentFunctor) { m_DoneCurrentFunctor(); }
+    }
+    template<typename Functor, typename... Args>
+    void SetMakeCurrentFunctor(Functor&& functor, Args&&... args) {
+        m_MakeCurrentFunctor = std::bind(functor, args...);
+    }
+    template<typename Functor, typename... Args>
+    void SetDoneCurrentFunctor(Functor&& functor, Args&&... args) {
+        m_DoneCurrentFunctor = std::bind(functor, args...);
+    }
+
 protected:
     Scene();
     ~Scene() override;
@@ -129,6 +144,8 @@ protected:
     //DataObject* m_CurrentObject{nullptr};
 
     std::function<void()> m_UpdateFunctor;
+    std::function<void()> m_MakeCurrentFunctor;
+    std::function<void()> m_DoneCurrentFunctor;
 
     Camera::Pointer m_Camera{};
     Light::Pointer m_Light{};

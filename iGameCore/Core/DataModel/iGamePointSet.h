@@ -68,7 +68,7 @@ public:
   void TestOcclusionResults(Scene *) override;
   void ConvertToDrawableData() override;
   bool IsDrawable() override { return true; }
-  void ViewCloudPicture(int index, int demension = -1) override;
+  void ViewCloudPicture(Scene* ,int index, int demension = -1) override;
 
   virtual void SetAttributeWithPointData(ArrayObject::Pointer attr,
                                          igIndex i = -1);

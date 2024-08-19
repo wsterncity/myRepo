@@ -282,11 +282,14 @@ public:
     ModelTreeWidgetItem* getItem(const QPoint& p) const {
         return dynamic_cast<ModelTreeWidgetItem*>(itemAt(p));
     }
-
+    QTreeWidgetItem* getChild(const QPoint& p) const {
+        return dynamic_cast<QTreeWidgetItem*>(itemAt(p));
+    }
 protected:
     void mousePressEvent(QMouseEvent* event) override {
         bool call = true;
         ModelTreeWidgetItem* item = getItem(event->pos());
+        QTreeWidgetItem* child = nullptr;
         if (item) {
             // Gets the position of the click and the position of the icon
             QRect iconItem = visualItemRect(item);
@@ -301,9 +304,16 @@ protected:
             else if(currentItem() != item){ // Check operation
                 emit(ChangeCurrentModel(item->getModel()));
                 setItemSelected(item, true);
+                item->getModel()->ViewCloudPicture(-1);
             }
         }
-
+        else if((child = getChild(event->pos())) && child) {
+            int index = child->data(0, Qt::UserRole).toInt();
+            ModelTreeWidgetItem* parent = dynamic_cast<ModelTreeWidgetItem*>(child->parent());
+            if (parent) {
+                parent->getModel()->ViewCloudPicture(index);
+            }
+        }
         if (call)
         {
             // Call the base class's mousePressEvent to ensure that other events continue to be handled

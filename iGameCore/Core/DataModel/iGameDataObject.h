@@ -167,16 +167,16 @@ private:
   void SetParent(DataObject *parent);
 
 public:
-  virtual void Draw(Scene *);
-  virtual void DrawPhase1(Scene *);
-  virtual void DrawPhase2(Scene *);
-  virtual void TestOcclusionResults(Scene *);
-  virtual void ConvertToDrawableData();
-  virtual void MakeDrawable() { m_Drawable = true; }
-  virtual bool IsDrawable() { return m_Drawable; }
+    virtual void Draw(Scene *);
+    virtual void DrawPhase1(Scene *);
+    virtual void DrawPhase2(Scene *);
+    virtual void TestOcclusionResults(Scene *);
+    virtual void ConvertToDrawableData();
+    virtual void MakeDrawable() { m_Drawable = true; }
+    virtual bool IsDrawable() { return m_Drawable; }
 
-  virtual void ViewCloudPicture(int index, int dimension = -1);
-  void ViewCloudPictureOfModel(int index, int dimension = -1);
+    virtual void ViewCloudPicture(Scene* ,int index, int dimension = -1);
+    void ViewCloudPictureOfModel(Scene* ,int index, int dimension = -1);
 
     void SetViewStyle(IGenum mode);
     void SetViewStyle2(IGenum mode);
@@ -188,8 +188,8 @@ public:
     int GetAttributeIndex();
     int GetAttributeDimension();
 
-  int GetTimeframeIndex();
-  void SwitchToCurrentTimeframe(int timeIndex);
+    int GetTimeframeIndex();
+    void SwitchToCurrentTimeframe(int timeIndex);
 
 protected:
     unsigned int m_ViewStyle{0};
@@ -198,7 +198,7 @@ protected:
     bool m_Visibility{true};
     bool m_Drawable{false};
 
-  int m_CurrentTimeframeIndex{-1};
+    int m_CurrentTimeframeIndex{-1};
 };
 
 template <typename Functor, typename... Args>
