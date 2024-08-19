@@ -160,11 +160,13 @@ void PointSet::ConvertToDrawableData() {
   m_Positions->Modified();
 }
 
-void PointSet::ViewCloudPicture(int index, int demension) {
-  auto &attr = this->GetPropertySet()->GetProperty(index);
-  if (!attr.isDeleted && attr.attachmentType == IG_POINT) {
-    this->SetAttributeWithPointData(attr.pointer, demension);
-  }
+void PointSet::ViewCloudPicture(Scene* scene, int index, int demension) {
+    scene->MakeCurrent();
+    auto &attr = this->GetAttributeSet()->GetAttribute(index);
+    if (!attr.isDeleted && attr.attachmentType == IG_POINT) {
+        this->SetAttributeWithPointData(attr.pointer, demension);
+    }
+    scene->DoneCurrent();
 }
 
 void PointSet::SetAttributeWithPointData(ArrayObject::Pointer attr, igIndex i) {

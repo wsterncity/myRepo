@@ -113,18 +113,18 @@ void DataObject::ConvertToDrawableData() {
   ProcessSubDataObjects(&DataObject::ConvertToDrawableData);
 }
 
-void DataObject::ViewCloudPicture(int index, int dimension) {
+void DataObject::ViewCloudPicture(Scene* scene,int index, int dimension) {
   m_AttributeIndex = index;
   m_AttributeDimension = dimension;
-  ProcessSubDataObjects(&DataObject::ViewCloudPicture, index, dimension);
+  ProcessSubDataObjects(&DataObject::ViewCloudPicture, scene, index, dimension);
 }
 
-void DataObject::ViewCloudPictureOfModel(int index, int demension) {
+void DataObject::ViewCloudPictureOfModel(Scene* scene, int index, int demension) {
   auto *parent = FindParent();
   if (parent != this) {
-    parent->ViewCloudPicture(index, demension);
+    parent->ViewCloudPicture(scene, index, demension);
   } else {
-    this->ViewCloudPicture(index, demension);
+    this->ViewCloudPicture(scene, index, demension);
   }
 }
 

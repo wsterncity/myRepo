@@ -4,7 +4,6 @@
 #include "iGameDataObject.h"
 #include "iGameMarker.h"
 #include "iGamePoints.h"
-#include "iGamePropertySet.h"
 
 IGAME_NAMESPACE_BEGIN
 class PointSet : public DataObject {
@@ -69,7 +68,7 @@ public:
   void TestOcclusionResults(Scene *) override;
   void ConvertToDrawableData() override;
   bool IsDrawable() override { return true; }
-  void ViewCloudPicture(int index, int demension = -1) override;
+  void ViewCloudPicture(Scene* ,int index, int demension = -1) override;
 
   virtual void SetAttributeWithPointData(ArrayObject::Pointer attr,
                                          igIndex i = -1);

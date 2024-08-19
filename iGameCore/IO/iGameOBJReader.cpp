@@ -57,7 +57,7 @@ bool OBJReader::Parsing()
 	//	});
 
 	CellArray::Pointer Faces = m_Data.GetFaces();
-	PropertySet::Pointer Data = m_Data.GetData();
+	AttributeSet::Pointer Data = m_Data.GetData();
 	int vhs[64] = { 0 };
 	while (f_begin < f_end) {
 		// 查找行结束位置

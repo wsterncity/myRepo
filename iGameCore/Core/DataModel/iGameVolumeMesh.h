@@ -150,7 +150,7 @@ public:
     void Draw(Scene*) override;
     void ConvertToDrawableData() override;
     bool IsDrawable() override { return true; }
-    void ViewCloudPicture(int index, int demension = -1) override;
+    void ViewCloudPicture(Scene* scene, int index, int demension = -1) override;
 
     void SetAttributeWithPointData(ArrayObject::Pointer attr,
                                    igIndex i = -1) override;
@@ -176,6 +176,7 @@ private:
     bool m_ColorWithCell{false};
     int m_PointSize{4};
     int m_LineWidth{1};
+    int m_CellPositionSize{};
 
     ArrayObject::Pointer m_ViewAttribute{};
     int m_ViewDemension{};

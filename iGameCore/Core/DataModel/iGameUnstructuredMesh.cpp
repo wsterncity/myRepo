@@ -280,23 +280,27 @@ void UnstructuredMesh::ConvertToDrawableData() {
     m_TriangleVAO.elementBuffer(m_TriangleEBO);
 }
 
-void UnstructuredMesh::ViewCloudPicture(int index, int demension) 
+void UnstructuredMesh::ViewCloudPicture(Scene* scene, int index, int demension)
 {
     if (index == -1) {
         m_UseColor = false;
         m_ViewAttribute = nullptr;
         m_ViewDemension = -1;
         // m_ColorWithCell = false;
+        scene->Update();
         return;
     }
+    scene->MakeCurrent();
     m_AttributeIndex = index;
-    auto& attr = this->GetPropertySet()->GetProperty(index);
+    auto& attr = this->GetAttributeSet()->GetAttribute(index);
     if (!attr.isDeleted) {
         if (attr.attachmentType == IG_POINT)
             this->SetAttributeWithPointData(attr.pointer, demension);
         else if (attr.attachmentType == IG_CELL)
             this->SetAttributeWithCellData(attr.pointer, demension);
     }
+    scene->DoneCurrent();
+    scene->Update();
 }
 
 void UnstructuredMesh::SetAttributeWithPointData(ArrayObject::Pointer attr, igIndex i) 

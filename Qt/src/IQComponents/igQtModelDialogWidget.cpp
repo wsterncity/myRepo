@@ -27,83 +27,74 @@ igQtModelDialogWidget::igQtModelDialogWidget(QWidget* parent)
     modelTreeWidget->setColumnCount(2);
     modelTreeWidget->header()->hide();
     modelTreeWidget->setColumnWidth(0, 150);
-    modelTreeWidget->setMinimumHeight(100);
-    propertyTreeWidget->setMinimumHeight(100);
-    //this->setStyleSheet(
-    //    "QtPropertyEditorView{"
-    //    "border: 1px solid #a0a0a0;"
-    //    "background - color: red;"
-    //    "}"
-    //    "QtPropertyEditorView::item{"
-    //    "border: none;"
-    //    "background - color: red;"
-    //    "margin - top: 1px;"
-    //    "margin - bottom: 1px;"
-    //    "padding: 5px;"
-    //    "font - size: 14px;"
-    //    "}"
-    //    "QtPropertyEditorView::item:selected, QtPropertyEditorView::branch : selected{"
-    //    "background - color: red;"
-    //    "color: black;"
-    //    "}"
-    //    "QtPropertyEditorView QHeaderView::section{"
-    //    "background - color: #c0c0c0;"
-    //    "border: 1px;"
-    //    "color: #292727;"
-    //    "font - size: 18px;"
-    //    "font - weight:bold;"
-    //    "}"
-    //);
 
+    propertyTreeWidget = ui->propertyTreeWidget;
+    propertyTreeWidget->setHeaderVisible(false);
+    propertyManager = new QtVariantPropertyManager(propertyTreeWidget);
+    editFactory = new QtVariantEditorFactory(propertyTreeWidget);
+    propertyTreeWidget->setFactoryForManager(propertyManager, editFactory);
 
-    QtVariantPropertyManager* varManager = new QtVariantPropertyManager(propertyTreeWidget);
-    QtVariantEditorFactory* editFactory = new QtVariantEditorFactory(propertyTreeWidget);
-    connect(modelTreeWidget, &igQtModelTreeWidget::ChangeCurrentModel, this, [&](iGame::Model* model){
-        propertyTreeWidget->clear();
-//        model->GetDataObject()->
-        model->GetDataObject()->GetMetadata();
-        std::cout << model << '\n';
-//        varManager->clear();
-    });
-
-
-    propertyTreeWidget->setFactoryForManager(varManager, editFactory);
-
-    QtProperty* groupItem1 = varManager->addProperty(QtVariantPropertyManager::groupTypeId(), QString("分组1"));
+    objectGroup = propertyManager->addProperty(QtVariantPropertyManager::groupTypeId(), QStringLiteral("Object propertys"));
+    propertyTreeWidget->addProperty(objectGroup);
     
-    QtVariantProperty* item = varManager->addProperty(QVariant::Int, QString("Int: "));
-    item->setValue(100);
-    //item->setEnabled(false);
-    groupItem1->addSubProperty(item);
-
-    QtVariantProperty* item2 = varManager->addProperty(QVariant::Bool, QString("Bool: "));
-    item2->setValue(true);
-    item->addSubProperty(item2);
-    groupItem1->addSubProperty(item2);
-    propertyTreeWidget->addProperty(item2);
-
-    item = varManager->addProperty(QVariant::Double, QString("Double: "));
-    item->setValue(12.34);
-    groupItem1->addSubProperty(item);
-
-    item = varManager->addProperty(QVariant::String, QString("String: "));
-    item->setValue(QString("TestTest"));
-    groupItem1->addSubProperty(item);
-    propertyTreeWidget->addProperty(groupItem1);
-
-    auto* enumFactory = new QtEnumEditorFactory();
-    auto* enumManager = new QtEnumPropertyManager();
-    propertyTreeWidget->setFactoryForManager(enumManager,enumFactory);
-// 初始化，通过enumManager来初始化，给它一个名字“COLOR”
-    QtProperty *colorType =  enumManager->addProperty("COLOR");
-//这里是将枚举类型装在一个QStringList里
-    QStringList colors;
-    colors<<"Red"<<"Green"<<"Blue";
-//枚举管理器添加枚举值
-    enumManager->setEnumNames(colorType,colors);
-//添加默认值，如果不写，自动选择0位的值
-    enumManager->setValue(colorType,1);
-//将这一条值加到browser之中
-    propertyTreeWidget->addProperty(colorType);
 }
 
+int igQtModelDialogWidget::addDataObjectToModelTree(DataObject::Pointer obj, ItemSource source) {
+	// 创建一个项目
+	ModelTreeWidgetItem* item = new ModelTreeWidgetItem(modelTreeWidget);
+	auto scene = iGame::SceneManager::Instance()->GetCurrentScene();
+	auto model = scene->CreateModel(obj);
+	int id = scene->AddModel(model);
+
+	item->setName(QString::fromStdString(obj->GetName()));
+	item->setModel(model);
+
+	auto attrSet = obj->GetAttributeSet()->GetAllAttributes();
+	for (int i = 0; i < attrSet->GetNumberOfElements(); i++) {
+		auto& attr = attrSet->GetElement(i);
+		if (attr.isDeleted) continue;
+		QTreeWidgetItem* child = new QTreeWidgetItem(item);
+		child->setText(0, QString::fromStdString(attr.pointer->GetName()));
+		child->setIcon(0, QIcon(":/Ticon/Icons/select/file.png"));
+		child->setData(0, Qt::UserRole, i);
+		//int index = child->data(0, Qt::UserRole).toInt();
+		//std::cout << index << std::endl;
+	}
+
+
+	modelTreeWidget->addTopLevelItem(item);
+	modelTreeWidget->setCurrentItem(item);
+
+	//propertyTreeWidget->removeProperty(objectGroup);
+	//objectGroup = propertyManager->addProperty(QtVariantPropertyManager::groupTypeId(), QStringLiteral("Object propertys"));
+	//propertyTreeWidget->addProperty(objectGroup);
+	//auto* props = obj->GetPropertys();
+	//for (int i = 0; i < props->Size(); i++) {
+	//	auto prop = props->GetProperty(i);
+	//	QtVariantProperty* item = propertyManager->addProperty(QVariant::Int, QString::fromStdString(prop->GetName()));
+	//	item->setValue(prop->Get<int>());
+	//	item->setEnabled(prop->IsEnabled());
+	//	objectGroup->addSubProperty(item);
+
+	//	for (int j = 0; j < prop->Size(); j++) {
+	//		auto subProp = prop->GetSubProperty(j);
+	//		QtVariantProperty* subItem = propertyManager->addProperty(QVariant::Int, QString::fromStdString(subProp->GetName()));
+	//		subItem->setValue(subProp->Get<int>());
+	//		subItem->setEnabled(prop->IsEnabled());
+	//		item->addSubProperty(subItem);
+	//	}
+	//}
+	return id;
+}
+
+int igQtModelDialogWidget::addModelToModelTree(Model::Pointer model) {
+	ModelTreeWidgetItem* item = new ModelTreeWidgetItem(modelTreeWidget);
+	auto scene = iGame::SceneManager::Instance()->GetCurrentScene();
+	int id = scene->AddModel(model);
+
+	item->setName(QString::fromStdString(model->GetDataObject()->GetName()));
+	item->setModel(model);
+	modelTreeWidget->addTopLevelItem(item);
+	modelTreeWidget->setCurrentItem(item);
+	return id;
+}

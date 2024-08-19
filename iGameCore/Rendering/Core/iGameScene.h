@@ -77,6 +77,7 @@ public:
     CameraDataBuffer& CameraData() { return m_CameraData; }
     ObjectDataBuffer& ObjectData() { return m_ObjectData; }
     UniformBufferObjectBuffer& UBO() { return m_UBO; }
+    void UseColor();
     void UpdateUniformBuffer();
 
     void SetShader(IGenum type, GLShaderProgram*);
@@ -84,6 +85,7 @@ public:
     GLShaderProgram* GetShaderWithType(IGenum type);
     GLShaderProgram* GetShader(IGenum type);
     bool HasShader(IGenum type);
+    void UseShader(IGenum type);
 
     void Draw();
     void Resize(int width, int height, int pixelRatio);
@@ -97,6 +99,21 @@ public:
 
     // TODO: slove z-buffer Accuracy issues
     GLBuffer& GetDrawCullDataBuffer() { return m_DrawCullData; }
+
+    void MakeCurrent() {
+        if (m_MakeCurrentFunctor) { m_MakeCurrentFunctor(); }
+    }
+    void DoneCurrent() {
+        if (m_DoneCurrentFunctor) { m_DoneCurrentFunctor(); }
+    }
+    template<typename Functor, typename... Args>
+    void SetMakeCurrentFunctor(Functor&& functor, Args&&... args) {
+        m_MakeCurrentFunctor = std::bind(functor, args...);
+    }
+    template<typename Functor, typename... Args>
+    void SetDoneCurrentFunctor(Functor&& functor, Args&&... args) {
+        m_DoneCurrentFunctor = std::bind(functor, args...);
+    }
 
 protected:
     Scene();
@@ -127,6 +144,8 @@ protected:
     //DataObject* m_CurrentObject{nullptr};
 
     std::function<void()> m_UpdateFunctor;
+    std::function<void()> m_MakeCurrentFunctor;
+    std::function<void()> m_DoneCurrentFunctor;
 
     Camera::Pointer m_Camera{};
     Light::Pointer m_Light{};
