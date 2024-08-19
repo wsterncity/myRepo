@@ -3,9 +3,9 @@
 
 
 IGAME_NAMESPACE_BEGIN
-void Model::Draw(Scene* scene) 
-{
-	m_DataObject->Draw(scene);
+void Model::Draw(Scene* scene) {
+    GLCheckError();
+    m_DataObject->Draw(scene);
     GLCheckError();
     m_PickedPointPainter->Draw(scene);
     GLCheckError();
@@ -18,9 +18,7 @@ void Model::Draw(Scene* scene)
 }
 
 void Model::Update() {
-    if (m_Scene) {
-        m_Scene->Update();
-    }
+    if (m_Scene) { m_Scene->Update(); }
 }
 
 void Model::Show() {
@@ -144,5 +142,3 @@ Model::Model() {
     SwitchOn(ViewSwitch::PickedItem);
 }
 IGAME_NAMESPACE_END
-
-
