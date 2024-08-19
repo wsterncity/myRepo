@@ -131,23 +131,20 @@ void PointSet::ConvertToDrawableData() {
   if (m_Positions && m_Positions->GetMTime() > this->GetMTime()) {
     return;
   }
-  // if (m_Positions)
-  //{
-  //	std::cout << m_Positions->GetMTime() << " " << this->GetMTime() <<
-  //std::endl;
-  // }
+
+  if (!m_Flag) {
+      m_PointVAO.create();
+      m_PositionVBO.create();
+      m_PositionVBO.target(GL_ARRAY_BUFFER);
+      m_ColorVBO.create();
+      m_ColorVBO.target(GL_ARRAY_BUFFER);
+      m_PointEBO.create();
+      m_PointEBO.target(GL_ELEMENT_ARRAY_BUFFER);
+
+      m_Flag = true;
+  }
 
   m_Positions = m_Points->ConvertToArray();
-
-  m_PointVAO.destroy();
-  m_PositionVBO.destroy();
-  m_ColorVBO.destroy();
-  m_PointEBO.destroy();
-
-  m_PointVAO.create();
-  m_PositionVBO.create();
-  m_ColorVBO.create();
-  m_PointEBO.create();
 
   GLAllocateGLBuffer(m_PositionVBO,
                      m_Positions->GetNumberOfValues() * sizeof(float),
