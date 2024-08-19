@@ -85,6 +85,7 @@ private:
 
   ArrayObject::Pointer m_ViewAttribute;
   int m_ViewDemension;
+  bool m_Flag{ false };
 };
 
 IGAME_NAMESPACE_END
