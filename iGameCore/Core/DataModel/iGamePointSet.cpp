@@ -108,7 +108,7 @@ void PointSet::Draw(Scene *scene) {
   }
   scene->UpdateUniformBuffer();
 
-  if (m_ViewStyle == IG_POINTS) {
+  if (m_ViewStyle & IG_POINTS) {
     scene->GetShader(Scene::NOLIGHT)->use();
     m_PointVAO.bind();
     glPointSize(m_PointSize);
