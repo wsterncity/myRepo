@@ -14,7 +14,7 @@
    <string>Layer Dialog</string>
   </property>
   <widget class="QWidget" name="dockWidgetContents">
-   <layout class="QVBoxLayout" name="verticalLayout">
+   <layout class="QVBoxLayout" name="verticalLayout" stretch="4,0,3">
     <item>
      <widget class="igQtModelTreeWidget" name="modelTreeWidget">
       <property name="minimumSize">
@@ -34,6 +34,17 @@
        </property>
       </column>
      </widget>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <item>
+       <widget class="QPushButton" name="pushButton">
+        <property name="text">
+         <string>PushButton</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </item>
     <item>
      <widget class="QtTreePropertyBrowser" name="propertyTreeWidget" native="true"/>
