@@ -55,8 +55,7 @@ void Scene::RemoveModel(Model* model) {
                 if (m_Models.empty()) {
                     m_CurrentModelId = -1;
                     m_CurrentModel = nullptr;
-                } 
-                else {
+                } else {
                     m_CurrentModelId = m_Models.begin()->first;
                     m_CurrentModel = m_Models.begin()->second;
                 }
@@ -135,9 +134,7 @@ std::map<int, Model::Pointer>& Scene::GetModelList() { return m_Models; }
 
 void Scene::ChangeModelVisibility(int index, bool visibility) {
     auto* model = GetModelById(index);
-    if (model != nullptr) { 
-        ChangeModelVisibility(model, visibility);
-    }
+    if (model != nullptr) { ChangeModelVisibility(model, visibility); }
 }
 
 void Scene::ChangeModelVisibility(Model* model, bool visibility) {
@@ -285,6 +282,9 @@ void Scene::InitOpenGL() {
     glEnable(GL_MULTISAMPLE);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    // reversed-z buffer, depth range: 1.0(near plane) -> 0.0(far plane)
+    glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
 
     // allocate memory
     {
@@ -452,11 +452,10 @@ void Scene::ResizeFrameBuffer() {
                       << std::endl;
     }
 
-#ifndef __APPLE__
     ResizeHizTexture();
-#endif
 }
 void Scene::ResizeHizTexture() {
+#ifdef IGAME_OPENGL_VERSION_460
     uint32_t width = m_Camera->GetViewPort().x;
     uint32_t height = m_Camera->GetViewPort().y;
 
@@ -477,6 +476,7 @@ void Scene::ResizeHizTexture() {
 
     m_DepthPyramid = std::move(texture);
     m_DepthPyramid.getTextureHandle().makeResident();
+#endif
 }
 
 void Scene::Draw() {
@@ -490,12 +490,21 @@ void Scene::Draw() {
     // render to framebuffer
     {
         m_FramebufferMultisampled.bind();
+
+        // reversed-z buffer, depth range: 1.0(near plane) -> 0.0(far plane)
         glClearColor(m_BackgroundColor.r, m_BackgroundColor.g,
                      m_BackgroundColor.b, 1.0f);
+        glClearDepth(0.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        // use reversed-z buffer
+        glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_GREATER);
         DrawFrame();
+        glDepthFunc(GL_LESS);
+        glDisable(GL_DEPTH_TEST);
+
         m_FramebufferMultisampled.release();
-        //return;
     }
 
     // blit multisampled buffer(s) to normal colorbuffer of intermediate FBO.
@@ -531,10 +540,11 @@ void Scene::Draw() {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
-    //GLCheckError();
+    GLCheckError();
 }
 
 void Scene::RefreshHizTexture() {
+#ifdef IGAME_OPENGL_VERSION_460
     // blit multisampled z-buffer to normal z-buffer
     {
         GLFramebuffer::blit(m_FramebufferMultisampled, m_Framebuffer, 0, 0,
@@ -576,12 +586,11 @@ void Scene::RefreshHizTexture() {
         glDispatchCompute((levelWidth + 15) / 16, (levelHeight + 15) / 16, 1);
         glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
     }
-};
+#endif
+}
 
 void Scene::Update() {
-    if (m_UpdateFunctor) { 
-        m_UpdateFunctor();
-    }
+    if (m_UpdateFunctor) { m_UpdateFunctor(); }
 }
 
 void Scene::Resize(int width, int height, int pixelRatio) {
@@ -599,19 +608,19 @@ void Scene::DrawFrame() {
 }
 
 void Scene::DrawModels() {
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);
     glViewport(0, 0, m_Camera->GetViewPort().x, m_Camera->GetViewPort().y);
 
-#ifdef __APPLE__
+#ifdef IGAME_OPENGL_VERSION_330
     for (auto& [id, obj]: m_Models) {
-        obj->ConvertToDrawableData();
+        obj->m_DataObject->ConvertToDrawableData();
         obj->Draw(this);
     }
-#else
+#elif IGAME_OPENGL_VERSION_460
     bool debug = false;
     if (debug) {
         std::cout << "-------:Draw:-------" << std::endl;
+        RefreshDrawCullDataBuffer();
+
         for (auto& [id, obj]: m_Models) {
             obj->m_DataObject->ConvertToDrawableData();
         }
@@ -620,14 +629,16 @@ void Scene::DrawModels() {
             obj->m_DataObject->TestOcclusionResults(this);
         }
 
-        // phase1: draw visible meshlet
+        // draw phase1: draw visible meshlet
         for (auto& [id, obj]: m_Models) { obj->m_DataObject->DrawPhase1(this); }
 
-        // phase2: draw invisible meshlet
+        // refresh phase1: generate loacl hierarchical z-buffer
         RefreshHizTexture();
+
+        // draw phase2: draw invisible meshlet
         for (auto& [id, obj]: m_Models) { obj->m_DataObject->DrawPhase2(this); }
 
-        // phase3: generate hierarchical z-buffer
+        // refresh phase2: generate global hierarchical z-buffer
         RefreshHizTexture();
     } else {
         for (auto& [id, obj]: m_Models) {
@@ -641,9 +652,9 @@ void Scene::DrawModels() {
 void Scene::UpdateUniformData() {
     // update camera data matrix
     m_CameraData.view = m_Camera->GetViewMatrix();
-    m_CameraData.proj = m_Camera->GetProjectionMatrix();
-    m_CameraData.projview =
-            m_Camera->GetProjectionMatrix() * m_Camera->GetViewMatrix();
+    m_CameraData.proj = m_Camera->GetProjectionMatrixReversedZ();
+    m_CameraData.proj_view = m_Camera->GetProjectionMatrixReversedZ() *
+                             m_Camera->GetViewMatrix();
 
     // update object data matrix
     m_ObjectData.model = m_ModelRotate;
@@ -669,9 +680,7 @@ void Scene::UpdateUniformBuffer() {
 }
 
 void Scene::DrawAxes() {
-    glClear(GL_DEPTH_BUFFER_BIT);
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);
+    //glClear(GL_DEPTH_BUFFER_BIT);
     glViewport(0, 0, 200, 200);
 
     //draw Axes
@@ -698,8 +707,8 @@ void Scene::DrawAxes() {
     m_Axes->DrawXYZ(fontShader, textureUniform, colorUniform);
 }
 
-GLBuffer& Scene::GetDrawCullDataBuffer() {
-    igm::mat4 projection = m_Camera->GetProjectionMatrix();
+void Scene::RefreshDrawCullDataBuffer() {
+    igm::mat4 projection = m_Camera->GetProjectionMatrixReversedZ();
     igm::mat4 projectionT = projection.transpose();
 
     auto normalizePlane = [](igm::vec4 p) { return p / igm::vec3(p).length(); };
@@ -709,11 +718,10 @@ GLBuffer& Scene::GetDrawCullDataBuffer() {
             normalizePlane(projectionT[3] + projectionT[1]); // y + w < 0
 
     DrawCullData cullData = {};
-    cullData.modelview = m_Camera->GetViewMatrix() * m_ModelRotate;
+    cullData.view_model = m_Camera->GetViewMatrix() * m_ModelRotate;
     cullData.P00 = projection[0][0];
     cullData.P11 = projection[1][1];
-    cullData.znear = m_Camera->GetNearPlane();
-    cullData.zfar = m_Camera->GetFarPlane();
+    cullData.zNear = projection[3][2];
     cullData.frustum[0] = frustumX.x;
     cullData.frustum[1] = frustumX.z;
     cullData.frustum[2] = frustumY.y;
@@ -722,8 +730,6 @@ GLBuffer& Scene::GetDrawCullDataBuffer() {
     cullData.pyramidHeight = static_cast<float>(m_DepthPyramidHeight);
 
     m_DrawCullData.subData(0, sizeof(DrawCullData), &cullData);
-
-    return m_DrawCullData;
 }
 
 void Scene::UpdateModelsBoundingSphere() {
@@ -746,20 +752,20 @@ void Scene::UpdateModelsBoundingSphere() {
 
     m_ModelsBoundingSphere = igm::vec4{center, radius};
 
-    // update camera far plane to cover all models
-    {
-        auto pos = m_Camera->GetCameraPos();
-        auto center = m_ModelsBoundingSphere.xyz();
-        auto length = (pos - center).length();
-        if (length <= m_ModelsBoundingSphere.w) {
-            // inside the bounding sphere
-            m_Camera->SetNearPlane(0.1f);
-            m_Camera->SetFarPlane(length + m_ModelsBoundingSphere.w);
-        } else {
-            // outside the bounding sphere
-            m_Camera->SetNearPlane(length - m_ModelsBoundingSphere.w);
-            m_Camera->SetFarPlane(length + m_ModelsBoundingSphere.w);
-        }
-    }
+    //// update camera far plane to cover all models
+    //{
+    //    auto pos = m_Camera->GetCameraPos();
+    //    auto center = m_ModelsBoundingSphere.xyz();
+    //    auto length = (pos - center).length();
+    //    if (length <= m_ModelsBoundingSphere.w) {
+    //        // inside the bounding sphere
+    //        m_Camera->SetNearPlane(0.1f);
+    //        m_Camera->SetFarPlane(length + m_ModelsBoundingSphere.w);
+    //    } else {
+    //        // outside the bounding sphere
+    //        m_Camera->SetNearPlane(length - m_ModelsBoundingSphere.w);
+    //        m_Camera->SetFarPlane(length + m_ModelsBoundingSphere.w);
+    //    }
+    //}
 }
 IGAME_NAMESPACE_END

@@ -7,10 +7,10 @@ IGAME_NAMESPACE_BEGIN
 class GLTexture2d : public GLObject<GLTexture2d> {
 private:
     friend class GLObject<GLTexture2d>;
-    static void _create(GLsizei count, GLuint* handles) {
+    static void createHandle(GLsizei count, GLuint* handles) {
         glGenTextures(count, handles);
     }
-    static void _destroy(GLsizei count, GLuint* handles) {
+    static void destroyHandle(GLsizei count, GLuint* handles) {
         glDeleteTextures(count, handles);
     }
 
@@ -26,7 +26,7 @@ public:
                                  GLsizei srcHeight, GLsizei srcDepth) {
         throw std::runtime_error(
                 "You called the GLTexture2d::copyImageSubData function on the "
-                "opengl410. This function is currently not supported.");
+                "opengl330. This function is currently not supported.");
         //glCopyImageSubData(source.handle, srcTarget, srcLevel, srcX, srcY, srcZ,
         //                   destination.handle, dstTarget, dstLevel, dstX, dstY,
         //                   dstZ, srcWidth, srcHeight, srcDepth);
@@ -39,7 +39,7 @@ public:
                             unsigned mip_level_count, unsigned first_layer,
                             unsigned layer_count) {
         throw std::runtime_error(
-                "You called the GLTexture2d::view function on the opengl410. "
+                "You called the GLTexture2d::view function on the opengl330. "
                 "This function is currently not supported.");
         //GLuint handle;
         //glGenTextures(1, &handle);
@@ -81,10 +81,10 @@ public:
                 type = GL_FLOAT;
                 break;
             default:
-                throw std::runtime_error(
-                        "ou called the GLTexture2d::storage function on the "
-                        "opengl410. but the internal_format you provided was "
-                        "not enumerated.");
+                throw std::runtime_error("You called the GLTexture2d::storage "
+                                         "function on the opengl330. "
+                                         "but the internal_format you provided "
+                                         "was not enumrated.");
         }
 
         // 分配存储空间
@@ -138,9 +138,9 @@ public:
 
     void bindImage(unsigned int binding_index, unsigned int mip_level,
                    bool layered, int layer, GLenum access, GLenum format) {
-        throw std::runtime_error(
-                "You called the GLTexture2d::bindImage function on the "
-                "opengl410. This function is currently not supported.");
+        throw std::runtime_error("You called the GLTexture2d::bindImage "
+                                 "function on the opengl330. "
+                                 "This function is currently not supported.");
         //glBindImageTexture(binding_index, handle, mip_level, layered, layer,
         //                   access, format);
     }

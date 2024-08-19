@@ -9,6 +9,7 @@
 #include <QTreeWidget>
 #include <QPushButton>
 #include <qboxlayout.h>
+#include <QObject>
 
 #include <iostream>
 
@@ -151,6 +152,9 @@ public:
         view_pickedItem->setConcernFunctor(&ModelTreeWidgetItem::showPickedItem, this);
         view_pickedItem->setCancelFunctor(&ModelTreeWidgetItem::hidePickedItem, this);
     }
+    iGame::Model* getModel(){
+        return this->model.get();
+    }
 
     void setModel(iGame::Model::Pointer model) {
         this->model = model;
@@ -269,7 +273,11 @@ class IG_QT_MODULE_EXPORT igQtModelTreeWidget : public QTreeWidget {
     Q_OBJECT
 
 public:
-    igQtModelTreeWidget(QWidget* parent = nullptr) : QTreeWidget(parent) {}
+    igQtModelTreeWidget(QWidget* parent = nullptr) : QTreeWidget(parent) {
+        connect(this, &QTreeWidget::itemClicked, this, [&](QTreeWidgetItem* item){
+        });
+
+    }
 
     ModelTreeWidgetItem* getItem(const QPoint& p) const {
         return dynamic_cast<ModelTreeWidgetItem*>(itemAt(p));
@@ -290,7 +298,8 @@ protected:
                 item->changeVisibility();
                 call = false;
             }
-            else { // Check operation
+            else if(currentItem() != item){ // Check operation
+                emit(ChangeCurrentModel(item->getModel()));
                 setItemSelected(item, true);
             }
         }
@@ -302,6 +311,9 @@ protected:
         }
 
     }
+
+signals:
+    void ChangeCurrentModel(iGame::Model* model);
 
 private:
 

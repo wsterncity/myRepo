@@ -1,7 +1,7 @@
 #pragma once
 
-#ifdef __APPLE__
-#include "GL410/GLTexture2d.h"
+#ifdef IGAME_OPENGL_VERSION_330
+#include "GL330/GLTexture2d.h"
 #else
 #include "GL460/GLTexture2d.h"
 #endif

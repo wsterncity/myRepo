@@ -12,20 +12,26 @@ IGAME_NAMESPACE_BEGIN
 class LineTypePointsSource : public PointSource{
 public:
     I_OBJECT(LineTypePointsSource)
-    static Pointer New(){ return new LineTypePointsSource;}
+    static Pointer New(){
+        uint32_t resolution = 1;
+        return new LineTypePointsSource(resolution);
+    }
 
     bool Execute() override;
 
-    void SetPoint_0(const float point0[3]);
+    void SetPoint_0(const Point& point0);
 
-    void SetPoint_1(const float point1[3]);
+    void SetPoint_1(const Point& point1);
 
+    void SetResolution(unsigned int& Resolution);
 
 protected:
-    LineTypePointsSource() = default;
+    LineTypePointsSource(uint32_t &mResolution) : m_Resolution(mResolution) {};
 
-    float m_Point_0[3];
-    float m_Point_1[3];
+    Point m_Point_0;
+    Point m_Point_1;
+
+    uint32_t& m_Resolution;
 };
 
 

@@ -103,38 +103,37 @@ public:
     GLuint programID() const { return handle; }
 
     void setUniform(GLUniform uniform, int value) const {
-        glProgramUniform1i(handle, uniform.index(), value);
+        glUniform1i(uniform.index(), value);
     }
 
     void setUniform(GLUniform uniform, unsigned int value) const {
-        glProgramUniform1ui(handle, uniform.index(), value);
+        glUniform1ui(uniform.index(), value);
     }
 
     void setUniform(GLUniform uniform, float value) const {
-        glProgramUniform1f(handle, uniform.index(), value);
+        glUniform1f(uniform.index(), value);
     }
 
     void setUniform(GLUniform uniform, const igm::uvec2& vec2) const {
-        glProgramUniform2uiv(handle, uniform.index(), 1, vec2.data());
+        glUniform2ui(uniform.index(), vec2.x, vec2.y);
     }
 
     void setUniform(GLUniform uniform, const igm::vec3& vec3) const {
-        glProgramUniform3fv(handle, uniform.index(), 1, vec3.data());
+        glUniform3f(uniform.index(), vec3.x, vec3.y, vec3.z);
     }
 
     void setUniform(GLUniform uniform, const igm::vec4& vec4) const {
-        glProgramUniform4fv(handle, uniform.index(), 1, vec4.data());
+        glUniform4f(uniform.index(), vec4.x, vec4.y, vec4.z, vec4.w);
     }
 
     void setUniform(GLUniform uniform, const igm::mat4& mat4) const {
-        glProgramUniformMatrix4fv(handle, uniform.index(), 1, false,
-                                  mat4.data());
+        glUniformMatrix4fv(uniform.index(), 1, GL_FALSE, mat4.data());
     }
 
     void setUniform(GLUniform uniform, bool transpose,
                     const igm::mat4& mat4) const {
-        glProgramUniformMatrix4fv(handle, uniform.index(), 1, transpose,
-                                  mat4.data());
+        glUniformMatrix4fv(uniform.index(), 1, transpose ? GL_TRUE : GL_FALSE,
+                           mat4.data());
     }
 
     void mapUniformBlock(const char* uniformBlockName,

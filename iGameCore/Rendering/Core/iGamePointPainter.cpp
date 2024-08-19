@@ -17,11 +17,9 @@ void PointPainter::Clear() {
 void PointPainter::Draw(Scene* scene) {
     if (!m_Visibility) { return; }
 
-    if (m_Points == nullptr) {
-        return;
-    }
+    if (m_Points == nullptr) { return; }
 
-    if (this->GetMTime()  < m_Points->GetMTime()) {
+    if (this->GetMTime() < m_Points->GetMTime()) {
         VAO.destroy();
         pVBO.destroy();
         cVBO.destroy();
@@ -48,6 +46,8 @@ void PointPainter::Draw(Scene* scene) {
 
         this->Modified();
     }
+
+    if (!VAO) return;
 
     scene->UBO().useColor = true;
     scene->UpdateUniformBuffer();

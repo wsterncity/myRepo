@@ -139,7 +139,8 @@ igm::mat4 Axes::ViewMatrix() {
                        igm::vec3{0.0f, 1.0f, 0.0f});
 }
 igm::mat4 Axes::ProjMatrix() {
-    return igm::perspective(45.0f, 1.0f, 0.1f, 100.0f);
+    // reversed-z buffer
+    return igm::perspectiveRH_OZ(45.0f, 1.0f, 0.1f);
 }
 
 void Axes::initialize() {
@@ -167,12 +168,13 @@ void Axes::initialize() {
                            triangleIndices.data(), GL_STATIC_DRAW);
 
     // bind vertex attribute pointer to VAO
-    m_TriangleVAO.vertexBuffer(0, m_PositionVBO, 0, 3 * sizeof(float));
-    GLSetVertexAttrib(m_TriangleVAO, GL_LOCATION_IDX_0, 0, 3, GL_FLOAT,
-                      GL_FALSE, 0);
-    m_TriangleVAO.vertexBuffer(1, m_ColorVBO, 0, 3 * sizeof(float));
-    GLSetVertexAttrib(m_TriangleVAO, GL_LOCATION_IDX_1, 1, 3, GL_FLOAT,
-                      GL_FALSE, 0);
+    m_TriangleVAO.vertexBuffer(GL_VBO_IDX_0, m_PositionVBO, 0,
+                               3 * sizeof(float));
+    GLSetVertexAttrib(m_TriangleVAO, GL_LOCATION_IDX_0, GL_VBO_IDX_0, 3,
+                      GL_FLOAT, GL_FALSE, 0);
+    m_TriangleVAO.vertexBuffer(GL_VBO_IDX_1, m_ColorVBO, 0, 3 * sizeof(float));
+    GLSetVertexAttrib(m_TriangleVAO, GL_LOCATION_IDX_1, GL_VBO_IDX_1, 3,
+                      GL_FLOAT, GL_FALSE, 0);
     m_TriangleVAO.elementBuffer(m_TriangleEBO);
 
     // billboard

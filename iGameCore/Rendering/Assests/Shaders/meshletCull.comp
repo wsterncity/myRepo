@@ -11,7 +11,7 @@ uniform int workMode;
 layout(std140, binding = 0) uniform CameraDataBlock {
     mat4 view;
     mat4 proj;
-    mat4 projview;// proj * view
+    mat4 proj_view;// proj * view
 } cameraData;
 
 // Meshlets Buffer
@@ -48,8 +48,8 @@ layout(std430, binding = 4) buffer FinalDrawCommandBuffer {
 
 // Draw Cull Data
 layout(std140, binding = 5) uniform DrawCullDataBlock {
-    mat4 modelview;
-    float P00, P11, znear, zfar;// symmetric projection parameters
+    mat4 view_model;
+    float P00, P11, zNear;// symmetric projection parameters
     vec4 frustum;// data for left/right/top/bottom frustum planes
     float pyramidWidth, pyramidHeight;// depth pyramid size in texels
 } drawCullData;
@@ -57,23 +57,11 @@ layout(std140, binding = 5) uniform DrawCullDataBlock {
 // hierarchical z-buffer
 uniform uvec2 depthPyramid;
 
-// depth range: 0.0(near plane) -> 1.0(far plane)
-float LinearizeDepth(float depth)
-{
-    float znear = drawCullData.znear;
-    float zfar = drawCullData.zfar;
-    float z = depth * 2.0 - 1.0;// back to NDC
-    return (2.0 * znear * zfar) / (zfar + znear - z * (zfar - znear));
-}
-
 // 2D Polyhedral Bounds of a Clipped, Perspective-Projected 3D Sphere. Michael Mara, Morgan McGuire. 2013
-bool ProjectSphere(vec3 C, float r, float znear, float P00, float P11, out vec4 aabb)
-{
-    if (-C.z - r < znear) {
+bool ProjectSphere(vec3 C, float r, float zNear, float P00, float P11, out vec4 aabb) {
+    if (-C.z - r < zNear) {
         return false;
     }
-
-    C.x = -C.x;
 
     vec2 cx = -C.xz;
     vec2 vx = vec2(sqrt(dot(cx, cx) - r * r), r);
@@ -86,9 +74,7 @@ bool ProjectSphere(vec3 C, float r, float znear, float P00, float P11, out vec4 
     vec2 maxy = mat2(vy.x, -vy.y, vy.y, vy.x) * cy;
 
     aabb = vec4(minx.x / minx.y * P00, miny.x / miny.y * P11, maxx.x / maxx.y * P00, maxy.x / maxy.y * P11);
-    aabb = aabb.xwzy * vec4(0.5f, -0.5f, 0.5f, -0.5f) + vec4(0.5f);// clip space -> uv space
-
-    //    aabb = 0.5 - 0.5 * vec4(minx.x / minx.y * P00, miny.x / miny.y * P11, maxx.x / maxx.y * P00, maxy.x / maxy.y * P11);
+    aabb = aabb.xwzy * vec4(-0.5f, -0.5f, -0.5f, -0.5f) + vec4(0.5f);// clip space -> uv space
 
     return true;
 }
@@ -99,7 +85,7 @@ bool IsVisible(MeshletData meshlet) {
 
     // in the right-handed coordinate system, the z value of the view coordinate is negative
     vec3 center = sphereBounds.xyz;
-    center = (drawCullData.modelview * vec4(center, 1.f)).xyz;
+    center = (drawCullData.view_model * vec4(center, 1.f)).xyz;
     float radius = sphereBounds.w;
 
     bool visible = true;
@@ -108,20 +94,21 @@ bool IsVisible(MeshletData meshlet) {
     visible = visible && center.z * drawCullData.frustum[1] - abs(center.x) * drawCullData.frustum[0] > -radius;
     visible = visible && center.z * drawCullData.frustum[3] - abs(center.y) * drawCullData.frustum[2] > -radius;
 
-    visible = visible && -center.z + radius > drawCullData.znear && -center.z - radius < drawCullData.zfar;
+    // dist culling
+    // visible = visible && -center.z + radius > drawCullData.zNear && -center.z - radius < drawCullData.zFar;
 
     vec4 aabb;
-    if (ProjectSphere(center, radius, drawCullData.znear, drawCullData.P00, drawCullData.P11, aabb)) {
-        float width = (aabb.z - aabb.x) * drawCullData.pyramidWidth;
-        float height = (aabb.w - aabb.y) * drawCullData.pyramidHeight;
+    if (ProjectSphere(center, radius, drawCullData.zNear, drawCullData.P00, drawCullData.P11, aabb)) {
+        float width = (aabb.z - aabb.x) * float(drawCullData.pyramidWidth);
+        float height = (aabb.w - aabb.y) * float(drawCullData.pyramidHeight);
 
-        float level = ceil(log2(max(width, height)));
+        float level = floor(log2(max(width, height)));
 
         // Sampler is set up to do min reduction, so this computes the minimum depth of a 2x2 texel quad
-        float depth = textureLod(sampler2D(depthPyramid), (aabb.xy + aabb.zw) * 0.5, level).x;
-        float linearDepth = LinearizeDepth(depth);
+        float depth = textureLod(sampler2D(depthPyramid), (aabb.xy + aabb.zw) * 0.5, level).x - 0.001f;
+        float depthSphere = drawCullData.zNear / (-center.z - radius);
 
-        visible = visible && -center.z - radius <= linearDepth;
+        visible = visible && depthSphere >= depth;
     }
 
     return visible;
@@ -138,11 +125,11 @@ void main() {
     if (workMode == 0) {
         if (drawCommandBuffer.commands[id].primCount == 0) {
             if (IsVisible(meshlet)) {
-                drawCommandBuffer.commands[id].primCount = 1;
                 uint oldValue = atomicAdd(visibleMeshletBuffer.count, 1);
                 visibleMeshletBuffer.IDs[oldValue] = id;
+
                 finalDrawCommandBuffer.commands[oldValue].count = drawCommandBuffer.commands[id].count;
-                finalDrawCommandBuffer.commands[oldValue].primCount = drawCommandBuffer.commands[id].primCount;
+                finalDrawCommandBuffer.commands[oldValue].primCount = 1;
                 finalDrawCommandBuffer.commands[oldValue].firstIndex = drawCommandBuffer.commands[id].firstIndex;
                 finalDrawCommandBuffer.commands[oldValue].baseVertex = drawCommandBuffer.commands[id].baseVertex;
                 finalDrawCommandBuffer.commands[oldValue].baseInstance = drawCommandBuffer.commands[id].baseInstance;
@@ -154,8 +141,9 @@ void main() {
             drawCommandBuffer.commands[id].primCount = 1;
             uint oldValue = atomicAdd(visibleMeshletBuffer.count, 1);
             visibleMeshletBuffer.IDs[oldValue] = id;
+
             finalDrawCommandBuffer.commands[oldValue].count = drawCommandBuffer.commands[id].count;
-            finalDrawCommandBuffer.commands[oldValue].primCount = drawCommandBuffer.commands[id].primCount;
+            finalDrawCommandBuffer.commands[oldValue].primCount = 1;
             finalDrawCommandBuffer.commands[oldValue].firstIndex = drawCommandBuffer.commands[id].firstIndex;
             finalDrawCommandBuffer.commands[oldValue].baseVertex = drawCommandBuffer.commands[id].baseVertex;
             finalDrawCommandBuffer.commands[oldValue].baseInstance = drawCommandBuffer.commands[id].baseInstance;

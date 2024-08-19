@@ -1,10 +1,12 @@
 #include<iGameSceneManager.h>
 
+#include <Plugin/qtpropertybrowser/qtpropertymanager.h>
 #include <IQComponents/igQtModelDialogWidget.h>
 #include <qdebug.h>
 #include <QQueue>
 #include <qmenu.h>
 #include <qaction.h>
+#include <QSplitter>
 
 igQtModelDialogWidget::igQtModelDialogWidget(QWidget* parent)
 	: QDockWidget(parent),
@@ -12,9 +14,17 @@ igQtModelDialogWidget::igQtModelDialogWidget(QWidget* parent)
 {
 	ui->setupUi(this);
     this->setMinimumWidth(parent->width() / 4);
-    
+
+    QSplitter* splitter = new QSplitter(Qt::Vertical, this);
+    this->setWidget(splitter);
+    splitter->addWidget(ui->modelTreeWidget);
+    splitter->addWidget(ui->propertyTreeWidget);
+    splitter->setChildrenCollapsible(false);
+
 	modelTreeWidget = ui->modelTreeWidget;
-	modelTreeWidget->setColumnCount(2);
+    propertyTreeWidget = ui->propertyTreeWidget;
+
+    modelTreeWidget->setColumnCount(2);
     modelTreeWidget->header()->hide();
     modelTreeWidget->setColumnWidth(0, 150);
 

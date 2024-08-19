@@ -6,10 +6,10 @@ IGAME_NAMESPACE_BEGIN
 class GLRenderbuffer : public GLObject<GLRenderbuffer> {
 private:
     friend class GLObject<GLRenderbuffer>;
-    static void _create(GLsizei count, GLuint* handles) {
+    static void createHandle(GLsizei count, GLuint* handles) {
         glGenRenderbuffers(count, handles);
     }
-    static void _destroy(GLsizei count, GLuint* handles) {
+    static void destroyHandle(GLsizei count, GLuint* handles) {
         glDeleteRenderbuffers(count, handles);
     }
 

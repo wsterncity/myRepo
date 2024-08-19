@@ -56,26 +56,26 @@ void Interactor::WheelEvent(double delta) {
             static_cast<float>(-wheelMoveDirection * m_CameraScaleSpeed);
     m_Camera->moveZ(moveSize);
 
-    auto pos = m_Camera->GetCameraPos();
-    auto center = m_Scene->m_ModelsBoundingSphere.xyz();
-    auto t = (pos - center).length();
-    if ((pos - center).length() <= m_Scene->m_ModelsBoundingSphere.w) {
-        // inside the bounding sphere
-        m_Camera->SetNearPlane(0.1f);
-        m_Camera->SetFarPlane((pos - center).length() +
-                              m_Scene->m_ModelsBoundingSphere.w);
-    } else {
-        // outside the bounding sphere
-        auto near = m_Camera->GetNearPlane() + moveSize;
-        auto far = m_Camera->GetFarPlane() + moveSize;
-        
-        if (near < 0.1) {
-            m_Camera->SetNearPlane(0.1f);
-        } else {
-            m_Camera->SetNearPlane(near);
-        }
-        m_Camera->SetFarPlane(far);
-    }
+    //auto pos = m_Camera->GetCameraPos();
+    //auto center = m_Scene->m_ModelsBoundingSphere.xyz();
+    //auto t = (pos - center).length();
+    //if ((pos - center).length() <= m_Scene->m_ModelsBoundingSphere.w) {
+    //    // inside the bounding sphere
+    //    m_Camera->SetNearPlane(0.1f);
+    //    m_Camera->SetFarPlane((pos - center).length() +
+    //                          m_Scene->m_ModelsBoundingSphere.w);
+    //} else {
+    //    // outside the bounding sphere
+    //    auto near = m_Camera->GetNearPlane() + moveSize;
+    //    auto far = m_Camera->GetFarPlane() + moveSize;
+    //
+    //    if (near < 0.1) {
+    //        m_Camera->SetNearPlane(0.1f);
+    //    } else {
+    //        m_Camera->SetNearPlane(near);
+    //    }
+    //    m_Camera->SetFarPlane(far);
+    //}
 
     UpdateCameraMoveSpeed(m_Scene->m_ModelsBoundingSphere);
 }
@@ -128,7 +128,7 @@ void Interactor::MapToSphere(igm::vec3& old_v3D, igm::vec3& new_v3D) {
     igm::mat4 model =
             translateBack * (m_Scene->m_ModelRotate) * translateToOrigin;
     igm::mat4 view = m_Camera->GetViewMatrix();
-    igm::mat4 proj = m_Camera->GetProjectionMatrix();
+    igm::mat4 proj = m_Camera->GetProjectionMatrixReversedZ();
 
     auto p1 = igm::vec4{center, 1.0f};
     auto p1_mvp = (proj * view * model * p1);
@@ -170,7 +170,7 @@ void Interactor::MapToSphere(igm::vec3& old_v3D, igm::vec3& new_v3D) {
 void Interactor::UpdateCameraMoveSpeed(const igm::vec4& _center) {
     // use first actor to update move speed
     igm::mat4 view = m_Camera->GetViewMatrix();
-    igm::mat4 proj = m_Camera->GetProjectionMatrix();
+    igm::mat4 proj = m_Camera->GetProjectionMatrixReversedZ();
 
     // update camera movement speed to adapt to pan
     auto center = igm::vec3(_center);

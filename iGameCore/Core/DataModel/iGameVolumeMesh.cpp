@@ -862,6 +862,17 @@ void VolumeMesh::ConvertToDrawableData()
 	}
 	m_TriangleIndices = triangleIndices;
 
+      GLAllocateGLBuffer(m_PositionVBO,
+                         m_Positions->GetNumberOfValues() * sizeof(float),
+                         m_Positions->RawPointer());
+
+      GLAllocateGLBuffer(m_LineEBO,
+                         m_LineIndices->GetNumberOfIds() * sizeof(igIndex),
+                         m_LineIndices->RawPointer());
+
+      GLAllocateGLBuffer(m_TriangleEBO,
+                         m_TriangleIndices->GetNumberOfIds() * sizeof(igIndex),
+                         m_TriangleIndices->RawPointer());
 
 	m_PointVAO.vertexBuffer(GL_VBO_IDX_0, m_PositionVBO, 0, 3 * sizeof(float));
 	GLSetVertexAttrib(m_PointVAO, GL_LOCATION_IDX_0, GL_VBO_IDX_0, 3, GL_FLOAT,
@@ -878,19 +889,6 @@ void VolumeMesh::ConvertToDrawableData()
 	GLSetVertexAttrib(m_TriangleVAO, GL_LOCATION_IDX_0, GL_VBO_IDX_0, 3, GL_FLOAT,
 		GL_FALSE, 0);
 	m_TriangleVAO.elementBuffer(m_TriangleEBO);
-
-
-	GLAllocateGLBuffer(m_PositionVBO,
-		m_Positions->GetNumberOfValues() * sizeof(float),
-		m_Positions->RawPointer());
-
-	GLAllocateGLBuffer(m_LineEBO,
-		m_LineIndices->GetNumberOfIds() * sizeof(igIndex),
-		m_LineIndices->RawPointer());
-
-	GLAllocateGLBuffer(m_TriangleEBO,
-		m_TriangleIndices->GetNumberOfIds() * sizeof(igIndex),
-		m_TriangleIndices->RawPointer());
 }
 
 void VolumeMesh::ViewCloudPicture(int index, int demension) {
