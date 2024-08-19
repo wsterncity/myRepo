@@ -29,11 +29,22 @@ public:
         return instance;
     }
 
-    void RegisterPair(unsigned int vao, unsigned int vbo_binding_index,
-                      unsigned int buffer, size_t stride) {
+    void RegisterBufferToVertexArray(unsigned int vao,
+                                     unsigned int vbo_binding_index,
+                                     unsigned int buffer, size_t stride) {
         auto key = std::make_tuple(vao, vbo_binding_index);
         auto value = std::make_tuple(buffer, stride);
         bufferMap[key] = value;
+    }
+
+    void UnRegisterVertexArray(unsigned int vao) {
+        for (auto it = bufferMap.begin(); it != bufferMap.end();) {
+            if (std::get<0>(it->first) == vao) {
+                it = bufferMap.erase(it);
+            } else {
+                ++it;
+            }
+        }
     }
 
     unsigned int GetBuffer(unsigned int vao,

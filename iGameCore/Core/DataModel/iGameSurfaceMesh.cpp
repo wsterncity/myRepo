@@ -567,8 +567,8 @@ void SurfaceMesh::ReplacePointReference(const IGsize fromPtId,
   m_FaceLinks->SetLink(toPtId, link2.pointer, link2.size);
 }
 
-SurfaceMesh::SurfaceMesh() { 
-    m_ViewStyle = IG_SURFACE; 
+SurfaceMesh::SurfaceMesh() {
+    m_ViewStyle = IG_SURFACE;
 };
 
 void SurfaceMesh::Draw(Scene *scene) {
@@ -612,11 +612,21 @@ void SurfaceMesh::Draw(Scene *scene) {
     }
 
     m_LineVAO.bind();
-    glad_glLineWidth(m_LineWidth);
+    glLineWidth(m_LineWidth);
+
+    // TODO: A better way to render wireframes
+    auto boundingBoxDiag = this->GetBoundingBox().diag();
+    auto scaleFactor =
+        1e-5 / std::pow(10, std::floor(std::log10(boundingBoxDiag)));
+    glad_glDepthRange(scaleFactor, 1);
     glad_glDepthFunc(GL_GEQUAL);
+
     glad_glDrawElements(GL_LINES, m_LineIndices->GetNumberOfIds(),
                         GL_UNSIGNED_INT, 0);
+
     glad_glDepthFunc(GL_GREATER);
+    glad_glDepthRange(0, 1);
+
     m_LineVAO.release();
   }
   if (m_ViewStyle & IG_SURFACE) {
@@ -672,18 +682,16 @@ void SurfaceMesh::DrawPhase1(Scene *scene) {
   if (m_UseColor && m_ColorWithCell) {
   }
 
-  if (m_ViewStyle == IG_POINTS) {
-
-  } else if (m_ViewStyle == IG_WIREFRAME) {
-
-  } else if (m_ViewStyle == IG_SURFACE) {
+  if (m_ViewStyle & IG_POINTS) {
+  }
+  if (m_ViewStyle & IG_WIREFRAME) {
+  }
+  if (m_ViewStyle & IG_SURFACE) {
     scene->GetShader(Scene::PATCH)->use();
     m_TriangleVAO.bind();
-
     unsigned int count = 0;
     m_Meshlets->VisibleMeshletBuffer().getSubData(0, sizeof(unsigned int),
                                                   &count);
-
     m_Meshlets->FinalDrawCommandBuffer().target(GL_DRAW_INDIRECT_BUFFER);
     m_Meshlets->FinalDrawCommandBuffer().bind();
     glMultiDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, nullptr, count,
@@ -691,7 +699,6 @@ void SurfaceMesh::DrawPhase1(Scene *scene) {
     std::cout << "Draw phase 1: [render count: " << count;
     std::cout << ", meshlet count: " << m_Meshlets->MeshletsCount() << "]"
               << std::endl;
-
     m_TriangleVAO.release();
   }
 #endif
@@ -718,11 +725,11 @@ void SurfaceMesh::DrawPhase2(Scene *scene) {
   if (m_UseColor && m_ColorWithCell) {
   }
 
-  if (m_ViewStyle == IG_POINTS) {
-
-  } else if (m_ViewStyle == IG_WIREFRAME) {
-
-  } else if (m_ViewStyle == IG_SURFACE) {
+  if (m_ViewStyle & IG_POINTS) {
+  }
+  if (m_ViewStyle & IG_WIREFRAME) {
+  }
+  if (m_ViewStyle & IG_SURFACE) {
     // compute culling
     {
       auto shader = scene->GetShader(Scene::MESHLETCULL);
@@ -781,15 +788,19 @@ void SurfaceMesh::DrawPhase2(Scene *scene) {
 
 void SurfaceMesh::TestOcclusionResults(Scene *scene) {
 #ifdef IGAME_OPENGL_VERSION_460
-  // std::cout << "Draw phase 3:" << std::endl;
+  // std::cout << "Test Occlusion:" << std::endl;
+  if (!m_Visibility) {
+    return;
+  }
+
   if (m_UseColor && m_ColorWithCell) {
   }
 
-  if (m_ViewStyle == IG_POINTS) {
-
-  } else if (m_ViewStyle == IG_WIREFRAME) {
-
-  } else if (m_ViewStyle == IG_SURFACE) {
+  if (m_ViewStyle & IG_POINTS) {
+  }
+  if (m_ViewStyle & IG_WIREFRAME) {
+  }
+  if (m_ViewStyle & IG_SURFACE) {
     // compute culling
     {
       auto shader = scene->GetShader(Scene::MESHLETCULL);
@@ -943,6 +954,7 @@ void SurfaceMesh::ConvertToDrawableData() {
                       GL_FLOAT, GL_FALSE, 0);
     m_TriangleVAO.elementBuffer(m_TriangleEBO);
 
+    // m_Meshlets->BuildMeshlet(
     //     m_Positions->RawPointer(), m_Positions->GetNumberOfValues() / 3,
     //     m_TriangleIndices->RawPointer(),
     //     m_TriangleIndices->GetNumberOfIds());
