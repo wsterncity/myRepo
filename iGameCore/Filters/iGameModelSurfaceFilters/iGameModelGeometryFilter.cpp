@@ -1044,9 +1044,9 @@ int iGameModelGeometryFilter::ExecuteWithUnstructuredGrid(
     igIndex64 numInputPts = Grid->GetNumberOfPoints();
     igIndex64 numOutputPts = 0;
     auto inPoints = Grid->GetPoints();
-    auto inAllDataArray = input->GetPropertySet();
-    //auto outAllDataArray = PropertySet::New();
-    //output->SetPropertySet(outAllDataArray);
+    auto inAllDataArray = input->GetAttributeSet();
+    //auto outAllDataArray = AttributeSet::New();
+    //output->SetAttributeSet(outAllDataArray);
     CharArray::Pointer CellVisibleArray = CharArray::New();
     char* CellVisible = nullptr;
     unsigned char* cellGhosts = nullptr;
@@ -1246,8 +1246,8 @@ int iGameModelGeometryFilter::ExecuteWithDataSet(DataObject::Pointer Input,
     igIndex64 numCells = input->GetNumberOfVolumes();
     double x[3];
     auto inPoints = input->GetPoints();
-    auto inAllDataArray = input->GetPropertySet();
-    auto outAllDataArray = output->GetPropertySet();
+    auto inAllDataArray = input->GetAttributeSet();
+    auto outAllDataArray = output->GetAttributeSet();
     CharArray::Pointer CellVisibleArray = CharArray::New();
     char* CellVisible = nullptr;
     unsigned char* cellGhosts = nullptr;

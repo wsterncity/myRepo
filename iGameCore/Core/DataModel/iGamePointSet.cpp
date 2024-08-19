@@ -161,7 +161,7 @@ void PointSet::ConvertToDrawableData() {
 }
 
 void PointSet::ViewCloudPicture(int index, int demension) {
-  auto &attr = this->GetPropertySet()->GetProperty(index);
+  auto &attr = this->GetAttributeSet()->GetAttribute(index);
   if (!attr.isDeleted && attr.attachmentType == IG_POINT) {
     this->SetAttributeWithPointData(attr.pointer, demension);
   }

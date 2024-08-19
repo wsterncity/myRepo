@@ -44,11 +44,11 @@ bool FileReader::Execute()
 		std::cerr << "Generate DataObject failure\n";
 		return false;
 	}
-	int size = m_Output->GetPropertySet()->GetAllPropertys()->GetNumberOfElements();
+	int size = m_Output->GetAttributeSet()->GetAllAttributes()->GetNumberOfElements();
 	StringArray::Pointer attrbNameArray = StringArray::New();
 	if (size > 0) {
 		for (int i = 0; i < size; i++) {
-			auto& data = m_Output->GetPropertySet()->GetProperty(i);
+			auto& data = m_Output->GetAttributeSet()->GetAttribute(i);
 			attrbNameArray->AddElement(data.pointer->GetName());
 		}
 	}
@@ -114,7 +114,7 @@ bool FileReader::CreateDataObject()
 		VolumeMesh::Pointer mesh = VolumeMesh::New();
 		mesh->SetPoints(m_Data.GetPoints());
 		mesh->SetVolumes(m_Data.GetVolumes());
-		mesh->SetPropertySet(m_Data.GetData());
+		mesh->SetAttributeSet(m_Data.GetData());
 		m_Output = mesh;
 	}
 
@@ -123,7 +123,7 @@ bool FileReader::CreateDataObject()
 		SurfaceMesh::Pointer mesh = SurfaceMesh::New();
 		mesh->SetPoints(m_Data.GetPoints());
 		mesh->SetFaces(m_Data.GetFaces());
-		mesh->SetPropertySet(m_Data.GetData());
+		mesh->SetAttributeSet(m_Data.GetData());
 		m_Output = mesh;
 	}
 
@@ -132,7 +132,7 @@ bool FileReader::CreateDataObject()
 		VolumeMesh::Pointer mesh = VolumeMesh::New();
 		mesh->SetPoints(m_Data.GetPoints());
 		mesh->SetVolumes(m_Data.GetVolumes());
-		mesh->SetPropertySet(m_Data.GetData());
+		mesh->SetAttributeSet(m_Data.GetData());
 		m_Output = mesh;
 	}
 

@@ -37,12 +37,12 @@ bool iGameXMLFileReader::Execute() {
         return false;
     }
     CreateDataObject();
-    int size = m_Output->GetPropertySet()->GetAllPropertys()->GetNumberOfElements();
+    int size = m_Output->GetAttributeSet()->GetAllAttributes()->GetNumberOfElements();
 
     if (size > 0) {
         StringArray::Pointer attrbNameArray = StringArray::New();
         for (int i = 0; i < size; i++) {
-            auto& data = m_Output->GetPropertySet()->GetProperty(i);
+            auto& data = m_Output->GetAttributeSet()->GetAttribute(i);
             attrbNameArray->AddElement(data.pointer->GetName());
         }
         m_Output->GetMetadata()->AddStringArray(ATTRIBUTE_NAME_ARRAY, attrbNameArray);
@@ -85,7 +85,7 @@ bool iGameXMLFileReader::CreateDataObject() {
         VolumeMesh::Pointer mesh = VolumeMesh::New();
         mesh->SetPoints(m_Data.GetPoints());
         mesh->SetVolumes(m_Data.GetVolumes());
-        mesh->SetPropertySet(m_Data.GetData());
+        mesh->SetAttributeSet(m_Data.GetData());
         m_Output = mesh;
     }
 
@@ -94,7 +94,7 @@ bool iGameXMLFileReader::CreateDataObject() {
         SurfaceMesh::Pointer mesh = SurfaceMesh::New();
         mesh->SetPoints(m_Data.GetPoints());
         mesh->SetFaces(m_Data.GetFaces());
-        mesh->SetPropertySet(m_Data.GetData());
+        mesh->SetAttributeSet(m_Data.GetData());
         m_Output = mesh;
     }
 
@@ -103,7 +103,7 @@ bool iGameXMLFileReader::CreateDataObject() {
         VolumeMesh::Pointer mesh = VolumeMesh::New();
         mesh->SetPoints(m_Data.GetPoints());
         mesh->SetVolumes(m_Data.GetVolumes());
-        mesh->SetPropertySet(m_Data.GetData());
+        mesh->SetAttributeSet(m_Data.GetData());
         m_Output = mesh;
     }
 
@@ -111,7 +111,7 @@ bool iGameXMLFileReader::CreateDataObject() {
     else if(numPoints){
         PointSet::Pointer pointSet = PointSet::New();
         pointSet->SetPoints(m_Data.GetPoints());
-        pointSet->SetPropertySet(m_Data.GetData());
+        pointSet->SetAttributeSet(m_Data.GetData());
         m_Output = pointSet;
     }
     //  单独边集判断

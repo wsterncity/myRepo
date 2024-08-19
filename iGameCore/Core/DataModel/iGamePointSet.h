@@ -4,7 +4,6 @@
 #include "iGameDataObject.h"
 #include "iGameMarker.h"
 #include "iGamePoints.h"
-#include "iGamePropertySet.h"
 
 IGAME_NAMESPACE_BEGIN
 class PointSet : public DataObject {

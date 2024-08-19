@@ -49,31 +49,34 @@ int igQtModelDialogWidget::addDataObjectToModelTree(DataObject::Pointer obj, Ite
 	item->setName(QString::fromStdString(obj->GetName()));
 	item->setModel(model);
 
-	//QTreeWidgetItem* child = new QTreeWidgetItem(item);
-	//child->setText(0, "Source");
-	//child->setText(1, "File");
+	QTreeWidgetItem* child = new QTreeWidgetItem(item);
+	child->setText(0, "Source");
+	child->setText(1, "File");
+
+	
+
 	modelTreeWidget->addTopLevelItem(item);
 	modelTreeWidget->setCurrentItem(item);
 
-	propertyTreeWidget->removeProperty(objectGroup);
-	objectGroup = propertyManager->addProperty(QtVariantPropertyManager::groupTypeId(), QStringLiteral("Object propertys"));
-	propertyTreeWidget->addProperty(objectGroup);
-	auto* props = obj->GetPropertys();
-	for (int i = 0; i < props->Size(); i++) {
-		auto prop = props->GetProperty(i);
-		QtVariantProperty* item = propertyManager->addProperty(QVariant::Int, QString::fromStdString(prop->GetName()));
-		item->setValue(prop->Get<int>());
-		item->setEnabled(prop->IsEnabled());
-		objectGroup->addSubProperty(item);
+	//propertyTreeWidget->removeProperty(objectGroup);
+	//objectGroup = propertyManager->addProperty(QtVariantPropertyManager::groupTypeId(), QStringLiteral("Object propertys"));
+	//propertyTreeWidget->addProperty(objectGroup);
+	//auto* props = obj->GetPropertys();
+	//for (int i = 0; i < props->Size(); i++) {
+	//	auto prop = props->GetProperty(i);
+	//	QtVariantProperty* item = propertyManager->addProperty(QVariant::Int, QString::fromStdString(prop->GetName()));
+	//	item->setValue(prop->Get<int>());
+	//	item->setEnabled(prop->IsEnabled());
+	//	objectGroup->addSubProperty(item);
 
-		for (int j = 0; j < prop->Size(); j++) {
-			auto subProp = prop->GetSubProperty(j);
-			QtVariantProperty* subItem = propertyManager->addProperty(QVariant::Int, QString::fromStdString(subProp->GetName()));
-			subItem->setValue(subProp->Get<int>());
-			subItem->setEnabled(prop->IsEnabled());
-			item->addSubProperty(subItem);
-		}
-	}
+	//	for (int j = 0; j < prop->Size(); j++) {
+	//		auto subProp = prop->GetSubProperty(j);
+	//		QtVariantProperty* subItem = propertyManager->addProperty(QVariant::Int, QString::fromStdString(subProp->GetName()));
+	//		subItem->setValue(subProp->Get<int>());
+	//		subItem->setEnabled(prop->IsEnabled());
+	//		item->addSubProperty(subItem);
+	//	}
+	//}
 	return id;
 }
 

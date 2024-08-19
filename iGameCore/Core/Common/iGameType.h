@@ -50,7 +50,7 @@ enum {
 };
 
 // AttributeType
-enum {
+enum AttributeType {
 	IG_SCALAR = 0,
 	IG_VECTOR,
 	IG_NORMAL,

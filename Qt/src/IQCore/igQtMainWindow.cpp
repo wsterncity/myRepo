@@ -364,7 +364,7 @@ void igQtMainWindow::initAllFilters() {
         sa->AddElement("scalar");
 
         mesh->GetMetadata()->AddStringArray(ATTRIBUTE_NAME_ARRAY, sa);
-        mesh->GetPropertySet()->AddScalar(IG_POINT, property);
+        mesh->GetAttributeSet()->AddScalar(IG_POINT, property);
         mesh->SetPoints(points);
         mesh->SetCells(cells, types);
         mesh->SetName("undefined_unstructured_mesh");
