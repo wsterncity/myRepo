@@ -899,7 +899,7 @@ void VolumeMesh::ViewCloudPicture(int index, int demension) {
         m_ColorWithCell = false;
         return;
     }
-    auto& attr = this->GetPropertySet()->GetProperty(index);
+    auto& attr = this->GetAttributeSet()->GetAttribute(index);
     if (!attr.isDeleted) {
         if (attr.attachmentType == IG_POINT)
             this->SetAttributeWithPointData(attr.pointer, demension);

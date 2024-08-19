@@ -26,43 +26,20 @@ public:
 	~igQtModelDialogWidget() override = default;
 
 public slots:
-	void addDataObjectToModelTree(DataObject::Pointer obj, ItemSource source) {
-		// ����һ����Ŀ
-		ModelTreeWidgetItem* item = new ModelTreeWidgetItem(modelTreeWidget);
-		auto scene = iGame::SceneManager::Instance()->GetCurrentScene();
-		auto model = scene->CreateModel(obj);
-		int id = scene->AddModel(model);
-
-		item->setName(QString::fromStdString(obj->GetName()));
-		item->setModel(model);
-        UpdateCurrentModel(model);
-		//QTreeWidgetItem* child = new QTreeWidgetItem(item);
-		//child->setText(0, "Source");
-		//child->setText(1, "File");
-		modelTreeWidget->addTopLevelItem(item);
-		modelTreeWidget->setCurrentItem(item);
-	}
-
-    void addModelToModelTree(Model::Pointer model){
-        auto* item = new ModelTreeWidgetItem(modelTreeWidget);
-        auto scene = iGame::SceneManager::Instance()->GetCurrentScene();
-        int id = scene->AddModel(model);
-
-        item->setName(QString::fromStdString(model->GetDataObject()->GetName()));
-        item->setModel(model);
-        UpdateCurrentModel(model);
-        modelTreeWidget->addTopLevelItem(item);
-        modelTreeWidget->setCurrentItem(item);
-
-    }
+	int addModelToModelTree(Model::Pointer model);
+	int addDataObjectToModelTree(DataObject::Pointer obj, ItemSource source);
 protected:
-    void UpdateCurrentModel(Model::Pointer model);
+	void UpdateCurrentModel(Model::Pointer model);
 
 private:
     Model* currentModel;
 
 	igQtModelTreeWidget* modelTreeWidget;
 	QtTreePropertyBrowser* propertyTreeWidget;
+
+	QtVariantPropertyManager* propertyManager;
+	QtVariantEditorFactory* editFactory;
+	QtProperty* objectGroup;
 	Ui::LayerDialog* ui;
 };
 

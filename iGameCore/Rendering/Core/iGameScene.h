@@ -77,6 +77,7 @@ public:
     CameraDataBuffer& CameraData() { return m_CameraData; }
     ObjectDataBuffer& ObjectData() { return m_ObjectData; }
     UniformBufferObjectBuffer& UBO() { return m_UBO; }
+    void UseColor();
     void UpdateUniformBuffer();
 
     void SetShader(IGenum type, GLShaderProgram*);
@@ -84,6 +85,7 @@ public:
     GLShaderProgram* GetShaderWithType(IGenum type);
     GLShaderProgram* GetShader(IGenum type);
     bool HasShader(IGenum type);
+    void UseShader(IGenum type);
 
     void Draw();
     void Resize(int width, int height, int pixelRatio);

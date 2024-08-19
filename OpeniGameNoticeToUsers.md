@@ -1,6 +1,6 @@
-## OpeniGame使用手册
+# OpeniGame使用手册
 
-### 框架结构
+## 框架结构
 
 <img src=".\Resources\Images\image-20240729152419670.png" alt="image-20240729152419670" style="zoom:75%;" align = "left"/>
 
@@ -31,7 +31,7 @@
 
 <img src=".\Resources\Images\image-20240802170152717.png" alt="image-20240802170152717" style="zoom:50%;" />
 
-#### Scene
+### Scene
 
 Scene场景包含了需要渲染的各类信息和渲染对象，有光源、摄像机、背景、Shader、交互器、数据对象列表。需要在OpenGL的上下文中进行渲染，默认会调用DataObject的ConvertToDrawableData和Draw进行绘制。成员变量有：
 
@@ -41,7 +41,7 @@ Scene场景包含了需要渲染的各类信息和渲染对象，有光源、摄
 
 对于写算法的同学，不需要关注Scene等渲染逻辑
 
-#### Object
+### Object
 
 Object是整个框架的基类，管理对象的生命周期、时间戳等，如果需要使用框架内的智能指针，必须继承Object
 
@@ -132,7 +132,7 @@ PointSet继承自DataObject，用于管理所有的点集，有快速查找某�
 1. void RequestEditStatus()：在删除点前需要调用，会生成并初始化m_PointDeleteMarker
 2. void GarbageCollection()：在操作完成后调用，清除伪删除的元素
 
-#### SurfaceMesh
+### SurfaceMesh
 
 SurfaceMesh继承自PointSet，表面网格类，成员变量有：
 
@@ -178,7 +178,7 @@ void GarbageCollection();  // 回收删除的数据
 
 <img src=".\Resources\Images\image-20240729155402114.png" alt="image-20240729155402114" style="zoom:80%;" />
 
-### 如何实现自己的数据结构
+## 如何实现自己的数据结构
 
 1. 在DataModel目录下添加头文件和cpp文件
 2. 继承DataObject
@@ -231,7 +231,7 @@ IGAME_NAMESPACE_END
 
 ## 算法
 
-#### Filter（未完）
+### Filter（未完）
 
 Filter是所有算法的基类，控制算法的输入输出、算法的执行，输出算法执行的进度，一个算法可以有多个输入和输出，可以通过接口设置输入数据，获取输出数据。其成员变量有：
 
@@ -417,7 +417,7 @@ dialog->setApplyFunctor([&]() {
 
 ## 数据存储对象
 
-#### ArrayObject、FlatArray
+### ArrayObject、FlatArray
 
 ArrayObject是FlatArray的基类，其有两种元素：Value和Element，Value是基础元素，如float、double、int等，Element是多个Value的组合，ArrayObject将二维数组扁平化为一维数组，将Element的多个Value按顺序存储下来，这样的好处可以按索引访问Value，Element顺序排列也利于直接转为渲染数据，需要设置ElementSize，即一个Element有多少个Value，且所有的Element的ElementSize都是相同的。
 
@@ -482,7 +482,7 @@ FlatArray是存储数据的模版类，其类定义：
 
 释放多余的空间
 
-##### 框架内的容器基本都是这5个方法，但要注意参数含义
+``框架内的容器基本都是这5个方法，但要注意参数含义``
 
 然后我们定义了
 
@@ -494,7 +494,7 @@ FlatArray是存储数据的模版类，其类定义：
 
 ArrayObject只作为通用接口使用
 
-#### ElementArray
+### ElementArray
 
 ElementArray和上面那个数组不同，主要代替std::vector<>的作用，Element可以是任何类型数据
 
@@ -505,7 +505,7 @@ ElementArray和上面那个数组不同，主要代替std::vector<>的作用，E
 
 > StringArray，IdArray等，具体实现见代码
 
-#### CellArray
+### CellArray
 
 CellArray用于保存Cell元素的索引，如面的顶点索引、面的边索引。CellArray中有Offsets和Buffer数组，Offsets用于存储元素在Buffer数组中的初始位置。在添加元素时，当所有元素的大小都一致时，不会使用Offsets数组，只有遇到不同大小的元素才会初始化Offsets数组，目的是减少单一元素的存储空间
 
@@ -517,7 +517,7 @@ CellArray用于保存Cell元素的索引，如面的顶点索引、面的边索�
 
 获取元素的一系列id，返回大小，需要传入一个足够大的指针
 
-###模型导入导出
+## 模型导入导出
 
 1. 目前支持vtk（高阶网格还没适配）、vts、pvd、obj（纯网格）、ply、off、mesh文件的读取
 2. 目前支持vtk（目前高阶网格还没适配，只支持输出标量矢量）、obj（纯网格）、ply、off、mesh文件的输出
@@ -526,9 +526,12 @@ CellArray用于保存Cell元素的索引，如面的顶点索引、面的边索�
    其中，manager为全局的静态管理器，需要使用manager=iGame::iGameManager::Instance()声明。主ui上点击帮助->
    关于iGameMeshView可以生成一个点坐标的标量和类似于曲率的标量。目前暂时只支持点数据，因为面数据渲染规则不一样还未做适配（但是可以自己手动绘制）
 
-### 渲染
+## 渲染
 
-目前提供``OpenGL3.3``和``OpenGL4.6``版本支持，如果程序打开是黑屏，有可能是机器并不支持``OpenGL4.6``，可以使用``OpenGL3.3``
+### OpenGL支持
+
+目前提供``OpenGL3.3``和``OpenGL4.6``版本支持，如果程序打开是黑屏，有可能是机器或驱动并不支持``OpenGL4.6``
+，可以使用``OpenGL3.3``
 代替，具体修改部分请打开``iGameCore/Rendering/CMakeLists.txt``，将相关代码替换为如下代码：
 
 ```cmake
@@ -545,7 +548,12 @@ ENDIF ()
 
 由于Openigame还在不断的完善，因此在使用过程中可能会遇到些许问题，所有遇到的bug都可以给我们提issue，如果有解决办法就更好了。如果有具体需求，可以自行实现，然后告诉我们，我们把他移植到正式版本中，如果该需求会很适用，也可以告知我们我们在后续事先并添加。
 
-
-
+- 数据结构部分有疑问可以联系
+    - 陈凯，微信：ck1204453420，QQ
+    - 徐松，微信：XSong_1012
+- QT组件部分有疑问可以联系
+    - 马楷煜，微信：Fredr1ck_
+- 渲染部分有疑问可以联系
+    - 徐将杰，微信：Sumzeek_
 
 

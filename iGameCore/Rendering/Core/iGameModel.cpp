@@ -11,6 +11,8 @@ void Model::Draw(Scene* scene)
     GLCheckError();
     m_PickedLinePainter->Draw(scene);
     GLCheckError();
+    m_PickedFacePainter->Draw(scene);
+    GLCheckError();
     m_BBoxPainter->Draw(scene);
     GLCheckError();
 }
@@ -31,6 +33,7 @@ void Model::Show() {
     if (GetSwitch(ViewSwitch::PickedItem)) {
         m_PickedPointPainter->SetVisibility(true);
         m_PickedLinePainter->SetVisibility(true);
+        m_PickedFacePainter->SetVisibility(true);
     }
 }
 
@@ -39,6 +42,7 @@ void Model::Hide() {
     m_BBoxPainter->SetVisibility(false);
     m_PickedPointPainter->SetVisibility(false);
     m_PickedLinePainter->SetVisibility(false);
+    m_PickedFacePainter->SetVisibility(false);
     m_Scene->ChangeModelVisibility(this, false);
 }
 
@@ -93,11 +97,13 @@ void Model::SetPickedItemSwitch(bool action) {
         if (m_DataObject->GetVisibility()) {
             m_PickedPointPainter->SetVisibility(true);
             m_PickedLinePainter->SetVisibility(true);
+            m_PickedFacePainter->SetVisibility(true);
         }
     } else {
         SwitchOff(ViewSwitch::PickedItem);
         m_PickedPointPainter->SetVisibility(false);
         m_PickedLinePainter->SetVisibility(false);
+        m_PickedFacePainter->SetVisibility(false);
     }
 }
 
@@ -127,9 +133,10 @@ void Model::SetViewFillSwitch(bool action) {
 
 Model::Model() {
 	m_PickedPointPainter = PointPainter::New();
-    m_PickedPointPainter->SetPointSize(8);
+    m_PickedPointPainter->SetPointSize(6);
     m_PickedLinePainter = LinePainter::New();
     m_PickedLinePainter->SetLineWidth(2);
+    m_PickedFacePainter = FacePainter::New();
     m_BBoxPainter = LinePainter::New();
     m_BBoxPainter->SetLineWidth(2);
 

@@ -3,9 +3,10 @@
 
 #include "iGameBoundingBox.h"
 #include "iGameMetadata.h"
-#include "iGamePropertySet.h"
+#include "iGameAttributeSet.h"
 #include "iGameScalarsToColors.h"
 #include "iGameStreamingData.h"
+#include "iGamePropertyTree.h"
 
 #include "OpenGL/GLBuffer.h"
 #include "OpenGL/GLShader.h"
@@ -33,9 +34,10 @@ public:
 
   StreamingData::Pointer GetTimeFrames();
   void SetTimeFrames(StreamingData::Pointer p) { m_TimeFrames = p; }
-  void SetPropertySet(PropertySet::Pointer p) { m_Propertys = p; }
-  PropertySet *GetPropertySet() { return m_Propertys.get(); }
+  void SetAttributeSet(AttributeSet::Pointer p) { m_Attributes = p; }
+  AttributeSet*GetAttributeSet() { return m_Attributes.get(); }
   Metadata *GetMetadata() { return m_Metadata.get(); }
+  PropertyTree* GetPropertys() { return m_Propertys.get(); }
   const BoundingBox &GetBoundingBox() {
     ComputeBoundingBox();
     return m_Bounding;
@@ -117,26 +119,44 @@ public:
 
 protected:
   DataObject() {
-    m_Propertys = PropertySet::New();
+    m_Attributes = AttributeSet::New();
     m_Metadata = Metadata::New();
     //        m_TimeFrames = StreamingData::New();
     m_UniqueId = GetIncrementDataObjectId();
     m_BoundingHelper = Object::New();
+    m_Propertys = PropertyTree::New();
+
+    // Test...
+    auto prop1 = m_Propertys->AddProperty(Variant::Int, "Size");
+    prop1->SetValue(0);
+    prop1->SetEnabled(true);
+    auto prop2 = prop1->AddSubProperty(Variant::Int, "x");
+    prop2->SetValue(1);
+    prop2->SetEnabled(true);
+    auto prop3 = prop1->AddSubProperty(Variant::Int, "y");
+    prop3->SetValue(1);
+    prop3->SetEnabled(true);
+
+    m_Propertys->AddProperty(Variant::Int, "Width");
+    m_Propertys->AddProperty(Variant::Int, "Height");
+    m_Propertys->AddProperty(Variant::Int, "Length");
+
   }
   ~DataObject() override = default;
 
   virtual void ComputeBoundingBox() {}
 
   DataObjectId m_UniqueId{};
-  StreamingData::Pointer m_TimeFrames{nullptr};
-  PropertySet::Pointer m_Propertys{nullptr};
-  Metadata::Pointer m_Metadata{nullptr};
+  StreamingData::Pointer m_TimeFrames{};
+  AttributeSet::Pointer m_Attributes{};
+  Metadata::Pointer m_Metadata{};
+  PropertyTree::Pointer m_Propertys{};
 
   BoundingBox m_Bounding{};
   Object::Pointer m_BoundingHelper{};
 
   friend class SubDataObjectsHelper;
-  SmartPointer<SubDataObjectsHelper> m_SubDataObjectsHelper{nullptr};
+  SmartPointer<SubDataObjectsHelper> m_SubDataObjectsHelper{};
   DataObject *m_Parent{nullptr};
 
   template <typename Functor, typename... Args>

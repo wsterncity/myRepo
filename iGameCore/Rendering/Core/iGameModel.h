@@ -9,6 +9,7 @@
 #include "iGamePointPainter.h"
 #include "iGameLinePainter.h"
 #include "iGameFilter.h"
+#include "iGameFacePainter.h"
 
 IGAME_NAMESPACE_BEGIN
 class Scene;
@@ -25,6 +26,8 @@ public:
     LinePainter* GetLinePainter() { return m_PickedLinePainter.get(); }
     Filter* GetModelFilter(){ return m_Filter; }
     void SetModelFilter(Filter* _filter){ m_Filter = _filter; }
+    FacePainter* GetFacePainter() { return m_PickedFacePainter.get(); }
+
     void Show();
     void Hide();
     void SetBoundingBoxSwitch(bool action);
@@ -53,6 +56,7 @@ protected:
     Scene* m_Scene{nullptr};
     PointPainter::Pointer m_PickedPointPainter{};
     LinePainter::Pointer m_PickedLinePainter{};
+    FacePainter::Pointer m_PickedFacePainter{};
     LinePainter::Pointer m_BBoxPainter{};
     unsigned long long m_Switch{0ull};
 
