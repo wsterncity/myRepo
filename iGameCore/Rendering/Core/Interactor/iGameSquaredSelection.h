@@ -95,7 +95,7 @@ public:
                       1.0f - (2.0f * screenCoord.y/ height));
 
         // Clipping coordinate
-        igm::vec4 clippingCoord(NDC, 0.001, 1.0);
+        igm::vec4 clippingCoord(NDC, 1, 1.0);
 
         // World coordinate
         igm::vec4 worldCoord = invertedMvp * clippingCoord;
@@ -110,7 +110,7 @@ public:
                       1.0f - (2.0f * screenCoord.y / height));
 
         // Clipping coordinate
-        igm::vec4 clippingCoord(NDC, 1.0, 1.0);
+        igm::vec4 clippingCoord(NDC, 0.001, 1.0);
 
         // World coordinate
         igm::vec4 worldCoord = invertedMvp * clippingCoord;

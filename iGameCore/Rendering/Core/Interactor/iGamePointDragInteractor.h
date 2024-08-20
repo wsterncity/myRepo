@@ -9,6 +9,8 @@
 #pragma once
 
 #include "iGameInteractor.h"
+#include "iGamePointSet.h"
+#include "iGamePointPicker.h"
 
 IGAME_NAMESPACE_BEGIN
 class PointDragInteractor : public Interactor {
@@ -54,8 +56,8 @@ public:
         auto mvp_invert = mvp.invert();
         if (m_MouseMode == NoButton) {
             // NDC����תΪ�ü�����
-            igm::vec4 point(x, y, 0, 1);      // ��ƽ���
-            igm::vec4 pointEnd(x, y, 1.0, 1); // Զƽ���
+            igm::vec4 point(x, y, 1, 1); 
+            igm::vec4 pointEnd(x, y, 0.001, 1);
 
             // �ü�����תΪ��������
             igm::vec4 tpoint = mvp_invert * point;

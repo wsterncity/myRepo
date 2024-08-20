@@ -15,11 +15,11 @@ igQtModelDialogWidget::igQtModelDialogWidget(QWidget* parent)
 	ui->setupUi(this);
     this->setMinimumWidth(parent->width() / 4);
 
-    QSplitter* splitter = new QSplitter(Qt::Vertical, this);
-    this->setWidget(splitter);
-    splitter->addWidget(ui->modelTreeWidget);
-    splitter->addWidget(ui->propertyTreeWidget);
-    splitter->setChildrenCollapsible(false);
+    //QSplitter* splitter = new QSplitter(Qt::Vertical, this);
+    //this->setWidget(splitter);
+    //splitter->addWidget(ui->modelTreeWidget);
+    //splitter->addWidget(ui->propertyTreeWidget);
+    //splitter->setChildrenCollapsible(false);
 
 	modelTreeWidget = ui->modelTreeWidget;
     propertyTreeWidget = ui->propertyTreeWidget;
@@ -37,6 +37,7 @@ igQtModelDialogWidget::igQtModelDialogWidget(QWidget* parent)
     objectGroup = propertyManager->addProperty(QtVariantPropertyManager::groupTypeId(), QStringLiteral("Object propertys"));
     propertyTreeWidget->addProperty(objectGroup);
     
+	ui->pushButton;
 }
 
 int igQtModelDialogWidget::addDataObjectToModelTree(DataObject::Pointer obj, ItemSource source) {

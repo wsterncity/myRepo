@@ -486,7 +486,7 @@ void Scene::Draw() {
 
     auto width = m_Camera->GetViewPort().x;
     auto height = m_Camera->GetViewPort().y;
-
+    
     // render to framebuffer
     {
         m_FramebufferMultisampled.bind();
@@ -539,7 +539,7 @@ void Scene::Draw() {
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
-
+    
     GLCheckError();
 }
 

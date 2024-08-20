@@ -674,29 +674,31 @@ void igQtMainWindow::changeFacesSelectionInteractor()
 void igQtMainWindow::initAllSources() {
     
     connect(ui->action_LineSource, &QAction::triggered, this, [&](){
-        UnstructuredMesh::Pointer newLinePointSet = UnstructuredMesh::New();
-        newLinePointSet->SetViewStyle(IG_POINTS);
-        newLinePointSet->AddPoint(Point(0.f, 0.f, 0.f));
-        newLinePointSet->AddPoint(Point(1.f, 1.0f, 1.f));
-        igIndex cell[1] = {0};
-        newLinePointSet->AddCell(cell, 1, IG_VERTEX);
-        cell[0] = 1;
-        newLinePointSet->AddCell(cell, 1, IG_VERTEX);
-        auto curScene = SceneManager::Instance()->GetCurrentScene();
+//        UnstructuredMesh::Pointer newLinePointSet = UnstructuredMesh::New();
+//        newLinePointSet->SetViewStyle(IG_POINTS);
+//        newLinePointSet->AddPoint(Point(0.f, 0.f, 0.f));
+//        newLinePointSet->AddPoint(Point(1.f, 1.0f, 1.f));
+//        igIndex cell[1] = {0};
+//        newLinePointSet->AddCell(cell, 1, IG_VERTEX);
+//        cell[0] = 1;
+//        newLinePointSet->AddCell(cell, 1, IG_VERTEX);
+//        auto curScene = SceneManager::Instance()->GetCurrentScene();
+//
+//        LineTypePointsSource::Pointer lineSource = LineTypePointsSource::New();
+//
+//        lineSource->SetInput(newLinePointSet);
+////        lineSource->SetResolution(20);
+//        lineSource->GetOutput()->SetName("lineSource");
+//
+//        auto model = curScene->CreateModel(lineSource->GetOutput());
+//        modelTreeWidget->addModelToModelTree(model);
 
-        LineTypePointsSource::Pointer lineSource = LineTypePointsSource::New();
-
-        lineSource->SetInput(newLinePointSet);
-//        lineSource->SetResolution(20);
-        lineSource->GetOutput()->SetName("lineSource");
-
-        auto model = curScene->CreateModel(lineSource->GetOutput());
-        modelTreeWidget->addModelToModelTree(model);
-
-        auto interactor = LineSourceInteractor::New();
+      /*  auto interactor = LineSourceInteractor::New();
         interactor->SetPointSet(DynamicCast<PointSet>(newLinePointSet), model);
-        interactor->SetFilter(lineSource);
+        interactor->SetFilter(lineSource);*/
 
+		auto interactor = PointDragInteractor::New();
+		interactor->SetPointSet(DynamicCast<PointSet>(SceneManager::Instance()->GetCurrentScene()->GetCurrentModel()->GetDataObject()));
         rendererWidget->ChangeInteractor(interactor);
     });
 

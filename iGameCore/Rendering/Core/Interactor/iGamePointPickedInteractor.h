@@ -36,8 +36,8 @@ public:
         auto mvp_invert = mvp.invert();
 
         // Clipping coordinate
-        igm::vec4 point(x, y, 0.001, 1);
-        igm::vec4 pointEnd(x, y, 1.0, 1);
+        igm::vec4 point(x, y, 1.0, 1);
+        igm::vec4 pointEnd(x, y, 0.001, 1);
 
         // World coordinate
         igm::vec4 tpoint = mvp_invert * point;
