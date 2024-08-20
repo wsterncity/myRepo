@@ -76,7 +76,7 @@ public:
 
 protected:
     float fov = 45.0f;
-    float nearPlane = 0.1f;
+    float nearPlane = 1e-5f;
     //float farPlane = 100.0f;
 
 protected:
