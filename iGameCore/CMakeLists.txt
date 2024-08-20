@@ -34,7 +34,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC ${MODULE_NAME})
 target_compile_definitions(${MODULE_NAME} PRIVATE ASSEST_DIR="${CMAKE_CURRENT_SOURCE_DIR}/Rendering/Assests")
 
 IF (WIN32)
-    target_compile_definitions(${MODULE_NAME} PUBLIC IGAME_OPENGL_VERSION_460)
+    target_compile_definitions(${MODULE_NAME} PUBLIC IGAME_OPENGL_VERSION_330)
 ELSEIF (APPLE)
     target_compile_definitions(${MODULE_NAME} PUBLIC IGAME_OPENGL_VERSION_330)
 ELSEIF (UNIX)

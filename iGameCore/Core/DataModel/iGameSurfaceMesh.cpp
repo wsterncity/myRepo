@@ -617,7 +617,7 @@ void SurfaceMesh::Draw(Scene *scene) {
     // TODO: A better way to render wireframes
     auto boundingBoxDiag = this->GetBoundingBox().diag();
     auto scaleFactor =
-        1e-9 / std::pow(10, std::floor(std::log10(boundingBoxDiag)));
+        1e-6 / std::pow(10, std::floor(std::log10(boundingBoxDiag)));
     glad_glDepthRange(scaleFactor, 1);
     glad_glDepthFunc(GL_GEQUAL);
 
