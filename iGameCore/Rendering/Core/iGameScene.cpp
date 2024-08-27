@@ -683,7 +683,7 @@ void Scene::UpdateUniformBuffer() {
 }
 
 void Scene::DrawAxes() {
-    //glClear(GL_DEPTH_BUFFER_BIT);
+    glClear(GL_DEPTH_BUFFER_BIT);
     glViewport(0, 0, 200, 200);
 
     //draw Axes

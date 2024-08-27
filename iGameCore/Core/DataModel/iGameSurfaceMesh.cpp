@@ -971,10 +971,10 @@ void SurfaceMesh::ViewCloudPicture(Scene* scene, int index, int demension) {
     m_ViewAttribute = nullptr;
     m_ViewDemension = -1;
     m_ColorWithCell = false;
-    //scene->Update();
+    scene->Update();
     return;
   }
-  //scene->MakeCurrent();
+  scene->MakeCurrent();
   m_AttributeIndex = index;
   auto &attr = this->GetAttributeSet()->GetAttribute(index);
   if (!attr.isDeleted) {
@@ -983,8 +983,8 @@ void SurfaceMesh::ViewCloudPicture(Scene* scene, int index, int demension) {
     else if (attr.attachmentType == IG_CELL)
       this->SetAttributeWithCellData(attr.pointer, demension);
   }
-  //scene->DoneCurrent();
-  //scene->Update();
+  scene->DoneCurrent();
+  scene->Update();
 }
 
 void SurfaceMesh::SetAttributeWithPointData(ArrayObject::Pointer attr,

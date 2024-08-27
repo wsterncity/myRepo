@@ -45,9 +45,7 @@ Scene场景包含了需要渲染的各类信息和渲染对象，有光源、摄
 
 Object是整个框架的基类，管理对象的生命周期、时间戳等，如果需要使用框架内的智能指针，必须继承Object
 
-1.
-
-生命周期：通过具有原子性的ReferenceCount来管理生命周期，对应有Register和UnRegister函数对对象进行使用，需要配合指针指针SmartPointer使用。有一个非常重要的概念：工厂模式，即对外不暴露构造函数和析构函数，只暴露New函数，New函数返回该对象的智能指针，这可以保证所有的指针都是智能指针，确保不会内存泄漏。
+1.生命周期：通过具有原子性的ReferenceCount来管理生命周期，对应有Register和UnRegister函数对对象进行使用，需要配合指针指针SmartPointer使用。有一个非常重要的概念：工厂模式，即对外不暴露构造函数和析构函数，只暴露New函数，New函数返回该对象的智能指针，这可以保证所有的指针都是智能指针，确保不会内存泄漏。
 
 ```
 mutable std::atomic<int> m_ReferenceCount{};
@@ -62,50 +60,47 @@ virtual void UnRegister() const noexcept {
 }
 ```
 
-2.
-
-时间戳（TimeStamp）：时间戳有一个极其重要的功能，即控制数据的自动更新，所有对象的时间戳都是系统唯一的。例如一个对象A依赖于对象B，当对象A检测到对象B发生变化时，更新对象A的状态，其关键就是对象A如何检测到对象B的变化，可以通过比较对象A和对象B的时间戳，来判断对象A是否比对象B状态新，如果对象A的时间戳 <
-对象B的时间戳，说明对象B已经更新过了，那么对象A也需要更新。当对象发生变化时，则需要调用
+2.时间戳（TimeStamp）：时间戳有一个极其重要的功能，即控制数据的自动更新，所有对象的时间戳都是系统唯一的。例如一个对象A依赖于对象B，当对象A检测到对象B发生变化时，更新对象A的状态，其关键就是对象A如何检测到对象B的变化，可以通过比较对象A和对象B的时间戳，来判断对象A是否比对象B状态新，如果对象A的时间戳 < 对象B的时间戳，说明对象B已经更新过了，那么对象A也需要更新。当对象发生变化时，则需要调用
 
 > obj->Modified()
 
 3. I_OBJECT宏：是类定义中最基本的宏，主要是删除类的赋值构造，防止对象复制。还定义了Pointer，所有对象的"类名::Pointer" 都是"
-   SmartPointer<类名>" 的别称，用于简化代码
+SmartPointer<类名>" 的别称，用于简化代码
 
-   ```
-   #define I_OBJECT(TypeName)                         \
-     TypeName(const TypeName &) = delete;             \
-     TypeName & operator=(const TypeName &) = delete; \
-     TypeName(TypeName &&) = delete;                  \
-     TypeName & operator=(TypeName &&) = delete;      \
-     using Self = TypeName;                           \
-     using Pointer = SmartPointer<Self>;              \
-     using ConstPointer = SmartPointer<const Self>; 
-   ```
+```
+#define I_OBJECT(TypeName)                         \
+  TypeName(const TypeName &) = delete;             \
+  TypeName & operator=(const TypeName &) = delete; \
+  TypeName(TypeName &&) = delete;                  \
+  TypeName & operator=(TypeName &&) = delete;      \
+  using Self = TypeName;                           \
+  using Pointer = SmartPointer<Self>;              \
+  using ConstPointer = SmartPointer<const Self>; 
+```
 
-   所有继承Object的类，都需要加I_OBJECT宏，新建一个类的模板如下
+所有继承Object的类，都需要加I_OBJECT宏，新建一个类的模板如下
 
-   ```
-   #ifndef iGameDataObject_h
-   #define iGameDataObject_h
-   
-   #include "iGameObject.h"
-   
-   IGAME_NAMESPACE_BEGIN
-   class DataObject : public Object {
-   public:
-   	I_OBJECT(DataObject);
-   	static Pointer New() { return new DataObject; }
-   
-   protected:
-   	DataObject() {}
-   	~DataObject() override = default;
-   	
-   	A m_A;
-   };
-   IGAME_NAMESPACE_END
-   #endif
-   ```
+```
+#ifndef iGameDataObject_h
+#define iGameDataObject_h
+
+#include "iGameObject.h"
+
+IGAME_NAMESPACE_BEGIN
+class DataObject : public Object {
+public:
+	I_OBJECT(DataObject);
+	static Pointer New() { return new DataObject; }
+
+protected:
+	DataObject() {}
+	~DataObject() override = default;
+	
+	A m_A;
+};
+IGAME_NAMESPACE_END
+#endif
+```
 
 #### DataObject
 
@@ -555,5 +550,4 @@ ENDIF ()
     - 马楷煜，微信：Fredr1ck_
 - 渲染部分有疑问可以联系
     - 徐将杰，微信：Sumzeek_
-
 
