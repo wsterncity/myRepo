@@ -25,7 +25,7 @@ Line *SurfaceMesh::GetEdge(const IGsize edgeId) {
   int ncells = m_Edges->GetCellIds(edgeId, cell);
 
   if (m_Edge == nullptr) {
-      m_Edge = Line::New();
+    m_Edge = Line::New();
   }
 
   m_Edge->PointIds->Reset();
@@ -567,9 +567,7 @@ void SurfaceMesh::ReplacePointReference(const IGsize fromPtId,
   m_FaceLinks->SetLink(toPtId, link2.pointer, link2.size);
 }
 
-SurfaceMesh::SurfaceMesh() {
-    m_ViewStyle = IG_SURFACE;
-};
+SurfaceMesh::SurfaceMesh() { m_ViewStyle = IG_SURFACE; };
 
 void SurfaceMesh::Draw(Scene *scene) {
   if (!m_Visibility) {
@@ -584,13 +582,13 @@ void SurfaceMesh::Draw(Scene *scene) {
   }
   scene->UpdateUniformBuffer();
 
-   if (m_UseColor && m_ColorWithCell) {
-       scene->GetShader(Scene::PATCH)->use();
-       m_CellVAO.bind();
-       glad_glDrawArrays(GL_TRIANGLES, 0, m_CellPositionSize);
-       m_CellVAO.release();
-       return;
-   }
+  if (m_UseColor && m_ColorWithCell) {
+    scene->GetShader(Scene::PATCH)->use();
+    m_CellVAO.bind();
+    glad_glDrawArrays(GL_TRIANGLES, 0, m_CellPositionSize);
+    m_CellVAO.release();
+    return;
+  }
 
   if (m_ViewStyle & IG_POINTS) {
     scene->GetShader(Scene::NOLIGHT)->use();
@@ -617,7 +615,7 @@ void SurfaceMesh::Draw(Scene *scene) {
     // TODO: A better way to render wireframes
     auto boundingBoxDiag = this->GetBoundingBox().diag();
     auto scaleFactor =
-        1e-5 / std::pow(10, std::floor(std::log10(boundingBoxDiag)));
+        1e-6 / std::pow(10, std::floor(std::log10(boundingBoxDiag)));
     glad_glDepthRange(scaleFactor, 1);
     glad_glDepthFunc(GL_GEQUAL);
 
@@ -756,8 +754,8 @@ void SurfaceMesh::DrawPhase2(Scene *scene) {
       scene->GetDrawCullDataBuffer().target(GL_UNIFORM_BUFFER);
       scene->GetDrawCullDataBuffer().bindBase(5);
 
-      shader->setUniform(shader->getUniformLocation("depthPyramid"),
-                         scene->HizTexture().getTextureHandle());
+      scene->HizTexture().active(GL_TEXTURE1);
+      shader->setUniform(shader->getUniformLocation("depthPyramid"), 1);
 
       auto count = m_Meshlets->MeshletsCount();
       glDispatchCompute(((count + 255) / 256), 1, 1);
@@ -827,8 +825,8 @@ void SurfaceMesh::TestOcclusionResults(Scene *scene) {
       scene->GetDrawCullDataBuffer().target(GL_UNIFORM_BUFFER);
       scene->GetDrawCullDataBuffer().bindBase(5);
 
-      shader->setUniform(shader->getUniformLocation("depthPyramid"),
-                         scene->HizTexture().getTextureHandle());
+      scene->HizTexture().active(GL_TEXTURE1);
+      shader->setUniform(shader->getUniformLocation("depthPyramid"), 1);
 
       auto count = m_Meshlets->MeshletsCount();
       glDispatchCompute(((count + 255) / 256), 1, 1);
@@ -862,7 +860,7 @@ void SurfaceMesh::ConvertToDrawableData() {
   if (m_Positions && m_Positions->GetMTime() > this->GetMTime()) {
     return;
   }
- 
+
   if (!m_Flag) {
     m_PointVAO.create();
     m_LineVAO.create();
@@ -954,18 +952,17 @@ void SurfaceMesh::ConvertToDrawableData() {
                       GL_FLOAT, GL_FALSE, 0);
     m_TriangleVAO.elementBuffer(m_TriangleEBO);
 
-    // m_Meshlets->BuildMeshlet(
-    //     m_Positions->RawPointer(), m_Positions->GetNumberOfValues() / 3,
-    //     m_TriangleIndices->RawPointer(),
-    //     m_TriangleIndices->GetNumberOfIds());
-    //
-    // GLAllocateGLBuffer(m_TriangleEBO,
-    //                    m_Meshlets->GetMeshletIndexCount() * sizeof(igIndex),
-    //                    m_Meshlets->GetMeshletIndices());
+    m_Meshlets->BuildMeshlet(
+        m_Positions->RawPointer(), m_Positions->GetNumberOfValues() / 3,
+        m_TriangleIndices->RawPointer(), m_TriangleIndices->GetNumberOfIds());
+
+    GLAllocateGLBuffer(m_TriangleEBO,
+                       m_Meshlets->GetMeshletIndexCount() * sizeof(igIndex),
+                       m_Meshlets->GetMeshletIndices());
   }
 }
 
-void SurfaceMesh::ViewCloudPicture(Scene* scene, int index, int demension) {
+void SurfaceMesh::ViewCloudPicture(Scene *scene, int index, int demension) {
   if (index == -1) {
     m_UseColor = false;
     m_ViewAttribute = nullptr;

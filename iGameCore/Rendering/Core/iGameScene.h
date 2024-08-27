@@ -168,8 +168,10 @@ protected:
 
     GLVertexArray m_ScreenQuadVAO;
     GLBuffer m_ScreenQuadVBO;
-    GLFramebuffer m_Framebuffer, m_FramebufferMultisampled;
-    GLTexture2d m_ColorTexture, m_DepthTexture;
+    GLint samples = 1;
+    GLFramebuffer m_FramebufferMultisampled;
+    GLTexture2dMultisample m_ColorTextureMultisampled,
+            m_DepthTextureMultisampled;
 
     GLBuffer m_DrawCullData;
     int m_DepthPyramidWidth, m_DepthPyramidHeight, m_DepthPyramidLevels;

@@ -140,7 +140,7 @@ igm::mat4 Axes::ViewMatrix() {
 }
 igm::mat4 Axes::ProjMatrix() {
     // reversed-z buffer
-    return igm::perspectiveRH_OZ(45.0f, 1.0f, 0.1f);
+    return igm::perspectiveRH_OZ(45.0f, 1.0f, 0.01f);
 }
 
 void Axes::initialize() {
