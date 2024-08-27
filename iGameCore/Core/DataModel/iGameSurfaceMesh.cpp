@@ -952,13 +952,13 @@ void SurfaceMesh::ConvertToDrawableData() {
                       GL_FLOAT, GL_FALSE, 0);
     m_TriangleVAO.elementBuffer(m_TriangleEBO);
 
-    m_Meshlets->BuildMeshlet(
-        m_Positions->RawPointer(), m_Positions->GetNumberOfValues() / 3,
-        m_TriangleIndices->RawPointer(), m_TriangleIndices->GetNumberOfIds());
+    //m_Meshlets->BuildMeshlet(
+    //    m_Positions->RawPointer(), m_Positions->GetNumberOfValues() / 3,
+    //    m_TriangleIndices->RawPointer(), m_TriangleIndices->GetNumberOfIds());
 
-    GLAllocateGLBuffer(m_TriangleEBO,
-                       m_Meshlets->GetMeshletIndexCount() * sizeof(igIndex),
-                       m_Meshlets->GetMeshletIndices());
+    //GLAllocateGLBuffer(m_TriangleEBO,
+    //                   m_Meshlets->GetMeshletIndexCount() * sizeof(igIndex),
+    //                   m_Meshlets->GetMeshletIndices());
   }
 }
 
