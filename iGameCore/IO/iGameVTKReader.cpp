@@ -160,7 +160,7 @@ bool VTKReader::Parsing() {
         }
     }
     mesh->SetCells(m_Data.Volumes, myTypes);
-    mesh->SetPropertySet(m_Data.GetData());
+    mesh->SetAttributeSet(m_Data.GetData());
     //m_Data;
     this->UpdateProgress(1.0);
     //igDebug("Read " << this->DataSet->GetNumberOfPoints() << " points,"

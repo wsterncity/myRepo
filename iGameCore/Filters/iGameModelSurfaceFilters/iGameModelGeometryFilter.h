@@ -68,7 +68,7 @@ public:
     void SetInput(DataObject::Pointer ip) { this->input = ip; }
     PolyData::Pointer GetOutPut() { return this->output; }
 
-    void CompositeAttribute(std::vector<igIndex>& f2c,PropertySet* inAllDataArray,PropertySet* outAllDataArray);
+    void CompositeAttribute(std::vector<igIndex>& f2c,AttributeSet* inAllDataArray,AttributeSet* outAllDataArray);
 
 
 protected:

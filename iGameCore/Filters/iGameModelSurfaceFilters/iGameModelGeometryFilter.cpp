@@ -895,8 +895,8 @@ int iGameModelGeometryFilter::ExecuteWithUnstructuredGrid(
     igIndex64 numInputPts = Grid->GetNumberOfPoints();
     igIndex64 numOutputPts = 0;
     auto inPoints = Grid->GetPoints();
-    auto inAllDataArray = input->GetPropertySet();
-    auto outAllDataArray = PropertySet::New();
+    auto inAllDataArray = input->GetAttributeSet();
+    auto outAllDataArray = AttributeSet::New();
     StringArray::Pointer attrbNameArray = StringArray::New();
     CellArray::Pointer Polygons = CellArray::New();
     CharArray::Pointer CellVisibleArray = CharArray::New();
@@ -976,13 +976,13 @@ int iGameModelGeometryFilter::ExecuteWithUnstructuredGrid(
     }
 
     CompositeAttribute(f2c, inAllDataArray, outAllDataArray);
-    for ( i = 0; i < outAllDataArray->GetAllPropertys().GetPointer()->Size(); i++) {
+    for ( i = 0; i < outAllDataArray->GetAllAttributes().GetPointer()->Size(); i++) {
         attrbNameArray->AddElement(
-                outAllDataArray->GetProperty(i).pointer.get()->GetName());
+                outAllDataArray->GetAttribute(i).pointer.get()->GetName());
     }
     output->SetPoints(inPoints);
     output->SetFaces(Polygons);
-    output->SetPropertySet(outAllDataArray);
+    output->SetAttributeSet(outAllDataArray);
     output->GetMetadata()->AddStringArray(ATTRIBUTE_NAME_ARRAY, attrbNameArray);
 
     igDebug("Extracted " << output->GetNumberOfPoints() << " points,"
@@ -994,17 +994,17 @@ int iGameModelGeometryFilter::ExecuteWithUnstructuredGrid(
     return 1;
 }
 void iGameModelGeometryFilter::CompositeAttribute(std::vector<igIndex>& F2C,
-                                                  PropertySet* inAllDataArray,PropertySet* outAllDataArray) {
+                                                  AttributeSet* inAllDataArray,AttributeSet* outAllDataArray) {
 
     igIndex i=0,j=0;
-    auto inDataArrayNum =inAllDataArray->GetAllPropertys()->GetNumberOfElements();
-    std::vector<PropertySet::Property> CellArrays;
+    auto inDataArrayNum =inAllDataArray->GetAllAttributes()->GetNumberOfElements();
+    std::vector<AttributeSet::Attribute> CellArrays;
     for (i = 0; i < inDataArrayNum; i++) {
-        if (inAllDataArray->GetProperty(i).attachmentType == IG_CELL) {
-            CellArrays.emplace_back(inAllDataArray->GetProperty(i));
+        if (inAllDataArray->GetAttribute(i).attachmentType == IG_CELL) {
+            CellArrays.emplace_back(inAllDataArray->GetAttribute(i));
         }
         else {
-            outAllDataArray->AddProperty(inAllDataArray->GetProperty(i).type,IG_POINT,inAllDataArray->GetProperty(i).pointer);
+            outAllDataArray->AddAttribute(inAllDataArray->GetAttribute(i).type,IG_POINT,inAllDataArray->GetAttribute(i).pointer);
         }
     }
     iGameAtomicMutex tmpLock;
@@ -1025,7 +1025,7 @@ void iGameModelGeometryFilter::CompositeAttribute(std::vector<igIndex>& F2C,
             }
             newData->SetName(inData->GetName());
             std::lock_guard<iGameAtomicMutex> DataLock(tmpLock);
-            outAllDataArray->AddProperty(CellArrays[CellArrayID].type, IG_CELL,
+            outAllDataArray->AddAttribute(CellArrays[CellArrayID].type, IG_CELL,
                                          newData);
         }
     };
