@@ -1150,8 +1150,8 @@ int iGameModelGeometryFilter::ExecuteWithDataSet(DataObject::Pointer Input,
     igIndex64 numCells = input->GetNumberOfVolumes();
     double x[3];
     auto inPoints = input->GetPoints();
-    auto inAllDataArray = input->GetPropertySet();
-    auto outAllDataArray = output->GetPropertySet();
+    auto inAllDataArray = input->GetAttributeSet();
+    auto outAllDataArray = output->GetAttributeSet();
     CharArray::Pointer CellVisibleArray = CharArray::New();
     char* CellVisible = nullptr;
     unsigned char* cellGhosts = nullptr;

@@ -10,9 +10,9 @@
 #define __glext_h_
 #endif
 
-#include "RenderingMacro.h"
 #include "glad/glad.h"
 #include "iGameMacro.h"
+#include "iGameRenderingMacro.h"
 #include "igm/igm.h"
 
 #endif //OPENIGAME_GLVENDOR_H

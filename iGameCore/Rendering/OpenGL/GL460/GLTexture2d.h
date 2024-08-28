@@ -9,10 +9,10 @@ IGAME_NAMESPACE_BEGIN
 class GLTexture2d : public GLObject<GLTexture2d> {
 private:
     friend class GLObject<GLTexture2d>;
-    static void _create(GLsizei count, GLuint* handles) {
+    static void createHandle(GLsizei count, GLuint* handles) {
         glCreateTextures(GL_TEXTURE_2D, count, handles);
     }
-    static void _destroy(GLsizei count, GLuint* handles) {
+    static void destroyHandle(GLsizei count, GLuint* handles) {
         glDeleteTextures(count, handles);
     }
 

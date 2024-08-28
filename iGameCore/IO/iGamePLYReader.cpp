@@ -58,7 +58,7 @@ bool PLYReader::Parsing()
 const char* PLYReader::ReadPoints(const char* left, int VertexNum)
 {
 	Points::Pointer Points = m_Data.GetPoints();
-	Points->Resize(VertexNum);
+	Points->Reserve(VertexNum);
 	float p[3] = { 0 };
 	const char* lineEnd;
 	for (int i = 0; i < VertexNum; i++)

@@ -4,7 +4,7 @@
 
 #include <IQComponents/igQtProgressBarWidget.h>
 #include <QHBoxLayout>
-//#include <iGameManager.h>
+
 /**
  * @class   igQtProgressBarWidget
  * @brief   igQtProgressBarWidget's brief
@@ -21,27 +21,13 @@ igQtProgressBarWidget::igQtProgressBarWidget(QWidget *parent) : QWidget(parent) 
     layout->setContentsMargins(0, 0, 0, 0);
     this->setLayout(layout);
 
-    //this->ProgressObserver = iGame::iGameManager::Instance()->GetProgressObserver();
-    //if (this->ProgressObserver)
-    //{
-    //    this->ProgressObserver->AddObserver(iGame::iGameCommand::BeginEvent,
-    //        [&](iGame::iGameObject*, unsigned long, void* data)-> void {
-    //            //const char* desc = static_cast<const char*>(data);
-    //            this->updateProgressBarLabel("Process..");
-    //            this->updateProgressBar(0);
-    //        });
-    //    this->ProgressObserver->AddObserver(iGame::iGameCommand::ProgressEvent, 
-    //        [&](iGame::iGameObject*, unsigned long, void* data)-> void {
-    //            double value = *static_cast<double*>(data);
-    //            this->updateProgressBar(value);
-    //            this->updateProgressBarLabel("Process..");
-    //        });
-    //    this->ProgressObserver->AddObserver(iGame::iGameCommand::EndEvent,
-    //        [&](iGame::iGameObject*, unsigned long, void* data)-> void {
-    //            this->updateProgressBarLabel(DEFAULT);
-    //            this->updateProgressBar(0);
-    //        });
-    //}
+    progressObserver = iGame::ProgressObserver::Instance();
+
+   progressObserver->AddObserver(iGame::Command::ProgressEvent,
+        [&](iGame::Object*, unsigned long, void* data)-> void {
+            double value = *static_cast<double*>(data);
+            this->updateProgressBar(value);
+        });
 }
 
 void igQtProgressBarWidget::updateProgressBar(double value) {
@@ -49,16 +35,18 @@ void igQtProgressBarWidget::updateProgressBar(double value) {
     value = std::min(value, 1.0);
 
     int progress = value * 100;
-    progressBar->setValue(progress);
+    
+
+    if (progress < 100) {
+        updateProgressBarLabel("Processing ...");
+        progressBar->setValue(progress);
+    } else {
+        updateProgressBarLabel(DEFAULT);
+        progressBar->setValue(100);
+        progressBar->setValue(0);
+    }
 }
 
 void igQtProgressBarWidget::updateProgressBarLabel(const char* info) {
-    if (info == nullptr || info == "")
-    {
-        progressBarLabel->setText(DEFAULT);
-    }
-    else
-    {
-        progressBarLabel->setText(info);
-    }
+    progressBarLabel->setText(info);
 }

@@ -86,6 +86,7 @@ protected:
             return false;
         }
         entry_value = std::get<DataTypeT>(it->second);
+        
         return true;
     }
 

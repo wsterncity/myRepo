@@ -1,55 +1,61 @@
-//#version 410 core
-//#extension GL_ARB_bindless_texture : require
-//
-//in vec2 fragTexCoord;
-//
-//out vec4 outColor;
-//
-//uniform uvec2 screenTexture;
-//
-//float near = 0.1;
-//float far  = 10000.0;
-//
-//float LinearizeDepth(float depth)
-//{
-//    float z = depth * 2.0 - 1.0;// back to NDC
-//    return (2.0 * near * far) / (far + near - z * (far - near));
-//}
-//
-//void main()
-//{
-//    outColor = texture(sampler2D(screenTexture), fragTexCoord);
-//
-//    //    float level = 1.0;
-//    //    float depth = textureLod(sampler2D(screenTexture), fragTexCoord, level).r;
-//    //    float linearDepth = LinearizeDepth(depth) / far;
-//    //    outColor = vec4(vec3(linearDepth), 1.0);
-//}
-
 #version 410 core
-#extension GL_ARB_bindless_texture : require
+
 in vec2 fragTexCoord;
 
 out vec4 outColor;
 
-uniform sampler2D screenTexture;
+uniform sampler2DMS screenTextureMS;
+uniform sampler2D depthPyramid;
+uniform int numSamples;
 
-float near = 0.1;
-float far  = 10000.0;
+float near = 0.01;
+float far  = 300.0;
 
-// depth range: 0.0(near plane) -> 1.0(far plane)
-float LinearizeDepth(float depth)
-{
-    float z = depth * 2.0 - 1.0;// back to NDC
-    return (2.0 * near * far) / (far + near - z * (far - near));
+// depth range: 1.0(near plane) -> 0.0(far plane)
+float ReverseZLinearizeDepth(float depth) {
+    return near / depth;
 }
 
 void main()
 {
-    outColor = texture(screenTexture, fragTexCoord);
+    ivec2 texSize = textureSize(screenTextureMS);
+    ivec2 texCoord = ivec2(fragTexCoord * vec2(texSize));
 
-    // float level = 0.0;
-    // float depth = textureLod(screenTexture, fragTexCoord, level).r;
-    // float linearDepth = LinearizeDepth(depth) / far;
-    // outColor = vec4(vec3(linearDepth), 1.0);
+    // color
+    {
+        vec4 color = vec4(0.0f, 0.0f, 0.0f, 0.0f);
+        for (int i = 0; i < numSamples; ++i) {
+            vec4 sampleColor = texelFetch(screenTextureMS, texCoord, i);
+            color += sampleColor;
+        }
+        outColor = color / numSamples;
+    }
+
+    // depth
+    {
+        // float minDepth = 1.0;
+        // for (int i = 0; i < numSamples; ++i) {
+        //     float sampleDepth = texelFetch(screenTextureMS, texCoord, i).r;
+        //     minDepth = min(minDepth, sampleDepth);
+        // }
+        //
+        // if (minDepth == 0.0f) {
+        //     outColor = vec4(0.39215f, 0.58431f, 0.92941f, 1.0f);
+        // } else {
+        //     float linearDepth = ReverseZLinearizeDepth(minDepth) / far;
+        //     outColor = vec4(vec3(linearDepth), 1.0);
+        // }
+    }
+
+    // depth pyramid
+    {
+        // float level = 0.0;
+        // float depth = textureLod(depthPyramid, fragTexCoord, level).r;
+        // if (depth == 0.0f) {
+        //     outColor = vec4(0.39215f, 0.58431f, 0.92941f, 1.0f);
+        // } else {
+        //     float linearDepth = ReverseZLinearizeDepth(depth) / far;
+        //     outColor = vec4(vec3(linearDepth), 1.0);
+        // }
+    }
 }

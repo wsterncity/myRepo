@@ -1,14 +1,18 @@
 #version 460
-#extension GL_ARB_bindless_texture : require
+//#extension GL_ARB_bindless_texture : require
 
 layout (local_size_x = 256) in;
 
+// 0: Determine the visibility of the invisible meshlet in the previous frame in this frame
+// 1: Determine the visibility of all meshlets in this frame
+uniform int workMode;
+
 // Camera buffer
-layout(std140, binding = 0) uniform MVPMatrix {
-    mat4 model;
-    mat4 normal;
-    mat4 viewproj;
-} mvp;
+layout(std140, binding = 0) uniform CameraDataBlock {
+    mat4 view;
+    mat4 proj;
+    mat4 proj_view;// proj * view
+} cameraData;
 
 // Meshlets Buffer
 struct MeshletData {
@@ -17,7 +21,7 @@ struct MeshletData {
 };
 layout(std430, binding = 1) buffer MeshletsBuffer {
     MeshletData meshlets[];
-};
+} meshletsBuffer;
 
 // Indirect command buffer
 struct DrawElementsIndirectCommand {
@@ -29,34 +33,35 @@ struct DrawElementsIndirectCommand {
 };
 layout(std430, binding = 2) buffer DrawCommandBuffer {
     DrawElementsIndirectCommand commands[];
-};
+} drawCommandBuffer;
+
+// Final visible meshlet info
+layout(std430, binding = 3)  buffer VisibleMeshletBuffer{
+    uint count;
+    uint IDs[];
+} visibleMeshletBuffer;
+
+// Final indirect draw command buffer
+layout(std430, binding = 4) buffer FinalDrawCommandBuffer {
+    DrawElementsIndirectCommand commands[];
+} finalDrawCommandBuffer;
 
 // Draw Cull Data
-layout(std140, binding = 3) uniform DrawCullDataBlock {
-    mat4 modelview;
-    float P00, P11, znear, zfar;// symmetric projection parameters
+layout(std140, binding = 5) uniform DrawCullDataBlock {
+    mat4 view_model;
+    float P00, P11, zNear;// symmetric projection parameters
     vec4 frustum;// data for left/right/top/bottom frustum planes
     float pyramidWidth, pyramidHeight;// depth pyramid size in texels
 } drawCullData;
 
 // hierarchical z-buffer
-uniform uvec2 depthPyramid;
-
-// depth range: 0.0(near plane) -> 1.0(far plane)
-float LinearizeDepth(float depth)
-{
-    float znear = drawCullData.znear;
-    float zfar = drawCullData.zfar;
-    float z = depth * 2.0 - 1.0;// back to NDC
-    return (2.0 * znear * zfar) / (zfar + znear - z * (zfar - znear));
-}
+uniform sampler2D depthPyramid;
 
 // 2D Polyhedral Bounds of a Clipped, Perspective-Projected 3D Sphere. Michael Mara, Morgan McGuire. 2013
-bool ProjectSphere(vec3 C, float r, float znear, float P00, float P11, out vec4 aabb)
-{
-    // if (-C.z - r < znear) {
-    //     return false;
-    // }
+bool ProjectSphere(vec3 C, float r, float zNear, float P00, float P11, out vec4 aabb) {
+    if (-C.z - r < zNear) {
+        return false;
+    }
 
     vec2 cx = -C.xz;
     vec2 vx = vec2(sqrt(dot(cx, cx) - r * r), r);
@@ -69,7 +74,7 @@ bool ProjectSphere(vec3 C, float r, float znear, float P00, float P11, out vec4 
     vec2 maxy = mat2(vy.x, -vy.y, vy.y, vy.x) * cy;
 
     aabb = vec4(minx.x / minx.y * P00, miny.x / miny.y * P11, maxx.x / maxx.y * P00, maxy.x / maxy.y * P11);
-    aabb = aabb.xwzy * vec4(0.5f, -0.5f, 0.5f, -0.5f) + vec4(0.5f);// clip space -> uv space
+    aabb = 0.5 - 0.5 * aabb;// clip space -> uv space
 
     return true;
 }
@@ -80,7 +85,7 @@ bool IsVisible(MeshletData meshlet) {
 
     // in the right-handed coordinate system, the z value of the view coordinate is negative
     vec3 center = sphereBounds.xyz;
-    center = (drawCullData.modelview * vec4(center, 1.f)).xyz;
+    center = (drawCullData.view_model * vec4(center, 1.f)).xyz;
     float radius = sphereBounds.w;
 
     bool visible = true;
@@ -88,21 +93,37 @@ bool IsVisible(MeshletData meshlet) {
     // the left/top/right/bottom plane culling utilizes frustum symmetry to cull against two planes at the same time
     visible = visible && center.z * drawCullData.frustum[1] - abs(center.x) * drawCullData.frustum[0] > -radius;
     visible = visible && center.z * drawCullData.frustum[3] - abs(center.y) * drawCullData.frustum[2] > -radius;
-    visible = visible && -center.z + radius > drawCullData.znear && -center.z - radius < drawCullData.zfar;
+
+    // dist culling
+    // visible = visible && -center.z + radius > drawCullData.zNear && -center.z - radius < drawCullData.zFar;
 
     vec4 aabb;
-    if (ProjectSphere(center, radius, drawCullData.znear, drawCullData.P00, drawCullData.P11, aabb)) {
-        float width = (aabb.z - aabb.x) * drawCullData.pyramidWidth;
-        float height = (aabb.w - aabb.y) * drawCullData.pyramidHeight;
+    if (ProjectSphere(center, radius, drawCullData.zNear, drawCullData.P00, drawCullData.P11, aabb)) {
+        float width = (aabb.z - aabb.x) * float(drawCullData.pyramidWidth);
+        float height = (aabb.w - aabb.y) * float(drawCullData.pyramidHeight);
 
-        float level = floor(log2(max(width, height)));
+        float level = ceil(log2(max(width, height) / 2.0));
 
         // Sampler is set up to do min reduction, so this computes the minimum depth of a 2x2 texel quad
+        float depth_0 = textureLod(depthPyramid, aabb.xy, level).x;
+        float depth_1 = textureLod(depthPyramid, aabb.xw, level).x;
+        float depth_2 = textureLod(depthPyramid, aabb.zw, level).x;
+        float depth_3 = textureLod(depthPyramid, aabb.zy, level).x;
+        float depth = min(min(depth_0, depth_1), min(depth_2, depth_3));
 
-        float depth = textureLod(sampler2D(depthPyramid), (aabb.xy + aabb.zw) * 0.5, level).x;
-        float linearDepth = LinearizeDepth(depth);
+        float depthSphere = drawCullData.zNear / (-center.z - radius);
 
-        visible = visible && -center.z - radius <= linearDepth;
+        visible = visible && depthSphere >= depth;
+        //        float width = (aabb.z - aabb.x) * float(drawCullData.pyramidWidth);
+        //        float height = (aabb.w - aabb.y) * float(drawCullData.pyramidHeight);
+        //
+        //        float level = floor(log2(max(width, height)));
+        //
+        //        // Sampler is set up to do min reduction, so this computes the minimum depth of a 2x2 texel quad
+        //        float depth = textureLod(depthPyramid, (aabb.xy + aabb.zw) * 0.5, level).x;
+        //        float depthSphere = drawCullData.zNear / (-center.z - radius);
+        //
+        //        visible = visible && depthSphere >= depth;
     }
 
     return visible;
@@ -110,17 +131,40 @@ bool IsVisible(MeshletData meshlet) {
 
 void main() {
     uint id = gl_GlobalInvocationID.x;
-    if (id >= meshlets.length()) {
+    if (id >= meshletsBuffer.meshlets.length()) {
         return;// Prevent out-of-bounds access
     }
 
-    MeshletData meshlet = meshlets[id];
+    MeshletData meshlet = meshletsBuffer.meshlets[id];
 
-    if (IsVisible(meshlet)) {
-        // Write a draw command if the meshlet is visible
-        commands[id].primCount = 1;// Adjust according to your needs
-    } else {
-        // Set draw command count to 0 if the meshlet is not visible
-        commands[id].primCount = 0;
+    if (workMode == 0) {
+        if (drawCommandBuffer.commands[id].primCount == 0) {
+            if (IsVisible(meshlet)) {
+                uint oldValue = atomicAdd(visibleMeshletBuffer.count, 1);
+                visibleMeshletBuffer.IDs[oldValue] = id;
+
+                finalDrawCommandBuffer.commands[oldValue].count = drawCommandBuffer.commands[id].count;
+                finalDrawCommandBuffer.commands[oldValue].primCount = 1;
+                finalDrawCommandBuffer.commands[oldValue].firstIndex = drawCommandBuffer.commands[id].firstIndex;
+                finalDrawCommandBuffer.commands[oldValue].baseVertex = drawCommandBuffer.commands[id].baseVertex;
+                finalDrawCommandBuffer.commands[oldValue].baseInstance = drawCommandBuffer.commands[id].baseInstance;
+            }
+        }
+    } else if (workMode == 1) {
+        if (IsVisible(meshlet)) {
+            // Write a draw command if the meshlet is visible
+            drawCommandBuffer.commands[id].primCount = 1;
+            uint oldValue = atomicAdd(visibleMeshletBuffer.count, 1);
+            visibleMeshletBuffer.IDs[oldValue] = id;
+
+            finalDrawCommandBuffer.commands[oldValue].count = drawCommandBuffer.commands[id].count;
+            finalDrawCommandBuffer.commands[oldValue].primCount = 1;
+            finalDrawCommandBuffer.commands[oldValue].firstIndex = drawCommandBuffer.commands[id].firstIndex;
+            finalDrawCommandBuffer.commands[oldValue].baseVertex = drawCommandBuffer.commands[id].baseVertex;
+            finalDrawCommandBuffer.commands[oldValue].baseInstance = drawCommandBuffer.commands[id].baseInstance;
+        } else {
+            // Set draw command count to 0 if the meshlet is not visible
+            drawCommandBuffer.commands[id].primCount = 0;
+        }
     }
 }

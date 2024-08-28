@@ -51,7 +51,12 @@ IGenum UnstructuredMesh::GetCellType(const IGsize cellId) const {
     return m_Types->GetValue(cellId);
 }
 
-UnstructuredMesh::UnstructuredMesh() { m_ViewStyle = IG_SURFACE; }
+UnstructuredMesh::UnstructuredMesh() 
+{
+    m_ViewStyle = IG_SURFACE;
+    m_Cells = CellArray::New();
+    m_Types = UnsignedIntArray::New();
+}
 
 Cell* UnstructuredMesh::GetTypedCell(const IGsize cellId) {
     Cell* cell = nullptr;
@@ -111,57 +116,69 @@ void UnstructuredMesh::Draw(Scene* scene) {
     }
     scene->UpdateUniformBuffer();
 
-    if (m_ViewStyle == IG_POINTS) {
+    if (m_ViewStyle & IG_POINTS) {
         scene->GetShader(Scene::NOLIGHT)->use();
         m_PointVAO.bind();
-        glPointSize(m_PointSize);
+//        glPointSize(m_PointSize);
+        glPointSize(9);
         glad_glDrawArrays(GL_POINTS, 0, m_Positions->GetNumberOfValues() / 3);
         m_PointVAO.release();
-    } else if (m_ViewStyle == IG_WIREFRAME) {
-        if (m_UseColor) {
-            scene->GetShader(Scene::NOLIGHT)->use();
-        } else {
-            auto shader = scene->GetShader(Scene::PURECOLOR);
-            shader->use();
-            shader->setUniform(shader->getUniformLocation("inputColor"),
-                               igm::vec3{0.0f, 0.0f, 0.0f});
-        }
 
-        m_LineVAO.bind();
-        glLineWidth(m_LineWidth);
-        glad_glDrawElements(GL_LINES, m_LineIndices->GetNumberOfValues(),
-                            GL_UNSIGNED_INT, 0);
-        m_LineVAO.release();
-    } else if (m_ViewStyle == IG_SURFACE) {
-        scene->GetShader(Scene::PATCH)->use();
-        m_TriangleVAO.bind();
-        glad_glDrawElements(GL_TRIANGLES,
-                            m_TriangleIndices->GetNumberOfValues(),
-                            GL_UNSIGNED_INT, 0);
-        m_TriangleVAO.release();
-    } else if (m_ViewStyle == IG_SURFACE_WITH_EDGE) {
-        if (m_UseColor) {
-            scene->GetShader(Scene::NOLIGHT)->use();
-        } else {
-            auto shader = scene->GetShader(Scene::PURECOLOR);
-            shader->use();
-            shader->setUniform(shader->getUniformLocation("inputColor"),
-                               igm::vec3{0.0f, 0.0f, 0.0f});
-        }
-
-        m_LineVAO.bind();
-        glLineWidth(m_LineWidth);
-        glad_glDrawElements(GL_LINES, m_LineIndices->GetNumberOfValues(),
-                            GL_UNSIGNED_INT, 0);
-        m_LineVAO.release();
-
-        scene->GetShader(Scene::PATCH)->use();
-        m_TriangleVAO.bind();
-        glad_glDrawElements(GL_TRIANGLES,
-                            m_TriangleIndices->GetNumberOfValues(),
-                            GL_UNSIGNED_INT, 0);
-        m_TriangleVAO.release();
     }
+    if (m_ViewStyle & IG_WIREFRAME) {
+        if (m_UseColor) {
+            scene->GetShader(Scene::NOLIGHT)->use();
+        } else {
+            auto shader = scene->GetShader(Scene::PURECOLOR);
+            shader->use();
+            shader->setUniform(shader->getUniformLocation("inputColor"),
+                               igm::vec3{0.0f, 0.0f, 0.0f});
+        }
+
+        m_LineVAO.bind();
+        glLineWidth(m_LineWidth);
+        glad_glDrawElements(GL_LINES, m_LineIndices->GetNumberOfValues(),
+                            GL_UNSIGNED_INT, 0);
+        m_LineVAO.release();
+    }
+    if (m_ViewStyle & IG_SURFACE) {
+        scene->GetShader(Scene::PATCH)->use();
+        m_TriangleVAO.bind();
+        glad_glDrawElements(GL_TRIANGLES,
+                            m_TriangleIndices->GetNumberOfValues(),
+                            GL_UNSIGNED_INT, 0);
+        m_TriangleVAO.release();
+
+        m_VertexVAO.bind();
+        glPointSize(m_PointSize);
+        glad_glDrawElements(GL_POINTS, m_VertexIndices->GetNumberOfValues(),
+                            GL_UNSIGNED_INT, 0);
+        m_PointVAO.release();
+
+    } 
+    /*if (m_ViewStyle == IG_SURFACE_WITH_EDGE) {
+        if (m_UseColor) {
+            scene->GetShader(Scene::NOLIGHT)->use();
+        } else {
+            auto shader = scene->GetShader(Scene::PURECOLOR);
+            shader->use();
+            shader->setUniform(shader->getUniformLocation("inputColor"),
+                               igm::vec3{0.0f, 0.0f, 0.0f});
+        }
+
+        m_LineVAO.bind();
+        glLineWidth(m_LineWidth);
+        glad_glDrawElements(GL_LINES, m_LineIndices->GetNumberOfValues(),
+                            GL_UNSIGNED_INT, 0);
+        m_LineVAO.release();
+
+        scene->GetShader(Scene::PATCH)->use();
+        m_TriangleVAO.bind();
+        glad_glDrawElements(GL_TRIANGLES,
+                            m_TriangleIndices->GetNumberOfValues(),
+                            GL_UNSIGNED_INT, 0);
+        m_TriangleVAO.release();
+    }*/
 }
 void UnstructuredMesh::ConvertToDrawableData() {
     if (m_Positions && m_Positions->GetMTime() > this->GetMTime()) { return; }
@@ -170,7 +187,7 @@ void UnstructuredMesh::ConvertToDrawableData() {
 
     m_Positions = m_Points->ConvertToArray();
     m_Positions->Modified();
-
+    m_VertexIndices = UnsignedIntArray::New();
     //m_PointIndices = UnsignedIntArray::New();
     m_LineIndices = UnsignedIntArray::New();
     m_TriangleIndices = UnsignedIntArray::New();
@@ -183,6 +200,9 @@ void UnstructuredMesh::ConvertToDrawableData() {
         int size = GetCellPointIds(id, ids);
         IGenum type = GetCellType(id);
         switch (type) {
+            case IG_VERTEX:
+                m_VertexIndices->AddValue(ids[0]);
+                break;
             case IG_LINE:
             case IG_POLY_LINE: {
                 for (int i = 1; i < size; i++) {
@@ -223,9 +243,33 @@ void UnstructuredMesh::ConvertToDrawableData() {
         }
     }
 
+    GLAllocateGLBuffer(m_PositionVBO,
+                       m_Positions->GetNumberOfValues() * sizeof(float),
+                       m_Positions->RawPointer());
+
+    GLAllocateGLBuffer(m_VertexEBO,
+                       m_VertexIndices->GetNumberOfValues() *
+                           sizeof(unsigned int),
+                       m_VertexIndices->RawPointer());
+
+    GLAllocateGLBuffer(m_LineEBO,
+                       m_LineIndices->GetNumberOfValues() *
+                           sizeof(unsigned int),
+                       m_LineIndices->RawPointer());
+
+    GLAllocateGLBuffer(m_TriangleEBO,
+                       m_TriangleIndices->GetNumberOfValues() *
+                           sizeof(unsigned int),
+                       m_TriangleIndices->RawPointer());
+
     m_PointVAO.vertexBuffer(GL_VBO_IDX_0, m_PositionVBO, 0, 3 * sizeof(float));
     GLSetVertexAttrib(m_PointVAO, GL_LOCATION_IDX_0, GL_VBO_IDX_0, 3, GL_FLOAT,
                       GL_FALSE, 0);
+
+    m_VertexVAO.vertexBuffer(GL_VBO_IDX_0, m_PositionVBO, 0, 3 * sizeof(float));
+    GLSetVertexAttrib(m_VertexVAO, GL_LOCATION_IDX_0, GL_VBO_IDX_0, 3, GL_FLOAT,
+        GL_FALSE, 0);
+    m_VertexVAO.elementBuffer(m_VertexEBO);
 
     m_LineVAO.vertexBuffer(GL_VBO_IDX_0, m_PositionVBO, 0, 3 * sizeof(float));
     GLSetVertexAttrib(m_LineVAO, GL_LOCATION_IDX_0, GL_VBO_IDX_0, 3, GL_FLOAT,
@@ -237,38 +281,29 @@ void UnstructuredMesh::ConvertToDrawableData() {
     GLSetVertexAttrib(m_TriangleVAO, GL_LOCATION_IDX_0, GL_VBO_IDX_0, 3,
                       GL_FLOAT, GL_FALSE, 0);
     m_TriangleVAO.elementBuffer(m_TriangleEBO);
-
-    GLAllocateGLBuffer(m_PositionVBO,
-                       m_Positions->GetNumberOfValues() * sizeof(float),
-                       m_Positions->RawPointer());
-
-    GLAllocateGLBuffer(m_LineEBO,
-                       m_LineIndices->GetNumberOfValues() *
-                               sizeof(unsigned int),
-                       m_LineIndices->RawPointer());
-
-    GLAllocateGLBuffer(m_TriangleEBO,
-                       m_TriangleIndices->GetNumberOfValues() *
-                               sizeof(unsigned int),
-                       m_TriangleIndices->RawPointer());
 }
 
-void UnstructuredMesh::ViewCloudPicture(int index, int demension) {
+void UnstructuredMesh::ViewCloudPicture(Scene* scene, int index, int demension)
+{
     if (index == -1) {
         m_UseColor = false;
         m_ViewAttribute = nullptr;
         m_ViewDemension = -1;
         // m_ColorWithCell = false;
+        scene->Update();
         return;
     }
+    scene->MakeCurrent();
     m_AttributeIndex = index;
-    auto& attr = this->GetPropertySet()->GetProperty(index);
+    auto& attr = this->GetAttributeSet()->GetAttribute(index);
     if (!attr.isDeleted) {
         if (attr.attachmentType == IG_POINT)
             this->SetAttributeWithPointData(attr.pointer, demension);
         else if (attr.attachmentType == IG_CELL)
             this->SetAttributeWithCellData(attr.pointer, demension);
     }
+    scene->DoneCurrent();
+    scene->Update();
 }
 
 void UnstructuredMesh::SetAttributeWithPointData(ArrayObject::Pointer attr,
@@ -315,6 +350,7 @@ void UnstructuredMesh::SetAttributeWithCellData(ArrayObject::Pointer attr,
 void UnstructuredMesh::Create() {
     if (!m_Flag) {
         m_PointVAO.create();
+        m_VertexVAO.create();
         m_LineVAO.create();
         m_TriangleVAO.create();
 
@@ -327,8 +363,8 @@ void UnstructuredMesh::Create() {
         m_TextureVBO.create();
         m_TextureVBO.target(GL_ARRAY_BUFFER);
 
-        m_PointEBO.create();
-        m_PointEBO.target(GL_ELEMENT_ARRAY_BUFFER);
+        m_VertexEBO.create();
+        m_VertexEBO.target(GL_ELEMENT_ARRAY_BUFFER);
         m_LineEBO.create();
         m_LineEBO.target(GL_ELEMENT_ARRAY_BUFFER);
         m_TriangleEBO.create();

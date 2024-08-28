@@ -9,13 +9,13 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
     message(STATUS "Compiler is MSVC")
     #设置QT的目录
-    set(QT_CMAKE_PATH "E:/Software/Visualsoft/Qt/Qt5.14.2/5.14.2/msvc2017_64/lib/cmake")
-    set(CMAKE_PREFIX_PATH "E:/Software/Visualsoft/Qt/Qt5.14.2/5.14.2/msvc2017_64/lib/cmake")
+    # set(QT_CMAKE_PATH "D:/Software/Qt/Qt5.14.20/5.14.2/msvc2017_64/lib/cmake")
+    # set(CMAKE_PREFIX_PATH "D:/Software/Qt/Qt5.14.20/5.14.2/msvc2017_64/lib/cmake")
     # set(QT_CMAKE_PATH "D:/Software/Qt/5.14.2/msvc2017_64/lib/cmake")
     # set(CMAKE_PREFIX_PATH "D:/Software/Qt/5.14.2/msvc2017_64/lib/cmake")
     # set(QT_CMAKE_PATH "D:/Qt/5.14.2/msvc2017_64/lib/cmake")
     # set(CMAKE_PREFIX_PATH "D:/Qt/5.14.2/msvc2017_64/lib/cmake")
-    # set(CMAKE_PREFIX_PATH "E:/Software/Visualsoft/Qt/Qt5.14.2/5.14.2/msvc2017_64/lib/cmake")
+     set(CMAKE_PREFIX_PATH "E:/Software/Visualsoft/Qt/Qt5.14.2/5.14.2/msvc2017_64/lib/cmake")
     # set(QT_CMAKE_PATH "D:/dev/Qt5.5.3/6.5.3/msvc2019_64/lib/cmake")
     # set(CMAKE_PREFIX_PATH "D:/dev/Qt5.5.3/6.5.3/msvc2019_64/lib/cmake")
     #以UTF-8格式进行编译
@@ -37,6 +37,8 @@ set(CMAKE_AUTOUIC ON) # UI files
 set(CMAKE_AUTOUIC_SEARCH_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/Resources/UI")
 # 查找 Qt
 
+
+
 #find_package(Qt5 COMPONENTS Core Gui Widgets OpenGL OpenGLWidgets REQUIRED)
 find_package(Qt5 COMPONENTS Core Gui Widgets OpenGL REQUIRED)
 message("Qt5Widgets_FOUND  : ${Qt5Widgets_FOUND}")
@@ -57,6 +59,7 @@ set(UI_FILES
         "Resources/UI/igVector.ui"
         "Resources/UI/TensorView.ui"
         "Resources/UI/filterDialog.ui"
+        "Resources/UI/layerDialog.ui"
 )
 Qt5_wrap_ui(UI_HEAD_FILES ${UI_FILES})
 
@@ -65,7 +68,7 @@ get_filename_component(_qt_bin_dir "${_qmake_executable}" DIRECTORY)
 find_program(DEPLOYQT_EXECUTABLE NAMES windeployqt macdeployqt HINTS "${_qt_bin_dir}")
 
 
-file(GLOB_RECURSE QT_SRCS CONFIGURE_DEPENDS src/*.cpp include/*.h)
+file(GLOB_RECURSE QT_SRCS CONFIGURE_DEPENDS src/*.cpp include/*.h Plugin/*)
 
 
 add_library(${MODULE_NAME} SHARED
@@ -73,8 +76,6 @@ add_library(${MODULE_NAME} SHARED
         # ${UI_FILES}
         ${UI_HEAD_FILES}
         ${QT_SRCS}
-        src/IQCore/iGameFileDialog.cpp
-        include/IQCore/iGameFileDialog.h
 )
 
 
@@ -82,6 +83,7 @@ set_source_files_properties(${QRC_FILES} PROPERTIES GENERATED ON)
 
 target_include_directories(${MODULE_NAME} PUBLIC
         include
+        Plugin
         "${CMAKE_BINARY_DIR}/Qt"
 )
 set(LINK_LIBS)

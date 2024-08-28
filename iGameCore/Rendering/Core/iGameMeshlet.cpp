@@ -3,6 +3,15 @@
 
 IGAME_NAMESPACE_BEGIN
 
+#ifdef IGAME_OPENGL_VERSION_460
+
+void Meshlet::CreateBuffer() {
+    m_MeshletsBuffer.create();
+    m_DrawCommandBuffer.create();
+    m_VisibleMeshletBuffer.create();
+    m_FinalDrawCommandBuffer.create();
+}
+
 void Meshlet::BuildMeshlet(const float* vertex_positions, size_t vertex_count,
                            const int* indices, size_t index_count) {
     clock_t start, end;
@@ -67,25 +76,33 @@ void Meshlet::BuildMeshlet(const float* vertex_positions, size_t vertex_count,
         meshletDatas[i] = {
                 igm::vec4{b.center[0], b.center[1], b.center[2], b.radius},
                 igm::vec4{0.0f}};
-        drawCommands[i] = {m.triangle_count * 3, 1, m.triangle_offset, 0, 0};
+        drawCommands[i] = {m.triangle_count * 3, 0, m.triangle_offset, 0, 0};
 
-        for (auto i = m.triangle_offset;
-             i < m.triangle_offset + m.triangle_count * 3; i++) {
-            m_MeshletIndices[i] =
-                    m_MeshletVertices[m.vertex_offset + m_MeshletTriangles[i]];
+        for (auto j = m.triangle_offset;
+             j < m.triangle_offset + m.triangle_count * 3; j++) {
+            m_MeshletIndices[j] =
+                    m_MeshletVertices[m.vertex_offset + m_MeshletTriangles[j]];
         }
     }
 
     m_MeshletsCount = meshlet_count;
-    m_MeshletsBuffer.create();
     m_MeshletsBuffer.target(GL_SHADER_STORAGE_BUFFER);
     m_MeshletsBuffer.allocate(meshletDatas.size() * sizeof(MeshletData),
-                              meshletDatas.data(), GL_DYNAMIC_DRAW);
-    m_DrawCommandBuffer.create();
-    m_DrawCommandBuffer.target(GL_DRAW_INDIRECT_BUFFER);
+                              meshletDatas.data(), GL_STATIC_DRAW);
+
+    m_DrawCommandBuffer.target(GL_SHADER_STORAGE_BUFFER);
     m_DrawCommandBuffer.allocate(drawCommands.size() *
                                          sizeof(DrawElementsIndirectCommand),
-                                 drawCommands.data(), GL_DYNAMIC_DRAW);
+                                 drawCommands.data(), GL_STATIC_DRAW);
+
+    m_VisibleMeshletBuffer.target(GL_SHADER_STORAGE_BUFFER);
+    m_VisibleMeshletBuffer.allocate(drawCommands.size() * sizeof(unsigned int),
+                                    nullptr, GL_DYNAMIC_DRAW);
+
+    m_FinalDrawCommandBuffer.target(GL_DRAW_INDIRECT_BUFFER);
+    m_FinalDrawCommandBuffer.allocate(
+            drawCommands.size() * sizeof(DrawElementsIndirectCommand), nullptr,
+            GL_DYNAMIC_DRAW);
 
     end = clock();
 
@@ -108,6 +125,14 @@ size_t Meshlet::GetMeshletIndexCount() { return m_MeshletIndices.size(); };
 
 GLBuffer& Meshlet::MeshletsBuffer() { return m_MeshletsBuffer; };
 
+GLBuffer& Meshlet::VisibleMeshletBuffer() { return m_VisibleMeshletBuffer; }
+
 GLBuffer& Meshlet::DrawCommandBuffer() { return m_DrawCommandBuffer; };
+
+GLBuffer& Meshlet::FinalDrawCommandBuffer() {
+    return m_FinalDrawCommandBuffer;
+};
+
+#endif
 
 IGAME_NAMESPACE_END

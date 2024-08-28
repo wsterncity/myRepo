@@ -6,6 +6,7 @@
 
 IGAME_NAMESPACE_BEGIN
 
+#ifdef IGAME_OPENGL_VERSION_460
 class Meshlet : public Object {
 public:
     I_OBJECT(Meshlet);
@@ -21,6 +22,7 @@ protected:
     };
 
 public:
+    void CreateBuffer();
     void BuildMeshlet(const float* vertex_positions, size_t vertex_count,
                       const int* indices, size_t index_count);
 
@@ -29,6 +31,8 @@ public:
     size_t GetMeshletIndexCount();
     GLBuffer& MeshletsBuffer();
     GLBuffer& DrawCommandBuffer();
+    GLBuffer& VisibleMeshletBuffer();
+    GLBuffer& FinalDrawCommandBuffer();
 
 private:
     const size_t m_MaxVertices = 64;
@@ -43,7 +47,10 @@ private:
     size_t m_MeshletsCount = 0;
     GLBuffer m_MeshletsBuffer;
     GLBuffer m_DrawCommandBuffer;
+    GLBuffer m_VisibleMeshletBuffer;
+    GLBuffer m_FinalDrawCommandBuffer;
     std::vector<unsigned int> m_MeshletIndices;
 };
+#endif
 
 IGAME_NAMESPACE_END

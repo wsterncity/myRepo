@@ -18,10 +18,10 @@ public:
 class GLVertexArray : public GLObject<GLVertexArray> {
 private:
     friend class GLObject<GLVertexArray>;
-    static void _create(GLsizei count, GLuint* handles) {
+    static void createHandle(GLsizei count, GLuint* handles) {
         glCreateVertexArrays(count, handles);
     }
-    static void _destroy(GLsizei count, GLuint* handles) {
+    static void destroyHandle(GLsizei count, GLuint* handles) {
         glDeleteVertexArrays(count, handles);
     }
 

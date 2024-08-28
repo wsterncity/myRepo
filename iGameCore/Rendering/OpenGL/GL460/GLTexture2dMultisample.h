@@ -9,10 +9,10 @@ IGAME_NAMESPACE_BEGIN
 class GLTexture2dMultisample : public GLObject<GLTexture2dMultisample> {
 private:
     friend class GLObject<GLTexture2dMultisample>;
-    static void _create(GLsizei count, GLuint* handles) {
+    static void createHandle(GLsizei count, GLuint* handles) {
         glCreateTextures(GL_TEXTURE_2D_MULTISAMPLE, count, handles);
     }
-    static void _destroy(GLsizei count, GLuint* handles) {
+    static void destroyHandle(GLsizei count, GLuint* handles) {
         glDeleteTextures(count, handles);
     }
 
@@ -34,6 +34,17 @@ public:
         glTextureStorage2DMultisample(handle, samples, internal_format, width,
                                       height, fixedsamplelocations);
     }
+
+    // GLenum texture: GL_TEXTURE1 - GL_TEXTURE15
+    // GL_TEXTURE0 is reserved to prevent other binding operations from being performed after a texture unit is activated.
+    void active(GLenum texture) {
+        if (texture == GL_TEXTURE0) {
+            throw std::runtime_error("GL_TEXTURE0 is reserved.");
+        }
+        glActiveTexture(texture);
+        glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, handle);
+        glActiveTexture(GL_TEXTURE0);
+    };
 
     // GLenum pname: GL_TEXTURE_WRAP_S, GL_TEXTURE_WRAP_T, GL_TEXTURE_MIN_FILTER, GL_TEXTURE_MAG_FILTER
     // GLint param: GL_CLAMP_TO_EDGE, GL_MIRRORED_REPEAT, GL_NEAREST, GL_LINEAR

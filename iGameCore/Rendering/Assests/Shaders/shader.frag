@@ -1,17 +1,26 @@
 #version 410 core
 
-//layout(std140, binding = 0) uniform MVPMatrix {
-layout(std140) uniform MVPMatrix {
+layout(std140) uniform CameraDataBlock {
+//layout(std140, binding = 0) uniform CameraDataBlock {
+    mat4 view;
+    mat4 proj;
+    mat4 proj_view;// proj * view
+} cameraData;
+
+layout(std140) uniform ObjectDataBlock {
+//layout(std140, binding = 1) uniform ObjectDataBLock {
     mat4 model;
     mat4 normal;// transpose(inverse(model))
-    mat4 viewporj;// proj * view
-} mvp;
-//layout(std140, binding = 1) uniform UniformBufferObject {
-layout(std140) uniform UniformBufferObject {
+    vec4 sphereBounds;// not set now, do not use
+} objectData;
+
+layout(std140) uniform UniformBufferObjectBlock {
+//layout(std140, binding = 2) uniform UniformBufferObjectBlock {
     vec3 viewPos;
     bool useColor;
 } ubo;
-//layout(binding = 2) uniform sampler2D texSampler;
+
+//layout(binding = 3) uniform sampler2D texSampler;
 uniform sampler2D texSampler;
 
 in vec3 fragPosition;
@@ -47,8 +56,8 @@ vec3 BlinnPhong(vec3 normal, vec3 fragPos, Light light)
     spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);
     vec3 specular = spec * light.color * 0.5f;
 
-    return diffuse + specular;
-    //    return diffuse;
+    //return diffuse + specular;
+    return diffuse;
 }
 
 void main() {

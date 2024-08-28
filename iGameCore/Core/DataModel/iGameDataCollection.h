@@ -16,15 +16,15 @@ class DataCollection {
 public:
     Points::Pointer        Points{};
 
-    PropertySet::Pointer Data{};
+    AttributeSet::Pointer Data{};
     StreamingData::Pointer Time_Data{};
 
     CellArray::Pointer Lines{};
 
-    // 表面结构
+    // Surface struct
     CellArray::Pointer Faces{};
 
-    // 体结构
+    // Volume struct
     CellArray::Pointer Volumes{};
 
     IGenum Type{};
@@ -37,11 +37,11 @@ public:
         }
         return Points;
     }
-    PropertySet::Pointer GetData()
+    AttributeSet::Pointer GetData()
     {
         if (Data == nullptr)
         {
-            Data = PropertySet::New();
+            Data = AttributeSet::New();
         }
         return Data;
     }

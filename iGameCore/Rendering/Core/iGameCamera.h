@@ -14,8 +14,8 @@
 #define OPENIGAME_CAMERA_H
 
 
-#include "RenderingMacro.h"
 #include "iGameObject.h"
+#include "iGameRenderingMacro.h"
 #include "igm/igm.h"
 #include "igm/transform.h"
 
@@ -59,20 +59,25 @@ public:
     static Pointer New() { return new Viewer; }
 
 public:
-    float SetNearPlane(float near) { nearPlane = near; };
-    float SetFarPlane(float far) { nearPlane = far; };
+    void SetNearPlane(float near) { nearPlane = near; };
+    //void SetFarPlane(float far) { farPlane = far; };
     float GetNearPlane() { return nearPlane; };
-    float GetFarPlane() { return farPlane; };
+    //float GetFarPlane() { return farPlane; };
 
     igm::mat4 GetProjectionMatrix() {
-        return igm::perspective(static_cast<float>(igm::radians(fov)),
-                                aspect<float>(), nearPlane, farPlane);
+        return igm::perspectiveRH_ZO(static_cast<float>(igm::radians(fov)),
+                                     aspect<float>(), nearPlane);
     };
+
+    igm::mat4 GetProjectionMatrixReversedZ() {
+        return igm::perspectiveRH_OZ(static_cast<float>(igm::radians(fov)),
+                                     aspect<float>(), nearPlane);
+    }
 
 protected:
     float fov = 45.0f;
-    float nearPlane = 0.1f;
-    float farPlane = 300.0f;
+    float nearPlane = 0.01f;
+    //float farPlane = 100.0f;
 
 protected:
     Viewer() = default;
@@ -112,13 +117,13 @@ public:
         updateCameraVectors();
     }
 
-    void SetCamaraPos(igm::vec3 pos) { m_Position = pos; }
+    void SetCameraPos(igm::vec3 pos) { m_Position = pos; }
 
-    void SetCamaraPos(float x, float y, float z) { m_Position = {x, y, z}; }
+    void SetCameraPos(float x, float y, float z) { m_Position = {x, y, z}; }
 
-    igm::vec3 GetCamaraPos() const { return m_Position; }
+    igm::vec3 GetCameraPos() const { return m_Position; }
 
-    igm::vec3 GetCamaraUp() const { return m_Up; }
+    igm::vec3 GetCameraUp() const { return m_Up; }
 
     igm::mat4 GetViewMatrix() {
         return igm::lookAt(m_Position, m_Position + m_Front, m_Up);

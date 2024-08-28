@@ -6,8 +6,6 @@
 #ifndef OPENIGAME_IGQTMAINWINDOW_H
 #define OPENIGAME_IGQTMAINWINDOW_H
 
-#include "iGameSceneManager.h"
-
 #define QT_NO_OPENGL
 #include <ui_iGameQtMainWindow.h>
 #if __linux__
@@ -26,6 +24,7 @@ class igQtFileLoader;
 class igQtColorManagerWidget;
 class igQtFilterDialogDockWidget;
 class igQtProgressBarWidget;
+class igQtModelDialogWidget;
 
 using namespace iGame;
 
@@ -41,12 +40,12 @@ public:
     void initAllDockWidgetConnectWithAction();
     void initAllMySignalConnections();
     void initAllFilters();
-
-
+    void initAllSources();
 
 public:
     igQtModelDrawWidget* rendererWidget;
     igQtFileLoader* fileLoader;
+    igQtModelDialogWidget* modelTreeWidget;
 
     igQtColorManagerWidget* ColorManagerWidget;
     igQtFilterDialogDockWidget* filterDialogDockWidget;
@@ -59,16 +58,19 @@ public:
 private slots:
     void updateRecentFilePaths();
     void updateColorBarShow();
-    void ChangeViewStyle();
-    void ChangeScalarView();
-    void ChangeScalarViewDim();
-    void updateViewStyleAndCloudPicture();
-    void updateCurrentDataObject();
 
-//<<<<<<< HEAD
-    void updateCurrentSceneWidget();
-//=======
-//>>>>>>> 5c590c0b5220d077d84cdab81b6eed106d7d4de8
+    //void ChangeViewStyle();
+    //void ChangeScalarView();
+    //void ChangeScalarViewDim();
+    //void updateViewStyleAndCloudPicture();
+    //void updateCurrentDataObject();
+    //void updateCurrentSceneWidget();
+
+    void changePointSelectionInteractor();
+    void changePointsSelectionInteractor();
+    void changeFaceSelectionInteractor();
+    void changeFacesSelectionInteractor();
+
 private:
     Ui::MainWindow* ui;
 };

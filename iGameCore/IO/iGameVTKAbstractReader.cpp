@@ -242,7 +242,7 @@ int VTKAbstractReader::ReadCellData(int CellsNum)
 int VTKAbstractReader::ReadPointData(int PointsNum)
 {
 	char line[256];
-	PropertySet::Pointer PointData = m_Data.GetData();
+	AttributeSet::Pointer PointData = m_Data.GetData();
 	
 	this->DataType = POINT_TYPE;
 	igDebug("Reading vtk point data");
@@ -451,10 +451,10 @@ int VTKAbstractReader::ReadVectorData(int PointsNum)
 	if (data != nullptr) {
 		data->SetName(name);
 		if (this->DataType == POINT_TYPE) {
-			m_Data.GetData()->AddProperty(IG_VECTOR, IG_POINT, data);
+			m_Data.GetData()->AddAttribute(IG_VECTOR, IG_POINT, data);
 		}
 		else if (this->DataType == CELL_TYPE) {
-			m_Data.GetData()->AddProperty(IG_VECTOR, IG_CELL, data);
+			m_Data.GetData()->AddAttribute(IG_VECTOR, IG_CELL, data);
 		}
 	}
 	else {
@@ -484,10 +484,10 @@ int VTKAbstractReader::ReadNormalData(int PointsNum)
 	if (data != nullptr) {
 		data->SetName(name);
 		if (this->DataType == POINT_TYPE) {
-			m_Data.GetData()->AddProperty(IG_NORMAL, IG_POINT, data);
+			m_Data.GetData()->AddAttribute(IG_NORMAL, IG_POINT, data);
 		}
 		else if (this->DataType == CELL_TYPE) {
-			m_Data.GetData()->AddProperty(IG_NORMAL, IG_CELL, data);
+			m_Data.GetData()->AddAttribute(IG_NORMAL, IG_CELL, data);
 		}
 	}
 	else {
@@ -517,10 +517,10 @@ int VTKAbstractReader::ReadTensorData(int PointsNum, int numComp)
 	if (data != nullptr) {
 		data->SetName(name);
 		if (this->DataType == POINT_TYPE) {
-			m_Data.GetData()->AddProperty(IG_TENSOR, IG_POINT, data);
+			m_Data.GetData()->AddAttribute(IG_TENSOR, IG_POINT, data);
 		}
 		else if (this->DataType == CELL_TYPE) {
-			m_Data.GetData()->AddProperty(IG_TENSOR, IG_CELL, data);
+			m_Data.GetData()->AddAttribute(IG_TENSOR, IG_CELL, data);
 		}
 	}
 	else {
@@ -554,10 +554,10 @@ int VTKAbstractReader::ReadCoScalarData(int PointsNum)
 		if (data != nullptr) {
 			data->SetName(name);
 			if (this->DataType == POINT_TYPE) {
-				m_Data.GetData()->AddProperty(IG_SCALAR, IG_POINT, data);
+				m_Data.GetData()->AddAttribute(IG_SCALAR, IG_POINT, data);
 			}
 			else if (this->DataType == CELL_TYPE) {
-				m_Data.GetData()->AddProperty(IG_SCALAR, IG_CELL, data);
+				m_Data.GetData()->AddAttribute(IG_SCALAR, IG_CELL, data);
 			}
 		}
 		else {
@@ -580,7 +580,7 @@ int VTKAbstractReader::ReadCoScalarData(int PointsNum)
 				}
 			}
 			if (this->DataType == POINT_TYPE) {
-				m_Data.GetData()->AddProperty(IG_SCALAR, IG_POINT, scalars);
+				m_Data.GetData()->AddAttribute(IG_SCALAR, IG_POINT, scalars);
 			}
 			else if (this->DataType == CELL_TYPE) {
 
@@ -623,10 +623,10 @@ int VTKAbstractReader::ReadTCoordsData(int PointsNum)
 	if (data != nullptr) {
 		data->SetName(name);
 		if (this->DataType == POINT_TYPE) {
-			m_Data.GetData()->AddProperty(IG_TCOORD, IG_POINT, data);
+			m_Data.GetData()->AddAttribute(IG_TCOORD, IG_POINT, data);
 		}
 		else if (this->DataType == CELL_TYPE) {
-			m_Data.GetData()->AddProperty(IG_TCOORD, IG_CELL, data);
+			m_Data.GetData()->AddAttribute(IG_TCOORD, IG_CELL, data);
 		}
 	}
 	else {
@@ -723,7 +723,7 @@ int VTKAbstractReader::ReadEdgeFlags(int PointsNum)
 	if (data != nullptr) {
 		data->SetName(name);
 		if (this->DataType == POINT_TYPE) {
-			//this->DataSet->GetPointData()->AddProperty(EDGEFLAG, data);
+			//this->DataSet->GetPointData()->AddAttribute(EDGEFLAG, data);
 		}
 		else if (this->DataType == CELL_TYPE) {
 
@@ -774,10 +774,10 @@ int VTKAbstractReader::ReadFieldData()
 		if (data != nullptr) {
 			data->SetName(name);
 			if (this->DataType == POINT_TYPE) {
-				m_Data.GetData()->AddProperty(IG_SCALAR, IG_POINT, data);
+				m_Data.GetData()->AddAttribute(IG_SCALAR, IG_POINT, data);
 			}
 			else if (this->DataType == CELL_TYPE) {
-				m_Data.GetData()->AddProperty(IG_SCALAR, IG_CELL, data);
+				m_Data.GetData()->AddAttribute(IG_SCALAR, IG_CELL, data);
 			}
 		}
 	}

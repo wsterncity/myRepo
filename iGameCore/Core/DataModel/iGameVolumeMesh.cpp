@@ -67,8 +67,8 @@ Volume* VolumeMesh::GetVolume(const IGsize volumeId)
 	volume->Points->Reset();
 
 	for (int i = 0; i < ncells; i++) {
-		volume->PointIds->AddId(cell[0]);
-		volume->Points->AddPoint(this->GetPoint(cell[0]));
+		volume->PointIds->AddId(cell[i]);
+		volume->Points->AddPoint(this->GetPoint(cell[i]));
 	}
 
 	return volume;
@@ -724,26 +724,61 @@ void VolumeMesh::Draw(Scene* scene)
 	}
 	scene->UpdateUniformBuffer();
 
-	if (m_UseColor && m_ColorWithCell)
-	{
+	if (m_UseColor && m_ColorWithCell) {
 		scene->GetShader(Scene::PATCH)->use();
 		m_CellVAO.bind();
-		int a = this->GetNumberOfFaces();
-		glad_glDrawArrays(GL_TRIANGLES, 0, this->GetNumberOfFaces() * 3);
+		glad_glDrawArrays(GL_TRIANGLES, 0, m_CellPositionSize);
 		m_CellVAO.release();
 		return;
 	}
 
-	if (m_ViewStyle == IG_POINTS)
-	{
+	if (m_ViewStyle & IG_POINTS) {
 		scene->GetShader(Scene::NOLIGHT)->use();
 		m_PointVAO.bind();
-		glPointSize(m_PointSize);
-		auto size = m_Positions->GetNumberOfValues();
-		glad_glDrawArrays(GL_POINTS, 0, size / 3);
+		glad_glPointSize(m_PointSize);
+		glad_glDepthRange(0, 0.99999);
+		glad_glDrawArrays(GL_POINTS, 0, m_Positions->GetNumberOfValues() / 3);
+		glad_glDepthRange(0, 1);
 		m_PointVAO.release();
 	}
-	else if (m_ViewStyle == IG_WIREFRAME)
+	if (m_ViewStyle & IG_WIREFRAME) {
+		if (m_UseColor) {
+			scene->GetShader(Scene::NOLIGHT)->use();
+		}
+		else {
+			auto shader = scene->GetShader(Scene::PURECOLOR);
+			shader->use();
+			shader->setUniform(shader->getUniformLocation("inputColor"),
+				igm::vec3{ 0.0f, 0.0f, 0.0f });
+		}
+
+		m_LineVAO.bind();
+		glLineWidth(m_LineWidth);
+
+		// TODO: A better way to render wireframes
+		auto boundingBoxDiag = this->GetBoundingBox().diag();
+		auto scaleFactor =
+			1e-6 / std::pow(10, std::floor(std::log10(boundingBoxDiag)));
+		glad_glDepthRange(scaleFactor, 1);
+		glad_glDepthFunc(GL_GEQUAL);
+
+		glad_glDrawElements(GL_LINES, m_LineIndices->GetNumberOfIds(),
+			GL_UNSIGNED_INT, 0);
+
+		glad_glDepthFunc(GL_GREATER);
+		glad_glDepthRange(0, 1);
+
+		m_LineVAO.release();
+	}
+	if (m_ViewStyle & IG_SURFACE) {
+		scene->GetShader(Scene::PATCH)->use();
+		m_TriangleVAO.bind();
+		glad_glDrawElements(GL_TRIANGLES, m_TriangleIndices->GetNumberOfIds(),
+			GL_UNSIGNED_INT, 0);
+		m_TriangleVAO.release();
+	}
+
+	/*if (m_ViewStyle == IG_SURFACE_WITH_EDGE)
 	{
 		if (m_UseColor)
 		{
@@ -760,43 +795,17 @@ void VolumeMesh::Draw(Scene* scene)
 		glLineWidth(m_LineWidth);
 		glad_glDrawElements(GL_LINES, m_LineIndices->GetNumberOfIds(), GL_UNSIGNED_INT, 0);
 		m_LineVAO.release();
-	}
-	else if (m_ViewStyle == IG_SURFACE)
-	{
-		scene->GetShader(Scene::PATCH)->use();
-		m_TriangleVAO.bind();
-		glad_glDrawElements(GL_TRIANGLES, m_TriangleIndices->GetNumberOfIds(), GL_UNSIGNED_INT, 0);
-		m_TriangleVAO.release();
-	}
-	else if (m_ViewStyle == IG_SURFACE_WITH_EDGE)
-	{
-		if (m_UseColor)
-		{
-			scene->GetShader(Scene::NOLIGHT)->use();
-		}
-		else
-		{
-			auto shader = scene->GetShader(Scene::PURECOLOR);
-			shader->use();
-			shader->setUniform(shader->getUniformLocation("inputColor"), igm::vec3{ 0.0f, 0.0f, 0.0f });
-		}
-
-		m_LineVAO.bind();
-		glLineWidth(m_LineWidth);
-		glad_glDrawElements(GL_LINES, m_LineIndices->GetNumberOfIds(), GL_UNSIGNED_INT, 0);
-		m_LineVAO.release();
 
 		scene->GetShader(Scene::PATCH)->use();
 		m_TriangleVAO.bind();
 		glad_glDrawElements(GL_TRIANGLES, m_TriangleIndices->GetNumberOfIds(), GL_UNSIGNED_INT, 0);
 		m_TriangleVAO.release();
-	}
+	}*/
 }
 
 void VolumeMesh::ConvertToDrawableData()
 {
-	if (m_Positions && m_Positions->GetMTime() > this->GetMTime())
-	{
+	if (m_Positions && m_Positions->GetMTime() > this->GetMTime()) {
 		return;
 	}
 
@@ -806,107 +815,110 @@ void VolumeMesh::ConvertToDrawableData()
 		m_LineVAO.create();
 		m_TriangleVAO.create();
 		m_PositionVBO.create();
+		m_PositionVBO.target(GL_ARRAY_BUFFER);
 		m_ColorVBO.create();
+		m_ColorVBO.target(GL_ARRAY_BUFFER);
 		m_NormalVBO.create();
+		m_NormalVBO.target(GL_ARRAY_BUFFER);
 		m_TextureVBO.create();
+		m_TextureVBO.target(GL_ARRAY_BUFFER);
 		m_PointEBO.create();
+		m_PointEBO.target(GL_ELEMENT_ARRAY_BUFFER);
 		m_LineEBO.create();
+		m_LineEBO.target(GL_ELEMENT_ARRAY_BUFFER);
 		m_TriangleEBO.create();
+		m_TriangleEBO.target(GL_ELEMENT_ARRAY_BUFFER);
 
 		m_CellVAO.create();
 		m_CellPositionVBO.create();
+		m_CellPositionVBO.target(GL_ARRAY_BUFFER);
 		m_CellColorVBO.create();
+		m_CellColorVBO.target(GL_ARRAY_BUFFER);
 		m_Flag = true;
 	}
 
 	m_Positions = m_Points->ConvertToArray();
 	m_Positions->Modified();
 
-	//m_PointVAO.destroy();
-	//m_LineVAO.destroy();
-	//m_TriangleVAO.destroy();
-	//m_PositionVBO.destroy();
-	//m_ColorVBO.destroy();
-	//m_NormalVBO.destroy();
-	//m_TextureVBO.destroy();
-	//m_PointEBO.destroy();
-	//m_LineEBO.destroy();
-	//m_TriangleEBO.destroy();
-
-	if (this->GetFaces() == nullptr)
-	{
-		this->BuildFacesAndEdges();
-	}
-
-	// set line indices
-	if (this->GetEdges() == nullptr)
-	{
-		this->BuildEdges();
-	}
-	m_LineIndices = this->GetEdges()->GetCellIdArray();
-
-	// set triangle indices
 	IdArray::Pointer triangleIndices = IdArray::New();
-	int i, ncell;
-	igIndex cell[32]{};
-	for (i = 0; i < this->GetNumberOfFaces(); i++) {
-		ncell = this->GetFacePointIds(i, cell);
-		igIndex v0 = cell[0];
-		for (int j = 2; j < ncell; j++)
-		{
-			triangleIndices->AddId(v0);
-			triangleIndices->AddId(cell[j - 1]);
-			triangleIndices->AddId(cell[j]);
+	IdArray::Pointer edgeIndices = IdArray::New();
+	for (int i = 0; i < this->GetNumberOfVolumes(); i++) {
+		Volume* volume = this->GetVolume(i);
+		const igIndex* face;
+		for (int j = 0; j < volume->GetNumberOfFaces(); j++) {
+			int size = volume->GetFacePointIds(j, face);
+			for (int k = 2; k < size; k++) {
+				triangleIndices->AddId(volume->PointIds->GetId(face[0]));
+				triangleIndices->AddId(volume->PointIds->GetId(face[k - 1]));
+				triangleIndices->AddId(volume->PointIds->GetId(face[k]));
+			}
+		}
+		const igIndex* edge;
+		for (int j = 0; j < volume->GetNumberOfEdges(); j++) {
+			int size = volume->GetEdgePointIds(j, edge);
+			edgeIndices->AddId(volume->PointIds->GetId(edge[0]));
+			edgeIndices->AddId(volume->PointIds->GetId(edge[1]));
 		}
 	}
 	m_TriangleIndices = triangleIndices;
+	m_LineIndices = edgeIndices;
 
+	// allocate buffer
+	{
+		GLAllocateGLBuffer(m_PositionVBO,
+			m_Positions->GetNumberOfValues() * sizeof(float),
+			m_Positions->RawPointer());
 
-	m_PointVAO.vertexBuffer(GL_VBO_IDX_0, m_PositionVBO, 0, 3 * sizeof(float));
-	GLSetVertexAttrib(m_PointVAO, GL_LOCATION_IDX_0, GL_VBO_IDX_0, 3, GL_FLOAT,
-		GL_FALSE, 0);
+		GLAllocateGLBuffer(m_LineEBO,
+			m_LineIndices->GetNumberOfIds() * sizeof(igIndex),
+			m_LineIndices->RawPointer());
 
-	// line
-	m_LineVAO.vertexBuffer(GL_VBO_IDX_0, m_PositionVBO, 0, 3 * sizeof(float));
-	GLSetVertexAttrib(m_LineVAO, GL_LOCATION_IDX_0, GL_VBO_IDX_0, 3, GL_FLOAT,
-		GL_FALSE, 0);
-	m_LineVAO.elementBuffer(m_LineEBO);
+		GLAllocateGLBuffer(m_TriangleEBO,
+			m_TriangleIndices->GetNumberOfIds() * sizeof(igIndex),
+			m_TriangleIndices->RawPointer());
+	}
 
-	// triangle
-	m_TriangleVAO.vertexBuffer(GL_VBO_IDX_0, m_PositionVBO, 0, 3 * sizeof(float));
-	GLSetVertexAttrib(m_TriangleVAO, GL_LOCATION_IDX_0, GL_VBO_IDX_0, 3, GL_FLOAT,
-		GL_FALSE, 0);
-	m_TriangleVAO.elementBuffer(m_TriangleEBO);
+	// set vertex attribute pointer
+	{
+		// point
+		m_PointVAO.vertexBuffer(GL_VBO_IDX_0, m_PositionVBO, 0, 3 * sizeof(float));
+		GLSetVertexAttrib(m_PointVAO, GL_LOCATION_IDX_0, GL_VBO_IDX_0, 3, GL_FLOAT,
+			GL_FALSE, 0);
 
+		// line
+		m_LineVAO.vertexBuffer(GL_VBO_IDX_0, m_PositionVBO, 0, 3 * sizeof(float));
+		GLSetVertexAttrib(m_LineVAO, GL_LOCATION_IDX_0, GL_VBO_IDX_0, 3, GL_FLOAT,
+			GL_FALSE, 0);
+		m_LineVAO.elementBuffer(m_LineEBO);
 
-	GLAllocateGLBuffer(m_PositionVBO,
-		m_Positions->GetNumberOfValues() * sizeof(float),
-		m_Positions->RawPointer());
-
-	GLAllocateGLBuffer(m_LineEBO,
-		m_LineIndices->GetNumberOfIds() * sizeof(igIndex),
-		m_LineIndices->RawPointer());
-
-	GLAllocateGLBuffer(m_TriangleEBO,
-		m_TriangleIndices->GetNumberOfIds() * sizeof(igIndex),
-		m_TriangleIndices->RawPointer());
+		// triangle
+		m_TriangleVAO.vertexBuffer(GL_VBO_IDX_0, m_PositionVBO, 0,
+			3 * sizeof(float));
+		GLSetVertexAttrib(m_TriangleVAO, GL_LOCATION_IDX_0, GL_VBO_IDX_0, 3,
+			GL_FLOAT, GL_FALSE, 0);
+		m_TriangleVAO.elementBuffer(m_TriangleEBO);
+	}
 }
 
-void VolumeMesh::ViewCloudPicture(int index, int demension) {
+void VolumeMesh::ViewCloudPicture(Scene* scene, int index, int demension) {
     if (index == -1) {
         m_UseColor = false;
         m_ViewAttribute = nullptr;
         m_ViewDemension = -1;
         m_ColorWithCell = false;
+		scene->Update();
         return;
     }
-    auto& attr = this->GetPropertySet()->GetProperty(index);
+	scene->MakeCurrent();
+    auto& attr = this->GetAttributeSet()->GetAttribute(index);
     if (!attr.isDeleted) {
         if (attr.attachmentType == IG_POINT)
             this->SetAttributeWithPointData(attr.pointer, demension);
         else if (attr.attachmentType == IG_CELL)
             this->SetAttributeWithCellData(attr.pointer, demension);
     }
+	scene->DoneCurrent();
+	scene->Update();
 }
 
 void VolumeMesh::SetAttributeWithPointData(ArrayObject::Pointer attr,
@@ -972,38 +984,42 @@ void VolumeMesh::SetAttributeWithCellData(ArrayObject::Pointer attr,
         newColors->SetElementSize(3);
 
         float color[3]{};
-        for (int i = 0; i < this->GetNumberOfFaces(); i++) {
-            Face* face = this->GetFace(i);
-            auto& p0 = face->Points->GetPoint(0);
-            newPositions->AddElement3(p0[0], p0[1], p0[2]);
+		for (int i = 0; i < this->GetNumberOfVolumes(); i++) {
+			Volume* volume = this->GetVolume(i);
+			const igIndex* face;
+			colors->GetElement(i, color);
+			for (int j = 0; j < volume->GetNumberOfFaces(); j++) {
+				int size = volume->GetFacePointIds(j, face);
+				for (int k = 2; k < size; k++) {
+					auto& p0 = volume->Points->GetPoint(face[0]);
+					newPositions->AddElement3(p0[0], p0[1], p0[2]);
+					auto& p1 = volume->Points->GetPoint(face[k - 1]);
+					newPositions->AddElement3(p1[0], p1[1], p1[2]);
+					auto& p2 = volume->Points->GetPoint(face[k]);
+					newPositions->AddElement3(p2[0], p2[1], p2[2]);
 
-            auto& p1 = face->Points->GetPoint(1);
-            newPositions->AddElement3(p1[0], p1[1], p1[2]);
+					newColors->AddElement3(color[0], color[1], color[2]);
+					newColors->AddElement3(color[0], color[1], color[2]);
+					newColors->AddElement3(color[0], color[1], color[2]);
+				}
+			}
+		}
+        
+		m_CellPositionSize = newPositions->GetNumberOfElements();
+		GLAllocateGLBuffer(m_CellPositionVBO,
+			newPositions->GetNumberOfValues() * sizeof(float),
+			newPositions->RawPointer());
+		GLAllocateGLBuffer(m_CellColorVBO,
+			newColors->GetNumberOfValues() * sizeof(float),
+			newColors->RawPointer());
 
-            auto& p2 = face->Points->GetPoint(2);
-            newPositions->AddElement3(p2[0], p2[1], p2[2]);
-
-            colors->GetElement(i, color);
-            newColors->AddElement3(color[0], color[1], color[2]);
-            newColors->AddElement3(color[0], color[1], color[2]);
-            newColors->AddElement3(color[0], color[1], color[2]);
-        }
-
-        GLAllocateGLBuffer(m_CellPositionVBO,
-                           newPositions->GetNumberOfValues() * sizeof(float),
-                           newPositions->RawPointer());
-        GLAllocateGLBuffer(m_CellColorVBO,
-                           newColors->GetNumberOfValues() * sizeof(float),
-                           newColors->RawPointer());
-
-        m_CellVAO.vertexBuffer(GL_VBO_IDX_0, m_CellPositionVBO, 0,
-                               3 * sizeof(float));
-        GLSetVertexAttrib(m_CellVAO, GL_LOCATION_IDX_0, GL_VBO_IDX_0, 3,
-                          GL_FLOAT, GL_FALSE, 0);
-        m_CellVAO.vertexBuffer(GL_VBO_IDX_1, m_CellColorVBO, 0,
-                               3 * sizeof(float));
-        GLSetVertexAttrib(m_CellVAO, GL_LOCATION_IDX_1, GL_VBO_IDX_1, 3,
-                          GL_FLOAT, GL_FALSE, 0);
+		m_CellVAO.vertexBuffer(GL_VBO_IDX_0, m_CellPositionVBO, 0,
+			3 * sizeof(float));
+		GLSetVertexAttrib(m_CellVAO, GL_LOCATION_IDX_0, GL_VBO_IDX_0, 3, GL_FLOAT,
+			GL_FALSE, 0);
+		m_CellVAO.vertexBuffer(GL_VBO_IDX_1, m_CellColorVBO, 0, 3 * sizeof(float));
+		GLSetVertexAttrib(m_CellVAO, GL_LOCATION_IDX_1, GL_VBO_IDX_1, 3, GL_FLOAT,
+			GL_FALSE, 0);
     }
 }
 IGAME_NAMESPACE_END

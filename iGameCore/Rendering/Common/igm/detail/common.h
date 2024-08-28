@@ -64,6 +64,7 @@ double determinant2x2(T a, T b, T c, T d);
  */
 template<typename T>
 double determinant3x3(T a1, T a2, T a3, T b1, T b2, T b3, T c1, T c2, T c3);
+
 } // namespace igm
 
 #include "common.inl"
