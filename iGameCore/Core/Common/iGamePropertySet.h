@@ -55,7 +55,7 @@ public:
             }
             else {
                 Property EmptyArray;
-                EmptyArray.type = IG_ARRAY_OBJECT;
+                EmptyArray.type = array.type;
                 EmptyArray.attachmentType = IG_CELL;
                 EmptyArray.isDeleted = false;
                 this->m_Buffer->AddElement(EmptyArray);

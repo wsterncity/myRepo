@@ -39,11 +39,11 @@ bool FileReader::Execute()
 		std::cerr << "Close failure\n";
 		return false;
 	}
-	if (!CreateDataObject())
-	{
-		std::cerr << "Generate DataObject failure\n";
-		return false;
-	}
+	//if (!CreateDataObject())
+	//{
+	//	std::cerr << "Generate DataObject failure\n";
+	//	return false;
+	//}
 	int size = m_Output->GetPropertySet()->GetAllPropertys()->GetNumberOfElements();
 	StringArray::Pointer attrbNameArray = StringArray::New();
 	if (size > 0) {
@@ -105,11 +105,11 @@ bool FileReader::ReadToBuffer()
 
 bool FileReader::CreateDataObject()
 {
-	// Í³¼Æ¸÷ÀàÐÍÔªËØµÄÊýÁ¿
+	// ç»Ÿè®¡å„ç±»åž‹å…ƒç´ çš„æ•°é‡
 	int numFaces = m_Data.GetNumberOfFaces();
 	int numVolumes = m_Data.GetNumberOfVolumes();
 
-	// »ìºÏÍø¸ñÀàÐÍÅÐ¶Ï
+	// æ··åˆç½‘æ ¼ç±»åž‹åˆ¤æ–­
 	if (numFaces && numVolumes) {
 		VolumeMesh::Pointer mesh = VolumeMesh::New();
 		mesh->SetPoints(m_Data.GetPoints());
@@ -118,7 +118,7 @@ bool FileReader::CreateDataObject()
 		m_Output = mesh;
 	}
 
-	// ±íÃæÍø¸ñÀàÐÍÅÐ¶Ï
+	// è¡¨é¢ç½‘æ ¼ç±»åž‹åˆ¤æ–­
 	else if (numFaces) {
 		SurfaceMesh::Pointer mesh = SurfaceMesh::New();
 		mesh->SetPoints(m_Data.GetPoints());
@@ -127,7 +127,7 @@ bool FileReader::CreateDataObject()
 		m_Output = mesh;
 	}
 
-	// ÌåÍø¸ñÀàÐÍÅÐ¶Ï
+	// ä½“ç½‘æ ¼ç±»åž‹åˆ¤æ–­
 	else if (numVolumes) {
 		VolumeMesh::Pointer mesh = VolumeMesh::New();
 		mesh->SetPoints(m_Data.GetPoints());

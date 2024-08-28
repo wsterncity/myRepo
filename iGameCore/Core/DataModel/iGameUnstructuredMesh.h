@@ -33,6 +33,9 @@ public:
     int GetCellPointIds(const IGsize cellId, igIndex* ids);
     int GetCellPointIds(const IGsize cellId, const igIndex*& ids);
 
+     // Get all cell's type.
+    UnsignedIntArray* GetCellTypes() const;
+
     // Get cell's type by index cellId.
     IGenum GetCellType(const IGsize cellId) const;
 

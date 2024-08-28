@@ -18,7 +18,7 @@ IGsize UnstructuredMesh::GetNumberOfCells() const noexcept {
     return m_Cells->GetNumberOfCells();
 }
 void UnstructuredMesh::GetCellPointIds(const IGsize cellId,
-                                     IdArray::Pointer cell) {
+                                       IdArray::Pointer cell) {
     if (cell == nullptr) { return; }
     m_Cells->GetCellIds(cellId, cell);
 }
@@ -43,15 +43,15 @@ Cell* UnstructuredMesh::GetCell(const IGsize cellId) {
 
     return cell;
 }
+UnsignedIntArray* UnstructuredMesh::GetCellTypes() const {
+    return m_Types; 
+}
 
 IGenum UnstructuredMesh::GetCellType(const IGsize cellId) const {
     return m_Types->GetValue(cellId);
 }
 
-UnstructuredMesh::UnstructuredMesh() 
-{
-    m_ViewStyle = IG_SURFACE;
-}
+UnstructuredMesh::UnstructuredMesh() { m_ViewStyle = IG_SURFACE; }
 
 Cell* UnstructuredMesh::GetTypedCell(const IGsize cellId) {
     Cell* cell = nullptr;
@@ -253,8 +253,7 @@ void UnstructuredMesh::ConvertToDrawableData() {
                        m_TriangleIndices->RawPointer());
 }
 
-void UnstructuredMesh::ViewCloudPicture(int index, int demension) 
-{
+void UnstructuredMesh::ViewCloudPicture(int index, int demension) {
     if (index == -1) {
         m_UseColor = false;
         m_ViewAttribute = nullptr;
@@ -272,8 +271,8 @@ void UnstructuredMesh::ViewCloudPicture(int index, int demension)
     }
 }
 
-void UnstructuredMesh::SetAttributeWithPointData(ArrayObject::Pointer attr, igIndex i) 
-{
+void UnstructuredMesh::SetAttributeWithPointData(ArrayObject::Pointer attr,
+                                                 igIndex i) {
     if (m_ViewAttribute != attr || m_ViewDemension != i) {
         m_ViewAttribute = attr;
         m_ViewDemension = i;
@@ -296,13 +295,17 @@ void UnstructuredMesh::SetAttributeWithPointData(ArrayObject::Pointer attr, igIn
 
 
         m_PointVAO.vertexBuffer(GL_VBO_IDX_1, m_ColorVBO, 0, 3 * sizeof(float));
-        GLSetVertexAttrib(m_PointVAO, GL_LOCATION_IDX_1, GL_VBO_IDX_1, 3, GL_FLOAT, GL_FALSE, 0);
+        GLSetVertexAttrib(m_PointVAO, GL_LOCATION_IDX_1, GL_VBO_IDX_1, 3,
+                          GL_FLOAT, GL_FALSE, 0);
 
         m_LineVAO.vertexBuffer(GL_VBO_IDX_1, m_ColorVBO, 0, 3 * sizeof(float));
-        GLSetVertexAttrib(m_LineVAO, GL_LOCATION_IDX_1, GL_VBO_IDX_1, 3, GL_FLOAT, GL_FALSE, 0);
+        GLSetVertexAttrib(m_LineVAO, GL_LOCATION_IDX_1, GL_VBO_IDX_1, 3,
+                          GL_FLOAT, GL_FALSE, 0);
 
-        m_TriangleVAO.vertexBuffer(GL_VBO_IDX_1, m_ColorVBO, 0, 3 * sizeof(float));
-        GLSetVertexAttrib(m_TriangleVAO, GL_LOCATION_IDX_1, GL_VBO_IDX_1, 3, GL_FLOAT, GL_FALSE, 0);
+        m_TriangleVAO.vertexBuffer(GL_VBO_IDX_1, m_ColorVBO, 0,
+                                   3 * sizeof(float));
+        GLSetVertexAttrib(m_TriangleVAO, GL_LOCATION_IDX_1, GL_VBO_IDX_1, 3,
+                          GL_FLOAT, GL_FALSE, 0);
     }
 }
 
