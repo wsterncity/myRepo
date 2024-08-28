@@ -637,6 +637,49 @@ void VolumeMesh::DeleteVolume(const IGsize volumeId) {
 	m_VolumeDeleteMarker->MarkDeleted(volumeId);
 }
 
+bool VolumeMesh::isBoundryVolume(igIndex VolumeId)
+{
+	igIndex fhs[64];
+	igIndex fcnt = this->GetVolumeFaceIds(VolumeId, fhs);
+	for (int i = 0; i < fcnt; i++) {
+		if (isBoundryFace(fhs[i]))return true;
+	}
+	return false;
+}
+bool VolumeMesh::isBoundryFace(igIndex FaceId)
+{
+	auto& link = m_VolumeFaceLinks->GetLink(FaceId);
+	if (link.size <= 1)return true;
+	else return false;
+}
+bool VolumeMesh::isBoundryEdge(igIndex EdgeId)
+{
+	igIndex fhs[64];
+	igIndex fcnt=this->GetEdgeToNeighborFaces(EdgeId, fhs);
+	for (int i = 0; i < fcnt; i++) {
+		if (isBoundryFace(fhs[i]))return true;
+	}
+	return false;
+}
+bool VolumeMesh::isBoundryPoint(igIndex PointId)
+{
+	igIndex fhs[64];
+	igIndex fcnt = this->GetPointToNeighborFaces(PointId, fhs);
+	for (int i = 0; i < fcnt; i++) {
+		if (isBoundryFace(fhs[i]))return true;
+	}
+	return false;
+}
+bool VolumeMesh::isCornerPoint(igIndex PointId)
+{
+	igIndex fhs[64];
+	igIndex fcnt = this->GetPointToNeighborFaces(PointId, fhs);
+	for (int i = 0; i < fcnt; i++) {
+		if (!isBoundryFace(fhs[i]))return false;
+	}
+	return true;
+
+}
 VolumeMesh::VolumeMesh()
 {
 	m_ViewStyle = IG_SURFACE;

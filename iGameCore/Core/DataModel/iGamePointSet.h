@@ -81,7 +81,7 @@ private:
   FloatArray::Pointer m_Positions{};
   FloatArray::Pointer m_Colors{};
   bool m_UseColor{false};
-  int m_PointSize{40};
+  int m_PointSize{5};
 
   ArrayObject::Pointer m_ViewAttribute;
   int m_ViewDemension;
