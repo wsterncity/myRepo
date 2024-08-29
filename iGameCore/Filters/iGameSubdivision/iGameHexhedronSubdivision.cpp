@@ -20,6 +20,7 @@ bool HexhedronSubdivision::Execute()
 	igIndex i, j, k;
 	igIndex vcnt = 0;
 	igIndex vhs[IGAME_CELL_MAX_SIZE];
+	std::cout << "Cell Num: " << CellNum << "\nPoint Num: " << PointNum << '\n';
 	//对于一个六面体，有一个体，六个面，十二条边，八个点，共有1*8+6*4+12*2+8*1=64
 	//内点
 	std::vector<std::vector<Point>>inPts(CellNum);
@@ -166,6 +167,8 @@ bool HexhedronSubdivision::Execute()
 		auto p = mesh->GetPoint(i);
 		//每个顶点一个角点
 		//如果是内部点
+		CornerPts[i] = p;
+		continue;
 		if (!mesh->isBoundryPoint(i)) {
 			neighborNum = mesh->GetPointToNeighborVolumes(i, cellIds);
 			CornerPts[i] = { 0,0,0 };
@@ -253,8 +256,6 @@ bool HexhedronSubdivision::Execute()
 
 
 
-	neighborNum = mesh->GetFaceToNeighborVolumes(0, cellIds);
-	std::cout << neighborNum << '\n';
 	//生成细分体
 	igIndex cellID = 0;
 	for (cellID = 0; cellID < CellNum; cellID++) {
@@ -279,14 +280,17 @@ bool HexhedronSubdivision::Execute()
 		ControlPts[3][3][3] = CornerPts[vhs[6]];
 		ControlPts[3][3][0] = CornerPts[vhs[7]];
 
+
+
 		//k边
 		for (i = 0; i < 4; i++) {
-			auto EdgeID = mesh->GetEdgeIdFormPointIds(Cell->GetPointId(i), Cell->GetPointId(i + 4));
+			auto EdgeID = mesh->GetEdgeIdFormPointIds(vhs[i],vhs[i+4]);
 			auto edge = mesh->GetEdge(EdgeID);
 			switch (i)
 			{
 			case 0:
-				j = k = 0;
+				j = 0;
+				k = 0;
 				break;
 			case 1:
 				j = 0;
@@ -305,35 +309,35 @@ bool HexhedronSubdivision::Execute()
 			}
 			ControlPts[1][j][k] = EdgePts[EdgeID][0];
 			ControlPts[2][j][k] = EdgePts[EdgeID][1];
-			if (edge->GetPointId(0) != Cell->GetPointId(i)) {
+			if (edge->GetPointId(0) != vhs[i]) {
 				std::swap(ControlPts[1][j][k], ControlPts[2][j][k]);
 			}
 		}
 		//i边
 		igIndex edgeIndexs[4][4] = { {0,1,0,0},{3,2,0,3},{4,5,3,0},{7,6,3,3} };
 		for (i = 0; i < 4; i++) {
-			auto EdgeID = mesh->GetEdgeIdFormPointIds(Cell->GetPointId(edgeIndexs[i][0]),
-				Cell->GetPointId(edgeIndexs[i][1]));
+			auto EdgeID = mesh->GetEdgeIdFormPointIds(vhs[edgeIndexs[i][0]],
+				vhs[edgeIndexs[i][1]]);
 			auto edge = mesh->GetEdge(EdgeID);
 			j = edgeIndexs[i][2];
 			k = edgeIndexs[i][3];
 			ControlPts[j][k][1] = EdgePts[EdgeID][0];
 			ControlPts[j][k][2] = EdgePts[EdgeID][1];
-			if (edge->GetPointId(0) != Cell->GetPointId(i)) {
+			if (edge->GetPointId(0) != vhs[edgeIndexs[i][0]]) {
 				std::swap(ControlPts[j][k][1], ControlPts[j][k][2]);
 			}
 		}
 		//j边
 		igIndex edgeIndexs_2[4][4] = { {0,3,0,0},{1,2,0,3}, {4,7,3,0},{5,6,3,3} };
 		for (i = 0; i < 4; i++) {
-			auto EdgeID = mesh->GetEdgeIdFormPointIds(Cell->GetPointId(edgeIndexs_2[i][0]),
-				Cell->GetPointId(edgeIndexs_2[i][1]));
+			auto EdgeID = mesh->GetEdgeIdFormPointIds(vhs[edgeIndexs_2[i][0]],
+				vhs[edgeIndexs_2[i][1]]);
 			auto edge = mesh->GetEdge(EdgeID);
 			j = edgeIndexs_2[i][2];
 			k = edgeIndexs_2[i][3];
 			ControlPts[j][1][k] = EdgePts[EdgeID][0];
 			ControlPts[j][2][k] = EdgePts[EdgeID][1];
-			if (edge->GetPointId(0) != Cell->GetPointId(i)) {
+			if (edge->GetPointId(0) != vhs[edgeIndexs_2[i][0]]) {
 				std::swap(ControlPts[j][1][k], ControlPts[j][2][k]);
 			}
 		}
@@ -396,7 +400,7 @@ bool HexhedronSubdivision::Execute()
 		//SubdivisionCells->AddCellId8(0, 1, 2, 3, 4, 5, 6, 7);
 
 		//continue;
-		const int n = 10;
+		const int n = 5;
 		std::array<std::array<std::array<Point, n>, n>, n> SubdivisionPts;
 
 
@@ -429,15 +433,15 @@ bool HexhedronSubdivision::Execute()
 				}
 			}
 		}
-		for (k = 0; k < 4; k++) {
-			for (j = 0; j < 4; j++) {
-				for (i = 0; i < 4; i++) {
-					ControlPoints->AddPoint(ControlPts[k][j][i]);
-					//std::cout << k << ' ' << j << ' ' << i << ' ' << ControlPts[k][j][i][0] << " " << ControlPts[k][j][i][1] << " " << ControlPts[k][j][i][2] << "\n";
-				}
-			}
-		}
-		break;
+		//for (k = 0; k < 4; k++) {
+		//	for (j = 0; j < 4; j++) {
+		//		for (i = 0; i < 4; i++) {
+		//			ControlPoints->AddPoint(ControlPts[k][j][i]);
+		//			//std::cout << k << ' ' << j << ' ' << i << ' ' << ControlPts[k][j][i][0] << " " << ControlPts[k][j][i][1] << " " << ControlPts[k][j][i][2] << "\n";
+		//		}
+		//	}
+		//}
+		//break;
 	}
 	res->SetVolumes(SubdivisionCells);
 	res->SetPoints(ControlPoints);

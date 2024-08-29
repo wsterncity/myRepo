@@ -22,6 +22,7 @@ public:
 
     /* Model Related */
     int AddModel(Model::Pointer);
+    void ResetCenter();
     Model::Pointer CreateModel(DataObject::Pointer);
     void RemoveModel(int index);
     void RemoveModel(Model*);

@@ -113,7 +113,7 @@ bool QuadSubdivision::Execute()
 	for (i = 0; i < PointNum; i++) {
 		auto p = mesh->GetPoint(i);
 		fcnt = mesh->GetPointToNeighborFaces(i, fhs);
-		if (fcnt == 4) {
+		if (fcnt>= 3) {
 			CornerPts[i] = { 0,0,0 };
 			for (k = 0; k < fcnt; k++) {
 				auto f = mesh->GetFace(fhs[k]);
@@ -181,7 +181,7 @@ bool QuadSubdivision::Execute()
 		//		ControlPoints->AddPoint(ControlPts[j][i]);
 		//	}
 		//}
-		int n = 10;
+		int n = 9;
 		auto tmp = GenerateBezierSurface(ControlPts, n);
 
 		for (j = 0; j < n; j++) {

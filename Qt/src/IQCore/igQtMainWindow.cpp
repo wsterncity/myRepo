@@ -178,10 +178,11 @@ void igQtMainWindow::initAllComponents()
 	//connect(ui->action_RecoverMesh, &QAction::triggered, this, [&]() {
 	//	iGame::iGameManager::Instance()->RecoverMesh();
 	//	});
-	//connect(ui->action_ResetCenter, &QAction::triggered, this, [&]() {
-	//	iGame::iGameManager::Instance()->ResetCenter();
-	//	rendererWidget->update();
-	//	});
+	connect(ui->action_ResetCenter, &QAction::triggered, this, [&]() {
+		SceneManager::Instance()->GetCurrentScene()->ResetCenter();
+		std::cout << "dsadas" << '\n';
+		rendererWidget->update();
+		});
 	//connect(ui->action_PickCenter, &QAction::triggered, this, [&]() {
 	//	float x = -1.0, y = -1.0, z = -1.0;
 	//	iGame::iGameManager::Instance()->UpdateCenter(x, y, z);
@@ -392,19 +393,20 @@ void igQtMainWindow::initAllFilters() {
 
 	connect(action_subdivision, &QAction::triggered, this,
 		[&](bool checked) {
+			rendererWidget->makeCurrent();
 			//auto filter = HexhedronSubdivision::New();
 			//VolumeMesh::Pointer mesh = DynamicCast<VolumeMesh>(rendererWidget->GetScene()->GetCurrentModel()->GetDataObject());
 			//filter->SetMesh(mesh);
-			//filter->Execute();
-			//auto ControlPoints = filter->GetOutput();
 			auto filter =QuadSubdivision::New();
 			SurfaceMesh::Pointer mesh = DynamicCast<SurfaceMesh>(rendererWidget->GetScene()->GetCurrentModel()->GetDataObject());
 			filter->SetMesh(mesh);
 			filter->Execute();
 			auto ControlPoints = filter->GetOutput();
 			ControlPoints->SetName("ControlPoints");
-			SceneManager::Instance()->GetCurrentScene()->CreateModel(ControlPoints);
+
 			modelTreeWidget->addDataObjectToModelTree(ControlPoints, ItemSource::File);
+			rendererWidget->doneCurrent();
+
 		});
 }
 

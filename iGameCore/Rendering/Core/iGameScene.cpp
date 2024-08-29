@@ -137,6 +137,14 @@ void Scene::ChangeModelVisibility(int index, bool visibility) {
     if (model != nullptr) { ChangeModelVisibility(model, visibility); }
 }
 
+void Scene::ResetCenter() {
+
+    auto model = m_CurrentModel;
+    Vector3f center = model->m_DataObject->GetBoundingBox().center();
+    float radius = model->m_DataObject->GetBoundingBox().diag() / 2;
+    m_Camera->SetCameraPos(center[0], center[1], center[2] + 2.0f * radius);
+}
+
 void Scene::ChangeModelVisibility(Model* model, bool visibility) {
     if (visibility) {
         m_VisibleModelsCount++;
