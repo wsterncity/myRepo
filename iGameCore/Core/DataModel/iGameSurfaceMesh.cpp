@@ -634,29 +634,6 @@ void SurfaceMesh::Draw(Scene *scene) {
                         GL_UNSIGNED_INT, 0);
     m_TriangleVAO.release();
   }
-
-  // if (m_ViewStyle == IG_SURFACE_WITH_EDGE) {
-  //     if (m_UseColor) {
-  //         scene->GetShader(Scene::NOLIGHT)->use();
-  //     } else {
-  //         auto shader = scene->GetShader(Scene::PURECOLOR);
-  //         shader->use();
-  //         shader->setUniform(shader->getUniformLocation("inputColor"),
-  //                            igm::vec3{0.0f, 0.0f, 0.0f});
-  //     }
-
-  //    m_LineVAO.bind();
-  //    glLineWidth(m_LineWidth);
-  //    glad_glDrawElements(GL_LINES, m_LineIndices->GetNumberOfIds(),
-  //                        GL_UNSIGNED_INT, 0);
-  //    m_LineVAO.release();
-
-  //    scene->GetShader(Scene::PATCH)->use();
-  //    m_TriangleVAO.bind();
-  //    glad_glDrawElements(GL_TRIANGLES, m_TriangleIndices->GetNumberOfIds(),
-  //                        GL_UNSIGNED_INT, 0);
-  //    m_TriangleVAO.release();
-  //}
 }
 
 void SurfaceMesh::DrawPhase1(Scene *scene) {
@@ -952,13 +929,14 @@ void SurfaceMesh::ConvertToDrawableData() {
                       GL_FLOAT, GL_FALSE, 0);
     m_TriangleVAO.elementBuffer(m_TriangleEBO);
 
-    //m_Meshlets->BuildMeshlet(
-    //    m_Positions->RawPointer(), m_Positions->GetNumberOfValues() / 3,
-    //    m_TriangleIndices->RawPointer(), m_TriangleIndices->GetNumberOfIds());
-
-    //GLAllocateGLBuffer(m_TriangleEBO,
-    //                   m_Meshlets->GetMeshletIndexCount() * sizeof(igIndex),
-    //                   m_Meshlets->GetMeshletIndices());
+    // m_Meshlets->BuildMeshlet(
+    //     m_Positions->RawPointer(), m_Positions->GetNumberOfValues() / 3,
+    //     m_TriangleIndices->RawPointer(),
+    //     m_TriangleIndices->GetNumberOfIds());
+    //
+    // GLAllocateGLBuffer(m_TriangleEBO,
+    //                    m_Meshlets->GetMeshletIndexCount() * sizeof(igIndex),
+    //                    m_Meshlets->GetMeshletIndices());
   }
 }
 

@@ -69,11 +69,15 @@ public:
         PURECOLOR,
         AXES,
         FONT,
+        ATTACHMENTRESOLVE,
         DEPTHREDUCE,
         MESHLETCULL,
         SCREEN,
         SHADERTYPE_COUNT
     };
+
+    Camera::Pointer Camera() { return m_Camera; }
+    GLTexture2d& HizTexture() { return m_DepthPyramid; }
 
     CameraDataBuffer& CameraData() { return m_CameraData; }
     ObjectDataBuffer& ObjectData() { return m_ObjectData; }
@@ -91,12 +95,11 @@ public:
     void Draw();
     void Resize(int width, int height, int pixelRatio);
     void Update();
+
     template<typename Functor, typename... Args>
     void SetUpdateFunctor(Functor&& functor, Args&&... args) {
         m_UpdateFunctor = std::bind(functor, args...);
     }
-
-    GLTexture2d& HizTexture() { return m_DepthPyramid; }
 
     // TODO: slove z-buffer Accuracy issues
     GLBuffer& GetDrawCullDataBuffer() { return m_DrawCullData; }
@@ -135,7 +138,7 @@ protected:
     void DrawFrame();
     void DrawModels();
     void DrawAxes();
-
+    void CalculateFrameRate();
 
     /* Data Object Related */
     std::map<int, Model::Pointer> m_Models;
@@ -169,10 +172,15 @@ protected:
 
     GLVertexArray m_ScreenQuadVAO;
     GLBuffer m_ScreenQuadVBO;
+
     GLint samples = 1;
     GLFramebuffer m_FramebufferMultisampled;
-    GLTexture2dMultisample m_ColorTextureMultisampled,
-            m_DepthTextureMultisampled;
+    GLTexture2dMultisample m_ColorTextureMultisampled;
+    GLTexture2dMultisample m_DepthTextureMultisampled;
+
+    GLFramebuffer m_FramebufferResolved;
+    GLTexture2d m_ColorTextureResolved;
+    GLTexture2d m_DepthTextureResolved;
 
     GLBuffer m_DrawCullData;
     int m_DepthPyramidWidth, m_DepthPyramidHeight, m_DepthPyramidLevels;
