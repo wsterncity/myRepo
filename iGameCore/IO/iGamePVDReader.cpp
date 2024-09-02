@@ -55,7 +55,12 @@ bool iGame::iGamePVDReader::Parsing() {
         DataObject::Pointer  newObj;
         m_data_object = DataObject::New();
         m_data_object->SetTimeFrames(m_Data.GetTimeData());
+//        auto attributeSet = AttributeSet::New();
+//        m_data_object->SetAttributeSet(attributeSet);
+//        bool have_scalar = false;
+//        FloatArray::Pointer parentScalar_array =
         std::string fileName, fileSuffix;
+        std::pair<float, float> scalar_range = {FLT_MAX, FLT_MIN};
         for(int i = 0; i < firstFrame.SubFileNames->Size(); i ++){
             fileName = firstFrame.SubFileNames->GetElement(i);
             const char* pos = strrchr(fileName.data(), '.');
@@ -74,9 +79,41 @@ bool iGame::iGamePVDReader::Parsing() {
                 rd->SetFilePath(fileName);
                 rd->Execute();
                 newObj = rd->GetOutput();
+            } else if(fileSuffix == "pvd"){
+                iGamePVDReader::Pointer rd = iGamePVDReader::New();
+                rd->SetFilePath(fileName);
+                rd->Execute();
+                newObj = rd->GetOutput();
             }
+
+            auto subScalarPointer = newObj->GetAttributeSet()->GetScalar().pointer;
+            if(subScalarPointer && subScalarPointer->GetArrayType() == IG_FloatArray){
+                auto FloatSet = DynamicCast<FloatArray>(subScalarPointer);
+                float fvalue;
+                for(int j = 0; j < FloatSet->GetNumberOfValues(); j ++){
+                    fvalue = FloatSet->ValueAt(j);
+                    scalar_range.first = std::min(scalar_range.first, fvalue);
+                    scalar_range.second = std::max(scalar_range.second, fvalue);
+                }
+            }
+            if(newObj->HasSubDataObject()){
+                for(auto it = newObj->SubDataObjectIteratorBegin(); it != newObj->SubDataObjectIteratorEnd(); it ++){
+                    subScalarPointer = (*it->second).GetAttributeSet()->GetScalar().pointer;
+                    auto FloatSet = DynamicCast<FloatArray>(subScalarPointer);
+                    float fvalue;
+                    for(int k = 0; k < FloatSet->GetNumberOfValues(); k ++){
+                        fvalue = FloatSet->ValueAt(k);
+                        scalar_range.first = std::min(scalar_range.first, fvalue);
+                        scalar_range.second = std::max(scalar_range.second, fvalue);
+                    }
+                }
+            }
+
+//            std::cout << "array type : " << newObj->GetAttributeSet()->GetScalar().pointer->GetArrayType() << '\n';
             m_data_object->AddSubDataObject(newObj);
         }
+//        m_data_object->SetScalarRange({0, 0.12});
+        m_data_object->SetScalarRange(scalar_range);
     }
 
     return true;

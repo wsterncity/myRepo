@@ -111,7 +111,11 @@ bool iGame::iGameVTSReader::Parsing() {
                 char* token = strtok(const_cast<char*>(data), " ");
                 while (token != nullptr) {
                     for(float & i : ps) {
+
                         i = mAtof(token);
+//                        i /= 0.010064;
+//                        i *= 0.12;
+//                        i = std::abs(i);
                         token = strtok(nullptr, " ");
                     }
                     arr->AddElement(ps);

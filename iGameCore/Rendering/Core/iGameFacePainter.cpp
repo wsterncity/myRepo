@@ -25,7 +25,7 @@ void FacePainter::Draw(Scene* scene) {
     if (m_Points == nullptr) { 
         return;
     }
-        
+
     if (this->GetMTime() < m_Points->GetMTime()) {
         VAO.destroy();
         pVBO.destroy();
@@ -54,6 +54,7 @@ void FacePainter::Draw(Scene* scene) {
         this->Modified();
     }
 
+    if (!VAO) {return;}
     scene->UseColor();
     scene->UpdateUniformBuffer();
     scene->UseShader(Scene::PATCH);

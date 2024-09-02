@@ -63,15 +63,15 @@ int DataObject::GetNumberOfSubDataObjects() noexcept {
   return m_SubDataObjectsHelper->GetNumberOfSubDataObjects();
 }
 
-DataObject::SubIterator DataObject::SubBegin() {
+DataObject::SubIterator DataObject::SubDataObjectIteratorBegin() {
   return m_SubDataObjectsHelper->Begin();
 }
 
-DataObject::SubConstIterator DataObject::SubBegin() const {
+DataObject::SubConstIterator DataObject::SubDataObjectIteratorBegin() const {
   return m_SubDataObjectsHelper->Begin();
 }
 
-DataObject::SubIterator DataObject::SubEnd() {
+DataObject::SubIterator DataObject::SubDataObjectIteratorEnd() {
   return m_SubDataObjectsHelper->End();
 }
 
@@ -82,7 +82,7 @@ DataObject *DataObject::FindParent() {
   return this;
 }
 
-DataObject::SubConstIterator DataObject::SubEnd() const {
+DataObject::SubConstIterator DataObject::SubDataObjectIteratorEnd() const {
   return m_SubDataObjectsHelper->End();
 }
 
@@ -127,24 +127,31 @@ void DataObject::ViewCloudPictureOfModel(Scene* scene, int index, int demension)
     this->ViewCloudPicture(scene, index, demension);
   }
 }
-
 void DataObject::SetViewStyle(IGenum mode) {
-    m_ViewStyle |= mode;
+    /*
+     * e.g. mode = IG_WIREFRAME | IG_SURFACE, means that the model shows the wireframe and surface.
+     * */
+    m_ViewStyle = mode;
     ProcessSubDataObjects(&DataObject::SetViewStyle, mode);
 }
 
-void DataObject::SetViewStyle2(IGenum mode)
+void DataObject::AddViewStyle(IGenum mode) {
+    m_ViewStyle |= mode;
+    ProcessSubDataObjects(&DataObject::AddViewStyle, mode);
+}
+
+void DataObject::RemoveViewStyle(IGenum mode)
 {
     m_ViewStyle &= ~mode;
-    ProcessSubDataObjects(&DataObject::SetViewStyle, mode);
+    ProcessSubDataObjects(&DataObject::RemoveViewStyle, mode);
 }
 
-void DataObject::SetViewStyleOfModel(IGenum mode) {
+void DataObject::AddViewStyleOfModel(IGenum mode) {
   auto *parent = FindParent();
   if (parent != this) {
-    parent->SetViewStyle(mode);
+    parent->AddViewStyle(mode);
   } else {
-    this->SetViewStyle(mode);
+    this->AddViewStyle(mode);
   }
 }
 
@@ -185,6 +192,12 @@ StreamingData::Pointer DataObject::GetTimeFrames() {
     m_TimeFrames = StreamingData::New();
 
   return m_TimeFrames;
+}
+
+void DataObject::SetScalarRange(std::pair<float, float> range) {
+
+    m_Scalar_range = range;
+    ProcessSubDataObjects(&DataObject::SetScalarRange, range);
 }
 
 IGAME_NAMESPACE_END

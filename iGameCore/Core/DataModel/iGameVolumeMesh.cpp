@@ -753,11 +753,21 @@ void VolumeMesh::Draw(Scene* scene)
 		}
 
 		m_LineVAO.bind();
-		glad_glLineWidth(m_LineWidth);
-		glad_glDepthFunc(GL_GEQUAL);
+		glLineWidth(m_LineWidth);
+
+		// TODO: A better way to render wireframes
+//		auto boundingBoxDiag = this->GetBoundingBox().diag();
+//		auto scaleFactor =
+//			1e-6 / std::pow(10, std::floor(std::log10(boundingBoxDiag)));
+//		glad_glDepthRange(scaleFactor, 1);
+//		glad_glDepthFunc(GL_GEQUAL);
+
 		glad_glDrawElements(GL_LINES, m_LineIndices->GetNumberOfIds(),
 			GL_UNSIGNED_INT, 0);
-		glad_glDepthFunc(GL_GREATER);
+
+//		glad_glDepthFunc(GL_GREATER);
+//		glad_glDepthRange(0, 1);
+
 		m_LineVAO.release();
 	}
 	if (m_ViewStyle & IG_SURFACE) {
@@ -920,32 +930,37 @@ void VolumeMesh::SetAttributeWithPointData(ArrayObject::Pointer attr,
         m_ColorWithCell = false;
         ScalarsToColors::Pointer mapper = ScalarsToColors::New();
 
-        if (i == -1) {
-            mapper->InitRange(attr);
-        } else {
-            mapper->InitRange(attr, i);
+//        if (i == -1) {
+//            mapper->InitRange(attr);
+//        } else {
+//            mapper->InitRange(attr, i);
+//        }
+        {
+            if(m_Scalar_range.first != m_Scalar_range.second){
+                mapper->SetRange(m_Scalar_range.first, m_Scalar_range.second);
+            }
         }
-
         m_Colors = mapper->MapScalars(attr, i);
         if (m_Colors == nullptr) { return; }
-
+        GLCheckError();
         GLAllocateGLBuffer(m_ColorVBO,
                            m_Colors->GetNumberOfValues() * sizeof(float),
                            m_Colors->RawPointer());
-
+        GLCheckError();
         m_PointVAO.vertexBuffer(GL_VBO_IDX_1, m_ColorVBO, 0, 3 * sizeof(float));
         GLSetVertexAttrib(m_PointVAO, GL_LOCATION_IDX_1, GL_VBO_IDX_1, 3,
                           GL_FLOAT, GL_FALSE, 0);
-
+        GLCheckError();
         m_LineVAO.vertexBuffer(GL_VBO_IDX_1, m_ColorVBO, 0, 3 * sizeof(float));
         GLSetVertexAttrib(m_LineVAO, GL_LOCATION_IDX_1, GL_VBO_IDX_1, 3,
                           GL_FLOAT, GL_FALSE, 0);
 
-
+        GLCheckError();
         m_TriangleVAO.vertexBuffer(GL_VBO_IDX_1, m_ColorVBO, 0,
                                    3 * sizeof(float));
         GLSetVertexAttrib(m_TriangleVAO, GL_LOCATION_IDX_1, GL_VBO_IDX_1, 3,
                           GL_FLOAT, GL_FALSE, 0);
+        GLCheckError();
     }
 }
 

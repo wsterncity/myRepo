@@ -34,6 +34,9 @@ public:
 
   StreamingData::Pointer GetTimeFrames();
   void SetTimeFrames(StreamingData::Pointer p) { m_TimeFrames = p; }
+  void SetScalarRange(std::pair<float, float> range);
+  std::pair<float, float> GetScalarRange() { return m_Scalar_range; }
+
   void SetAttributeSet(AttributeSet::Pointer p) { m_Attributes = p; }
   AttributeSet*GetAttributeSet() { return m_Attributes.get(); }
   Metadata *GetMetadata() { return m_Metadata.get(); }
@@ -50,6 +53,8 @@ public:
     using SubDataObjectMap = std::map<DataObjectId, DataObject::Pointer>;
     using Iterator = SubDataObjectMap::iterator;
     using ConstIterator = SubDataObjectMap::const_iterator;
+
+
 
     DataObject::Pointer GetSubDataObject(DataObjectId id) {
       auto it = m_SubDataObjects.find(id);
@@ -98,6 +103,7 @@ public:
     SubDataObjectsHelper() {}
     ~SubDataObjectsHelper() override {}
 
+    DataObject* m_parentObject {nullptr};
     SubDataObjectMap m_SubDataObjects;
   };
 
@@ -105,15 +111,19 @@ public:
   using SubConstIterator = typename SubDataObjectsHelper::ConstIterator;
 
   DataObject::Pointer GetSubDataObject(DataObjectId id);
+ void SetParentDataObject(DataObject* parent) {m_Parent = parent;}
+
   DataObjectId AddSubDataObject(DataObject::Pointer obj);
   void RemoveSubDataObject(DataObjectId id);
   void ClearSubDataObject();
+ bool HasParentDataObject() noexcept {return m_Parent != nullptr;}
+
   bool HasSubDataObject() noexcept;
   int GetNumberOfSubDataObjects() noexcept;
-  SubIterator SubBegin();
-  SubConstIterator SubBegin() const;
-  SubIterator SubEnd();
-  SubConstIterator SubEnd() const;
+  SubIterator SubDataObjectIteratorBegin();
+  SubConstIterator SubDataObjectIteratorBegin() const;
+  SubIterator SubDataObjectIteratorEnd();
+  SubConstIterator SubDataObjectIteratorEnd() const;
 
   DataObject *FindParent();
 
@@ -158,6 +168,8 @@ protected:
   friend class SubDataObjectsHelper;
   SmartPointer<SubDataObjectsHelper> m_SubDataObjectsHelper{};
   DataObject *m_Parent{nullptr};
+  std::pair<float, float> m_Scalar_range {0, 0};
+
 
   template <typename Functor, typename... Args>
   void ProcessSubDataObjects(Functor &&functor, Args &&...args);
@@ -178,9 +190,11 @@ public:
     virtual void ViewCloudPicture(Scene* ,int index, int dimension = -1);
     void ViewCloudPictureOfModel(Scene* ,int index, int dimension = -1);
 
+    /*ViewStyle's detail. See iGameType.h */
     void SetViewStyle(IGenum mode);
-    void SetViewStyle2(IGenum mode);
-    void SetViewStyleOfModel(IGenum mode);
+    void AddViewStyle(IGenum mode);
+    void RemoveViewStyle(IGenum mode);
+    void AddViewStyleOfModel(IGenum mode);
     unsigned int GetViewStyle();
     unsigned int GetViewStyleOfModel();
     void SetVisibility(bool f);

@@ -151,6 +151,7 @@ void igQtFileLoader::OpenFile(const std::string& filePath)
 	//Q_EMIT FinishReading();
 
 	emit NewModel(obj, ItemSource::File);
+    emit FinishReading();
 }
 
 void igQtFileLoader::SaveFile() {

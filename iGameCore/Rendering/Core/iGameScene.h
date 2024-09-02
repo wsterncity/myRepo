@@ -158,7 +158,7 @@ protected:
     UniformBufferObjectBuffer m_UBO;
 
     igm::mat4 m_ModelRotate{};
-    igm::vec3 m_BackgroundColor{};
+    igm::vec3 m_BackgroundColor{0.f, 0.f, 0.f};
 
     uint32_t m_VisibleModelsCount = 0;
     igm::vec4 m_ModelsBoundingSphere{0.0f, 0.0f, 0.0f, 1.0f};

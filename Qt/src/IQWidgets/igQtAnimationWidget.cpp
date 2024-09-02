@@ -116,22 +116,31 @@ void igQtAnimationWidget::playAnimation_snap(int keyframe_idx){
     auto currentScene = SceneManager::Instance()->GetCurrentScene();
     auto currentObject = currentScene->GetCurrentModel()->GetDataObject();
     if(currentObject == nullptr || currentObject->GetTimeFrames()->GetArrays().empty())  return;
-    std::cout << "current obj id : " << currentObject << '\n';
     auto& frameSubFiles = currentObject->GetTimeFrames()->GetTargetTimeFrame(keyframe_idx).SubFileNames;
-    if(frameSubFiles->Size() > 1){
-        currentObject->ClearSubDataObject();
-        for(int i = 0; i < frameSubFiles->Size(); i ++){
-            auto sub = FileIO::ReadFile(frameSubFiles->GetElement(i));
-            currentObject->AddSubDataObject(sub);
-        }
+    currentScene->MakeCurrent();
+    currentObject->ClearSubDataObject();
+    for(int i = 0; i < frameSubFiles->Size(); i ++){
+        auto sub = FileIO::ReadFile(frameSubFiles->GetElement(i));
+        sub->SetViewStyle(currentObject->GetViewStyle());
+        sub->ConvertToDrawableData();
+        currentObject->AddSubDataObject(sub);
     }
-    else if(frameSubFiles->Size() == 1){
-        auto newDataObject = FileIO::ReadFile(frameSubFiles->GetElement(0));
-        newDataObject->SetTimeFrames(currentObject->GetTimeFrames());
-        currentScene->RemoveCurrentModel();
-        currentScene->AddModel(currentScene->CreateModel(newDataObject));
-        newDataObject->SwitchToCurrentTimeframe(keyframe_idx);
-    }
+    currentObject->SetScalarRange(currentObject->GetScalarRange());
+    currentObject->ViewCloudPicture(currentScene, 0);
+//    else if(frameSubFiles->Size() == 1){
+//        auto newDataObject = FileIO::ReadFile(frameSubFiles->GetElement(0));
+//        newDataObject->SetTimeFrames(currentObject->GetTimeFrames());
+//
+//        currentScene->RemoveCurrentModel();
+//        currentScene->GetCurrentModel()->SetDataObject(newDataObject);
+//        currentScene->AddModel(currentScene->CreateModel(newDataObject));
+//        newDataObject->SwitchToCurrentTimeframe(keyframe_idx);
+//        newDataObject->SetScalarRange(currentObject->GetScalarRange());
+//        newDataObject->ConvertToDrawableData();
+//        newDataObject->ViewCloudPicture(currentScene, 0);
+//    }
+    currentScene->DoneCurrent();
+
     Q_EMIT UpdateScene();
 }
 
@@ -166,7 +175,9 @@ void igQtAnimationWidget::changeAnimationMode() {
 }
 
 void igQtAnimationWidget::initAnimationComponents() {
-    if(iGame::SceneManager::Instance()->GetCurrentScene()->GetCurrentModel()->GetDataObject()->GetTimeFrames() == nullptr)  return;
+    if(iGame::SceneManager::Instance()->GetCurrentScene()->GetCurrentModel() == nullptr ||
+    iGame::SceneManager::Instance()->GetCurrentScene()->GetCurrentModel()->GetDataObject()->GetTimeFrames() == nullptr)  return;
+
     auto timeArrays = iGame::SceneManager::Instance()->GetCurrentScene()->GetCurrentModel()->GetDataObject()->GetTimeFrames()->GetArrays();
     if(timeArrays.empty()) return;
     std::vector<float> timeValues;

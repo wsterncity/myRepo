@@ -40,6 +40,24 @@ enum {
 	IG_ELEMENT_ARRAY,
 };
 
+// FlatArrayType
+enum {
+    IG_FLAT_ARRAY = 0,
+    IG_FloatArray,
+    IG_DoubleArray,
+    IG_IntArray,
+    IG_INTARRAY,
+    IG_UnsignedIntArray,
+    IG_CharArray,
+    IG_UnsignedCharArray,
+    IG_ShortArray,
+    IG_UnsignedShortArray,
+    IG_LongLongArray,
+    IG_UnsignedLongLongArray,
+
+};
+
+
 // DrawMode
 enum {
 	IG_POINTS = 1 << 0,

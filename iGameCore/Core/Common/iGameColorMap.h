@@ -92,7 +92,8 @@ protected:
 	{
 		this->ColorBar = FloatArray::New();
 		this->ColorRange = FloatArray::New();
-		InitColorBarByFourSegmentType();
+//		InitColorBarByFourSegmentType();
+        InitColorBarByTwoSegmentType();
 	}
 	~ColorMap() override = default;
 

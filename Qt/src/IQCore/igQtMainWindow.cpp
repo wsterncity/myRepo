@@ -426,7 +426,7 @@ void igQtMainWindow::initAllMySignalConnections()
 	//connect(rendererWidget, &igQtModelDrawWidget::insertToModelListView, ui->modelTreeView, &igQtModelListView::InsertModel);
 
 	connect(fileLoader, &igQtFileLoader::NewModel, modelTreeWidget, &igQtModelDialogWidget::addDataObjectToModelTree);
-	connect(fileLoader, &igQtFileLoader::FinishReading, this, &igQtMainWindow::updateRecentFilePaths);
+//	connect(fileLoader, &igQtFileLoader::FinishReading, this, &igQtMainWindow::updateRecentFilePaths);
 	//connect(fileLoader, &igQtFileLoader::FinishReading, this, &igQtMainWindow::updateViewStyleAndCloudPicture);
 	//connect(fileLoader, &igQtFileLoader::FinishReading, this, &igQtMainWindow::updateCurrentSceneWidget);
 	connect(fileLoader, &igQtFileLoader::FinishReading, ui->widget_Animation, &igQtAnimationWidget::initAnimationComponents);
@@ -443,10 +443,9 @@ void igQtMainWindow::initAllMySignalConnections()
 	
 	//connect(fileLoader, &igQtFileLoader::LoadAnimationFile, ui->widget_Animation, &igQtAnimationWidget::initAnimationComponents);
 
-	//connect(ui->widget_Animation, &igQtAnimationWidget::UpdateScene, this, &igQtMainWindow::updateCurrentSceneWidget);
+	connect(ui->widget_Animation, &igQtAnimationWidget::UpdateScene, this, &igQtMainWindow::UpdateRenderingWidget);
 
 
-//	connect(ui->widget_Animation, &igQtAnimationWidget::UpdateScene, ui->modelTreeView, &igQtModelListView::UpdateModelList);
 	//connect(ui->widget_Animation, &igQtAnimationWidget::PlayAnimation_interpolate, rendererWidget, &igQtModelDrawWidget::PlayAnimation_interpolate);
 //	connect(ui->widget_Animation, &igQtAnimationWidget::PlayAnimation_snap, this, [&](int keyframe){
 //		using namespace iGame;
@@ -685,23 +684,23 @@ void igQtMainWindow::initAllSources() {
         auto curScene = SceneManager::Instance()->GetCurrentScene();
 
         LineTypePointsSource::Pointer lineSource = LineTypePointsSource::New();
+
         lineSource->SetInput(newLinePointSet);
-//        lineSource->SetInput(1, 20);
         lineSource->SetResolution(20);
         lineSource->GetOutput()->SetName("lineSource");
-        lineSource->GetOutput()->GetMetadata()->AddInt("Resolution", 20);
-        auto model = curScene->CreateModel(lineSource->GetOutput());
-        model->SetModelFilter(lineSource.get());
-        modelTreeWidget->addModelToModelTree(model);
 
+        auto model = curScene->CreateModel(lineSource->GetOutput());
+        modelTreeWidget->addModelToModelTree(model);
         auto interactor = LineSourceInteractor::New();
-        interactor->SetPointSet(DynamicCast<PointSet>(newLinePointSet), model);
-        interactor->SetFilter(lineSource);
 
 //        auto interactor = PointDragInteractor::New();
-//        interactor->SetPointSet(DynamicCast<PointSet>(SceneManager::Instance()->GetCurrentScene()->GetCurrentModel()->GetDataObject()));
+        interactor->SetPointSet(DynamicCast<PointSet>(SceneManager::Instance()->GetCurrentScene()->GetCurrentModel()->GetDataObject()));
 
         rendererWidget->ChangeInteractor(interactor);
     });
 
+}
+
+void igQtMainWindow::UpdateRenderingWidget() {
+    rendererWidget->update();
 }

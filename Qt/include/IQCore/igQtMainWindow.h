@@ -66,6 +66,7 @@ private slots:
     //void updateCurrentDataObject();
     //void updateCurrentSceneWidget();
 
+    void UpdateRenderingWidget();
     void changePointSelectionInteractor();
     void changePointsSelectionInteractor();
     void changeFaceSelectionInteractor();

@@ -617,7 +617,7 @@ void SurfaceMesh::Draw(Scene *scene) {
     // TODO: A better way to render wireframes
     auto boundingBoxDiag = this->GetBoundingBox().diag();
     auto scaleFactor =
-        1e-5 / std::pow(10, std::floor(std::log10(boundingBoxDiag)));
+        1e-6 / std::pow(10, std::floor(std::log10(boundingBoxDiag)));
     glad_glDepthRange(scaleFactor, 1);
     glad_glDepthFunc(GL_GEQUAL);
 
@@ -862,7 +862,7 @@ void SurfaceMesh::ConvertToDrawableData() {
   if (m_Positions && m_Positions->GetMTime() > this->GetMTime()) {
     return;
   }
-
+ 
   if (!m_Flag) {
     m_PointVAO.create();
     m_LineVAO.create();
@@ -971,10 +971,10 @@ void SurfaceMesh::ViewCloudPicture(Scene* scene, int index, int demension) {
     m_ViewAttribute = nullptr;
     m_ViewDemension = -1;
     m_ColorWithCell = false;
-    scene->Update();
+    //scene->Update();
     return;
   }
-  scene->MakeCurrent();
+  //scene->MakeCurrent();
   m_AttributeIndex = index;
   auto &attr = this->GetAttributeSet()->GetAttribute(index);
   if (!attr.isDeleted) {
@@ -983,8 +983,8 @@ void SurfaceMesh::ViewCloudPicture(Scene* scene, int index, int demension) {
     else if (attr.attachmentType == IG_CELL)
       this->SetAttributeWithCellData(attr.pointer, demension);
   }
-  scene->DoneCurrent();
-  scene->Update();
+  //scene->DoneCurrent();
+  //scene->Update();
 }
 
 void SurfaceMesh::SetAttributeWithPointData(ArrayObject::Pointer attr,

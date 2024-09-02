@@ -27,6 +27,7 @@ public:
     Filter* GetModelFilter(){ return m_Filter; }
     void SetModelFilter(Filter* _filter){ m_Filter = _filter; }
     FacePainter* GetFacePainter() { return m_PickedFacePainter.get(); }
+    void SetDataObject(DataObject::Pointer dataObject){m_DataObject = dataObject;}
 
     void Show();
     void Hide();

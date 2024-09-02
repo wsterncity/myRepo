@@ -7,7 +7,8 @@ Scene::Scene() {
     m_Camera->Initialize(igm::vec3{0.0f, 0.0f, 1.0f});
 
     m_ModelRotate = igm::mat4(1.0f);
-    m_BackgroundColor = {0.5f, 0.5f, 0.5f};
+//    m_BackgroundColor = {0.5f, 0.5f, 0.5f};
+    m_BackgroundColor = {1.f, 1.f, 1.f};
 
     InitOpenGL();
     InitFont();
@@ -486,7 +487,7 @@ void Scene::Draw() {
 
     auto width = m_Camera->GetViewPort().x;
     auto height = m_Camera->GetViewPort().y;
-
+    
     // render to framebuffer
     {
         m_FramebufferMultisampled.bind();
@@ -539,7 +540,7 @@ void Scene::Draw() {
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
-
+    
     GLCheckError();
 }
 
@@ -601,10 +602,13 @@ void Scene::Resize(int width, int height, int pixelRatio) {
 
 void Scene::DrawFrame() {
     // update ubo data in CPU
+    GLCheckError();
     UpdateUniformData();
-
+    GLCheckError();
     DrawModels();
+    GLCheckError();
     DrawAxes();
+    GLCheckError();
 }
 
 void Scene::DrawModels() {
