@@ -29,7 +29,7 @@ igQtFileLoader::~igQtFileLoader() {
 
 void igQtFileLoader::LoadFile() 
 {
-	std::string filePath = QFileDialog::getOpenFileName(nullptr, "Load file", "", "ALL FIle(*.obj *.off *.stl *.ply *.vtk *.mesh *.pvd *.vts *.vtu *.vtm)").toStdString();
+	std::string filePath = QFileDialog::getOpenFileName(nullptr, "Load file", "", "ALL FIle(*.obj *.off *.stl *.ply *.vtk *.mesh *.pvd *.vts *.vtu *.vtm * cgns); VTK file(*.vtk); CGNS file(*.cgns)").toStdString();
 	this->OpenFile(filePath);
 }
 
@@ -145,10 +145,10 @@ void igQtFileLoader::OpenFile(const std::string& filePath)
 //    }
 
 	//m_SceneManager->GetCurrentScene()->AddDataObject(obj);
-	//this->SaveCurrentFileToRecentFile(QString::fromStdString(filePath));
-	//Q_EMIT AddFileToModelList(QString(filePath.substr(filePath.find_last_of('/') + 1).c_str()));
-	//Q_EMIT FinishReading();
 
+	//Q_EMIT AddFileToModelList(QString(filePath.substr(filePath.find_last_of('/') + 1).c_str()));
+	this->SaveCurrentFileToRecentFile(QString::fromStdString(filePath));
+	Q_EMIT FinishReading();
 	emit NewModel(obj, ItemSource::File);
 }
 

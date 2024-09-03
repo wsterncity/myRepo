@@ -10,7 +10,7 @@
 #include "iGameVTSReader.h"
 #include "iGameVTUReader.h"
 #include "iGameVTMReader.h"
-//#include "CGNS/iGameCGNSReader.h"
+#include "CGNS/iGameCGNSReader.h"
 #include "iGameINPReader.h"
 
 IGAME_NAMESPACE_BEGIN
@@ -156,13 +156,13 @@ DataObject::Pointer FileIO::ReadFile(const std::string &file_name)
 			resObj = reader->GetOutput();
 			break;
         }
-		//case iGame::FileIO::CGNS:
-		//{
-		//	//auto app = iGameCGNSReader::New();
-		//	//resObj = app->ReadFile(file_name);
-		//	//delete app;
-		//}
-		//break;
+		case iGame::FileIO::CGNS:
+		{
+			iGameCGNSReader::Pointer reader = iGameCGNSReader::New();
+			resObj=reader->ReadFile(file_name);
+			break;
+		}
+		break;
 		case iGame::FileIO::INP:
 		{
 			INPReader::Pointer reader = INPReader::New();

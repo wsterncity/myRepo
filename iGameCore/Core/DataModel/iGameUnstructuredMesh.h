@@ -44,6 +44,9 @@ public:
     // Get cell by index cellId, which is Thread-Unsafe
     Cell* GetCell(const IGsize cellId);
 
+    int GetDataObjectType() {
+        return IG_UNSTRUCTURED_MESH;
+    }
 protected:
     UnstructuredMesh();
     ~UnstructuredMesh() override = default;

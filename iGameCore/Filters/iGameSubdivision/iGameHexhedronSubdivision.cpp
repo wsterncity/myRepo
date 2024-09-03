@@ -440,43 +440,42 @@ bool HexhedronSubdivision::Execute()
 
 		//continue;
 
-		int n = 65;
-		auto tmp = GenerateBezierSurface(ControlPts, n);
-		for (k = 0; k < n; k++) {
-			for (j = 0; j < n; j++) {
-				for (i = 0; i < n; i++) {
-					ControlPoints->AddPoint(tmp[k][j][i]);
-				}
-			}
-		}
-
-		int size[3] = { n,n,n };
-		igIndex tmpvhs[8] = {
-						0,1,1 + size[0] * size[1],size[0] * size[1],
-						size[0],1 + size[0],1 + size[0] + size[0] * size[1],size[0] + size[0] * size[1]
-		};
-		igIndex st;
-		for (k = 0; k < size[2] - 1; ++k) {
-			for (j = 0; j < size[1] - 1; ++j) {
-				st = j * size[0] + k * size[0] * size[1] + cellID * n * n * n;
-				for (i = 0; i < size[0] - 1; ++i) {
-					for (int it = 0; it < 8; it++) {
-						vhs[it] = st + tmpvhs[it];
-					}
-					SubdivisionCells->AddCellIds(vhs, 8);
-					st++;
-				}
-			}
-		}
-		//for (k = 0; k < 4; k++) {
-		//	for (j = 0; j < 4; j++) {
-		//		for (i = 0; i < 4; i++) {
-		//			ControlPoints->AddPoint(ControlPts[k][j][i]);
-		//			//std::cout << k << ' ' << j << ' ' << i << ' ' << ControlPts[k][j][i][0] << " " << ControlPts[k][j][i][1] << " " << ControlPts[k][j][i][2] << "\n";
+		//int n = 65;
+		//auto tmp = GenerateBezierSurface(ControlPts, n);
+		//for (k = 0; k < n; k++) {
+		//	for (j = 0; j < n; j++) {
+		//		for (i = 0; i < n; i++) {
+		//			ControlPoints->AddPoint(tmp[k][j][i]);
 		//		}
 		//	}
 		//}
-		//break;
+		//int size[3] = { n,n,n };
+		//igIndex tmpvhs[8] = {
+		//				0,1,1 + size[0] * size[1],size[0] * size[1],
+		//				size[0],1 + size[0],1 + size[0] + size[0] * size[1],size[0] + size[0] * size[1]
+		//};
+		//igIndex st;
+		//for (k = 0; k < size[2] - 1; ++k) {
+		//	for (j = 0; j < size[1] - 1; ++j) {
+		//		st = j * size[0] + k * size[0] * size[1] + cellID * n * n * n;
+		//		for (i = 0; i < size[0] - 1; ++i) {
+		//			for (int it = 0; it < 8; it++) {
+		//				vhs[it] = st + tmpvhs[it];
+		//			}
+		//			SubdivisionCells->AddCellIds(vhs, 8);
+		//			st++;
+		//		}
+		//	}
+		//}
+		for (k = 0; k < 4; k++) {
+			for (j = 0; j < 4; j++) {
+				for (i = 0; i < 4; i++) {
+					ControlPoints->AddPoint(ControlPts[k][j][i]);
+					//std::cout << k << ' ' << j << ' ' << i << ' ' << ControlPts[k][j][i][0] << " " << ControlPts[k][j][i][1] << " " << ControlPts[k][j][i][2] << "\n";
+				}
+			}
+		}
+		break;
 	}
 	res->SetVolumes(SubdivisionCells);
 	res->SetPoints(ControlPoints);
