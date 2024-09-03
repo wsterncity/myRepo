@@ -393,10 +393,8 @@ void igQtMainWindow::initAllFilters() {
 
 	connect(action_subdivision, &QAction::triggered, this,
 		[&](bool checked) {
-			rendererWidget->makeCurrent();
 			//auto filter = HexhedronSubdivision::New();
 			//VolumeMesh::Pointer mesh = DynamicCast<VolumeMesh>(rendererWidget->GetScene()->GetCurrentModel()->GetDataObject());
-			//filter->SetMesh(mesh);
 			auto filter =QuadSubdivision::New();
 			SurfaceMesh::Pointer mesh = DynamicCast<SurfaceMesh>(rendererWidget->GetScene()->GetCurrentModel()->GetDataObject());
 			filter->SetMesh(mesh);
@@ -405,7 +403,6 @@ void igQtMainWindow::initAllFilters() {
 			ControlPoints->SetName("ControlPoints");
 
 			modelTreeWidget->addDataObjectToModelTree(ControlPoints, ItemSource::File);
-			rendererWidget->doneCurrent();
 
 		});
 }
