@@ -2,7 +2,7 @@
 #define iGameCGNSReader_h
 
 #include <iGameFilter.h>
-#include <string> 
+#include <string>
 #include <iGameMacro.h>
 #include <iGameVolumeMesh_2.h>
 #include <iGameStructuredMesh.h>
