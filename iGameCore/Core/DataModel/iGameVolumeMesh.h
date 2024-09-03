@@ -162,7 +162,7 @@ public:
     void ViewCloudPicture(Scene* scene, int index, int demension = -1) override;
 
     void SetAttributeWithPointData(ArrayObject::Pointer attr,
-                                   igIndex i = -1) override;
+                                   igIndex i = -1, const std::pair<float, float>& range = {0.f, 0.f}) override;
 
     void SetAttributeWithCellData(ArrayObject::Pointer attr, igIndex i = -1);
 

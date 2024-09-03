@@ -150,6 +150,7 @@ void igQtFileLoader::OpenFile(const std::string& filePath)
 	this->SaveCurrentFileToRecentFile(QString::fromStdString(filePath));
 	Q_EMIT FinishReading();
 	emit NewModel(obj, ItemSource::File);
+    emit FinishReading();
 }
 
 void igQtFileLoader::SaveFile() {

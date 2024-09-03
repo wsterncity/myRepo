@@ -38,7 +38,6 @@ protected:
         cell[0] = 1;
         m_OutPut_PointSet->AddCell(cell, 1, IG_VERTEX);
         SetOutput(m_OutPut_PointSet);
-
     }
     ~PointSource() override = default;
 

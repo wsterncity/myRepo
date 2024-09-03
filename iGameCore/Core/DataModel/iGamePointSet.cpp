@@ -161,13 +161,13 @@ void PointSet::ViewCloudPicture(Scene* scene, int index, int demension) {
     scene->MakeCurrent();
     auto &attr = this->GetAttributeSet()->GetAttribute(index);
     if (!attr.isDeleted && attr.attachmentType == IG_POINT) {
-        this->SetAttributeWithPointData(attr.pointer, demension);
+        this->SetAttributeWithPointData(attr.pointer, demension, attr.dataRange);
     }
     scene->DoneCurrent();
 }
 
-void PointSet::SetAttributeWithPointData(ArrayObject::Pointer attr, igIndex i) {
-  if (m_ViewAttribute != attr || m_ViewDemension != i) {
+void PointSet::SetAttributeWithPointData(ArrayObject::Pointer attr, igIndex dimension, const std::pair<float, float>& range) {
+  if (m_ViewAttribute != attr || m_ViewDemension != dimension) {
     if (attr == nullptr) {
       m_UseColor = false;
       m_ViewAttribute = nullptr;
@@ -175,18 +175,18 @@ void PointSet::SetAttributeWithPointData(ArrayObject::Pointer attr, igIndex i) {
       return;
     }
     m_ViewAttribute = attr;
-    m_ViewDemension = i;
+    m_ViewDemension = dimension;
 
     m_UseColor = true;
     ScalarsToColors::Pointer mapper = ScalarsToColors::New();
 
-    if (i == -1) {
+    if (dimension == -1) {
       mapper->InitRange(attr);
     } else {
-      mapper->InitRange(attr, i);
+      mapper->InitRange(attr, dimension);
     }
 
-    m_Colors = mapper->MapScalars(attr, i);
+    m_Colors = mapper->MapScalars(attr, dimension);
     if (m_Colors == nullptr) {
       return;
     }

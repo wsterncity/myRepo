@@ -28,11 +28,15 @@ public:
 public slots:
 	int addModelToModelTree(Model::Pointer model);
 	int addDataObjectToModelTree(DataObject::Pointer obj, ItemSource source);
+protected:
+	void UpdateCurrentModel(Model::Pointer model);
 
 private:
+    Model* currentModel;
+
 	igQtModelTreeWidget* modelTreeWidget;
 	QtTreePropertyBrowser* propertyTreeWidget;
-	
+
 	QtVariantPropertyManager* propertyManager;
 	QtVariantEditorFactory* editFactory;
 	QtProperty* objectGroup;

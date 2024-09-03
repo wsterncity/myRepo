@@ -95,7 +95,8 @@ igQtAnimationWidget::igQtAnimationWidget(QWidget *parent) : QWidget(parent), ui(
 
 
     //  Init the Animation Components if  model have the time value.
-    std::vector<float> timevalue{1.0, 2.0, 3.0, 4.0};
+//    std::vector<float> timevalue{1.0, 2.0, 3.0, 4.0};
+    std::vector<float> timevalue{};
     if(timevalue.empty() || timevalue.size() == 1) return;
     VcrController->initController(static_cast<int>(timevalue.size()), 1);
     ui->treeWidget_snap->initAnimationTreeWidget(timevalue);
@@ -116,22 +117,53 @@ void igQtAnimationWidget::playAnimation_snap(int keyframe_idx){
     auto currentScene = SceneManager::Instance()->GetCurrentScene();
     auto currentObject = currentScene->GetCurrentModel()->GetDataObject();
     if(currentObject == nullptr || currentObject->GetTimeFrames()->GetArrays().empty())  return;
-    std::cout << "current obj id : " << currentObject << '\n';
     auto& frameSubFiles = currentObject->GetTimeFrames()->GetTargetTimeFrame(keyframe_idx).SubFileNames;
-    if(frameSubFiles->Size() > 1){
-        currentObject->ClearSubDataObject();
-        for(int i = 0; i < frameSubFiles->Size(); i ++){
-            auto sub = FileIO::ReadFile(frameSubFiles->GetElement(i));
-            currentObject->AddSubDataObject(sub);
+    currentScene->MakeCurrent();
+    currentObject->ClearSubDataObject();
+    for(int i = 0; i < frameSubFiles->Size(); i ++){
+        auto sub = FileIO::ReadFile(frameSubFiles->GetElement(i));
+        currentObject->AddSubDataObject(sub);
+    }
+
+    /* process Object's scalar range*/
+    IGsize scalar_size = currentObject->GetAttributeSet() ? currentObject->GetAttributeSet()->GetAllAttributes()->GetNumberOfElements() : 0;
+    for(IGsize k = 0; k < scalar_size; k ++){
+        auto& par_range = currentObject->GetAttributeSet()->GetAttribute(k).dataRange;
+//        float range_max = FLT_MIN;
+//        float range_min = FLT_MAX;
+//        for(auto it = currentObject->SubDataObjectIteratorBegin(); it != currentObject->SubDataObjectIteratorEnd(); ++ it){
+//            const auto& range = it->second->GetAttributeSet()->GetAttribute(k).dataRange;
+//            range_max = std::max(range_max, range.second);
+//            range_min = std::min(range_min, range.first );
+//        }
+        for(auto it = currentObject->SubDataObjectIteratorBegin(); it != currentObject->SubDataObjectIteratorEnd(); ++ it){
+            auto& range = it->second->GetAttributeSet()->GetAttribute(k).dataRange;
+            range.second = par_range.second;
+            range.first  = par_range.first;
         }
+//        std::cout << "range : " << range_max << ' ' << range_min << '\n';
     }
-    else if(frameSubFiles->Size() == 1){
-        auto newDataObject = FileIO::ReadFile(frameSubFiles->GetElement(0));
-        newDataObject->SetTimeFrames(currentObject->GetTimeFrames());
-        currentScene->RemoveCurrentModel();
-        currentScene->AddModel(currentScene->CreateModel(newDataObject));
-        newDataObject->SwitchToCurrentTimeframe(keyframe_idx);
+    for(auto it = currentObject->SubDataObjectIteratorBegin(); it != currentObject->SubDataObjectIteratorEnd(); ++ it){
+        it->second->SetViewStyle(currentObject->GetViewStyle());
+        it->second->ConvertToDrawableData();
     }
+    if(currentObject->GetAttributeIndex() != -1){
+        currentObject->ViewCloudPicture(currentScene, currentObject->GetAttributeIndex());
+    }
+//    else if(frameSubFiles->Size() == 1){
+//        auto newDataObject = FileIO::ReadFile(frameSubFiles->GetElement(0));
+//        newDataObject->SetTimeFrames(currentObject->GetTimeFrames());
+//
+//        currentScene->RemoveCurrentModel();
+//        currentScene->GetCurrentModel()->SetDataObject(newDataObject);
+//        currentScene->AddModel(currentScene->CreateModel(newDataObject));
+//        newDataObject->SwitchToCurrentTimeframe(keyframe_idx);
+//        newDataObject->SetScalarRange(currentObject->GetScalarRange());
+//        newDataObject->ConvertToDrawableData();
+//        newDataObject->ViewCloudPicture(currentScene, 0);
+//    }
+    currentScene->DoneCurrent();
+
     Q_EMIT UpdateScene();
 }
 
@@ -166,7 +198,9 @@ void igQtAnimationWidget::changeAnimationMode() {
 }
 
 void igQtAnimationWidget::initAnimationComponents() {
-    if(iGame::SceneManager::Instance()->GetCurrentScene()->GetCurrentModel()->GetDataObject()->GetTimeFrames() == nullptr)  return;
+    if(iGame::SceneManager::Instance()->GetCurrentScene()->GetCurrentModel() == nullptr ||
+    iGame::SceneManager::Instance()->GetCurrentScene()->GetCurrentModel()->GetDataObject()->GetTimeFrames() == nullptr)  return;
+
     auto timeArrays = iGame::SceneManager::Instance()->GetCurrentScene()->GetCurrentModel()->GetDataObject()->GetTimeFrames()->GetArrays();
     if(timeArrays.empty()) return;
     std::vector<float> timeValues;

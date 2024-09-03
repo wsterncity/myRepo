@@ -987,7 +987,7 @@ void SurfaceMesh::ViewCloudPicture(Scene *scene, int index, int demension) {
   auto &attr = this->GetAttributeSet()->GetAttribute(index);
   if (!attr.isDeleted) {
     if (attr.attachmentType == IG_POINT)
-      this->SetAttributeWithPointData(attr.pointer, demension);
+      this->SetAttributeWithPointData(attr.pointer, demension, attr.dataRange);
     else if (attr.attachmentType == IG_CELL)
       this->SetAttributeWithCellData(attr.pointer, demension);
   }
@@ -996,7 +996,7 @@ void SurfaceMesh::ViewCloudPicture(Scene *scene, int index, int demension) {
 }
 
 void SurfaceMesh::SetAttributeWithPointData(ArrayObject::Pointer attr,
-                                            igIndex i) {
+                                            igIndex i, const std::pair<float, float>& range) {
   if (m_ViewAttribute != attr || m_ViewDemension != i) {
     m_ViewAttribute = attr;
     m_ViewDemension = i;

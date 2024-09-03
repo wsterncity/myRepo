@@ -34,6 +34,7 @@ public:
 
   StreamingData::Pointer GetTimeFrames();
   void SetTimeFrames(StreamingData::Pointer p) { m_TimeFrames = p; }
+
   void SetAttributeSet(AttributeSet::Pointer p) { m_Attributes = p; }
   AttributeSet*GetAttributeSet() { return m_Attributes.get(); }
   Metadata *GetMetadata() { return m_Metadata.get(); }
@@ -50,6 +51,8 @@ public:
     using SubDataObjectMap = std::map<DataObjectId, DataObject::Pointer>;
     using Iterator = SubDataObjectMap::iterator;
     using ConstIterator = SubDataObjectMap::const_iterator;
+
+
 
     DataObject::Pointer GetSubDataObject(DataObjectId id) {
       auto it = m_SubDataObjects.find(id);
@@ -98,22 +101,29 @@ public:
     SubDataObjectsHelper() {}
     ~SubDataObjectsHelper() override {}
 
+    DataObject* m_parentObject {nullptr};
     SubDataObjectMap m_SubDataObjects;
   };
 
   using SubIterator = typename SubDataObjectsHelper::Iterator;
   using SubConstIterator = typename SubDataObjectsHelper::ConstIterator;
 
+  void ResetAttributeRange();
   DataObject::Pointer GetSubDataObject(DataObjectId id);
+ void SetParentDataObject(DataObject* parent) {m_Parent = parent;}
+
+
   DataObjectId AddSubDataObject(DataObject::Pointer obj);
   void RemoveSubDataObject(DataObjectId id);
   void ClearSubDataObject();
+ bool HasParentDataObject() noexcept {return m_Parent != nullptr;}
+
   bool HasSubDataObject() noexcept;
   int GetNumberOfSubDataObjects() noexcept;
-  SubIterator SubBegin();
-  SubConstIterator SubBegin() const;
-  SubIterator SubEnd();
-  SubConstIterator SubEnd() const;
+  SubIterator SubDataObjectIteratorBegin();
+  SubConstIterator SubDataObjectIteratorBegin() const;
+  SubIterator SubDataObjectIteratorEnd();
+  SubConstIterator SubDataObjectIteratorEnd() const;
 
   DataObject *FindParent();
 
@@ -159,6 +169,7 @@ protected:
   SmartPointer<SubDataObjectsHelper> m_SubDataObjectsHelper{};
   DataObject *m_Parent{nullptr};
 
+
   template <typename Functor, typename... Args>
   void ProcessSubDataObjects(Functor &&functor, Args &&...args);
 
@@ -172,15 +183,17 @@ public:
     virtual void DrawPhase2(Scene *);
     virtual void TestOcclusionResults(Scene *);
     virtual void ConvertToDrawableData();
-    virtual void MakeDrawable() { m_Drawable = true; }
+    virtual void ChangeDrawable(bool drawScalar) { m_Drawable = drawScalar; }
     virtual bool IsDrawable() { return m_Drawable; }
 
     virtual void ViewCloudPicture(Scene* ,int index, int dimension = -1);
     void ViewCloudPictureOfModel(Scene* ,int index, int dimension = -1);
 
+    /*ViewStyle's detail. See iGameType.h */
     void SetViewStyle(IGenum mode);
-    void SetViewStyle2(IGenum mode);
-    void SetViewStyleOfModel(IGenum mode);
+    void AddViewStyle(IGenum mode);
+    void RemoveViewStyle(IGenum mode);
+    void AddViewStyleOfModel(IGenum mode);
     unsigned int GetViewStyle();
     unsigned int GetViewStyleOfModel();
     void SetVisibility(bool f);
@@ -197,7 +210,6 @@ protected:
     int m_AttributeDimension{-1};
     bool m_Visibility{true};
     bool m_Drawable{false};
-
     int m_CurrentTimeframeIndex{-1};
 };
 

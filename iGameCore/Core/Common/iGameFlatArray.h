@@ -303,11 +303,12 @@ protected:
     std::vector<TValue> m_Element{};
 };
 
-#define iGameNewDataArrayMacro(TypeName, ValueType)              \
+#define iGameNewDataArrayMacro(TypeName, ValueType)    \
 class TypeName : public FlatArray<ValueType> {                   \
 public:                                                          \
 	I_OBJECT(TypeName);                                          \
-	static Pointer New() { return new TypeName; }                \
+     IGenum GetArrayType() override{ return IG_##TypeName; } \
+     static Pointer New() {return new TypeName;}\
 protected:														 \
 	TypeName() = default;                                        \
 	~TypeName() override = default;                              \
