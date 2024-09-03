@@ -90,30 +90,30 @@ int VolumeMesh::GetVolumeFaceIds(const IGsize volumeId, igIndex* faceIds)
 }
 
 void VolumeMesh::BuildFaces() {
-    FaceTable::Pointer FaceTable = FaceTable::New();
-    igIndex cell[64]{}, faceIds[64]{}, edgeIds[64]{}, face[64]{}, edge[2]{};
+	FaceTable::Pointer FaceTable = FaceTable::New();
+	igIndex cell[64]{}, faceIds[64]{}, edgeIds[64]{}, face[64]{}, edge[2]{};
 
-    m_VolumeFaces = CellArray::New();
+	m_VolumeFaces = CellArray::New();
 
-    for (IGsize i = 0; i < this->GetNumberOfVolumes(); i++) {
-        Volume* vol = this->GetVolume(i);
-        int size = m_Volumes->GetCellIds(i, cell);
-        for (int j = 0; j < vol->GetNumberOfFaces(); j++) // number of faces
-        {
-            const igIndex* index; // this face's number of points
-            int size = vol->GetFacePointIds(j, index); 
-            for (int k = 0; k < size; k++) { face[k] = cell[index[k]]; }
-            igIndex idx;
-            if ((idx = FaceTable->IsFace(face, size)) == -1) {
-                idx = FaceTable->GetNumberOfFaces();
-                FaceTable->InsertFace(face, size);
-            }
-            faceIds[j] = idx;
-        }
-        m_VolumeFaces->AddCellIds(faceIds, vol->GetNumberOfFaces());
-    }
+	for (IGsize i = 0; i < this->GetNumberOfVolumes(); i++) {
+		Volume* vol = this->GetVolume(i);
+		int size = m_Volumes->GetCellIds(i, cell);
+		for (int j = 0; j < vol->GetNumberOfFaces(); j++) // number of faces
+		{
+			const igIndex* index; // this face's number of points
+			int size = vol->GetFacePointIds(j, index);
+			for (int k = 0; k < size; k++) { face[k] = cell[index[k]]; }
+			igIndex idx;
+			if ((idx = FaceTable->IsFace(face, size)) == -1) {
+				idx = FaceTable->GetNumberOfFaces();
+				FaceTable->InsertFace(face, size);
+			}
+			faceIds[j] = idx;
+		}
+		m_VolumeFaces->AddCellIds(faceIds, vol->GetNumberOfFaces());
+	}
 
-    m_Faces = FaceTable->GetOutput();
+	m_Faces = FaceTable->GetOutput();
 }
 
 void VolumeMesh::BuildFacesAndEdges() {
@@ -147,7 +147,7 @@ void VolumeMesh::BuildFacesAndEdges() {
 		for (int j = 0; j < vol->GetNumberOfEdges(); j++)
 		{
 			const igIndex* index;
-            vol->GetEdgePointIds(j, index); // this edge's number of points
+			vol->GetEdgePointIds(j, index); // this edge's number of points
 			for (int k = 0; k < 2; k++) {
 				edge[k] = cell[index[k]];
 			}
@@ -162,7 +162,7 @@ void VolumeMesh::BuildFacesAndEdges() {
 	}
 
 	m_Faces = FaceTable->GetOutput();
-    m_Edges = EdgeTable->GetOutput();
+	m_Edges = EdgeTable->GetOutput();
 }
 
 void VolumeMesh::BuildVolumeLinks()
@@ -637,47 +637,44 @@ void VolumeMesh::DeleteVolume(const IGsize volumeId) {
 	m_VolumeDeleteMarker->MarkDeleted(volumeId);
 }
 
-bool VolumeMesh::isBoundryVolume(igIndex VolumeId)
+bool VolumeMesh::IsBoundryVolume(igIndex VolumeId)
 {
 	igIndex fhs[64];
 	igIndex fcnt = this->GetVolumeFaceIds(VolumeId, fhs);
 	for (int i = 0; i < fcnt; i++) {
-		if (isBoundryFace(fhs[i]))return true;
+		if (IsBoundryFace(fhs[i]))return true;
 	}
 	return false;
 }
-bool VolumeMesh::isBoundryFace(igIndex FaceId)
+bool VolumeMesh::IsBoundryFace(igIndex FaceId)
 {
 	auto& link = m_VolumeFaceLinks->GetLink(FaceId);
 	if (link.size <= 1)return true;
 	else return false;
 }
-bool VolumeMesh::isBoundryEdge(igIndex EdgeId)
+bool VolumeMesh::IsBoundryEdge(igIndex EdgeId)
 {
 	igIndex fhs[64];
-	igIndex fcnt=this->GetEdgeToNeighborFaces(EdgeId, fhs);
+	igIndex fcnt = this->GetEdgeToNeighborFaces(EdgeId, fhs);
 	for (int i = 0; i < fcnt; i++) {
-		if (isBoundryFace(fhs[i]))return true;
+		if (IsBoundryFace(fhs[i]))return true;
 	}
 	return false;
 }
-bool VolumeMesh::isBoundryPoint(igIndex PointId)
+bool VolumeMesh::IsBoundryPoint(igIndex PointId)
 {
 	igIndex fhs[64];
 	igIndex fcnt = this->GetPointToNeighborFaces(PointId, fhs);
 	for (int i = 0; i < fcnt; i++) {
-		if (isBoundryFace(fhs[i]))return true;
+		if (IsBoundryFace(fhs[i]))return true;
 	}
 	return false;
 }
-bool VolumeMesh::isCornerPoint(igIndex PointId)
+bool VolumeMesh::IsCornerPoint(igIndex PointId)
 {
-	igIndex fhs[64];
-	igIndex fcnt = this->GetPointToNeighborFaces(PointId, fhs);
-	for (int i = 0; i < fcnt; i++) {
-		if (!isBoundryFace(fhs[i]))return false;
-	}
-	return true;
+	auto& link = m_VolumeLinks->GetLink(PointId);
+	if (link.size == 1)return true;
+	else return false;
 
 }
 VolumeMesh::VolumeMesh()
@@ -944,14 +941,14 @@ void VolumeMesh::ConvertToDrawableData()
 }
 
 void VolumeMesh::ViewCloudPicture(Scene* scene, int index, int demension) {
-    if (index == -1) {
-        m_UseColor = false;
-        m_ViewAttribute = nullptr;
-        m_ViewDemension = -1;
-        m_ColorWithCell = false;
+	if (index == -1) {
+		m_UseColor = false;
+		m_ViewAttribute = nullptr;
+		m_ViewDemension = -1;
+		m_ColorWithCell = false;
 		scene->Update();
-        return;
-    }
+		return;
+	}
 	scene->MakeCurrent();
     auto& attr = this->GetAttributeSet()->GetAttribute(index);
     if (!attr.isDeleted) {
@@ -965,13 +962,13 @@ void VolumeMesh::ViewCloudPicture(Scene* scene, int index, int demension) {
 }
 
 void VolumeMesh::SetAttributeWithPointData(ArrayObject::Pointer attr,
-                               igIndex i, const std::pair<float, float>& range) {
-    if (m_ViewAttribute != attr || m_ViewDemension != i) {
-        m_ViewAttribute = attr;
-        m_ViewDemension = i;
-        m_UseColor = true;
-        m_ColorWithCell = false;
-        ScalarsToColors::Pointer mapper = ScalarsToColors::New();
+	igIndex i, const std::pair<float, float>& range) {
+	if (m_ViewAttribute != attr || m_ViewDemension != i) {
+		m_ViewAttribute = attr;
+		m_ViewDemension = i;
+		m_UseColor = true;
+		m_ColorWithCell = false;
+		ScalarsToColors::Pointer mapper = ScalarsToColors::New();
 
         if(range.first != range.second){
             mapper->SetRange(range.first, range.second * 2);
@@ -980,55 +977,56 @@ void VolumeMesh::SetAttributeWithPointData(ArrayObject::Pointer attr,
         } else {
             mapper->InitRange(attr, i);
         }
-        m_Colors = mapper->MapScalars(attr, i);
-        if (m_Colors == nullptr) { return; }
-        GLCheckError();
-        GLAllocateGLBuffer(m_ColorVBO,
-                           m_Colors->GetNumberOfValues() * sizeof(float),
-                           m_Colors->RawPointer());
-        GLCheckError();
-        m_PointVAO.vertexBuffer(GL_VBO_IDX_1, m_ColorVBO, 0, 3 * sizeof(float));
-        GLSetVertexAttrib(m_PointVAO, GL_LOCATION_IDX_1, GL_VBO_IDX_1, 3,
-                          GL_FLOAT, GL_FALSE, 0);
-        GLCheckError();
-        m_LineVAO.vertexBuffer(GL_VBO_IDX_1, m_ColorVBO, 0, 3 * sizeof(float));
-        GLSetVertexAttrib(m_LineVAO, GL_LOCATION_IDX_1, GL_VBO_IDX_1, 3,
-                          GL_FLOAT, GL_FALSE, 0);
 
-        GLCheckError();
-        m_TriangleVAO.vertexBuffer(GL_VBO_IDX_1, m_ColorVBO, 0,
-                                   3 * sizeof(float));
-        GLSetVertexAttrib(m_TriangleVAO, GL_LOCATION_IDX_1, GL_VBO_IDX_1, 3,
-                          GL_FLOAT, GL_FALSE, 0);
-        GLCheckError();
-    }
+		m_Colors = mapper->MapScalars(attr, i);
+		if (m_Colors == nullptr) { return; }
+
+		GLAllocateGLBuffer(m_ColorVBO,
+			m_Colors->GetNumberOfValues() * sizeof(float),
+			m_Colors->RawPointer());
+
+		m_PointVAO.vertexBuffer(GL_VBO_IDX_1, m_ColorVBO, 0, 3 * sizeof(float));
+		GLSetVertexAttrib(m_PointVAO, GL_LOCATION_IDX_1, GL_VBO_IDX_1, 3,
+			GL_FLOAT, GL_FALSE, 0);
+
+		m_LineVAO.vertexBuffer(GL_VBO_IDX_1, m_ColorVBO, 0, 3 * sizeof(float));
+		GLSetVertexAttrib(m_LineVAO, GL_LOCATION_IDX_1, GL_VBO_IDX_1, 3,
+			GL_FLOAT, GL_FALSE, 0);
+
+
+		m_TriangleVAO.vertexBuffer(GL_VBO_IDX_1, m_ColorVBO, 0,
+			3 * sizeof(float));
+		GLSetVertexAttrib(m_TriangleVAO, GL_LOCATION_IDX_1, GL_VBO_IDX_1, 3,
+			GL_FLOAT, GL_FALSE, 0);
+	}
 }
 
 void VolumeMesh::SetAttributeWithCellData(ArrayObject::Pointer attr,
-                                          igIndex i) 
+	igIndex i)
 {
-    if (m_ViewAttribute != attr || m_ViewDemension != i) {
-        m_ViewAttribute = attr;
-        m_ViewDemension = i;
-        m_UseColor = true;
-        m_ColorWithCell = true;
-        ScalarsToColors::Pointer mapper = ScalarsToColors::New();
+	if (m_ViewAttribute != attr || m_ViewDemension != i) {
+		m_ViewAttribute = attr;
+		m_ViewDemension = i;
+		m_UseColor = true;
+		m_ColorWithCell = true;
+		ScalarsToColors::Pointer mapper = ScalarsToColors::New();
 
-        if (i == -1) {
-            mapper->InitRange(attr);
-        } else {
-            mapper->InitRange(attr, i);
-        }
+		if (i == -1) {
+			mapper->InitRange(attr);
+		}
+		else {
+			mapper->InitRange(attr, i);
+		}
 
-        FloatArray::Pointer colors = mapper->MapScalars(attr, i);
-        if (colors == nullptr) { return; }
+		FloatArray::Pointer colors = mapper->MapScalars(attr, i);
+		if (colors == nullptr) { return; }
 
-        FloatArray::Pointer newPositions = FloatArray::New();
-        FloatArray::Pointer newColors = FloatArray::New();
-        newPositions->SetElementSize(3);
-        newColors->SetElementSize(3);
+		FloatArray::Pointer newPositions = FloatArray::New();
+		FloatArray::Pointer newColors = FloatArray::New();
+		newPositions->SetElementSize(3);
+		newColors->SetElementSize(3);
 
-        float color[3]{};
+		float color[3]{};
 		for (int i = 0; i < this->GetNumberOfVolumes(); i++) {
 			Volume* volume = this->GetVolume(i);
 			const igIndex* face;
@@ -1049,7 +1047,7 @@ void VolumeMesh::SetAttributeWithCellData(ArrayObject::Pointer attr,
 				}
 			}
 		}
-        
+
 		m_CellPositionSize = newPositions->GetNumberOfElements();
 		GLAllocateGLBuffer(m_CellPositionVBO,
 			newPositions->GetNumberOfValues() * sizeof(float),
@@ -1065,6 +1063,6 @@ void VolumeMesh::SetAttributeWithCellData(ArrayObject::Pointer attr,
 		m_CellVAO.vertexBuffer(GL_VBO_IDX_1, m_CellColorVBO, 0, 3 * sizeof(float));
 		GLSetVertexAttrib(m_CellVAO, GL_LOCATION_IDX_1, GL_VBO_IDX_1, 3, GL_FLOAT,
 			GL_FALSE, 0);
-    }
+	}
 }
 IGAME_NAMESPACE_END

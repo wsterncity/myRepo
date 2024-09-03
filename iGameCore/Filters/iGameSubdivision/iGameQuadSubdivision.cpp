@@ -10,10 +10,27 @@ double Bernstein(int i, int n, double t) {
 	return binomial_coeff * pow(t, i) * pow(1 - t, n - i);
 }
 
+double BSplineBasisFunction(int i, int p, double t, const std::vector<double>& knots) {
+	if (p == 0) {
+		return (knots[i] <= t && t < knots[i + 1]) ? 1.0 : 0.0;
+	}
+	else {
+		double denom1 = knots[i + p] - knots[i];
+		double denom2 = knots[i + p + 1] - knots[i + 1];
+
+		double term1 = (denom1 != 0) ? (t - knots[i]) / denom1 * BSplineBasisFunction(i, p - 1, t, knots) : 0;
+		double term2 = (denom2 != 0) ? (knots[i + p + 1] - t) / denom2 * BSplineBasisFunction(i + 1, p - 1, t, knots) : 0;
+
+		return term1 + term2;
+	}
+}
+
 // 生成 Bezier 曲面上的点
-std::vector<std::vector<Point>> GenerateBezierSurface(Point ControlPts[4][4], int resolution) {
+std::vector<std::vector<Point>>GenerateBezierSurface(Point ControlPts[4][4], int resolution) {
 	std::vector<std::vector<Point>> bezierSurface(resolution, std::vector<Point>(resolution));
 
+	// 定义节点向量（均匀节点向量示例）
+	std::vector<double> knots = { 0, 0, 0, 0, 1+1e-10, 1 + 1e-10, 1 + 1e-10, 1 + 1e-10 }; // 双三次 B 样条的节点向量
 	for (int u = 0; u < resolution; ++u) {
 		for (int v = 0; v < resolution; ++v) {
 			double u_t = static_cast<double>(u) / (resolution - 1);
@@ -25,6 +42,8 @@ std::vector<std::vector<Point>> GenerateBezierSurface(Point ControlPts[4][4], in
 				for (int j = 0; j < 4; ++j) {
 					double Bu = Bernstein(i, 3, u_t);
 					double Bv = Bernstein(j, 3, v_t);
+					//double Bu = BSplineBasisFunction(i, 3, u_t, knots);
+					//double Bv = BSplineBasisFunction(j, 3, v_t, knots);
 					Point weightedPoint = ControlPts[i][j] * (Bu * Bv);
 					p = p + weightedPoint;
 				}
@@ -53,12 +72,39 @@ bool QuadSubdivision::Execute()
 	igIndex vhs[IGAME_CELL_MAX_SIZE];
 	igIndex fcnt = 0;
 	igIndex fhs[IGAME_CELL_MAX_SIZE];
+	igIndex ecnt = 0;
+	igIndex ehs[IGAME_CELL_MAX_SIZE];
 	//面点
 	std::vector<std::vector<Point>>FacePts(FaceNum);
 	//边点
 	std::vector<std::vector<Point>>EdgePts(EdgeNum);
 	//角点
 	std::vector<Point>CornerPts(PointNum);
+	std::vector<Point>CornerNormals(PointNum);
+	std::vector<Point>PointNormals(PointNum);
+	std::vector<Point>FaceNormals(FaceNum);
+
+	//for (i = 0; i < FaceNum; i++) {
+	//	vcnt = Faces->GetCellIds(i, vhs);
+	//	Point p[4];
+	//	for (j = 0; j < vcnt; j++) {
+	//		p[j] = mesh->GetPoint(vhs[j]);
+	//	}
+	//	FaceNormals[i] = { 0,0,0 };
+	//	for (j = 2; j < vcnt; j++) {
+	//		FaceNormals[i] += (p[j - 1] - p[0]).cross(p[j] - p[0]);
+	//	}
+	//	FaceNormals[i].normalize();
+	//}
+
+	//for (i = 0; i < PointNum; i++) {
+	//	fcnt = mesh->GetPointToNeighborFaces(i, fhs);
+	//	PointNormals[i] = { 0,0,0 };
+	//	for (j = 0; j < fcnt; j++) {
+	//		PointNormals[i] += FaceNormals[fhs[j]];
+	//	}
+	//	PointNormals[i].normalize();
+	//}
 
 	//计算面点
 	for (i = 0; i < FaceNum; i++) {
@@ -71,8 +117,9 @@ bool QuadSubdivision::Execute()
 			p[j] = mesh->GetPoint(vhs[j]);
 		}
 		for (j = 0; j < 4; j++) {
-			FacePts[i][j] = p[j] * 4 + p[(j + 1) % 4] * 2 + p[(j + 3) % 4] * 2 + p[(j + 2) % 4];
-			FacePts[i][j] /= 9;
+			int n = mesh->GetPointToNeighborFaces(vhs[j], fhs);
+			FacePts[i][j] = p[j] * n + p[(j + 1) % 4] * 2 + p[(j + 3) % 4] * 2 + p[(j + 2) % 4];
+			FacePts[i][j] /= 5 + n;
 		}
 	}
 
@@ -84,7 +131,7 @@ bool QuadSubdivision::Execute()
 		EdgePts[i].resize(2);
 		fcnt = mesh->GetEdgeToNeighborFaces(i, fhs);
 		//如果是内部边
-		if (fcnt == 2) {
+		if (!mesh->IsBoundryEdge(i)) {
 			for (j = 0; j < 2; j++) {
 				EdgePts[i][j] = Point{ 0,0,0 };
 				for (k = 0; k < fcnt; k++) {
@@ -113,8 +160,8 @@ bool QuadSubdivision::Execute()
 	for (i = 0; i < PointNum; i++) {
 		auto p = mesh->GetPoint(i);
 		fcnt = mesh->GetPointToNeighborFaces(i, fhs);
-		if (fcnt>= 3) {
-			CornerPts[i] = { 0,0,0 };
+		CornerPts[i] = { 0,0,0 };
+		if (!mesh->IsBoundryPoint(i)) {	
 			for (k = 0; k < fcnt; k++) {
 				auto f = mesh->GetFace(fhs[k]);
 				for (igIndex id = 0; id < 4; id++) {
@@ -126,10 +173,56 @@ bool QuadSubdivision::Execute()
 			}
 			CornerPts[i] /= fcnt;
 		}
+		else if (!mesh->IsCornerPoint(i)) {
+			vcnt = mesh->GetPointToOneRingPoints(i, vhs);
+			for (j = 0; j < vcnt; j++) {
+				auto eh = mesh->GetEdgeIdFormPointIds(i, vhs[j]);
+				if (mesh->IsBoundryEdge(eh)) {
+					CornerPts[i] += p * 2 + mesh->GetPoint(vhs[j]);
+				}
+			}
+			CornerPts[i] /= 6;
+		}
 		else {
 			CornerPts[i] = p;
 		}
 	}
+	////计算角点的法向量
+	//for (i = 0; i < PointNum; i++) {
+	//	int n = mesh->GetPointToOneRingPoints(i, vhs);
+	//	if (mesh->IsBoundryPoint(i))continue;
+	//	double tmp = M_PI / (n * 1.0);
+	//	double An = 1 + std::cos(2.0 * tmp) + std::cos(tmp) * std::sqrt(2 * (9 + std::cos(2 * tmp)));
+	//	Point c2 = { 0,0,0 };
+	//	Point c3 = { 0,0,0 };
+	//	ecnt = mesh->GetPointToNeighborEdges(i, ehs);
+	//	fcnt = mesh->GetPointToNeighborFaces(i, fhs);
+	//	std::vector<Point>ep(n);
+	//	std::vector<Point>fp(n);
+	//    //这里需要按照半边顺序进行放入
+	//	for (j = 0; j < n; j++) {
+	//		auto edge = mesh->GetEdge(ehs[j]);
+	//		if (edge->GetPointId(0) == i) {
+	//			ep[j] = EdgePts[ehs[j]][1];
+	//		}
+	//		else {
+	//			ep[j] = EdgePts[ehs[j]][0];
+	//		}
+	//		auto face = mesh->GetFace(fhs[j]);
+	//		for (k = 0; k < 4; k++) {
+	//			if (face->GetPointId(k) == i) {
+	//				fp[j] = FacePts[fhs[j]][(k + 2) % 4];
+	//			}
+	//		}
+	//	}
+	//	for (j = 0; j < n; j++) {
+	//		c2 += ep[j] * An * std::cos(2 * j * tmp) + fp[j] * (std::cos(2 * j * tmp) + std::cos((2 * j + 2) * tmp));
+	//		c3 += ep[(j + 1) % n] * An * std::cos(2 * j * tmp) + fp[(j + 1) % n] * (std::cos(2 * j * tmp) + std::cos((2 * j + 2) * tmp));
+	//	}
+	//	CornerNormals[i] = (c2.cross(c3)).normalized();
+	//	//std::cout << CornerNormals[i].dot(PointNormals[i]) << '\n';
+	//}
+
 
 	SurfaceMesh::Pointer res = SurfaceMesh::New();
 	Points::Pointer ControlPoints = Points::New();
@@ -176,14 +269,9 @@ bool QuadSubdivision::Execute()
 		ControlPts[2][2] = FacePts[FaceId][2];
 		ControlPts[2][1] = FacePts[FaceId][3];
 
-		//for (j = 0; j < 4; j++) {
-		//	for (i = 0; i < 4; i++) {
-		//		ControlPoints->AddPoint(ControlPts[j][i]);
-		//	}
-		//}
-		int n = 9;
-		auto tmp = GenerateBezierSurface(ControlPts, n);
 
+		int n = 17;
+		auto& tmp = GenerateBezierSurface(ControlPts, n);
 		for (j = 0; j < n; j++) {
 			for (i = 0; i < n; i++) {
 				ControlPoints->AddPoint(tmp[j][i]);

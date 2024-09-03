@@ -102,6 +102,10 @@ public:
   virtual void DeleteFace(const IGsize faceId);
 
   void ReplacePointReference(const IGsize fromPtId, const IGsize toPtId);
+  virtual bool IsBoundryFace(igIndex);
+  virtual bool IsBoundryEdge(igIndex);
+  virtual bool IsBoundryPoint(igIndex);
+  virtual bool IsCornerPoint(igIndex);
 
 protected:
   SurfaceMesh();

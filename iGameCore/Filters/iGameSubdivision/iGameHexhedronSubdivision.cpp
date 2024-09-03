@@ -1,8 +1,53 @@
 #include "iGameHexhedronSubdivision.h"
 IGAME_NAMESPACE_BEGIN
+// 计算 Bernstein 多项式的值
+double Bernstein(int i, int n, double t) {
+	double binomial_coeff = 1.0;
+	for (int j = 0; j < i; ++j) {
+		binomial_coeff *= (n - j);
+		binomial_coeff /= (j + 1);
+	}
+	return binomial_coeff * pow(t, i) * pow(1 - t, n - i);
+}
+
+// 生成 Bezier 曲面上的点
+std::vector<std::vector<std::vector<Point>>> GenerateBezierSurface(Point ControlPts[4][4][4], int resolution) {
+	std::vector<std::vector<std::vector<Point>>> bezierSurface(resolution,
+		std::vector<std::vector<Point>>(resolution, std::vector<Point>(resolution)));
+
+	for (int u = 0; u < resolution; ++u) {
+		for (int v = 0; v < resolution; ++v) {
+			for (int w = 0; w < resolution; ++w) {
+
+				double u_t = static_cast<double>(u) / (resolution - 1);
+				double v_t = static_cast<double>(v) / (resolution - 1);
+				double w_t = static_cast<double>(w) / (resolution - 1);
+				Point p = { 0, 0, 0 }; // Assuming Point has a default constructor
+
+				// 双重循环计算每个控制点的权重
+				for (int i = 0; i < 4; ++i) {
+					for (int j = 0; j < 4; ++j) {
+						for (int k = 0; k < 4; ++k) {
+							double Bu = Bernstein(i, 3, u_t);
+							double Bv = Bernstein(j, 3, v_t);
+							double Bw = Bernstein(k, 3, w_t);
+							Point weightedPoint = ControlPts[i][j][k] * (Bu * Bv * Bw);
+							p += weightedPoint;
+						}
+					}
+				}
+
+				bezierSurface[u][v][w] = p;
+			}
+		}
+	}
+
+	return bezierSurface;
+}
 
 bool HexhedronSubdivision::Execute()
 {
+	std::cout << "dsa\n";
 	this->mesh = DynamicCast<VolumeMesh>(this->mesh);
 	if (mesh == nullptr) { return false; }
 
@@ -63,7 +108,7 @@ bool HexhedronSubdivision::Execute()
 		//每个面有四个内点
 		FacePts[i].resize(4);
 		neighborNum = mesh->GetFaceToNeighborVolumes(i, cellIds);
-		if (neighborNum == 2) {
+		if (1) {
 			for (j = 0; j < 4; j++) {
 				auto cell = mesh->GetVolume(cellIds[0]);
 				for (k = 0; k < 8; k++) {
@@ -72,6 +117,7 @@ bool HexhedronSubdivision::Execute()
 						break;
 					}
 				}
+				continue;
 				cell = mesh->GetVolume(cellIds[1]);
 				for (k = 0; k < 8; k++) {
 					if (cell->GetPointId(k) == vhs[j]) {
@@ -130,23 +176,18 @@ bool HexhedronSubdivision::Execute()
 		}
 		neighborNum = index;
 		//如果是内部边
-		if (neighborNum == 4) {
+		if (1) {
 			for (j = 0; j < 2; j++) {
 				EdgePts[i][j] = Point{ 0,0,0 };
-				int tmpindex = 0;
 				for (k = 0; k < neighborNum; k++) {
 					auto cell = mesh->GetVolume(cellIds[k]);
 
 					for (igIndex id = 0; id < 8; id++) {
 						if (cell->GetPointId(id) == vhs[j]) {
 							EdgePts[i][j] += inPts[cellIds[k]][id];
-							tmpindex++;
 							break;
 						}
 					}
-				}
-				if (tmpindex != neighborNum) {
-					std::cout << "dsad" << '\n';
 				}
 				EdgePts[i][j] /= neighborNum;
 			}
@@ -167,9 +208,7 @@ bool HexhedronSubdivision::Execute()
 		auto p = mesh->GetPoint(i);
 		//每个顶点一个角点
 		//如果是内部点
-		CornerPts[i] = p;
-		continue;
-		if (!mesh->isBoundryPoint(i)) {
+		if (1) {
 			neighborNum = mesh->GetPointToNeighborVolumes(i, cellIds);
 			CornerPts[i] = { 0,0,0 };
 			for (j = 0; j < neighborNum; j++) {
@@ -184,13 +223,13 @@ bool HexhedronSubdivision::Execute()
 			CornerPts[i] /= neighborNum;
 
 		}
-		else if (!mesh->isCornerPoint(i)) {
+		else if (!mesh->IsCornerPoint(i)) {
 			igIndex fhs[64];
 			int count = 0;
 			CornerPts[i] = { 0,0,0 };
 			neighborNum = mesh->GetPointToNeighborFaces(i, fhs);
 			for (j = 0; j < neighborNum; j++) {
-				if (mesh->isBoundryFace(fhs[j])) {
+				if (mesh->IsBoundryFace(fhs[j])) {
 					count++;
 					auto f = mesh->GetFace(fhs[j]);
 
@@ -284,7 +323,7 @@ bool HexhedronSubdivision::Execute()
 
 		//k边
 		for (i = 0; i < 4; i++) {
-			auto EdgeID = mesh->GetEdgeIdFormPointIds(vhs[i],vhs[i+4]);
+			auto EdgeID = mesh->GetEdgeIdFormPointIds(vhs[i], vhs[i + 4]);
 			auto edge = mesh->GetEdge(EdgeID);
 			switch (i)
 			{
@@ -400,21 +439,17 @@ bool HexhedronSubdivision::Execute()
 		//SubdivisionCells->AddCellId8(0, 1, 2, 3, 4, 5, 6, 7);
 
 		//continue;
-		const int n = 5;
-		std::array<std::array<std::array<Point, n>, n>, n> SubdivisionPts;
 
-
-		for (int i = 0; i < n; ++i) {
-			double u = static_cast<double>(i) / (n - 1);
-			for (int j = 0; j < n; ++j) {
-				double v = static_cast<double>(j) / (n - 1);
-				for (int k = 0; k < n; ++k) {
-					double w = static_cast<double>(k) / (n - 1);
-					SubdivisionPts[i][j][k] = BSplineSurface(ControlPts, u, v, w);
-					ControlPoints->AddPoint(SubdivisionPts[i][j][k]);
+		int n = 65;
+		auto tmp = GenerateBezierSurface(ControlPts, n);
+		for (k = 0; k < n; k++) {
+			for (j = 0; j < n; j++) {
+				for (i = 0; i < n; i++) {
+					ControlPoints->AddPoint(tmp[k][j][i]);
 				}
 			}
 		}
+
 		int size[3] = { n,n,n };
 		igIndex tmpvhs[8] = {
 						0,1,1 + size[0] * size[1],size[0] * size[1],
@@ -449,49 +484,7 @@ bool HexhedronSubdivision::Execute()
 
 }
 
-Point HexhedronSubdivision::B_spline(Point p[4], float t)
-{
-	double B[4];
-	B[0] = (1 - t) * (1 - t) * (1 - t) / 6.0;
-	B[1] = (3 * t * t * t - 6 * t * t + 4) / 6.0;
-	B[2] = (-3 * t * t * t + 3 * t * t + 3 * t + 1) / 6.0;
-	B[3] = t * t * t / 6.0;
 
-	Point result = { 0, 0, 0 };
-	for (int i = 0; i < 4; ++i) {
-		result[0] += B[i] * p[i][0];
-		result[1] += B[i] * p[i][1];
-		result[2] += B[i] * p[i][2];
-	}
-	return result;
-}
 
-double BezierBasis(int i, double t) {
-	switch (i) {
-	case 0: return (1 - t) * (1 - t) * (1 - t);
-	case 1: return 3 * t * (1 - t) * (1 - t);
-	case 2: return 3 * t * t * (1 - t);
-	case 3: return t * t * t;
-	default: throw std::out_of_range("Index out of bounds for Bezier basis");
-	}
-}
-Point HexhedronSubdivision::BSplineSurface(Point ControlPts[4][4][4], double u, double v, double w)
-{
-	Point result;
-	for (int i = 0; i < 3; ++i) {
-		result[i] = 0.0;
-		for (int i0 = 0; i0 < 4; ++i0) {
-			for (int i1 = 0; i1 < 4; ++i1) {
-				for (int i2 = 0; i2 < 4; ++i2) {
-					result[i] += ControlPts[i0][i1][i2][i] *
-						BezierBasis(i0, u) *
-						BezierBasis(i1, v) *
-						BezierBasis(i2, w);
-				}
-			}
-		}
-	}
-	return result;
-}
 
 IGAME_NAMESPACE_END

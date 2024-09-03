@@ -122,11 +122,11 @@ public:
     }
     igIndex GetCellDimension(igIndex CellTyp) { return 3; };
 
-    bool isBoundryVolume(igIndex VolumeId);
-    bool isBoundryFace(igIndex FaceId);
-    bool isBoundryEdge(igIndex EdgeId);
-    bool isBoundryPoint(igIndex PointId);
-    bool isCornerPoint(igIndex PointId);
+    bool IsBoundryVolume(igIndex VolumeId) ;
+    bool IsBoundryFace(igIndex FaceId);
+    bool IsBoundryEdge(igIndex EdgeId); 
+    bool IsBoundryPoint(igIndex PointId);
+    bool IsCornerPoint(igIndex PointId);
 protected:
     VolumeMesh();
     ~VolumeMesh() override = default;
