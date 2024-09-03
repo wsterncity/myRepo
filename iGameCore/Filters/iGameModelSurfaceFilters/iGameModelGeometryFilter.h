@@ -46,24 +46,28 @@ public:
      * algorithm without using it as a filter (i.e., no pipeline updates).
      * Also some internal methods with additional options.
      */
-    int ExecuteWithPolyData(DataObject::Pointer input, PolyData* output,
-                            PolyData* exc);
-    virtual int ExecuteWithPolyData(DataObject::Pointer, PolyData*);
+    int ExecuteWithPolyData(DataObject::Pointer input, PolyData::Pointer output,
+        PolyData::Pointer exc);
+    virtual int ExecuteWithPolyData(DataObject::Pointer, PolyData::Pointer);
 
-    int ExecuteWithUnstructuredGrid(DataObject::Pointer input, PolyData* output,
-                                    PolyData* exc);
+    int ExecuteWithVolumeMesh(DataObject::Pointer input, PolyData::Pointer output,
+        PolyData::Pointer exc);
+    virtual int ExecuteWithVolumeMesh(DataObject::Pointer input,
+        PolyData::Pointer output);
+    int ExecuteWithUnstructuredGrid(DataObject::Pointer input, PolyData::Pointer output,
+        PolyData::Pointer exc);
     virtual int ExecuteWithUnstructuredGrid(DataObject::Pointer input,
-                                            PolyData* output);
+        PolyData::Pointer output);
 
-    int ExecuteWithStructuredGrid(DataObject::Pointer input, PolyData* output,
-                                  PolyData* exc, bool* extractFace = nullptr);
+    int ExecuteWithStructuredGrid(DataObject::Pointer input, PolyData::Pointer output,
+        PolyData::Pointer exc, bool* extractFace = nullptr);
     virtual int ExecuteWithStructuredGrid(DataObject::Pointer input,
-                                          PolyData* output,
+        PolyData::Pointer output,
                                           bool* extractFace = nullptr);
 
-    int ExecuteWithDataSet(DataObject::Pointer input, PolyData* output,
-                           PolyData* exc);
-    virtual int ExecuteWithDataSet(DataObject::Pointer input, PolyData* output);
+    int ExecuteWithDataSet(DataObject::Pointer input, PolyData::Pointer output,
+        PolyData::Pointer exc);
+    virtual int ExecuteWithDataSet(DataObject::Pointer input, PolyData::Pointer output);
     ///@}
     void SetInput(DataObject::Pointer ip) { this->input = ip; }
     PolyData::Pointer GetOutPut() { return this->output; }

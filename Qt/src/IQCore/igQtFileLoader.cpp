@@ -38,8 +38,6 @@ void igQtFileLoader::OpenFile(const std::string& filePath)
 	using namespace iGame;
 	if (filePath.empty() || strrchr(filePath.data(), '.') == nullptr)return;
 	
-
-
 	auto obj = iGame::FileIO::ReadFile(filePath);
 	auto filename = filePath.substr(filePath.find_last_of('/') + 1);
 	obj->SetName(filename.substr(0, filename.find_last_of('.')).c_str());
