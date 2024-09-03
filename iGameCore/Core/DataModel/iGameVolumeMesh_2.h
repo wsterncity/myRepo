@@ -196,10 +196,6 @@ public:
     bool IsDrawable() override { return true; }
     void ViewCloudPicture(Scene* scene, int index, int demension = -1) override;
 
-    void SetAttributeWithPointData(ArrayObject::Pointer attr,
-        igIndex i = -1) override;
-
-    void SetAttributeWithCellData(ArrayObject::Pointer attr, igIndex i = -1);
 
 private:
     GLVertexArray m_PointVAO, m_LineVAO, m_TriangleVAO;
