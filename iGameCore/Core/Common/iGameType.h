@@ -120,8 +120,7 @@ using IGint = int;
 
 using DataObjectType = IGenum;
 using DataObjectId = int;
-
-
+//using IGrange = std::pair<float, float>;
 enum Color {
 	None = 0,
 	Red,

@@ -194,10 +194,4 @@ StreamingData::Pointer DataObject::GetTimeFrames() {
   return m_TimeFrames;
 }
 
-void DataObject::SetScalarRange(std::pair<float, float> range) {
-
-    m_Scalar_range = range;
-    ProcessSubDataObjects(&DataObject::SetScalarRange, range);
-}
-
 IGAME_NAMESPACE_END

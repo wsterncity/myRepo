@@ -91,8 +91,9 @@ int VTKAbstractReader::ReadPointCoordinates(Points::Pointer points, int PointsNu
 		//	<< " for file: " << (fname ? fname : "(Null FileName)"));
 		return 0;
 	}
-
-	data = DynamicCast<FloatArray>(this->ReadArray(line, PointsNum, 3));
+	//精度到时候再转换
+	//data = DynamicCast<FloatArray>(this->ReadArray(line, PointsNum, 3));
+    data = DynamicCast<FloatArray>(this->ReadArray("float", PointsNum, 3));
 	if (data != nullptr) {
 		//points->SetArray(data->RawPointer(), PointsNum);
 		float p[3]{};
@@ -909,17 +910,18 @@ const void VTKAbstractReader::TransferVtkCellToiGameCell(IntArray::Pointer VtkCe
 			break;
 		case iGame::VTKAbstractReader::POLYHEDRON://42
 		{
-			igIndex index = 0;
-			igIndex realvhs[256];
-			igIndex realsize = 0;
-			while (index < size)
-			{
-				realsize = vhs[index++];
-				for (igIndex id = 0; id < realsize; id++) {
-					realvhs[id] = vhs[index++];
-				}
-				Faces->AddCellIds(realvhs, realsize);
-			}
+            Volumes->AddCellIds(vhs, size);
+			//igIndex index = 0;
+			//igIndex realvhs[256];
+			//igIndex realsize = 0;
+			//while (index < size)
+			//{
+			//	realsize = vhs[index++];
+			//	for (igIndex id = 0; id < realsize; id++) {
+			//		realvhs[id] = vhs[index++];
+			//	}
+			//	Faces->AddCellIds(realvhs, realsize);
+			//}
 		}
 		break;
 		default:
@@ -1055,7 +1057,8 @@ const void VTKAbstractReader::TransferVtkCellToiGameCell(ArrayObject::Pointer Ce
 			break;
 		case iGame::VTKAbstractReader::POLYHEDRON://42
 		{
-			igIndex index = 0;
+            Volumes->AddCellIds(vhs, size);
+			/*igIndex index = 0;
 			igIndex realvhs[256];
 			igIndex realsize = 0;
 			while (index < size)
@@ -1065,7 +1068,7 @@ const void VTKAbstractReader::TransferVtkCellToiGameCell(ArrayObject::Pointer Ce
 					realvhs[id] = vhs[index++];
 				}
 				Faces->AddCellIds(realvhs, realsize);
-			}
+			}*/
 		}
 		break;
 		default:

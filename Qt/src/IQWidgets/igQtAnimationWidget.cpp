@@ -95,7 +95,8 @@ igQtAnimationWidget::igQtAnimationWidget(QWidget *parent) : QWidget(parent), ui(
 
 
     //  Init the Animation Components if  model have the time value.
-    std::vector<float> timevalue{1.0, 2.0, 3.0, 4.0};
+//    std::vector<float> timevalue{1.0, 2.0, 3.0, 4.0};
+    std::vector<float> timevalue{};
     if(timevalue.empty() || timevalue.size() == 1) return;
     VcrController->initController(static_cast<int>(timevalue.size()), 1);
     ui->treeWidget_snap->initAnimationTreeWidget(timevalue);
@@ -121,12 +122,34 @@ void igQtAnimationWidget::playAnimation_snap(int keyframe_idx){
     currentObject->ClearSubDataObject();
     for(int i = 0; i < frameSubFiles->Size(); i ++){
         auto sub = FileIO::ReadFile(frameSubFiles->GetElement(i));
-        sub->SetViewStyle(currentObject->GetViewStyle());
-        sub->ConvertToDrawableData();
         currentObject->AddSubDataObject(sub);
     }
-    currentObject->SetScalarRange(currentObject->GetScalarRange());
-    currentObject->ViewCloudPicture(currentScene, 0);
+
+    /* process Object's scalar range*/
+    IGsize scalar_size = currentObject->GetAttributeSet() ? currentObject->GetAttributeSet()->GetAllAttributes()->GetNumberOfElements() : 0;
+    for(IGsize k = 0; k < scalar_size; k ++){
+        auto& par_range = currentObject->GetAttributeSet()->GetAttribute(k).dataRange;
+//        float range_max = FLT_MIN;
+//        float range_min = FLT_MAX;
+//        for(auto it = currentObject->SubDataObjectIteratorBegin(); it != currentObject->SubDataObjectIteratorEnd(); ++ it){
+//            const auto& range = it->second->GetAttributeSet()->GetAttribute(k).dataRange;
+//            range_max = std::max(range_max, range.second);
+//            range_min = std::min(range_min, range.first );
+//        }
+        for(auto it = currentObject->SubDataObjectIteratorBegin(); it != currentObject->SubDataObjectIteratorEnd(); ++ it){
+            auto& range = it->second->GetAttributeSet()->GetAttribute(k).dataRange;
+            range.second = par_range.second;
+            range.first  = par_range.first;
+        }
+//        std::cout << "range : " << range_max << ' ' << range_min << '\n';
+    }
+    for(auto it = currentObject->SubDataObjectIteratorBegin(); it != currentObject->SubDataObjectIteratorEnd(); ++ it){
+        it->second->SetViewStyle(currentObject->GetViewStyle());
+        it->second->ConvertToDrawableData();
+    }
+    if(currentObject->GetAttributeIndex() != -1){
+        currentObject->ViewCloudPicture(currentScene, currentObject->GetAttributeIndex());
+    }
 //    else if(frameSubFiles->Size() == 1){
 //        auto newDataObject = FileIO::ReadFile(frameSubFiles->GetElement(0));
 //        newDataObject->SetTimeFrames(currentObject->GetTimeFrames());

@@ -637,6 +637,49 @@ void VolumeMesh::DeleteVolume(const IGsize volumeId) {
 	m_VolumeDeleteMarker->MarkDeleted(volumeId);
 }
 
+bool VolumeMesh::isBoundryVolume(igIndex VolumeId)
+{
+	igIndex fhs[64];
+	igIndex fcnt = this->GetVolumeFaceIds(VolumeId, fhs);
+	for (int i = 0; i < fcnt; i++) {
+		if (isBoundryFace(fhs[i]))return true;
+	}
+	return false;
+}
+bool VolumeMesh::isBoundryFace(igIndex FaceId)
+{
+	auto& link = m_VolumeFaceLinks->GetLink(FaceId);
+	if (link.size <= 1)return true;
+	else return false;
+}
+bool VolumeMesh::isBoundryEdge(igIndex EdgeId)
+{
+	igIndex fhs[64];
+	igIndex fcnt=this->GetEdgeToNeighborFaces(EdgeId, fhs);
+	for (int i = 0; i < fcnt; i++) {
+		if (isBoundryFace(fhs[i]))return true;
+	}
+	return false;
+}
+bool VolumeMesh::isBoundryPoint(igIndex PointId)
+{
+	igIndex fhs[64];
+	igIndex fcnt = this->GetPointToNeighborFaces(PointId, fhs);
+	for (int i = 0; i < fcnt; i++) {
+		if (isBoundryFace(fhs[i]))return true;
+	}
+	return false;
+}
+bool VolumeMesh::isCornerPoint(igIndex PointId)
+{
+	igIndex fhs[64];
+	igIndex fcnt = this->GetPointToNeighborFaces(PointId, fhs);
+	for (int i = 0; i < fcnt; i++) {
+		if (!isBoundryFace(fhs[i]))return false;
+	}
+	return true;
+
+}
 VolumeMesh::VolumeMesh()
 {
 	m_ViewStyle = IG_SURFACE;
@@ -913,7 +956,7 @@ void VolumeMesh::ViewCloudPicture(Scene* scene, int index, int demension) {
     auto& attr = this->GetAttributeSet()->GetAttribute(index);
     if (!attr.isDeleted) {
         if (attr.attachmentType == IG_POINT)
-            this->SetAttributeWithPointData(attr.pointer, demension);
+            this->SetAttributeWithPointData(attr.pointer, demension, attr.dataRange);
         else if (attr.attachmentType == IG_CELL)
             this->SetAttributeWithCellData(attr.pointer, demension);
     }
@@ -922,7 +965,7 @@ void VolumeMesh::ViewCloudPicture(Scene* scene, int index, int demension) {
 }
 
 void VolumeMesh::SetAttributeWithPointData(ArrayObject::Pointer attr,
-                               igIndex i) {
+                               igIndex i, const std::pair<float, float>& range) {
     if (m_ViewAttribute != attr || m_ViewDemension != i) {
         m_ViewAttribute = attr;
         m_ViewDemension = i;
@@ -930,15 +973,12 @@ void VolumeMesh::SetAttributeWithPointData(ArrayObject::Pointer attr,
         m_ColorWithCell = false;
         ScalarsToColors::Pointer mapper = ScalarsToColors::New();
 
-//        if (i == -1) {
-//            mapper->InitRange(attr);
-//        } else {
-//            mapper->InitRange(attr, i);
-//        }
-        {
-            if(m_Scalar_range.first != m_Scalar_range.second){
-                mapper->SetRange(m_Scalar_range.first, m_Scalar_range.second);
-            }
+        if(range.first != range.second){
+            mapper->SetRange(range.first, range.second * 2);
+        } else if (i == -1) {
+            mapper->InitRange(attr);
+        } else {
+            mapper->InitRange(attr, i);
         }
         m_Colors = mapper->MapScalars(attr, i);
         if (m_Colors == nullptr) { return; }

@@ -105,11 +105,11 @@ bool FileReader::ReadToBuffer()
 
 bool FileReader::CreateDataObject()
 {
-	// Í³¼Æ¸÷ÀàÐÍÔªËØµÄÊýÁ¿
+	// Í³ï¿½Æ¸ï¿½ï¿½ï¿½ï¿½ï¿½Ôªï¿½Øµï¿½ï¿½ï¿½ï¿½ï¿½
 	int numFaces = m_Data.GetNumberOfFaces();
 	int numVolumes = m_Data.GetNumberOfVolumes();
 
-	// »ìºÏÍø¸ñÀàÐÍÅÐ¶Ï
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶ï¿½
 	if (numFaces && numVolumes) {
 		VolumeMesh::Pointer mesh = VolumeMesh::New();
 		mesh->SetPoints(m_Data.GetPoints());
@@ -118,7 +118,7 @@ bool FileReader::CreateDataObject()
 		m_Output = mesh;
 	}
 
-	// ±íÃæÍø¸ñÀàÐÍÅÐ¶Ï
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶ï¿½
 	else if (numFaces) {
 		SurfaceMesh::Pointer mesh = SurfaceMesh::New();
 		mesh->SetPoints(m_Data.GetPoints());
@@ -127,7 +127,7 @@ bool FileReader::CreateDataObject()
 		m_Output = mesh;
 	}
 
-	// ÌåÍø¸ñÀàÐÍÅÐ¶Ï
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶ï¿½
 	else if (numVolumes) {
 		VolumeMesh::Pointer mesh = VolumeMesh::New();
 		mesh->SetPoints(m_Data.GetPoints());

@@ -21,9 +21,22 @@ private:
         : GLObject<GLTexture2dMultisample>{handle} {}
 
 public:
-    GLTexture2dMultisample() = default;
+    static void copyImageSubData(const GLTexture2dMultisample& source,
+                                 GLint srcLevel, GLint srcX, GLint srcY,
+                                 GLint srcZ,
+                                 const GLTexture2dMultisample& destination,
+                                 GLint dstLevel, GLint dstX, GLint dstY,
+                                 GLint dstZ, GLsizei srcWidth,
+                                 GLsizei srcHeight, GLsizei srcDepth) {
+        glCopyImageSubData(source.handle, GL_TEXTURE_2D_MULTISAMPLE, srcLevel,
+                           srcX, srcY, srcZ, destination.handle,
+                           GL_TEXTURE_2D_MULTISAMPLE, dstLevel, dstX, dstY,
+                           dstZ, srcWidth, srcHeight, srcDepth);
+    }
 
 public:
+    GLTexture2dMultisample() = default;
+
     // GLenum internal_format: https://registry.khronos.org/OpenGL-Refpages/gl4/html/glTexImage2D.xhtml
     // Sized Internal Format: GL_R8, GL_RG8, GL_RGB8, GL_RGBA8
     // Sized Internal Format: GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT24
@@ -34,6 +47,17 @@ public:
         glTextureStorage2DMultisample(handle, samples, internal_format, width,
                                       height, fixedsamplelocations);
     }
+
+    // GLenum texture: GL_TEXTURE1 - GL_TEXTURE15
+    // GL_TEXTURE0 is reserved to prevent other binding operations from being performed after a texture unit is activated.
+    void active(GLenum texture) {
+        if (texture == GL_TEXTURE0) {
+            throw std::runtime_error("GL_TEXTURE0 is reserved.");
+        }
+        glActiveTexture(texture);
+        glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, handle);
+        glActiveTexture(GL_TEXTURE0);
+    };
 
     // GLenum pname: GL_TEXTURE_WRAP_S, GL_TEXTURE_WRAP_T, GL_TEXTURE_MIN_FILTER, GL_TEXTURE_MAG_FILTER
     // GLint param: GL_CLAMP_TO_EDGE, GL_MIRRORED_REPEAT, GL_NEAREST, GL_LINEAR

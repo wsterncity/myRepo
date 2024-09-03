@@ -78,6 +78,7 @@ public:
     IGsize AddPoint(const Point& p) override;
     IGsize AddEdge(const IGsize ptId1, const IGsize ptId2) override;
     IGsize AddFace(igIndex* ptIds, int size) override;
+     
 
     // Delete element, necessarily called after RequestEditStatus()
     void DeletePoint(const IGsize ptId) override;
@@ -89,6 +90,9 @@ public:
     void GetCell(igIndex cellId, Cell* cell) {
         cell = this->GetVolume(cellId);
     };
+    Cell* GetCell(igIndex cellId) {
+        return this->GetVolume(cellId);
+    }
     IntArray* GetCellTypes() {
         IntArray::Pointer Types = IntArray::New();
         Types->Resize(this->GetNumberOfVolumes());
@@ -118,6 +122,11 @@ public:
     }
     igIndex GetCellDimension(igIndex CellTyp) { return 3; };
 
+    bool isBoundryVolume(igIndex VolumeId);
+    bool isBoundryFace(igIndex FaceId);
+    bool isBoundryEdge(igIndex EdgeId);
+    bool isBoundryPoint(igIndex PointId);
+    bool isCornerPoint(igIndex PointId);
 protected:
     VolumeMesh();
     ~VolumeMesh() override = default;
@@ -153,7 +162,7 @@ public:
     void ViewCloudPicture(Scene* scene, int index, int demension = -1) override;
 
     void SetAttributeWithPointData(ArrayObject::Pointer attr,
-                                   igIndex i = -1) override;
+                                   igIndex i = -1, const std::pair<float, float>& range = {0.f, 0.f}) override;
 
     void SetAttributeWithCellData(ArrayObject::Pointer attr, igIndex i = -1);
 
@@ -174,7 +183,7 @@ private:
     bool m_Flag{false};
     bool m_UseColor{false};
     bool m_ColorWithCell{false};
-    int m_PointSize{4};
+    int m_PointSize{8};
     int m_LineWidth{1};
     int m_CellPositionSize{};
 

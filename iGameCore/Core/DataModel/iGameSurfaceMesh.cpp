@@ -25,7 +25,7 @@ Line *SurfaceMesh::GetEdge(const IGsize edgeId) {
   int ncells = m_Edges->GetCellIds(edgeId, cell);
 
   if (m_Edge == nullptr) {
-      m_Edge = Line::New();
+    m_Edge = Line::New();
   }
 
   m_Edge->PointIds->Reset();
@@ -567,9 +567,7 @@ void SurfaceMesh::ReplacePointReference(const IGsize fromPtId,
   m_FaceLinks->SetLink(toPtId, link2.pointer, link2.size);
 }
 
-SurfaceMesh::SurfaceMesh() {
-    m_ViewStyle = IG_SURFACE;
-};
+SurfaceMesh::SurfaceMesh() { m_ViewStyle = IG_SURFACE; };
 
 void SurfaceMesh::Draw(Scene *scene) {
   if (!m_Visibility) {
@@ -584,13 +582,13 @@ void SurfaceMesh::Draw(Scene *scene) {
   }
   scene->UpdateUniformBuffer();
 
-   if (m_UseColor && m_ColorWithCell) {
-       scene->GetShader(Scene::PATCH)->use();
-       m_CellVAO.bind();
-       glad_glDrawArrays(GL_TRIANGLES, 0, m_CellPositionSize);
-       m_CellVAO.release();
-       return;
-   }
+  if (m_UseColor && m_ColorWithCell) {
+    scene->GetShader(Scene::PATCH)->use();
+    m_CellVAO.bind();
+    glad_glDrawArrays(GL_TRIANGLES, 0, m_CellPositionSize);
+    m_CellVAO.release();
+    return;
+  }
 
   if (m_ViewStyle & IG_POINTS) {
     scene->GetShader(Scene::NOLIGHT)->use();
@@ -636,29 +634,6 @@ void SurfaceMesh::Draw(Scene *scene) {
                         GL_UNSIGNED_INT, 0);
     m_TriangleVAO.release();
   }
-
-  // if (m_ViewStyle == IG_SURFACE_WITH_EDGE) {
-  //     if (m_UseColor) {
-  //         scene->GetShader(Scene::NOLIGHT)->use();
-  //     } else {
-  //         auto shader = scene->GetShader(Scene::PURECOLOR);
-  //         shader->use();
-  //         shader->setUniform(shader->getUniformLocation("inputColor"),
-  //                            igm::vec3{0.0f, 0.0f, 0.0f});
-  //     }
-
-  //    m_LineVAO.bind();
-  //    glLineWidth(m_LineWidth);
-  //    glad_glDrawElements(GL_LINES, m_LineIndices->GetNumberOfIds(),
-  //                        GL_UNSIGNED_INT, 0);
-  //    m_LineVAO.release();
-
-  //    scene->GetShader(Scene::PATCH)->use();
-  //    m_TriangleVAO.bind();
-  //    glad_glDrawElements(GL_TRIANGLES, m_TriangleIndices->GetNumberOfIds(),
-  //                        GL_UNSIGNED_INT, 0);
-  //    m_TriangleVAO.release();
-  //}
 }
 
 void SurfaceMesh::DrawPhase1(Scene *scene) {
@@ -756,8 +731,8 @@ void SurfaceMesh::DrawPhase2(Scene *scene) {
       scene->GetDrawCullDataBuffer().target(GL_UNIFORM_BUFFER);
       scene->GetDrawCullDataBuffer().bindBase(5);
 
-      shader->setUniform(shader->getUniformLocation("depthPyramid"),
-                         scene->HizTexture().getTextureHandle());
+      scene->HizTexture().active(GL_TEXTURE1);
+      shader->setUniform(shader->getUniformLocation("depthPyramid"), 1);
 
       auto count = m_Meshlets->MeshletsCount();
       glDispatchCompute(((count + 255) / 256), 1, 1);
@@ -827,8 +802,8 @@ void SurfaceMesh::TestOcclusionResults(Scene *scene) {
       scene->GetDrawCullDataBuffer().target(GL_UNIFORM_BUFFER);
       scene->GetDrawCullDataBuffer().bindBase(5);
 
-      shader->setUniform(shader->getUniformLocation("depthPyramid"),
-                         scene->HizTexture().getTextureHandle());
+      scene->HizTexture().active(GL_TEXTURE1);
+      shader->setUniform(shader->getUniformLocation("depthPyramid"), 1);
 
       auto count = m_Meshlets->MeshletsCount();
       glDispatchCompute(((count + 255) / 256), 1, 1);
@@ -862,7 +837,7 @@ void SurfaceMesh::ConvertToDrawableData() {
   if (m_Positions && m_Positions->GetMTime() > this->GetMTime()) {
     return;
   }
- 
+
   if (!m_Flag) {
     m_PointVAO.create();
     m_LineVAO.create();
@@ -965,30 +940,30 @@ void SurfaceMesh::ConvertToDrawableData() {
   }
 }
 
-void SurfaceMesh::ViewCloudPicture(Scene* scene, int index, int demension) {
+void SurfaceMesh::ViewCloudPicture(Scene *scene, int index, int demension) {
   if (index == -1) {
     m_UseColor = false;
     m_ViewAttribute = nullptr;
     m_ViewDemension = -1;
     m_ColorWithCell = false;
-    //scene->Update();
+    scene->Update();
     return;
   }
-  //scene->MakeCurrent();
+  scene->MakeCurrent();
   m_AttributeIndex = index;
   auto &attr = this->GetAttributeSet()->GetAttribute(index);
   if (!attr.isDeleted) {
     if (attr.attachmentType == IG_POINT)
-      this->SetAttributeWithPointData(attr.pointer, demension);
+      this->SetAttributeWithPointData(attr.pointer, demension, attr.dataRange);
     else if (attr.attachmentType == IG_CELL)
       this->SetAttributeWithCellData(attr.pointer, demension);
   }
-  //scene->DoneCurrent();
-  //scene->Update();
+  scene->DoneCurrent();
+  scene->Update();
 }
 
 void SurfaceMesh::SetAttributeWithPointData(ArrayObject::Pointer attr,
-                                            igIndex i) {
+                                            igIndex i, const std::pair<float, float>& range) {
   if (m_ViewAttribute != attr || m_ViewDemension != i) {
     m_ViewAttribute = attr;
     m_ViewDemension = i;

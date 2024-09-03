@@ -5,10 +5,8 @@
 #include "iGameFilter.h"
 #include "iGameSurfaceMesh.h"
 #include "iGameVolumeMesh.h"
-
+#include "iGameUnstructuredMesh.h"
 IGAME_NAMESPACE_BEGIN
-
-#define UnstructuredGrid VolumeMesh
 
 class StructuredGrid : public DataObject {
 public:
@@ -70,10 +68,13 @@ public:
     void SetInput(DataObject::Pointer ip) { this->input = ip; }
     PolyData::Pointer GetOutPut() { return this->output; }
 
+    void CompositeAttribute(std::vector<igIndex>& f2c,AttributeSet* inAllDataArray,AttributeSet* outAllDataArray);
+
+
 protected:
     iGameModelGeometryFilter();
-    //Í¨³£ÔÚÎÄ¼şÀï»áÓĞ±ê×¢±íÃæĞÅÏ¢£¬Èç¹ûÓĞÔò²»ĞèÒªÕâ±ßÔËËã£¬
-    //Ö»ĞèÒª°ÑattributeµÄĞÅÏ¢copyÒ»·İ¸ø±íÃæ¾Í¿ÉÒÔ
+    //é€šå¸¸åœ¨æ–‡ä»¶é‡Œä¼šæœ‰æ ‡æ³¨è¡¨é¢ä¿¡æ¯ï¼Œå¦‚æœæœ‰åˆ™ä¸éœ€è¦è¿™è¾¹è¿ç®—ï¼Œ
+    //åªéœ€è¦æŠŠattributeçš„ä¿¡æ¯copyä¸€ä»½ç»™è¡¨é¢å°±å¯ä»¥
     PolyData::Pointer excFaces;
     DataObject::Pointer input;
     PolyData::Pointer output;
@@ -103,6 +104,7 @@ protected:
     int NonlinearSubdivisionLevel;
 
     bool Delegation;
+  
 
 private:
 };

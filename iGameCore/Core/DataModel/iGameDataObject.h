@@ -34,8 +34,6 @@ public:
 
   StreamingData::Pointer GetTimeFrames();
   void SetTimeFrames(StreamingData::Pointer p) { m_TimeFrames = p; }
-  void SetScalarRange(std::pair<float, float> range);
-  std::pair<float, float> GetScalarRange() { return m_Scalar_range; }
 
   void SetAttributeSet(AttributeSet::Pointer p) { m_Attributes = p; }
   AttributeSet*GetAttributeSet() { return m_Attributes.get(); }
@@ -110,8 +108,10 @@ public:
   using SubIterator = typename SubDataObjectsHelper::Iterator;
   using SubConstIterator = typename SubDataObjectsHelper::ConstIterator;
 
+  void ResetAttributeRange();
   DataObject::Pointer GetSubDataObject(DataObjectId id);
  void SetParentDataObject(DataObject* parent) {m_Parent = parent;}
+
 
   DataObjectId AddSubDataObject(DataObject::Pointer obj);
   void RemoveSubDataObject(DataObjectId id);
@@ -168,7 +168,6 @@ protected:
   friend class SubDataObjectsHelper;
   SmartPointer<SubDataObjectsHelper> m_SubDataObjectsHelper{};
   DataObject *m_Parent{nullptr};
-  std::pair<float, float> m_Scalar_range {0, 0};
 
 
   template <typename Functor, typename... Args>
@@ -184,7 +183,7 @@ public:
     virtual void DrawPhase2(Scene *);
     virtual void TestOcclusionResults(Scene *);
     virtual void ConvertToDrawableData();
-    virtual void MakeDrawable() { m_Drawable = true; }
+    virtual void ChangeDrawable(bool drawScalar) { m_Drawable = drawScalar; }
     virtual bool IsDrawable() { return m_Drawable; }
 
     virtual void ViewCloudPicture(Scene* ,int index, int dimension = -1);
@@ -211,7 +210,6 @@ protected:
     int m_AttributeDimension{-1};
     bool m_Visibility{true};
     bool m_Drawable{false};
-
     int m_CurrentTimeframeIndex{-1};
 };
 

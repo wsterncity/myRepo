@@ -102,49 +102,34 @@ bool iGame::iGameVTSReader::Parsing() {
         ArrayObject::Pointer  array;
         std::string scalarName = elem->Attribute("Name");
         const char* type = elem->Attribute("type");
+
 //        int scalarComponents = mAtoi(elem->Attribute("NumberOfComponents"));
         if(data)
         {
+            float range_max = FLT_MIN;
+            float range_min = FLT_MAX;
             if(!strncmp(type, "Float32", 7)){
                 FloatArray::Pointer arr = FloatArray::New();
                 float ps[3] = { 0 };
                 char* token = strtok(const_cast<char*>(data), " ");
                 while (token != nullptr) {
                     for(float & i : ps) {
-
                         i = mAtof(token);
 //                        i /= 0.010064;
 //                        i *= 0.12;
 //                        i = std::abs(i);
+                        if(i > range_max) range_max = i;
+                        else if(i < range_min) range_min = i;
                         token = strtok(nullptr, " ");
                     }
                     arr->AddElement(ps);
                 }
                 array = arr;
             }
-
             if(array != nullptr){
                 array->SetName(scalarName);
-                m_Data.GetData()->AddScalar(IG_POINT, array);
+                m_Data.GetData()->AddScalar(IG_POINT, array, {range_min, range_max});
             }
-
-//            if(dataSet->GetPointData() == nullptr)
-//            {
-//                pointData = iGamePointData::New();
-//                dataSet->SetPointData(pointData);
-//            }
-//            else {
-//                pointData = dataSet->GetPointData();
-//            }
-//            ScalarData = dynamic_cast<iGameFloatArray *>(pointData->GetScalars(scalarName));
-//            if(ScalarData == nullptr)
-//            {
-//                ScalarData = iGameFloatArray::New();
-//                ScalarData->SetName(scalarName);
-//                ScalarData->SetNumberOfComponents(scalarComponents);
-//                pointData->AddScalars(ScalarData);
-//            }
-
 
         }
 
