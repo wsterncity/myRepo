@@ -44,6 +44,45 @@ mat<4, 4, T> rotate(mat<4, 4, T> const& m, T angle, vec<3, T> const& v) {
 }
 
 template<typename T>
+mat<4, 4, T> rotate_around_axis(mat<4, 4, T> const& m, T angle,
+                                vec<3, T> const& axis, vec<3, T> const& point) {
+    T c = cos(angle);
+    T s = sin(angle);
+    vec<3, T> a = axis.normalized();
+
+    // 平移到原点
+    mat<4, 4, T> T_negP = mat<4, 4, T>::identity();
+    T_negP[3][0] = -point.x;
+    T_negP[3][1] = -point.y;
+    T_negP[3][2] = -point.z;
+
+    // 构造旋转矩阵
+    mat<4, 4, T> R = mat<4, 4, T>::identity();
+    R[0][0] = c + (1 - c) * a.x * a.x;
+    R[0][1] = (1 - c) * a.x * a.y - s * a.z;
+    R[0][2] = (1 - c) * a.x * a.z + s * a.y;
+
+    R[1][0] = (1 - c) * a.y * a.x + s * a.z;
+    R[1][1] = c + (1 - c) * a.y * a.y;
+    R[1][2] = (1 - c) * a.y * a.z - s * a.x;
+
+    R[2][0] = (1 - c) * a.z * a.x - s * a.y;
+    R[2][1] = (1 - c) * a.z * a.y + s * a.x;
+    R[2][2] = c + (1 - c) * a.z * a.z;
+
+    // 平移回原点
+    mat<4, 4, T> T_P = mat<4, 4, T>::identity();
+    T_P[3][0] = point.x;
+    T_P[3][1] = point.y;
+    T_P[3][2] = point.z;
+
+    // 合成最终矩阵
+    mat<4, 4, T> Result = T_P * R * T_negP * m;
+    return Result;
+}
+
+
+template<typename T>
 mat<4, 4, T> lookAt(const vec<3, T>& eye, const vec<3, T>& center,
                     const vec<3, T>& up) {
     return lookAtRH(eye, center, up);

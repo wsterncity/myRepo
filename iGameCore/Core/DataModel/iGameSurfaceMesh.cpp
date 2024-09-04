@@ -764,7 +764,7 @@ void SurfaceMesh::DrawPhase2(Scene *scene) {
       scene->GetDrawCullDataBuffer().target(GL_UNIFORM_BUFFER);
       scene->GetDrawCullDataBuffer().bindBase(5);
 
-      scene->HizTexture().active(GL_TEXTURE1);
+      scene->DepthPyramid().active(GL_TEXTURE1);
       shader->setUniform(shader->getUniformLocation("depthPyramid"), 1);
 
       auto count = m_Meshlets->MeshletsCount();
@@ -835,7 +835,7 @@ void SurfaceMesh::TestOcclusionResults(Scene *scene) {
       scene->GetDrawCullDataBuffer().target(GL_UNIFORM_BUFFER);
       scene->GetDrawCullDataBuffer().bindBase(5);
 
-      scene->HizTexture().active(GL_TEXTURE1);
+      scene->DepthPyramid().active(GL_TEXTURE1);
       shader->setUniform(shader->getUniformLocation("depthPyramid"), 1);
 
       auto count = m_Meshlets->MeshletsCount();
