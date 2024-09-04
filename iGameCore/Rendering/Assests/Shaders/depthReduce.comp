@@ -1,7 +1,7 @@
 #version 460
 //#extension GL_ARB_bindless_texture : require
 
-layout(local_size_x = 16, local_size_y = 16) in;
+layout(local_size_x = 32, local_size_y = 32) in;
 
 uniform sampler2DMS screenDepthMS;
 uniform sampler2D myDepthPyramid;
@@ -16,7 +16,7 @@ void main() {
     float minDepth = 1.0f;
 
     if (level == 0) {
-        // copy level 0
+        // generate level 0
         if (pos.x >= outDepthPyramidSize.x || pos.y >= outDepthPyramidSize.y) return;
 
         ivec2 screenDepthSize = textureSize(screenDepthMS);
@@ -34,10 +34,6 @@ void main() {
                 }
             }
         }
-        //        for (int i = 0; i < numSamples; ++i) {
-        //            float sampleDepth = texelFetch(inImageMS, ivec2(pos), i).r;
-        //            minDepth = min(minDepth, sampleDepth);
-        //        }
     } else {
         // generate other level
         if (pos.x * 2 >= inDepthPyramidSize.x || pos.y * 2 >= inDepthPyramidSize.y) return;
@@ -48,10 +44,10 @@ void main() {
         uvec2 pos_3 = pos * 2 + uvec2(1, 1);
 
         float preLevel = float(level - 1);
-        float depth_0 = textureLod(myDepthPyramid, (vec2(pos_0) + vec2(0.5)) / vec2(inDepthPyramidSize), preLevel).x;
-        float depth_1 = textureLod(myDepthPyramid, (vec2(pos_1) + vec2(0.5)) / vec2(inDepthPyramidSize), preLevel).x;
-        float depth_2 = textureLod(myDepthPyramid, (vec2(pos_2) + vec2(0.5)) / vec2(inDepthPyramidSize), preLevel).x;
-        float depth_3 = textureLod(myDepthPyramid, (vec2(pos_3) + vec2(0.5)) / vec2(inDepthPyramidSize), preLevel).x;
+        float depth_0 = textureLod(myDepthPyramid, (vec2(pos_0) + vec2(0.5)) / vec2(inDepthPyramidSize), preLevel).r;
+        float depth_1 = textureLod(myDepthPyramid, (vec2(pos_1) + vec2(0.5)) / vec2(inDepthPyramidSize), preLevel).r;
+        float depth_2 = textureLod(myDepthPyramid, (vec2(pos_2) + vec2(0.5)) / vec2(inDepthPyramidSize), preLevel).r;
+        float depth_3 = textureLod(myDepthPyramid, (vec2(pos_3) + vec2(0.5)) / vec2(inDepthPyramidSize), preLevel).r;
 
         // reversed-z buffer
         // depth range: 1.0(near plane) -> 0.0(far plane)

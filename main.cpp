@@ -23,11 +23,11 @@ int main(int argc, char* argv[]) {
     format.setSamples(16);
     format.setDepthBufferSize(32);
     //format.setStencilBufferSize (16);
-    format.setVersion(4, 1);
+    format.setVersion(4, 6); //Mac set to format.setVersion(4, 1);
     //format.setProfile (QSurfaceFormat::CompatibilityProfile);
     format.setProfile(QSurfaceFormat::CoreProfile);
     QSurfaceFormat::setDefaultFormat(format);
-    
+
     a.processEvents();
     QTextCodec* codec = QTextCodec::codecForName("GBK");
     igQtMainWindow w;

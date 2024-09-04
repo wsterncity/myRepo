@@ -51,31 +51,12 @@ void Interactor::WheelEvent(double delta) {
         wheelMoveDirection = -1.0f;
     }
 
-    m_CameraScaleSpeed = m_Scene->m_ModelsBoundingSphere.w * 0.1;
+    auto radius = m_Scene->m_ModelsBoundingSphere.w;
+    m_CameraScaleSpeed = radius * 0.1;
+
     auto moveSize =
             static_cast<float>(-wheelMoveDirection * m_CameraScaleSpeed);
     m_Camera->moveZ(moveSize);
-
-    //auto pos = m_Camera->GetCameraPos();
-    //auto center = m_Scene->m_ModelsBoundingSphere.xyz();
-    //auto t = (pos - center).length();
-    //if ((pos - center).length() <= m_Scene->m_ModelsBoundingSphere.w) {
-    //    // inside the bounding sphere
-    //    m_Camera->SetNearPlane(0.1f);
-    //    m_Camera->SetFarPlane((pos - center).length() +
-    //                          m_Scene->m_ModelsBoundingSphere.w);
-    //} else {
-    //    // outside the bounding sphere
-    //    auto near = m_Camera->GetNearPlane() + moveSize;
-    //    auto far = m_Camera->GetFarPlane() + moveSize;
-    //
-    //    if (near < 0.1) {
-    //        m_Camera->SetNearPlane(0.1f);
-    //    } else {
-    //        m_Camera->SetNearPlane(near);
-    //    }
-    //    m_Camera->SetFarPlane(far);
-    //}
 
     UpdateCameraMoveSpeed(m_Scene->m_ModelsBoundingSphere);
 }
@@ -101,11 +82,22 @@ void Interactor::ModelRotation() {
     } else if (t > 1.0) {
         t = 1.0;
     }
+
     double phi = 2.0 * asin(t);
     double angle = phi * 180.0 / IGM_PI;
 
+    igm::vec4 center = igm::vec4{m_Scene->m_ModelsBoundingSphere.xyz(), 1.0f};
+    igm::vec3 centerInWorld = (m_Scene->m_ModelMatrix * center).xyz();
+
+    igm::mat4 translateToOrigin = igm::translate(igm::mat4{}, -centerInWorld);
+    igm::mat4 translateBack = igm::translate(igm::mat4{}, centerInWorld);
     igm::mat4 rotateMatrix = igm::rotate(
-            igm::mat4(1.0f), static_cast<float>(igm::radians(angle)), axis);
+            igm::mat4{}, static_cast<float>(igm::radians(angle)), axis);
+
+    igm::mat4 rotate = translateBack * rotateMatrix * translateToOrigin;
+    m_Scene->m_ModelMatrix = rotate * (m_Scene->m_ModelMatrix);
+
+    // updated the rotation matrix of the origin
     m_Scene->m_ModelRotate = rotateMatrix * (m_Scene->m_ModelRotate);
 }
 
@@ -120,19 +112,15 @@ void Interactor::ViewTranslation() {
 }
 
 void Interactor::MapToSphere(igm::vec3& old_v3D, igm::vec3& new_v3D) {
-    // use the screen coordinates of the first actor for rotation calculation
     auto center = igm::vec3(m_Scene->m_ModelsBoundingSphere);
 
-    igm::mat4 translateToOrigin = igm::translate(igm::mat4(1.0f), -center);
-    igm::mat4 translateBack = igm::translate(igm::mat4(1.0f), center);
-    igm::mat4 model =
-            translateBack * (m_Scene->m_ModelRotate) * translateToOrigin;
+    igm::mat4 model = m_Scene->m_ModelMatrix;
     igm::mat4 view = m_Camera->GetViewMatrix();
     igm::mat4 proj = m_Camera->GetProjectionMatrixReversedZ();
 
-    auto p1 = igm::vec4{center, 1.0f};
-    auto p1_mvp = (proj * view * model * p1);
-    p1_mvp /= p1_mvp.w;
+    auto p = igm::vec4{center, 1.0f};
+    auto p_mvp = (proj * view * model * p);
+    p_mvp /= p_mvp.w;
 
     int width = m_Camera->GetViewPort().x / m_Camera->GetDevicePixelRatio();
     int height = m_Camera->GetViewPort().y / m_Camera->GetDevicePixelRatio();
@@ -141,8 +129,8 @@ void Interactor::MapToSphere(igm::vec3& old_v3D, igm::vec3& new_v3D) {
     const double rsqr = trackballradius * trackballradius;
 
     // calculate old hit sphere point3D
-    double oldX = (2.0 * m_OldPoint2D.x - width) / width - p1_mvp.x;
-    double oldY = -(2.0 * m_OldPoint2D.y - height) / height - p1_mvp.y;
+    double oldX = (2.0 * m_OldPoint2D.x - width) / width - p_mvp.x;
+    double oldY = -(2.0 * m_OldPoint2D.y - height) / height - p_mvp.y;
     double old_x2y2 = oldX * oldX + oldY * oldY;
 
     old_v3D[0] = oldX;
@@ -154,8 +142,8 @@ void Interactor::MapToSphere(igm::vec3& old_v3D, igm::vec3& new_v3D) {
     }
 
     // calculate new hit sphere point3D
-    double newX = (2.0 * m_NewPoint2D.x - width) / width - p1_mvp.x;
-    double newY = -(2.0 * m_NewPoint2D.y - height) / height - p1_mvp.y;
+    double newX = (2.0 * m_NewPoint2D.x - width) / width - p_mvp.x;
+    double newY = -(2.0 * m_NewPoint2D.y - height) / height - p_mvp.y;
     double new_x2y2 = newX * newX + newY * newY;
 
     new_v3D[0] = newX;
@@ -168,20 +156,24 @@ void Interactor::MapToSphere(igm::vec3& old_v3D, igm::vec3& new_v3D) {
 }
 
 void Interactor::UpdateCameraMoveSpeed(const igm::vec4& _center) {
-    // use first actor to update move speed
+    igm::mat4 model = m_Scene->m_ModelMatrix;
     igm::mat4 view = m_Camera->GetViewMatrix();
     igm::mat4 proj = m_Camera->GetProjectionMatrixReversedZ();
 
     // update camera movement speed to adapt to pan
-    auto center = igm::vec3(_center);
+    auto center = _center.xyz();
     auto radius = _center.w;
 
-    auto p1 = igm::vec4{center, 1.0f};
-    auto p2 = igm::vec4{center + m_Camera->GetCameraUp().normalize() * radius,
-                        1.0f};
-    auto p1_mvp = (proj * view * p1);
+    auto centerInWorld = (model * igm::vec4{center, 1.0f}).xyz();
+    auto centerUpInWorld =
+            centerInWorld + m_Camera->GetCameraUp().normalize() * radius;
+    auto centerInWorldHomogeneous = igm::vec4{centerInWorld, 1.0f};
+    auto centerUpInWorldHomogeneous = igm::vec4{centerUpInWorld, 1.0f};
+
+    // no need to multiply the model on the left
+    auto p1_mvp = (proj * view * centerInWorldHomogeneous);
     p1_mvp /= p1_mvp.w;
-    auto p2_mvp = (proj * view * p2);
+    auto p2_mvp = (proj * view * centerUpInWorldHomogeneous);
     p2_mvp /= p2_mvp.w;
 
     auto height = m_Camera->GetViewPort().y /
@@ -190,10 +182,5 @@ void Interactor::UpdateCameraMoveSpeed(const igm::vec4& _center) {
 
     m_CameraMoveSpeed = radius / acturalPixel;
 }
-
-//igm::vec3 Interactor::GetWorldCoord(igm::vec3& coord) {
-//
-//    return igm::vec3();
-//}
 
 IGAME_NAMESPACE_END
