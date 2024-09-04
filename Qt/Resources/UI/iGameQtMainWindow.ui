@@ -63,7 +63,7 @@ border:2px solid #EEF1F7
      <x>0</x>
      <y>0</y>
      <width>1200</width>
-     <height>27</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menua">
@@ -470,8 +470,14 @@ border:2px solid #EEF1F7
    <widget class="igQtSearchInfoWidget" name="widget_SearchInfo"/>
   </widget>
   <widget class="QDockWidget" name="dockWidget_Animation">
+   <property name="minimumSize">
+    <size>
+     <width>20</width>
+     <height>10</height>
+    </size>
+   </property>
    <property name="allowedAreas">
-    <set>Qt::BottomDockWidgetArea|Qt::TopDockWidgetArea</set>
+    <set>Qt::AllDockWidgetAreas</set>
    </property>
    <property name="windowTitle">
     <string>动画控件</string>

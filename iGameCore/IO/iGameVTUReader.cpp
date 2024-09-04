@@ -145,7 +145,15 @@ bool iGame::iGameVTUReader::Parsing() {
             }
             if(array != nullptr){
                 array->SetName(scalarName);
-                m_Data.GetData()->AddScalar(IG_POINT, array);
+                float scalar_range_max = FLT_MIN;
+                float scalar_range_min = FLT_MAX;
+                float value;
+                for(int i = 0; i < array->GetNumberOfElements(); i ++) {
+                    value = array->GetValue(i);
+                    scalar_range_max = std::max(scalar_range_max, value);
+                    scalar_range_min = std::min(scalar_range_min, value);
+                }
+                m_Data.GetData()->AddScalar(IG_POINT, array, {scalar_range_min, scalar_range_max});
             }
         }
         elem = elem->NextSiblingElement("DataArray");
@@ -158,10 +166,8 @@ bool iGame::iGameVTUReader::Parsing() {
     ArrayObject::Pointer CellConnects;
 
     elem = FindTargetAttributeItem(elem, "DataArray", "Name", "connectivity");
-    if(elem)
+    if(elem && (data = elem->GetText()) != nullptr)
     {
-        data = elem->GetText();
-
         char* data_p = const_cast<char*>(data);
         while (*data_p == '\n' || *data_p == ' ' || *data_p == '\t') data_p ++;
 
@@ -190,16 +196,14 @@ bool iGame::iGameVTUReader::Parsing() {
                 CellConnects = arr;
             }
         }
-
     }
     //   find Cell offsets;
     ArrayObject::Pointer CellOffsets;
     //  Note that it need to add a zero index.
 
     elem = FindTargetAttributeItem(elem, "DataArray", "Name", "offsets");
-    if(elem)
+    if(elem && (data = elem->GetText()) != nullptr)
     {
-        data = elem->GetText();
         char* data_p = const_cast<char*>(data);
         while (*data_p == '\n' || *data_p == ' ' || *data_p == '\t') data_p ++;
 
@@ -236,9 +240,8 @@ bool iGame::iGameVTUReader::Parsing() {
     //   find Cell types;
     UnsignedCharArray::Pointer CellTypes = UnsignedCharArray::New();
     elem = FindTargetAttributeItem(elem, "DataArray", "Name", "types");
-    if(elem)
+    if(elem && (data = elem->GetText()) != nullptr)
     {
-        data = elem->GetText();
         char* data_p = const_cast<char*>(data);
         while (*data_p == '\n' || *data_p == ' ' || *data_p == '\t') data_p ++;
 

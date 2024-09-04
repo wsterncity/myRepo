@@ -540,6 +540,39 @@ void SurfaceMesh::DeleteFace(const IGsize faceId) {
   m_FaceDeleteMarker->MarkDeleted(faceId);
 }
 
+
+bool SurfaceMesh::IsBoundryFace(igIndex FaceId)
+{
+    int ehs[64];
+    int ecnt = this->GetFaceEdgeIds(FaceId,ehs);
+    for (int i = 0; i < ecnt; i++) {
+        if (this->IsBoundryEdge(ehs[i]))return true;
+    }
+    return false;
+}
+bool SurfaceMesh::IsBoundryEdge(igIndex EdgeId)
+{
+    auto& link = m_FaceEdgeLinks->GetLink(EdgeId);
+    if (link.size <= 1)return true;
+    else return false;
+}
+bool SurfaceMesh::IsBoundryPoint(igIndex PointId) 
+{
+    int ehs[64];
+    int ecnt = this->GetPointToNeighborEdges(PointId, ehs);
+    for (int i = 0; i < ecnt; i++) {
+        if (this->IsBoundryEdge(ehs[i]))return true;
+    }
+    return false;
+}
+ bool SurfaceMesh::IsCornerPoint(igIndex PointId)
+{
+     auto& link = m_FaceLinks->GetLink(PointId);
+     if (link.size == 1)return true;
+     else return false;
+}
+
+
 void SurfaceMesh::ReplacePointReference(const IGsize fromPtId,
                                         const IGsize toPtId) {
   assert(fromPtId < GetNumberOfPoints() && "ptId too large");
@@ -954,7 +987,7 @@ void SurfaceMesh::ViewCloudPicture(Scene *scene, int index, int demension) {
   auto &attr = this->GetAttributeSet()->GetAttribute(index);
   if (!attr.isDeleted) {
     if (attr.attachmentType == IG_POINT)
-      this->SetAttributeWithPointData(attr.pointer, demension);
+      this->SetAttributeWithPointData(attr.pointer, demension, attr.dataRange);
     else if (attr.attachmentType == IG_CELL)
       this->SetAttributeWithCellData(attr.pointer, demension);
   }
@@ -963,7 +996,7 @@ void SurfaceMesh::ViewCloudPicture(Scene *scene, int index, int demension) {
 }
 
 void SurfaceMesh::SetAttributeWithPointData(ArrayObject::Pointer attr,
-                                            igIndex i) {
+                                            igIndex i, const std::pair<float, float>& range) {
   if (m_ViewAttribute != attr || m_ViewDemension != i) {
     m_ViewAttribute = attr;
     m_ViewDemension = i;

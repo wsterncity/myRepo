@@ -3,6 +3,7 @@
 
 #include "iGameFlatArray.h"
 #include "iGameElementArray.h"
+#include <variant>
 
 IGAME_NAMESPACE_BEGIN
 // Attributes set stores all Attribute array data, like scalar, vector etc
@@ -17,12 +18,16 @@ public:
         IGenum type{ IG_NONE };
         IGenum attachmentType{ IG_NONE };
         bool isDeleted{ false };
+
+        std::pair<float, float> dataRange {0.f, 0.f};
     };
 
     // Add a scalar attribute to array back.
     IGsize AddScalar(IGenum attachmentType, ArrayObject::Pointer attr);
+    // Add a scalar attribute to array back with range.
+    IGsize AddScalar(IGenum attachmentType, ArrayObject::Pointer attr, const std::pair<float, float>& range);
 
-    // Add a scalar attribute to array back.
+    // Add a vector attribute to array back.
     IGsize AddVector(IGenum attachmentType, ArrayObject::Pointer attr);
 
     Attribute& GetScalar();

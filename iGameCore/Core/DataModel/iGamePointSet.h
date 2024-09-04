@@ -70,8 +70,9 @@ public:
   bool IsDrawable() override { return true; }
   void ViewCloudPicture(Scene* ,int index, int demension = -1) override;
 
+  /* Range's first means minRange, second means maxRange. */
   virtual void SetAttributeWithPointData(ArrayObject::Pointer attr,
-                                         igIndex i = -1);
+                                         igIndex dimension = -1, const std::pair<float, float>& attrRange = {0.f, 0.f});
 
 private:
   GLVertexArray m_PointVAO;

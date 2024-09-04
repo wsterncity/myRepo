@@ -10,6 +10,7 @@ Scene::Scene() {
     m_ModelRotate = igm::mat4{};
     m_ModelMatrix = igm::mat4{};
     m_BackgroundColor = {0.5f, 0.5f, 0.5f};
+//    m_BackgroundColor = {1.f, 1.f, 1.f};
 
     InitOpenGL();
     InitFont();
@@ -657,10 +658,13 @@ void Scene::Resize(int width, int height, int pixelRatio) {
 
 void Scene::DrawFrame() {
     // update ubo data in CPU
+    GLCheckError();
     UpdateUniformData();
-
+    GLCheckError();
     DrawModels();
+    GLCheckError();
     DrawAxes();
+    GLCheckError();
 }
 
 void Scene::DrawModels() {

@@ -1,21 +1,21 @@
-#include "iGameVolumeMesh.h"
+#include "iGameVolumeMesh_2.h"
 #include "iGameScene.h"
 #include "iGameFaceTable.h"
 
 
 IGAME_NAMESPACE_BEGIN
 
-IGsize VolumeMesh::GetNumberOfVolumes() const noexcept
+IGsize VolumeMesh_2::GetNumberOfVolumes() const noexcept
 {
 	return m_Volumes ? m_Volumes->GetNumberOfCells() : 0;
 }
 
-CellArray* VolumeMesh::GetVolumes()
+CellArray* VolumeMesh_2::GetVolumes()
 {
 	return m_Volumes ? m_Volumes.get() : nullptr;
 }
 
-void VolumeMesh::SetVolumes(CellArray::Pointer volumes)
+void VolumeMesh_2::SetVolumes(CellArray::Pointer volumes)
 {
 	if (m_Volumes != volumes)
 	{
@@ -23,8 +23,16 @@ void VolumeMesh::SetVolumes(CellArray::Pointer volumes)
 		this->Modified();
 	}
 }
+void VolumeMesh_2::SetVolumeFaces(CellArray::Pointer faces)
+{
+	if (m_VolumeFaces != faces)
+	{
+		m_VolumeFaces = faces;
+		this->Modified();
+	}
+}
 
-Volume* VolumeMesh::GetVolume(const IGsize volumeId)
+Volume* VolumeMesh_2::GetVolume(const IGsize volumeId)
 {
 	const igIndex* cell;
 	int ncells = m_Volumes->GetCellIds(volumeId, cell);
@@ -74,22 +82,22 @@ Volume* VolumeMesh::GetVolume(const IGsize volumeId)
 	return volume;
 }
 
-int VolumeMesh::GetVolumePointIds(const IGsize volumeId, igIndex* ptIds)
+int VolumeMesh_2::GetVolumePointIds(const IGsize volumeId, igIndex* ptIds)
 {
 	return m_Volumes->GetCellIds(volumeId, ptIds);
 }
 
-int VolumeMesh::GetVolumeEdgeIds(const IGsize volumeId, igIndex* edgeIds)
+int VolumeMesh_2::GetVolumeEdgeIds(const IGsize volumeId, igIndex* edgeIds)
 {
 	return m_VolumeEdges->GetCellIds(volumeId, edgeIds);
 }
 
-int VolumeMesh::GetVolumeFaceIds(const IGsize volumeId, igIndex* faceIds)
+int VolumeMesh_2::GetVolumeFaceIds(const IGsize volumeId, igIndex* faceIds)
 {
 	return m_VolumeFaces->GetCellIds(volumeId, faceIds);
 }
 
-void VolumeMesh::BuildFaces() {
+void VolumeMesh_2::BuildFaces() {
 	FaceTable::Pointer FaceTable = FaceTable::New();
 	igIndex cell[64]{}, faceIds[64]{}, edgeIds[64]{}, face[64]{}, edge[2]{};
 
@@ -116,7 +124,7 @@ void VolumeMesh::BuildFaces() {
 	m_Faces = FaceTable->GetOutput();
 }
 
-void VolumeMesh::BuildFacesAndEdges() {
+void VolumeMesh_2::BuildFacesAndEdges() {
 	FaceTable::Pointer FaceTable = FaceTable::New();
 	EdgeTable::Pointer EdgeTable = EdgeTable::New();
 	igIndex cell[64]{}, faceIds[64]{}, edgeIds[64]{}, face[64]{}, edge[2]{};
@@ -165,7 +173,7 @@ void VolumeMesh::BuildFacesAndEdges() {
 	m_Edges = EdgeTable->GetOutput();
 }
 
-void VolumeMesh::BuildVolumeLinks()
+void VolumeMesh_2::BuildVolumeLinks()
 {
 	if (m_VolumeLinks && m_VolumeLinks->GetMTime() > m_Volumes->GetMTime())
 	{
@@ -194,7 +202,7 @@ void VolumeMesh::BuildVolumeLinks()
 	}
 }
 
-void VolumeMesh::BuildVolumeEdgeLinks()
+void VolumeMesh_2::BuildVolumeEdgeLinks()
 {
 	if (m_VolumeEdgeLinks && m_VolumeEdgeLinks->GetMTime() > m_VolumeEdges->GetMTime())
 	{
@@ -223,7 +231,7 @@ void VolumeMesh::BuildVolumeEdgeLinks()
 	}
 }
 
-void VolumeMesh::BuildVolumeFaceLinks()
+void VolumeMesh_2::BuildVolumeFaceLinks()
 {
 	if (m_VolumeFaceLinks && m_VolumeFaceLinks->GetMTime() > m_VolumeFaces->GetMTime())
 	{
@@ -252,7 +260,7 @@ void VolumeMesh::BuildVolumeFaceLinks()
 	}
 }
 
-int VolumeMesh::GetPointToNeighborVolumes(const IGsize ptId, igIndex* volumeIds)
+int VolumeMesh_2::GetPointToNeighborVolumes(const IGsize ptId, igIndex* volumeIds)
 {
 	assert(ptId < GetNumberOfPoints() && "ptId too large");
 	auto& link = m_VolumeLinks->GetLink(ptId);
@@ -262,7 +270,7 @@ int VolumeMesh::GetPointToNeighborVolumes(const IGsize ptId, igIndex* volumeIds)
 	return link.size;
 }
 
-int VolumeMesh::GetEdgeToNeighborVolumes(const IGsize edgeId, igIndex* volumeIds)
+int VolumeMesh_2::GetEdgeToNeighborVolumes(const IGsize edgeId, igIndex* volumeIds)
 {
 	assert(edgeId < GetNumberOfEdges() && "edgeId too large");
 	auto& link = m_VolumeEdgeLinks->GetLink(edgeId);
@@ -272,7 +280,7 @@ int VolumeMesh::GetEdgeToNeighborVolumes(const IGsize edgeId, igIndex* volumeIds
 	return link.size;
 }
 
-int VolumeMesh::GetFaceToNeighborVolumes(const IGsize faceId, igIndex* volumeIds)
+int VolumeMesh_2::GetFaceToNeighborVolumes(const IGsize faceId, igIndex* volumeIds)
 {
 	assert(faceId < GetNumberOfFaces() && "faceId too large");
 	auto& link = m_VolumeFaceLinks->GetLink(faceId);
@@ -282,7 +290,7 @@ int VolumeMesh::GetFaceToNeighborVolumes(const IGsize faceId, igIndex* volumeIds
 	return link.size;
 }
 
-int VolumeMesh::GetVolumeToNeighborVolumesWithPoint(const IGsize vid, igIndex* volumeIds)
+int VolumeMesh_2::GetVolumeToNeighborVolumesWithPoint(const IGsize vid, igIndex* volumeIds)
 {
 	assert(vid < GetNumberOfVolumes() && "volumeId too large");
 	igIndex ids[32]{};
@@ -303,7 +311,7 @@ int VolumeMesh::GetVolumeToNeighborVolumesWithPoint(const IGsize vid, igIndex* v
 	return i;
 }
 
-int VolumeMesh::GetVolumeToNeighborVolumesWithEdge(const IGsize vid, igIndex* volumeIds)
+int VolumeMesh_2::GetVolumeToNeighborVolumesWithEdge(const IGsize vid, igIndex* volumeIds)
 {
 	assert(vid < GetNumberOfVolumes() && "volumeId too large");
 	igIndex ids[32]{};
@@ -324,7 +332,7 @@ int VolumeMesh::GetVolumeToNeighborVolumesWithEdge(const IGsize vid, igIndex* vo
 	return i;
 }
 
-int VolumeMesh::GetVolumeToNeighborVolumesWithFace(const IGsize vid, igIndex* volumeIds)
+int VolumeMesh_2::GetVolumeToNeighborVolumesWithFace(const IGsize vid, igIndex* volumeIds)
 {
 	assert(vid < GetNumberOfVolumes() && "volumeId too large");
 	igIndex ids[32]{};
@@ -345,7 +353,7 @@ int VolumeMesh::GetVolumeToNeighborVolumesWithFace(const IGsize vid, igIndex* vo
 	return i;
 }
 
-igIndex VolumeMesh::GetVolumeIdFormPointIds(igIndex* ids, int size)
+igIndex VolumeMesh_2::GetVolumeIdFormPointIds(igIndex* ids, int size)
 {
 	IGsize sum = 0;
 	for (int i = 0; i < size; i++) {
@@ -382,7 +390,7 @@ igIndex VolumeMesh::GetVolumeIdFormPointIds(igIndex* ids, int size)
 	return (-1);
 }
 
-void VolumeMesh::RequestEditStatus()
+void VolumeMesh_2::RequestEditStatus()
 {
 	if (InEditStatus())
 	{
@@ -394,7 +402,7 @@ void VolumeMesh::RequestEditStatus()
 	MakeEditStatusOn();
 }
 
-void VolumeMesh::GarbageCollection()
+void VolumeMesh_2::GarbageCollection()
 {
 	IGsize i, mappedPtId = 0, mappedEdgeId = 0, mappedFaceId = 0;
 	igIndex ptIds[32]{}, edgeIds[32]{}, faceIds[32]{}, e[2]{};
@@ -490,12 +498,12 @@ void VolumeMesh::GarbageCollection()
 	MakeEditStatusOff();
 }
 
-bool VolumeMesh::IsVolumeDeleted(const IGsize volumeId)
+bool VolumeMesh_2::IsVolumeDeleted(const IGsize volumeId)
 {
 	return m_VolumeDeleteMarker->IsDeleted(volumeId);
 }
 
-IGsize VolumeMesh::AddPoint(const Point& p)
+IGsize VolumeMesh_2::AddPoint(const Point& p)
 {
 	if (!InEditStatus())
 	{
@@ -509,7 +517,7 @@ IGsize VolumeMesh::AddPoint(const Point& p)
 
 	return ptId;
 }
-IGsize VolumeMesh::AddEdge(const IGsize ptId1, const IGsize ptId2)
+IGsize VolumeMesh_2::AddEdge(const IGsize ptId1, const IGsize ptId2)
 {
 	igIndex edgeId = GetEdgeIdFormPointIds(ptId1, ptId2);
 	if (edgeId == -1) {
@@ -523,7 +531,7 @@ IGsize VolumeMesh::AddEdge(const IGsize ptId1, const IGsize ptId2)
 	}
 	return edgeId;
 }
-IGsize VolumeMesh::AddFace(igIndex* ptIds, int size)
+IGsize VolumeMesh_2::AddFace(igIndex* ptIds, int size)
 {
 	igIndex edgeIds[64]{};
 	for (int i = 0; i < size; i++) {
@@ -544,7 +552,7 @@ IGsize VolumeMesh::AddFace(igIndex* ptIds, int size)
 	return faceId;
 }
 
-void VolumeMesh::DeletePoint(const IGsize ptId) {
+void VolumeMesh_2::DeletePoint(const IGsize ptId) {
 	if (!InEditStatus())
 	{
 		RequestEditStatus();
@@ -564,7 +572,7 @@ void VolumeMesh::DeletePoint(const IGsize ptId) {
 	m_PointDeleteMarker->MarkDeleted(ptId);
 }
 
-void VolumeMesh::DeleteEdge(const IGsize edgeId)
+void VolumeMesh_2::DeleteEdge(const IGsize edgeId)
 {
 	if (!InEditStatus())
 	{
@@ -588,7 +596,7 @@ void VolumeMesh::DeleteEdge(const IGsize edgeId)
 	m_VolumeEdgeLinks->DeleteLink(edgeId);
 	m_EdgeDeleteMarker->MarkDeleted(edgeId);
 }
-void VolumeMesh::DeleteFace(const IGsize faceId) {
+void VolumeMesh_2::DeleteFace(const IGsize faceId) {
 	if (!InEditStatus())
 	{
 		RequestEditStatus();
@@ -612,7 +620,7 @@ void VolumeMesh::DeleteFace(const IGsize faceId) {
 	m_FaceDeleteMarker->MarkDeleted(faceId);
 }
 
-void VolumeMesh::DeleteVolume(const IGsize volumeId) {
+void VolumeMesh_2::DeleteVolume(const IGsize volumeId) {
 	if (!InEditStatus())
 	{
 		RequestEditStatus();
@@ -637,7 +645,7 @@ void VolumeMesh::DeleteVolume(const IGsize volumeId) {
 	m_VolumeDeleteMarker->MarkDeleted(volumeId);
 }
 
-bool VolumeMesh::IsBoundryVolume(igIndex VolumeId)
+bool VolumeMesh_2::IsBoundryVolume(igIndex VolumeId)
 {
 	igIndex fhs[64];
 	igIndex fcnt = this->GetVolumeFaceIds(VolumeId, fhs);
@@ -646,13 +654,13 @@ bool VolumeMesh::IsBoundryVolume(igIndex VolumeId)
 	}
 	return false;
 }
-bool VolumeMesh::IsBoundryFace(igIndex FaceId)
+bool VolumeMesh_2::IsBoundryFace(igIndex FaceId)
 {
 	auto& link = m_VolumeFaceLinks->GetLink(FaceId);
 	if (link.size <= 1)return true;
 	else return false;
 }
-bool VolumeMesh::IsBoundryEdge(igIndex EdgeId)
+bool VolumeMesh_2::IsBoundryEdge(igIndex EdgeId)
 {
 	igIndex fhs[64];
 	igIndex fcnt = this->GetEdgeToNeighborFaces(EdgeId, fhs);
@@ -661,7 +669,7 @@ bool VolumeMesh::IsBoundryEdge(igIndex EdgeId)
 	}
 	return false;
 }
-bool VolumeMesh::IsBoundryPoint(igIndex PointId)
+bool VolumeMesh_2::IsBoundryPoint(igIndex PointId)
 {
 	igIndex fhs[64];
 	igIndex fcnt = this->GetPointToNeighborFaces(PointId, fhs);
@@ -670,19 +678,19 @@ bool VolumeMesh::IsBoundryPoint(igIndex PointId)
 	}
 	return false;
 }
-bool VolumeMesh::IsCornerPoint(igIndex PointId)
+bool VolumeMesh_2::IsCornerPoint(igIndex PointId)
 {
 	auto& link = m_VolumeLinks->GetLink(PointId);
 	if (link.size == 1)return true;
 	else return false;
 
 }
-VolumeMesh::VolumeMesh()
+VolumeMesh_2::VolumeMesh_2()
 {
 	m_ViewStyle = IG_SURFACE;
 };
 
-void VolumeMesh::RequestFaceStatus()
+void VolumeMesh_2::RequestFaceStatus()
 {
 	if (m_Faces == nullptr ||
 		(m_Faces->GetMTime() < m_Volumes->GetMTime()))
@@ -721,7 +729,7 @@ void VolumeMesh::RequestFaceStatus()
 	m_FaceDeleteMarker->Initialize(GetNumberOfFaces());
 }
 
-void VolumeMesh::RequestVolumeStatus()
+void VolumeMesh_2::RequestVolumeStatus()
 {
 	if (m_VolumeLinks == nullptr ||
 		(m_VolumeLinks->GetMTime() < m_Volumes->GetMTime()))
@@ -748,7 +756,7 @@ void VolumeMesh::RequestVolumeStatus()
 	m_VolumeDeleteMarker->Initialize(GetNumberOfEdges());
 }
 
-void VolumeMesh::Draw(Scene* scene)
+void VolumeMesh_2::Draw(Scene* scene)
 {
 	if (!m_Visibility)
 	{
@@ -796,17 +804,17 @@ void VolumeMesh::Draw(Scene* scene)
 		glLineWidth(m_LineWidth);
 
 		// TODO: A better way to render wireframes
-//		auto boundingBoxDiag = this->GetBoundingBox().diag();
-//		auto scaleFactor =
-//			1e-6 / std::pow(10, std::floor(std::log10(boundingBoxDiag)));
-//		glad_glDepthRange(scaleFactor, 1);
-//		glad_glDepthFunc(GL_GEQUAL);
+		auto boundingBoxDiag = this->GetBoundingBox().diag();
+		auto scaleFactor =
+			1e-6 / std::pow(10, std::floor(std::log10(boundingBoxDiag)));
+		glad_glDepthRange(scaleFactor, 1);
+		glad_glDepthFunc(GL_GEQUAL);
 
 		glad_glDrawElements(GL_LINES, m_LineIndices->GetNumberOfIds(),
 			GL_UNSIGNED_INT, 0);
 
-//		glad_glDepthFunc(GL_GREATER);
-//		glad_glDepthRange(0, 1);
+		glad_glDepthFunc(GL_GREATER);
+		glad_glDepthRange(0, 1);
 
 		m_LineVAO.release();
 	}
@@ -843,7 +851,7 @@ void VolumeMesh::Draw(Scene* scene)
 	}*/
 }
 
-void VolumeMesh::ConvertToDrawableData()
+void VolumeMesh_2::ConvertToDrawableData()
 {
 	if (m_Positions && m_Positions->GetMTime() > this->GetMTime()) {
 		return;
@@ -882,22 +890,42 @@ void VolumeMesh::ConvertToDrawableData()
 
 	IdArray::Pointer triangleIndices = IdArray::New();
 	IdArray::Pointer edgeIndices = IdArray::New();
-	for (int i = 0; i < this->GetNumberOfVolumes(); i++) {
-		Volume* volume = this->GetVolume(i);
-		const igIndex* face;
-		for (int j = 0; j < volume->GetNumberOfFaces(); j++) {
-			int size = volume->GetFacePointIds(j, face);
-			for (int k = 2; k < size; k++) {
-				triangleIndices->AddId(volume->PointIds->GetId(face[0]));
-				triangleIndices->AddId(volume->PointIds->GetId(face[k - 1]));
-				triangleIndices->AddId(volume->PointIds->GetId(face[k]));
+
+	if (this->isPolyhedron == false) {
+		for (int i = 0; i < this->GetNumberOfVolumes(); i++) {
+			Volume* volume = this->GetVolume(i);
+			const igIndex* face;
+			for (int j = 0; j < volume->GetNumberOfFaces(); j++) {
+				int size = volume->GetFacePointIds(j, face);
+				for (int k = 2; k < size; k++) {
+					triangleIndices->AddId(volume->PointIds->GetId(face[0]));
+					triangleIndices->AddId(volume->PointIds->GetId(face[k - 1]));
+					triangleIndices->AddId(volume->PointIds->GetId(face[k]));
+				}
+			}
+			const igIndex* edge;
+			for (int j = 0; j < volume->GetNumberOfEdges(); j++) {
+				int size = volume->GetEdgePointIds(j, edge);
+				edgeIndices->AddId(volume->PointIds->GetId(edge[0]));
+				edgeIndices->AddId(volume->PointIds->GetId(edge[1]));
 			}
 		}
-		const igIndex* edge;
-		for (int j = 0; j < volume->GetNumberOfEdges(); j++) {
-			int size = volume->GetEdgePointIds(j, edge);
-			edgeIndices->AddId(volume->PointIds->GetId(edge[0]));
-			edgeIndices->AddId(volume->PointIds->GetId(edge[1]));
+	}
+	else {
+		auto faces = m_Faces.get();
+		int fcnt = faces->GetNumberOfCells();
+		igIndex vhs[IGAME_CELL_MAX_SIZE];
+		for (int i = 0; i < fcnt; i++) {
+			auto vcnt = faces->GetCellIds(i, vhs);
+			for (int k = 2; k < vcnt; k++) {
+				triangleIndices->AddId(vhs[0]);
+				triangleIndices->AddId(vhs[k - 1]);
+				triangleIndices->AddId(vhs[k]);
+			}
+			for (int j = 0; j < vcnt - 1; j++) {
+				edgeIndices->AddId(vhs[j]);
+				edgeIndices->AddId(vhs[j+1]);
+			}
 		}
 	}
 	m_TriangleIndices = triangleIndices;
@@ -940,7 +968,7 @@ void VolumeMesh::ConvertToDrawableData()
 	}
 }
 
-void VolumeMesh::ViewCloudPicture(Scene* scene, int index, int demension) {
+void VolumeMesh_2::ViewCloudPicture(Scene* scene, int index, int demension) {
 	if (index == -1) {
 		m_UseColor = false;
 		m_ViewAttribute = nullptr;
@@ -950,119 +978,16 @@ void VolumeMesh::ViewCloudPicture(Scene* scene, int index, int demension) {
 		return;
 	}
 	scene->MakeCurrent();
-    auto& attr = this->GetAttributeSet()->GetAttribute(index);
-    if (!attr.isDeleted) {
-        if (attr.attachmentType == IG_POINT)
-            this->SetAttributeWithPointData(attr.pointer, demension, attr.dataRange);
-        else if (attr.attachmentType == IG_CELL)
-            this->SetAttributeWithCellData(attr.pointer, demension);
-    }
+	auto& attr = this->GetAttributeSet()->GetAttribute(index);
+	if (!attr.isDeleted) {
+		if (attr.attachmentType == IG_POINT)
+			this->SetAttributeWithPointData(attr.pointer, demension);
+		else if (attr.attachmentType == IG_CELL)
+			this->SetAttributeWithCellData(attr.pointer, demension);
+	}
 	scene->DoneCurrent();
 	scene->Update();
 }
 
-void VolumeMesh::SetAttributeWithPointData(ArrayObject::Pointer attr,
-	igIndex i, const std::pair<float, float>& range) {
-	if (m_ViewAttribute != attr || m_ViewDemension != i) {
-		m_ViewAttribute = attr;
-		m_ViewDemension = i;
-		m_UseColor = true;
-		m_ColorWithCell = false;
-		ScalarsToColors::Pointer mapper = ScalarsToColors::New();
 
-        if(range.first != range.second){
-            mapper->SetRange(range.first, range.second * 2);
-        } else if (i == -1) {
-            mapper->InitRange(attr);
-        } else {
-            mapper->InitRange(attr, i);
-        }
-
-		m_Colors = mapper->MapScalars(attr, i);
-		if (m_Colors == nullptr) { return; }
-
-		GLAllocateGLBuffer(m_ColorVBO,
-			m_Colors->GetNumberOfValues() * sizeof(float),
-			m_Colors->RawPointer());
-
-		m_PointVAO.vertexBuffer(GL_VBO_IDX_1, m_ColorVBO, 0, 3 * sizeof(float));
-		GLSetVertexAttrib(m_PointVAO, GL_LOCATION_IDX_1, GL_VBO_IDX_1, 3,
-			GL_FLOAT, GL_FALSE, 0);
-
-		m_LineVAO.vertexBuffer(GL_VBO_IDX_1, m_ColorVBO, 0, 3 * sizeof(float));
-		GLSetVertexAttrib(m_LineVAO, GL_LOCATION_IDX_1, GL_VBO_IDX_1, 3,
-			GL_FLOAT, GL_FALSE, 0);
-
-
-		m_TriangleVAO.vertexBuffer(GL_VBO_IDX_1, m_ColorVBO, 0,
-			3 * sizeof(float));
-		GLSetVertexAttrib(m_TriangleVAO, GL_LOCATION_IDX_1, GL_VBO_IDX_1, 3,
-			GL_FLOAT, GL_FALSE, 0);
-	}
-}
-
-void VolumeMesh::SetAttributeWithCellData(ArrayObject::Pointer attr,
-	igIndex i)
-{
-	if (m_ViewAttribute != attr || m_ViewDemension != i) {
-		m_ViewAttribute = attr;
-		m_ViewDemension = i;
-		m_UseColor = true;
-		m_ColorWithCell = true;
-		ScalarsToColors::Pointer mapper = ScalarsToColors::New();
-
-		if (i == -1) {
-			mapper->InitRange(attr);
-		}
-		else {
-			mapper->InitRange(attr, i);
-		}
-
-		FloatArray::Pointer colors = mapper->MapScalars(attr, i);
-		if (colors == nullptr) { return; }
-
-		FloatArray::Pointer newPositions = FloatArray::New();
-		FloatArray::Pointer newColors = FloatArray::New();
-		newPositions->SetElementSize(3);
-		newColors->SetElementSize(3);
-
-		float color[3]{};
-		for (int i = 0; i < this->GetNumberOfVolumes(); i++) {
-			Volume* volume = this->GetVolume(i);
-			const igIndex* face;
-			colors->GetElement(i, color);
-			for (int j = 0; j < volume->GetNumberOfFaces(); j++) {
-				int size = volume->GetFacePointIds(j, face);
-				for (int k = 2; k < size; k++) {
-					auto& p0 = volume->Points->GetPoint(face[0]);
-					newPositions->AddElement3(p0[0], p0[1], p0[2]);
-					auto& p1 = volume->Points->GetPoint(face[k - 1]);
-					newPositions->AddElement3(p1[0], p1[1], p1[2]);
-					auto& p2 = volume->Points->GetPoint(face[k]);
-					newPositions->AddElement3(p2[0], p2[1], p2[2]);
-
-					newColors->AddElement3(color[0], color[1], color[2]);
-					newColors->AddElement3(color[0], color[1], color[2]);
-					newColors->AddElement3(color[0], color[1], color[2]);
-				}
-			}
-		}
-
-		m_CellPositionSize = newPositions->GetNumberOfElements();
-		GLAllocateGLBuffer(m_CellPositionVBO,
-			newPositions->GetNumberOfValues() * sizeof(float),
-			newPositions->RawPointer());
-		GLAllocateGLBuffer(m_CellColorVBO,
-			newColors->GetNumberOfValues() * sizeof(float),
-			newColors->RawPointer());
-
-		m_CellVAO.vertexBuffer(GL_VBO_IDX_0, m_CellPositionVBO, 0,
-			3 * sizeof(float));
-		GLSetVertexAttrib(m_CellVAO, GL_LOCATION_IDX_0, GL_VBO_IDX_0, 3, GL_FLOAT,
-			GL_FALSE, 0);
-		m_CellVAO.vertexBuffer(GL_VBO_IDX_1, m_CellColorVBO, 0, 3 * sizeof(float));
-		GLSetVertexAttrib(m_CellVAO, GL_LOCATION_IDX_1, GL_VBO_IDX_1, 3, GL_FLOAT,
-			GL_FALSE, 0);
-	}
-}
 IGAME_NAMESPACE_END

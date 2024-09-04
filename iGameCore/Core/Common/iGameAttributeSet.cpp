@@ -7,6 +7,12 @@ IGsize AttributeSet::AddScalar(IGenum attachmentType,
     return this->AddAttribute(IG_SCALAR, attachmentType, attr);
 }
 
+IGsize AttributeSet::AddScalar(IGenum attachmentType, ArrayObject::Pointer attr, const std::pair<float, float> &range) {
+    if (!attr) { return -1; }
+    m_Buffer->AddElement(Attribute{attr, IG_SCALAR, attachmentType, false, range});
+    return m_Buffer->GetNumberOfElements() - 1;
+}
+
 
 IGsize AttributeSet::AddVector(IGenum attachmentType,
                               ArrayObject::Pointer attr) {
@@ -56,7 +62,6 @@ const AttributeSet::Attribute& AttributeSet::GetVector(const IGsize index) const
 IGsize AttributeSet::AddAttribute(IGenum type, IGenum attachmentType,
                    ArrayObject::Pointer attr) {
     if (!attr) { return -1; }
-
     m_Buffer->AddElement(Attribute{attr, type, attachmentType, false});
     return m_Buffer->GetNumberOfElements() - 1;
 }
@@ -117,5 +122,7 @@ ElementArray<AttributeSet::Attribute>::Pointer AttributeSet::GetAllAttributes() 
 
 
 AttributeSet::AttributeSet() { m_Buffer = ElementArray<Attribute>::New(); }
+
+
 
 IGAME_NAMESPACE_END

@@ -31,6 +31,9 @@ enum {
 	IG_POINT_SET,
 	IG_SURFACE_MESH,
 	IG_VOLUME_MESH,
+	IG_UNSTRUCTURED_MESH,
+	IG_STRUCTURED_MESH,
+	IG_MULTIBLOCK_MESH,
 	IG_DATA_OBJECT_COUNT,
 };
 
@@ -39,6 +42,24 @@ enum {
 	IG_ARRAY_OBJECT = 0,
 	IG_ELEMENT_ARRAY,
 };
+
+// FlatArrayType
+enum {
+    IG_FLAT_ARRAY = 0,
+    IG_FloatArray,
+    IG_DoubleArray,
+    IG_IntArray,
+    IG_INTARRAY,
+    IG_UnsignedIntArray,
+    IG_CharArray,
+    IG_UnsignedCharArray,
+    IG_ShortArray,
+    IG_UnsignedShortArray,
+    IG_LongLongArray,
+    IG_UnsignedLongLongArray,
+
+};
+
 
 // DrawMode
 enum {
@@ -102,8 +123,7 @@ using IGint = int;
 
 using DataObjectType = IGenum;
 using DataObjectId = int;
-
-
+//using IGrange = std::pair<float, float>;
 enum Color {
 	None = 0,
 	Red,

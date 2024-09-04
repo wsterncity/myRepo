@@ -25,7 +25,7 @@ protected:
     ~iGamePVDReader() = default;
 
 protected:
-    DataObject::Pointer m_data_object{nullptr};
+    DataObject::Pointer  m_data_object{nullptr};
 };
 
 IGAME_NAMESPACE_END
