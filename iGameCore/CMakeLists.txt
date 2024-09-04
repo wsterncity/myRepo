@@ -52,12 +52,15 @@ target_link_libraries(${MODULE_NAME} PUBLIC
         meshoptimizer
         tinyXML2
 
-        cgns_static
 #        hdf5
 #        cgns
 )
 
 target_link_libraries(${PROJECT_NAME} PUBLIC ${MODULE_NAME})
+if(ENABLE_CGNS_MODULE)
+    target_compile_definitions(${MODULE_NAME} PRIVATE CGNS_ENABLE)
+    target_link_libraries(${MODULE_NAME} PUBLIC cgns_static )
+ENDIF ()
 target_compile_definitions(${MODULE_NAME} PRIVATE ASSEST_DIR="${CMAKE_CURRENT_SOURCE_DIR}/Rendering/Assests")
 
 IF (WIN32)

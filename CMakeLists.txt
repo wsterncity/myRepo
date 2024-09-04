@@ -8,6 +8,13 @@ add_executable(${PROJECT_NAME}
         main.cpp
 )
 #--------------------------------------------------------------------
+# Set Cmake Option to On/OFF.
+#--------------------------------------------------------------------
+
+# Add an option that the user can set with the -D parameter
+option(ENABLE_CGNS_MODULE "Enable CGNS ThirdParty Module" OFF)
+
+#--------------------------------------------------------------------
 # Add subdirectories
 #--------------------------------------------------------------------
 #导入第三方组件
