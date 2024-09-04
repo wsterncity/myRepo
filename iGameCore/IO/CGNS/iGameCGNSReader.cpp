@@ -1,3 +1,4 @@
+#if defined(CGNS_ENABLE)
 #include "iGameCGNSReader.h"
 
 IGAME_NAMESPACE_BEGIN
@@ -1365,3 +1366,4 @@ void iGameCGNSReader::TransformVectorArray()
 	}*/
 }
 IGAME_NAMESPACE_END
+#endif

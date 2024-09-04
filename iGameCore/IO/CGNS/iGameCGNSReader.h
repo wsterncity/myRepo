@@ -1,3 +1,4 @@
+#if defined(CGNS_ENABLE)
 #ifndef iGameCGNSReader_h
 #define iGameCGNSReader_h
 
@@ -57,5 +58,6 @@ private:
 	std::unordered_set<std::string >BoundryNames;
 };
 
-#endif // iGameCGNSReader_h
 IGAME_NAMESPACE_END
+#endif // iGameCGNSReader_h
+#endif

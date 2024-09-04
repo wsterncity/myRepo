@@ -9,4 +9,8 @@ set(CGNS_BUILD_SHARED OFF)
 set(CGNS_ENABLE_HDF5 OFF)
 set(CGNS_ENABLE_PARALLEL OFF)  # 如果不需要并行支持可以关闭
 #set(CGNS_HDF5_DIR ${HDF5_ROOT})
-add_subdirectory(CGNS)
+
+# Configure the compilation definition according to the value of MODULE_FLAG
+if(ENABLE_CGNS_MODULE)
+    add_subdirectory(CGNS)
+endif ()
