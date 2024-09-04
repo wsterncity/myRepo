@@ -40,6 +40,8 @@ target_include_directories(${MODULE_NAME} PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/Rendering/Core/Interactor
         ${CMAKE_CURRENT_SOURCE_DIR}/Rendering/OpenGL
 
+#        ${CMAKE_SOURCE_DIR}/
+
         ${EIGEN_INCLUDE_DIR}
 )
 
@@ -49,6 +51,8 @@ target_link_libraries(${MODULE_NAME} PUBLIC
         freetype
         meshoptimizer
         tinyXML2
+
+        cgns_static
 #        hdf5
 #        cgns
 )
