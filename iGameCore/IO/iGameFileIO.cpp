@@ -158,8 +158,8 @@ DataObject::Pointer FileIO::ReadFile(const std::string &file_name)
         }
 		case iGame::FileIO::CGNS:
 		{
-			iGameCGNSReader::Pointer reader = iGameCGNSReader::New();
-			resObj=reader->ReadFile(file_name);
+			//iGameCGNSReader::Pointer reader = iGameCGNSReader::New();
+			//resObj=reader->ReadFile(file_name);
 			break;
 		}
 		break;
