@@ -145,7 +145,6 @@ protected:
     int m_IncrementModelId{0};
     int m_CurrentModelId{-1};
     Model* m_CurrentModel{nullptr};
-    //DataObject* m_CurrentObject{nullptr};
 
     std::function<void()> m_UpdateFunctor;
     std::function<void()> m_MakeCurrentFunctor;
@@ -154,7 +153,6 @@ protected:
     Camera::Pointer m_Camera{};
     Light::Pointer m_Light{};
     Axes::Pointer m_Axes{};
-
 
     /* Rendering related */
     CameraDataBuffer m_CameraData;

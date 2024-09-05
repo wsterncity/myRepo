@@ -10,7 +10,7 @@ Scene::Scene() {
     m_ModelRotate = igm::mat4{};
     m_ModelMatrix = igm::mat4{};
     m_BackgroundColor = {0.5f, 0.5f, 0.5f};
-//    m_BackgroundColor = {1.f, 1.f, 1.f};
+    //    m_BackgroundColor = {1.f, 1.f, 1.f};
 
     InitOpenGL();
     InitFont();
@@ -438,6 +438,11 @@ void Scene::ResizeFrameBuffer() {
 
     // resolve framebuffer(form multisamples to single sample)
     {
+        auto width = m_Camera->GetViewPort().x;
+        auto height = m_Camera->GetViewPort().y;
+        int mipLevels =
+                static_cast<int>(std::ceil(std::log2(std::max(width, height))));
+
         GLFramebuffer fbo;
         fbo.create();
         fbo.target(GL_FRAMEBUFFER);
@@ -446,8 +451,10 @@ void Scene::ResizeFrameBuffer() {
         GLTexture2d colorTexture;
         colorTexture.create();
         colorTexture.bind();
-        colorTexture.storage(1, GL_RGBA8, width, height);
-        colorTexture.parameteri(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        colorTexture.storage(mipLevels, GL_RGBA8, width, height);
+        colorTexture.parameteri(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        colorTexture.parameteri(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        colorTexture.parameteri(GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
         colorTexture.parameteri(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         fbo.texture(GL_COLOR_ATTACHMENT0, colorTexture, 0);
 
@@ -573,6 +580,9 @@ void Scene::Draw() {
 
     // render to screen
     {
+        // generate mipmap for screen texture
+        m_ColorTextureResolved.generateMipmap();
+
         glBindFramebuffer(GL_FRAMEBUFFER, defaultFramebuffer);
         glViewport(0, 0, width, height);
         glClear(GL_COLOR_BUFFER_BIT);

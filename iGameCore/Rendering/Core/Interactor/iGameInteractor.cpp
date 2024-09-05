@@ -164,11 +164,11 @@ void Interactor::UpdateCameraMoveSpeed(const igm::vec4& _center) {
     auto center = _center.xyz();
     auto radius = _center.w;
 
-    auto centerInWorld = (model * igm::vec4{center, 1.0f}).xyz();
-    auto centerUpInWorld =
-            centerInWorld + m_Camera->GetCameraUp().normalize() * radius;
-    auto centerInWorldHomogeneous = igm::vec4{centerInWorld, 1.0f};
-    auto centerUpInWorldHomogeneous = igm::vec4{centerUpInWorld, 1.0f};
+    // the w component of the homogeneous coordinates will not change after the model transformation
+    auto centerInWorldHomogeneous = model * igm::vec4{center, 1.0f};
+    auto centerUpInWorldHomogeneous =
+            centerInWorldHomogeneous +
+            igm::vec4{m_Camera->GetCameraUp().normalize() * radius, 0.0f};
 
     // no need to multiply the model on the left
     auto p1_mvp = (proj * view * centerInWorldHomogeneous);
