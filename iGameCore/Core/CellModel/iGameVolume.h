@@ -14,6 +14,7 @@ public:
 
 	virtual int GetEdgePointIds(const int edgeId, const igIndex*& ptIds) = 0;
     virtual int GetFacePointIds(const int faceId, const igIndex*& ptIds) = 0;
+    virtual int GetFaceEdgeIds(const int faceId, const igIndex*& edgeIds) = 0;
 	virtual int GetPointToOneRingPoints(const int ptId, const igIndex*& ptIds) = 0;
 	virtual int GetPointToNeighborEdges(const int ptId, const igIndex*& edgeIds) = 0;
 	virtual int GetPointToNeighborFaces(const int ptId, const igIndex*& faceIds) = 0;

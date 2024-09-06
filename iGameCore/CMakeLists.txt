@@ -40,6 +40,8 @@ target_include_directories(${MODULE_NAME} PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/Rendering/Core/Interactor
         ${CMAKE_CURRENT_SOURCE_DIR}/Rendering/OpenGL
 
+#        ${CMAKE_SOURCE_DIR}/
+
         ${EIGEN_INCLUDE_DIR}
 )
 
@@ -49,11 +51,16 @@ target_link_libraries(${MODULE_NAME} PUBLIC
         freetype
         meshoptimizer
         tinyXML2
+
 #        hdf5
 #        cgns
 )
 
 target_link_libraries(${PROJECT_NAME} PUBLIC ${MODULE_NAME})
+if(ENABLE_CGNS_MODULE)
+    target_compile_definitions(${MODULE_NAME} PRIVATE CGNS_ENABLE)
+    target_link_libraries(${MODULE_NAME} PUBLIC cgns_static )
+ENDIF ()
 target_compile_definitions(${MODULE_NAME} PRIVATE ASSEST_DIR="${CMAKE_CURRENT_SOURCE_DIR}/Rendering/Assests")
 
 IF (WIN32)

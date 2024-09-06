@@ -195,6 +195,25 @@ void SurfaceMesh::BuildFaceEdgeLinks() {
   }
 }
 
+int SurfaceMesh::GetNumberOfLinks(const IGsize id, Type type) {
+    int size = 0;
+    switch (type)
+    {
+    case iGame::SurfaceMesh::P2P:
+    case iGame::SurfaceMesh::P2E:
+        size = m_EdgeLinks->GetLinkSize(id);
+        break;
+    case iGame::SurfaceMesh::P2F:
+        size = m_FaceLinks->GetLinkSize(id);
+        break;
+    case iGame::SurfaceMesh::E2F:
+        size = m_FaceEdgeLinks->GetLinkSize(id);
+        break;
+    default:
+        break;
+    }
+    return size;
+}
 int SurfaceMesh::GetPointToOneRingPoints(const IGsize ptId, igIndex *ptIds) {
   assert(ptId < GetNumberOfPoints() && "ptId too large");
   auto &link = m_EdgeLinks->GetLink(ptId);
@@ -307,7 +326,7 @@ igIndex SurfaceMesh::GetFaceIdFormPointIds(igIndex *ids, int size) {
     sum += ids[i];
   }
 
-  igIndex faceIds[64]{}, ptIds[32]{};
+  igIndex faceIds[128]{}, ptIds[128]{};
   int size1 = GetPointToNeighborFaces(ids[0], faceIds);
   for (int i = 0; i < size1; i++) {
     if (size != GetFacePointIds(faceIds[i], ptIds))
@@ -540,38 +559,38 @@ void SurfaceMesh::DeleteFace(const IGsize faceId) {
   m_FaceDeleteMarker->MarkDeleted(faceId);
 }
 
-
-bool SurfaceMesh::IsBoundryFace(igIndex FaceId)
-{
-    int ehs[64];
-    int ecnt = this->GetFaceEdgeIds(FaceId,ehs);
-    for (int i = 0; i < ecnt; i++) {
-        if (this->IsBoundryEdge(ehs[i]))return true;
-    }
+bool SurfaceMesh::IsBoundryFace(igIndex FaceId) {
+  int ehs[64];
+  int ecnt = this->GetFaceEdgeIds(FaceId, ehs);
+  for (int i = 0; i < ecnt; i++) {
+    if (this->IsBoundryEdge(ehs[i]))
+      return true;
+  }
+  return false;
+}
+bool SurfaceMesh::IsBoundryEdge(igIndex EdgeId) {
+  auto &link = m_FaceEdgeLinks->GetLink(EdgeId);
+  if (link.size <= 1)
+    return true;
+  else
     return false;
 }
-bool SurfaceMesh::IsBoundryEdge(igIndex EdgeId)
-{
-    auto& link = m_FaceEdgeLinks->GetLink(EdgeId);
-    if (link.size <= 1)return true;
-    else return false;
+bool SurfaceMesh::IsBoundryPoint(igIndex PointId) {
+  int ehs[64];
+  int ecnt = this->GetPointToNeighborEdges(PointId, ehs);
+  for (int i = 0; i < ecnt; i++) {
+    if (this->IsBoundryEdge(ehs[i]))
+      return true;
+  }
+  return false;
 }
-bool SurfaceMesh::IsBoundryPoint(igIndex PointId) 
-{
-    int ehs[64];
-    int ecnt = this->GetPointToNeighborEdges(PointId, ehs);
-    for (int i = 0; i < ecnt; i++) {
-        if (this->IsBoundryEdge(ehs[i]))return true;
-    }
+bool SurfaceMesh::IsCornerPoint(igIndex PointId) {
+  auto &link = m_FaceLinks->GetLink(PointId);
+  if (link.size == 1)
+    return true;
+  else
     return false;
 }
- bool SurfaceMesh::IsCornerPoint(igIndex PointId)
-{
-     auto& link = m_FaceLinks->GetLink(PointId);
-     if (link.size == 1)return true;
-     else return false;
-}
-
 
 void SurfaceMesh::ReplacePointReference(const IGsize fromPtId,
                                         const IGsize toPtId) {
@@ -598,6 +617,28 @@ void SurfaceMesh::ReplacePointReference(const IGsize fromPtId,
 
   auto &link2 = m_FaceLinks->GetLink(fromPtId);
   m_FaceLinks->SetLink(toPtId, link2.pointer, link2.size);
+}
+
+bool SurfaceMesh::IsOnBoundaryPoint(igIndex ptId)
+{
+    int nNeiEdges = GetNumberOfLinks(ptId, P2E);
+    int nNeiFaces = GetNumberOfLinks(ptId, P2F);
+    if (nNeiEdges == 0 || nNeiFaces == 0) return true; // ¹ÂÁ¢µã
+    return nNeiFaces == nNeiEdges - 1;
+}
+bool SurfaceMesh::IsOnBoundaryEdge(igIndex edgeId) {
+    int size = GetNumberOfLinks(edgeId, E2F);
+    return size == 1;
+}
+bool SurfaceMesh::IsOnBoundaryFace(igIndex faceId) {
+    igIndex edgeIds[24];
+    int size = this->GetFaceEdgeIds(faceId, edgeIds);
+    for (int i = 0; i < size; i++) {
+        if (this->IsOnBoundaryEdge(edgeIds[i])) {
+            return true;
+        }
+    }
+    return false;
 }
 
 SurfaceMesh::SurfaceMesh() { m_ViewStyle = IG_SURFACE; };
@@ -764,7 +805,7 @@ void SurfaceMesh::DrawPhase2(Scene *scene) {
       scene->GetDrawCullDataBuffer().target(GL_UNIFORM_BUFFER);
       scene->GetDrawCullDataBuffer().bindBase(5);
 
-      scene->HizTexture().active(GL_TEXTURE1);
+      scene->DepthPyramid().active(GL_TEXTURE1);
       shader->setUniform(shader->getUniformLocation("depthPyramid"), 1);
 
       auto count = m_Meshlets->MeshletsCount();
@@ -835,7 +876,7 @@ void SurfaceMesh::TestOcclusionResults(Scene *scene) {
       scene->GetDrawCullDataBuffer().target(GL_UNIFORM_BUFFER);
       scene->GetDrawCullDataBuffer().bindBase(5);
 
-      scene->HizTexture().active(GL_TEXTURE1);
+      scene->DepthPyramid().active(GL_TEXTURE1);
       shader->setUniform(shader->getUniformLocation("depthPyramid"), 1);
 
       auto count = m_Meshlets->MeshletsCount();
@@ -962,14 +1003,16 @@ void SurfaceMesh::ConvertToDrawableData() {
                       GL_FLOAT, GL_FALSE, 0);
     m_TriangleVAO.elementBuffer(m_TriangleEBO);
 
-    // m_Meshlets->BuildMeshlet(
-    //     m_Positions->RawPointer(), m_Positions->GetNumberOfValues() / 3,
-    //     m_TriangleIndices->RawPointer(),
-    //     m_TriangleIndices->GetNumberOfIds());
-    //
-    // GLAllocateGLBuffer(m_TriangleEBO,
-    //                    m_Meshlets->GetMeshletIndexCount() * sizeof(igIndex),
-    //                    m_Meshlets->GetMeshletIndices());
+    bool debug = false;
+    if (debug) {
+      m_Meshlets->BuildMeshlet(
+          m_Positions->RawPointer(), m_Positions->GetNumberOfValues() / 3,
+          m_TriangleIndices->RawPointer(), m_TriangleIndices->GetNumberOfIds());
+
+      GLAllocateGLBuffer(m_TriangleEBO,
+                         m_Meshlets->GetMeshletIndexCount() * sizeof(igIndex),
+                         m_Meshlets->GetMeshletIndices());
+    }
   }
 }
 
@@ -995,8 +1038,9 @@ void SurfaceMesh::ViewCloudPicture(Scene *scene, int index, int demension) {
   scene->Update();
 }
 
-void SurfaceMesh::SetAttributeWithPointData(ArrayObject::Pointer attr,
-                                            igIndex i, const std::pair<float, float>& range) {
+void SurfaceMesh::SetAttributeWithPointData(
+    ArrayObject::Pointer attr, igIndex i,
+    const std::pair<float, float> &range) {
   if (m_ViewAttribute != attr || m_ViewDemension != i) {
     m_ViewAttribute = attr;
     m_ViewDemension = i;

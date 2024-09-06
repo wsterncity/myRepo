@@ -73,49 +73,6 @@ template<typename T>
 mat<4, 4, T> lookAt(const vec<3, T>& eye, const vec<3, T>& center,
                     const vec<3, T>& up);
 
-///**
-// * Creates a perspective projection matrix for a right-handed coordinate system
-// * with a zero to one depth range.
-// * @param fovy Field of view in the y direction, in radians.
-// * @param aspect Aspect ratio, defined as width divided by height.
-// * @param zNear The near clipping plane.
-// * @param zFar The far clipping plane.
-// * @return A perspective projection matrix.
-// */
-//template<typename T>
-//mat<4, 4, T> perspective(T fovy, T aspect, T zNear, T zFar);
-//
-///**
-// * Creates a perspective projection matrix with default near and far clipping planes.
-// * @param fovy Field of view in the y direction, in radians.
-// * @param aspect Aspect ratio, defined as width divided by height.
-// * @param zNear The near clipping plane.
-// * @return A perspective projection matrix.
-// */
-//template<typename T>
-//mat<4, 4, T> perspective(T fovy, T aspect, T zNear);
-//
-///**
-// * Creates a perspective projection matrix for a reversed Z-buffer (zero to one depth range).
-// * @param fovy Field of view in the y direction, in radians.
-// * @param aspect Aspect ratio, defined as width divided by height.
-// * @param zNear The near clipping plane.
-// * @param zFar The far clipping plane.
-// * @return A perspective projection matrix.
-// */
-//template<typename T>
-//mat<4, 4, T> perspectiveReversedZ(T fovy, T aspect, T zNear, T zFar);
-//
-///**
-// * Creates a perspective projection matrix for a reversed Z-buffer with default near clipping plane.
-// * @param fovy Field of view in the y direction, in radians.
-// * @param aspect Aspect ratio, defined as width divided by height.
-// * @param zNear The near clipping plane.
-// * @return A perspective projection matrix.
-// */
-//template<typename T>
-//mat<4, 4, T> perspectiveReversedZ(T fovy, T aspect, T zNear);
-
 /**
  * Creates a perspective projection matrix for a right-handed coordinate system
  * with a zero to one depth range.

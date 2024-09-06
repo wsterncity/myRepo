@@ -46,9 +46,11 @@ void igQtFileLoader::OpenFile(const std::string& filePath)
 	auto filename = filePath.substr(filePath.find_last_of('/') + 1);
 	obj->SetName(filename.substr(0, filename.find_last_of('.')).c_str());
 
+	//Q_EMIT AddFileToModelList(QString(filePath.substr(filePath.find_last_of('/') + 1).c_str()));
+
 	this->SaveCurrentFileToRecentFile(QString::fromStdString(filePath));
 	emit NewModel(obj, ItemSource::File);
-    emit FinishReading();
+	emit FinishReading();
 }
 
 void igQtFileLoader::SaveFile() {
@@ -57,7 +59,6 @@ void igQtFileLoader::SaveFile() {
 	//if (!iGame::iGameFileIO::WriteDataSetToFile(currentModel->DataSet, currentModel->filePath)) {
 	//	igDebug("Save File Error\n");
 	//}
-
 }
 void igQtFileLoader::SaveFileAs() {
 	//auto currentModel = iGame::iGameManager::Instance()->GetCurrentModel();

@@ -77,7 +77,7 @@ public:
     };
 
     Camera::Pointer Camera() { return m_Camera; }
-    GLTexture2d& HizTexture() { return m_DepthPyramid; }
+    GLTexture2d& DepthPyramid() { return m_DepthPyramid; }
 
     CameraDataBuffer& CameraData() { return m_CameraData; }
     ObjectDataBuffer& ObjectData() { return m_ObjectData; }
@@ -130,8 +130,8 @@ protected:
     void InitAxes();
 
     void ResizeFrameBuffer();
-    void ResizeHizTexture();
-    void RefreshHizTexture();
+    void ResizeDepthPyramid();
+    void RefreshDepthPyramid();
     void RefreshDrawCullDataBuffer();
 
     void UpdateUniformData();
@@ -145,7 +145,6 @@ protected:
     int m_IncrementModelId{0};
     int m_CurrentModelId{-1};
     Model* m_CurrentModel{nullptr};
-    //DataObject* m_CurrentObject{nullptr};
 
     std::function<void()> m_UpdateFunctor;
     std::function<void()> m_MakeCurrentFunctor;
@@ -155,14 +154,14 @@ protected:
     Light::Pointer m_Light{};
     Axes::Pointer m_Axes{};
 
-
     /* Rendering related */
     CameraDataBuffer m_CameraData;
     ObjectDataBuffer m_ObjectData;
     UniformBufferObjectBuffer m_UBO;
 
-    igm::mat4 m_ModelRotate{};
-    igm::vec3 m_BackgroundColor{0.f, 0.f, 0.f};
+    igm::mat4 m_ModelRotate{}; //Rotation matrix passing through the origin
+    igm::mat4 m_ModelMatrix{};
+    igm::vec3 m_BackgroundColor{};
 
     uint32_t m_VisibleModelsCount = 0;
     igm::vec4 m_ModelsBoundingSphere{0.0f, 0.0f, 0.0f, 1.0f};
@@ -170,8 +169,7 @@ protected:
     GLBuffer m_CameraDataBlock, m_ObjectDataBlock, m_UBOBlock;
     std::map<IGenum, std::unique_ptr<GLShaderProgram>> m_ShaderPrograms;
 
-    GLVertexArray m_ScreenQuadVAO;
-    GLBuffer m_ScreenQuadVBO;
+    GLVertexArray m_EmptyVAO; // used to draw full-screen triangle
 
     GLint samples = 1;
     GLFramebuffer m_FramebufferMultisampled;
