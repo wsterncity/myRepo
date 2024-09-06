@@ -129,7 +129,7 @@ AttributeSet::Attribute& AttributeSet::GetAttribute(const std::string& name, IGe
 
 const AttributeSet::Attribute& AttributeSet::GetAttribute(const std::string& name, IGenum type) const
 {
-    GetAttribute(name, type);
+    return GetAttribute(name, type);
 }
 
 ArrayObject* AttributeSet::GetArrayPointer(IGenum type, IGenum attachmentType,

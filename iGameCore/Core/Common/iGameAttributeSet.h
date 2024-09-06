@@ -27,6 +27,7 @@ public:
             att.type = IG_NONE;
             att.attachmentType = IG_NONE;
             att.isDeleted = false;
+            return att;
         }
 
         bool isNone() const {
