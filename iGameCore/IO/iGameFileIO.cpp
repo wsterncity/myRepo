@@ -10,8 +10,7 @@
 #include "iGameVTSReader.h"
 #include "iGameVTUReader.h"
 #include "iGameVTMReader.h"
-#include "iGameINPReader.h"
-
+#include "INP/iGameINPReader.h"
 #include "CGNS/iGameCGNSReader.h"
 IGAME_NAMESPACE_BEGIN
 IGenum FileIO::GetFileType(const std::string& file_name)
@@ -168,9 +167,7 @@ DataObject::Pointer FileIO::ReadFile(const std::string &file_name)
 		case iGame::FileIO::INP:
 		{
 			INPReader::Pointer reader = INPReader::New();
-			reader->SetFilePath(file_name);
-            reader->Execute();
-			resObj = reader->GetOutput();
+			resObj = reader->ReadFile(file_name);
 			break;
 		}
   //      case iGame::FileIO::STEP:

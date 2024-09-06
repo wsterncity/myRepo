@@ -35,6 +35,11 @@ public:
 
 	void SetFilePath(const std::string& filePath);
 
+	DataObject::Pointer ReadFile(const std::string& filePath) {
+		SetFilePath(filePath);
+		Execute();
+		return this->GetOutput();
+	}
 	/**
 	 * Internal function to read in a value.  Returns zero if there was an
 	 * error.
