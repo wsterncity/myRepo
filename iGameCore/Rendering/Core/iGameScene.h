@@ -169,8 +169,7 @@ protected:
     GLBuffer m_CameraDataBlock, m_ObjectDataBlock, m_UBOBlock;
     std::map<IGenum, std::unique_ptr<GLShaderProgram>> m_ShaderPrograms;
 
-    GLVertexArray m_ScreenQuadVAO;
-    GLBuffer m_ScreenQuadVBO;
+    GLVertexArray m_EmptyVAO; // used to draw full-screen triangle
 
     GLint samples = 1;
     GLFramebuffer m_FramebufferMultisampled;

@@ -302,6 +302,9 @@ void Scene::InitOpenGL() {
     // reversed-z buffer, depth range: 1.0(near plane) -> 0.0(far plane)
     glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
 
+    // create empty VAO to render full-screen triangle
+    m_EmptyVAO.create();
+
     // allocate memory
     {
         m_CameraDataBlock.create();
@@ -343,31 +346,6 @@ void Scene::InitOpenGL() {
             auto shader = this->GetShader(MESHLETCULL);
             shader->mapUniformBlock("CameraDataBlock", 0, m_CameraDataBlock);
         }
-    }
-
-    // init screen quad VAO
-    {
-        m_ScreenQuadVAO.create();
-        m_ScreenQuadVBO.create();
-        m_ScreenQuadVBO.target(GL_ARRAY_BUFFER);
-
-        float quadVertices[] = {// positions   // texCoords
-                                -1.0f, 1.0f, 0.0f, 1.0f,  -1.0f, -1.0f,
-                                0.0f,  0.0f, 1.0f, -1.0f, 1.0f,  0.0f,
-                                -1.0f, 1.0f, 0.0f, 1.0f,  1.0f,  -1.0f,
-                                1.0f,  0.0f, 1.0f, 1.0f,  1.0f,  1.0f};
-        m_ScreenQuadVBO.allocate(sizeof(quadVertices), quadVertices,
-                                 GL_STATIC_DRAW);
-
-        // bind VBO to VAO
-        m_ScreenQuadVAO.vertexBuffer(GL_VBO_IDX_0, m_ScreenQuadVBO, 0,
-                                     4 * sizeof(float));
-        // position
-        GLSetVertexAttrib(m_ScreenQuadVAO, GL_LOCATION_IDX_0, GL_VBO_IDX_0, 2,
-                          GL_FLOAT, GL_FALSE, 0);
-        // texture coord
-        GLSetVertexAttrib(m_ScreenQuadVAO, GL_LOCATION_IDX_1, GL_VBO_IDX_0, 2,
-                          GL_FLOAT, GL_FALSE, 2 * sizeof(float));
     }
 
     m_UBO.useColor = false;
@@ -570,9 +548,9 @@ void Scene::Draw() {
         m_DepthTextureMultisampled.active(GL_TEXTURE2);
         shader->setUniform(shader->getUniformLocation("depthTextureMS"), 2);
 
-        m_ScreenQuadVAO.bind();
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-        m_ScreenQuadVAO.release();
+        m_EmptyVAO.bind();
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+        m_EmptyVAO.release();
 
         glDisable(GL_DEPTH_TEST);
         m_FramebufferResolved.release();
@@ -580,13 +558,13 @@ void Scene::Draw() {
 
     // render to screen
     {
-        // generate mipmap for screen texture
-        m_ColorTextureResolved.generateMipmap();
-
         glBindFramebuffer(GL_FRAMEBUFFER, defaultFramebuffer);
         glViewport(0, 0, width, height);
         glClear(GL_COLOR_BUFFER_BIT);
         glDisable(GL_DEPTH_TEST);
+
+        // generate mipmap for screen texture
+        m_ColorTextureResolved.generateMipmap();
 
         auto shader = GetShader(Scene::SCREEN);
         shader->use();
@@ -596,9 +574,9 @@ void Scene::Draw() {
         m_DepthPyramid.active(GL_TEXTURE3);
         shader->setUniform(shader->getUniformLocation("screenTexture"), 1);
 
-        m_ScreenQuadVAO.bind();
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-        m_ScreenQuadVAO.release();
+        m_EmptyVAO.bind();
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+        m_EmptyVAO.release();
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
