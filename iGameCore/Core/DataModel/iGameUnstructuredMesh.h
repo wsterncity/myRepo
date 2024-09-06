@@ -16,6 +16,8 @@
 #include "iGameHexahedron.h"
 #include "iGamePrism.h"
 #include "iGamePyramid.h"
+#include "Quadratic/iGameQuadraticTriangle.h"
+#include "Quadratic/iGameQuadraticTetra.h"
 
 IGAME_NAMESPACE_BEGIN
 
@@ -70,6 +72,9 @@ private:
     Hexahedron::Pointer m_Hexahedron{};
     Prism::Pointer m_Prism{};
     Pyramid::Pointer m_Pyramid{};
+    QuadraticLine::Pointer m_QuadraticLine{};
+    QuadraticTriangle::Pointer m_QuadraticTriangle{};
+    QuadraticTetra::Pointer m_QuadraticTetra{};
 
 public:
     void Draw(Scene* scene) override;
