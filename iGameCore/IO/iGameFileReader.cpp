@@ -62,7 +62,7 @@ bool FileReader::Execute()
 
 bool FileReader::Open()
 {
-	if (m_FilePath.empty()) 
+	if (m_FilePath.empty())
 	{
 		return false;
 	}
@@ -87,7 +87,7 @@ bool FileReader::Close()
 	return true;
 }
 
-bool FileReader::ReadToBuffer() 
+bool FileReader::ReadToBuffer()
 {
 	if (!m_File || !m_File->is_open()) {
 		return false;
@@ -286,8 +286,7 @@ int FileReader::ReadString(char result[256])
 {
 	// Force the parameter to be seen as a 256-byte array rather than a decayed
 	// pointer.
-
-	while (*this->IS == ' ' || *this->IS == '\r' || *this->IS == '\n')this->IS++;
+	this->SkipNullData();
 	const char* op = strchr(this->IS, ' ');
 	const char* lineEnd = strchr(this->IS, '\n');
 	if (!op || op > lineEnd) {
@@ -307,15 +306,24 @@ int FileReader::ReadString(char result[256])
 	}
 	std::memcpy(result, this->IS, slen);
 	result[slen] = '\0';
+
 	if (slen > 0 && result[slen - 1] == '\r') {
 		result[slen - 1] = '\0';
+		slen--;
+	}
+	for (int i = 0; i < slen; i++) {
+		if (result[i] == '\t') {
+			result[i] = '\0';
+			op = this->IS + i;
+			break;
+		}
 	}
 	this->IS = op + 1;
 	return 1;
 }
 int FileReader::ReadString(std::string& result)
 {
-	while (*this->IS == ' ' || *this->IS == '\r' || *this->IS == '\n' || *this->IS == '\0')this->IS++;
+	this->SkipNullData();
 	const char* op = strchr(this->IS, ' ');
 	const char* lineEnd = strchr(this->IS, '\n');
 	if (!op || op > lineEnd) {
@@ -350,6 +358,7 @@ char* FileReader::LowerCase(char* str, const size_t len)
 }
 
 // General templated function to read data of various types.
+// Please ensure *self->IS is data, not '\r' or '\n'
 template <class T>
 int iGameReadBinaryData(FileReader::Pointer self, T* data, int numTuples, int numComp)
 {
@@ -359,11 +368,6 @@ int iGameReadBinaryData(FileReader::Pointer self, T* data, int numTuples, int nu
 		return 1;
 	}
 	char line[256];
-
-	// suck up newline
-	//IS->getline(line, 256);
-	//IS->read((char*)data, sizeof(T) * numComp * numTuples);
-	self->ReadLine(line);
 	if (!self->Read((char*)data, sizeof(T) * numComp * numTuples))
 	{
 		igDebug("Error reading binary data!");
@@ -396,8 +400,8 @@ ArrayObject::Pointer FileReader::ReadArray(const char* dataType, int numTuples, 
 {
 	char* type = strdup(dataType);
 	type = this->LowerCase(type);
-
-	ArrayObject::Pointer array;
+	this->SkipNullData();
+	ArrayObject::Pointer array{ nullptr };
 	if (!strncmp(type, "bit", 3))
 	{
 		/*	array = vtkBitArray::New();
@@ -681,10 +685,10 @@ ArrayObject::Pointer FileReader::ReadArray(const char* dataType, int numTuples, 
 	return array;
 }
 
-    void FileReader::SetFilePath(const std::string &filePath) {
-		 this->m_FilePath = filePath;
-		 this->m_FileName = filePath.substr(filePath.find_last_of('/') + 1, filePath.size());;
-    }
+void FileReader::SetFilePath(const std::string& filePath) {
+	this->m_FilePath = filePath;
+	this->m_FileName = filePath.substr(filePath.find_last_of('/') + 1, filePath.size());;
+}
 
 
 IGAME_NAMESPACE_END
