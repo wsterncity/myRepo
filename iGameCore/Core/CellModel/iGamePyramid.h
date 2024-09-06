@@ -90,6 +90,15 @@ public:
 	  { 3, 0, 4, -1, 3 },
 	};
 
+	// 面的边序号
+	static constexpr int faceEdges[NumberOfFaces][MaxFaceSize + 1] = {
+	  { 0, 4, 7, 3, 4 },//还没改
+	  { 1, 2, 6, 5, 4 },
+	  { 0, 1, 5, 4, 4 },
+	  { 3, 7, 6, 2, 4 },
+	  { 0, 3, 2, 1, 4 },
+	};
+
 	// 边的邻接面序号
 	static constexpr int edgeToNeighborFaces[NumberOfEdges][2] = {
 	  { 0, 1 },
@@ -145,6 +154,10 @@ public:
     int GetFacePointIds(const int faceId, const igIndex*& pts) override {
 		pts = faces[faceId];
 		return faces[faceId][MaxFaceSize];
+	}
+	int GetFaceEdgeIds(const int faceId, const igIndex*& edgeIds) override {
+		edgeIds = faceEdges[faceId];
+		return faceEdges[faceId][MaxFaceSize];
 	}
     int GetEdgeToNeighborFaces(const int edgeId, const igIndex*& pts) override {
 		pts = edgeToNeighborFaces[edgeId];

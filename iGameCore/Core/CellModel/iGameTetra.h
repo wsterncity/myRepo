@@ -80,6 +80,14 @@ public:
 	  { 0, 2, 1, 3 },
 	}; 
 
+	// 面的边序号
+	static constexpr int faceEdges[NumberOfFaces][MaxFaceSize + 1] = {
+	  { 0, 4, 3, 3 },
+	  { 1, 5, 4, 3 },
+	  { 2, 3, 5, 3 },
+	  { 2, 1, 0, 3 },
+	};
+
 	// 边的邻接面序号
 	static constexpr int edgeToNeighborFaces[NumberOfEdges][2] = {
 	  { 0, 3 },
@@ -130,6 +138,10 @@ public:
         ptIds = faces[faceId];
 		return faces[faceId][MaxFaceSize];
 	}
+	int GetFaceEdgeIds(const int faceId, const igIndex*& edgeIds) override {
+		edgeIds = faceEdges[faceId];
+		return faceEdges[faceId][MaxFaceSize];
+	}
 
 	int GetPointToOneRingPoints(const int pointId, const igIndex*& ptIds) override {
         ptIds = pointToOneRingPoints[pointId];
@@ -148,6 +160,40 @@ public:
         return 2;
 	}
 	int GetFaceToNeighborFaces(const int faceId, const igIndex*& faceIds) override {
+		faceIds = faceToNeighborFaces[faceId];
+		return faceToNeighborFaces[faceId][MaxFaceSize];
+	}
+
+	static int EdgePointIds(const int edgeId, const igIndex*& ptIds) {
+		ptIds = edges[edgeId];
+		return 2;
+	}
+	static int FacePointIds(const int faceId, const igIndex*& ptIds) {
+		ptIds = faces[faceId];
+		return faces[faceId][MaxFaceSize];
+	}
+	static int FaceEdgeIds(const int faceId, const igIndex*& edgeIds) {
+		edgeIds = faceEdges[faceId];
+		return faceEdges[faceId][MaxFaceSize];
+	}
+
+	static int PointToOneRingPoints(const int pointId, const igIndex*& ptIds) {
+		ptIds = pointToOneRingPoints[pointId];
+		return pointToOneRingPoints[pointId][MaxValence];
+	}
+	static int PointToNeighborEdges(const int pointId, const igIndex*& edgeIds) {
+		edgeIds = pointToNeighborEdges[pointId];
+		return pointToNeighborEdges[pointId][MaxValence];
+	}
+	static int PointToNeighborFaces(const int pointId, const igIndex*& faceIds) {
+		faceIds = pointToNeighborFaces[pointId];
+		return pointToNeighborFaces[pointId][MaxValence];
+	}
+	static int EdgeToNeighborFaces(const int edgeId, const igIndex*& ptIds) {
+		ptIds = edgeToNeighborFaces[edgeId];
+		return 2;
+	}
+	static int FaceToNeighborFaces(const int faceId, const igIndex*& faceIds) {
 		faceIds = faceToNeighborFaces[faceId];
 		return faceToNeighborFaces[faceId][MaxFaceSize];
 	}

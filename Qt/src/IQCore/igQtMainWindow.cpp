@@ -11,6 +11,7 @@
 #include <iGameDataSource.h>
 #include <iGameSurfaceMeshFilterTest.h>
 #include <iGameVolumeMeshFilterTest.h>
+#include <VolumeMeshAlgorithm/iGameTetraDecimation.h>
 #include <iGameModelSurfaceFilters/iGameModelGeometryFilter.h>
 
 #include <IQCore/igQtMainWindow.h>
@@ -370,7 +371,7 @@ void igQtMainWindow::initAllFilters() {
         mesh->SetCells(cells, types);
         mesh->SetName("undefined_unstructured_mesh");
 
-        SceneManager::Instance()->GetCurrentScene()->CreateModel(mesh);
+
         modelTreeWidget->addDataObjectToModelTree(mesh, ItemSource::File);
         //this->updateCurrentDataObject();
     });
@@ -386,6 +387,73 @@ void igQtMainWindow::initAllFilters() {
         auto mesh = fp->GetOutPut();
         rendererWidget->AddDataObject(mesh);
     });
+
+	connect(ui->menuTest->addAction("addTetra"), &QAction::triggered, this,
+		[&](bool checked) {
+			VolumeMesh::Pointer mesh = VolumeMesh::New();
+			Points::Pointer points = Points::New();
+			CellArray::Pointer cells = CellArray::New();
+
+			points->AddPoint(-1, -1, 0);
+			points->AddPoint(1, -1, 0);
+			points->AddPoint(1, 1, 0);
+			points->AddPoint(-1, 1, 0);
+
+			points->AddPoint(-1, -1, 2);
+			points->AddPoint(1, -1, 2);
+			points->AddPoint(1, 1, 2);
+			points->AddPoint(-1, 1, 2);
+
+			cells->AddCellId4(0, 1, 2, 4);
+			cells->AddCellId4(2, 3, 0, 4);
+
+			mesh->SetPoints(points);
+			mesh->SetVolumes(cells);
+			mesh->SetName("undefined_unstructured_mesh");
+			mesh->RequestEditStatus();
+			mesh->PrintSelf();
+			modelTreeWidget->addDataObjectToModelTree(mesh, ItemSource::File);
+		});
+
+	connect(ui->menuTest->addAction("addVolume"), &QAction::triggered, this,
+		[&](bool checked) {
+			VolumeMesh::Pointer mesh = VolumeMesh::New();
+			Points::Pointer points = Points::New();
+			CellArray::Pointer cells = CellArray::New();
+
+			points->AddPoint(-1, -1, 0);
+			points->AddPoint(1, -1, 0);
+			points->AddPoint(1, 1, 0);
+			points->AddPoint(-1, 1, 0);
+
+			points->AddPoint(-1, -1, 2);
+			points->AddPoint(1, -1, 2);
+			points->AddPoint(1, 1, 2);
+			points->AddPoint(-1, 1, 2);
+
+			cells->AddCellId4(0, 1, 2, 4);
+			mesh->SetPoints(points);
+			mesh->SetVolumes(cells);
+			mesh->SetName("undefined_unstructured_mesh");
+
+			mesh->RequestEditStatus();
+			igIndex v[4]{ 2, 3, 0, 4 };
+			mesh->AddVolume(v, 4);
+			mesh->GarbageCollection();
+
+			mesh->RequestEditStatus();
+			mesh->PrintSelf();
+			modelTreeWidget->addDataObjectToModelTree(mesh, ItemSource::File);
+		});
+
+	connect(ui->menuTest->addAction("tetraSimplTest"), &QAction::triggered, this,
+		[&](bool checked) {
+			auto td = TetraDecimation::New();
+			auto input = rendererWidget->GetScene()->GetCurrentModel()->GetDataObject();
+			td->SetInput(input);
+			td->Execute();
+			rendererWidget->update();
+		});
 
 }
 

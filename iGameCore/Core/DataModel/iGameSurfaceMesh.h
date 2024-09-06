@@ -53,6 +53,19 @@ public:
   // Construct the adjacent faces of the edges
   void BuildFaceEdgeLinks();
 
+  enum Type {
+      P2P = 0,
+      P2E,
+      P2F,
+      P2V,
+      E2F,
+      E2RF,
+      E2V,
+      F2F,
+      F2RF,
+      F2V,
+  };
+  int GetNumberOfLinks(const IGsize id, Type type);
   // Get all points within one ring of a point. Return the size of indices.
   int GetPointToOneRingPoints(const IGsize ptId, igIndex *ptIds);
   // Get all neighboring edges of a point. Return the size of indices.
@@ -102,6 +115,10 @@ public:
   virtual void DeleteFace(const IGsize faceId);
 
   void ReplacePointReference(const IGsize fromPtId, const IGsize toPtId);
+
+  bool IsOnBoundaryPoint(igIndex ptId);
+  bool IsOnBoundaryEdge(igIndex edgeId);
+  bool IsOnBoundaryFace(igIndex faceId);
 
 protected:
   SurfaceMesh();

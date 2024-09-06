@@ -43,6 +43,7 @@ public:
     // Construct the adjacent volumes of the faces
     void BuildVolumeFaceLinks();
 
+    int GetNumberOfLinks(const IGsize id, Type type);
     // Get all neighboring volumes of a point. Return the size of indices.
     int GetPointToNeighborVolumes(const IGsize ptId, igIndex* volumeIds);
     // Get all neighboring volumes of a edge. Return the size of indices.
@@ -76,8 +77,10 @@ public:
 
     // Add element, necessarily called after RequestEditStatus()
     IGsize AddPoint(const Point& p) override;
+    IGsize AddPoint(const double x, const double y, const double z) { return AddPoint(Point(x,y,z)); }
     IGsize AddEdge(const IGsize ptId1, const IGsize ptId2) override;
     IGsize AddFace(igIndex* ptIds, int size) override;
+    IGsize AddVolume(igIndex* volumeIds, int size);
 
     // Delete element, necessarily called after RequestEditStatus()
     void DeletePoint(const IGsize ptId) override;
@@ -118,6 +121,76 @@ public:
     }
     igIndex GetCellDimension(igIndex CellTyp) { return 3; };
 
+    bool IsOnBoundaryPoint(const IGsize ptId);
+    bool IsOnBoundaryEdge(const IGsize edgeId);
+    bool IsOnBoundaryFace(const IGsize faceId);
+    bool IsOnBoundaryVolume(const IGsize volumeId);
+
+    void ReplacePointReference(const IGsize fromPtId, const IGsize toPtId) {
+        assert(fromPtId < GetNumberOfPoints() && "ptId too large");
+        assert(toPtId < GetNumberOfPoints() && "ptId too large");
+        if (fromPtId == toPtId) {
+            return;
+        }
+        if (!InEditStatus()) {
+            RequestEditStatus();
+        }
+        igIndex edgeIds[64]{}, faceIds[64]{}, volumeIds[64]{};
+        int size1 = GetPointToNeighborEdges(fromPtId, edgeIds);
+        int size2 = GetPointToNeighborFaces(fromPtId, faceIds);
+        int size3 = GetPointToNeighborVolumes(fromPtId, volumeIds);
+        for (int i = 0; i < size1; i++) {
+            m_Edges->ReplaceCellReference(edgeIds[i], fromPtId, toPtId);
+        }
+        for (int i = 0; i < size2; i++) {
+            m_Faces->ReplaceCellReference(faceIds[i], fromPtId, toPtId);
+        }
+        for (int i = 0; i < size3; i++) {
+            m_Volumes->ReplaceCellReference(volumeIds[i], fromPtId, toPtId);
+        }
+
+        auto& link1 = m_EdgeLinks->GetLink(fromPtId);
+        m_EdgeLinks->SetLink(toPtId, link1.pointer, link1.size);
+
+        auto& link2 = m_FaceLinks->GetLink(fromPtId);
+        m_FaceLinks->SetLink(toPtId, link2.pointer, link2.size);
+
+        auto& link3 = m_VolumeLinks->GetLink(fromPtId);
+        m_VolumeLinks->SetLink(toPtId, link3.pointer, link3.size);
+    }
+    void PrintSelf() {
+        igIndex ids[64]{};
+
+        std::cout << "PointToNeighborEdges\n";
+        for (int i = 0; i < GetNumberOfPoints(); i++) {
+            int size = GetPointToNeighborEdges(i, ids);
+            std::cout << "Point: " << i << ", ";
+            for (int j = 0; j < size; j++) {
+                std::cout << " " << ids[j];
+            }
+            std::cout << "\n";
+        }
+
+        std::cout << "EdgeToNeighborFaces\n";
+        for (int i = 0; i < GetNumberOfFaces(); i++) {
+            int size = GetEdgeToNeighborFaces(i, ids);
+            std::cout << "Edge: " << i << ", ";
+            for (int j = 0; j < size; j++) {
+                std::cout << " " << ids[j];
+            }
+            std::cout << "\n";
+        }
+
+        std::cout << "FaceToNeighborVolumes\n";
+        for (int i = 0; i < GetNumberOfVolumes(); i++) {
+            int size = GetFaceToNeighborVolumes(i, ids);
+            std::cout << "Face: " << i << ", ";
+            for (int j = 0; j < size; j++) {
+                std::cout << " " << ids[j];
+            }
+            std::cout << "\n";
+        }
+    }
 protected:
     VolumeMesh();
     ~VolumeMesh() override = default;

@@ -195,6 +195,25 @@ void SurfaceMesh::BuildFaceEdgeLinks() {
   }
 }
 
+int SurfaceMesh::GetNumberOfLinks(const IGsize id, Type type) {
+    int size = 0;
+    switch (type)
+    {
+    case iGame::SurfaceMesh::P2P:
+    case iGame::SurfaceMesh::P2E:
+        size = m_EdgeLinks->GetLinkSize(id);
+        break;
+    case iGame::SurfaceMesh::P2F:
+        size = m_FaceLinks->GetLinkSize(id);
+        break;
+    case iGame::SurfaceMesh::E2F:
+        size = m_FaceEdgeLinks->GetLinkSize(id);
+        break;
+    default:
+        break;
+    }
+    return size;
+}
 int SurfaceMesh::GetPointToOneRingPoints(const IGsize ptId, igIndex *ptIds) {
   assert(ptId < GetNumberOfPoints() && "ptId too large");
   auto &link = m_EdgeLinks->GetLink(ptId);
@@ -307,7 +326,7 @@ igIndex SurfaceMesh::GetFaceIdFormPointIds(igIndex *ids, int size) {
     sum += ids[i];
   }
 
-  igIndex faceIds[64]{}, ptIds[32]{};
+  igIndex faceIds[128]{}, ptIds[128]{};
   int size1 = GetPointToNeighborFaces(ids[0], faceIds);
   for (int i = 0; i < size1; i++) {
     if (size != GetFacePointIds(faceIds[i], ptIds))
@@ -565,6 +584,28 @@ void SurfaceMesh::ReplacePointReference(const IGsize fromPtId,
 
   auto &link2 = m_FaceLinks->GetLink(fromPtId);
   m_FaceLinks->SetLink(toPtId, link2.pointer, link2.size);
+}
+
+bool SurfaceMesh::IsOnBoundaryPoint(igIndex ptId)
+{
+    int nNeiEdges = GetNumberOfLinks(ptId, P2E);
+    int nNeiFaces = GetNumberOfLinks(ptId, P2F);
+    if (nNeiEdges == 0 || nNeiFaces == 0) return true; // ¹ÂÁ¢µã
+    return nNeiFaces == nNeiEdges - 1;
+}
+bool SurfaceMesh::IsOnBoundaryEdge(igIndex edgeId) {
+    int size = GetNumberOfLinks(edgeId, E2F);
+    return size == 1;
+}
+bool SurfaceMesh::IsOnBoundaryFace(igIndex faceId) {
+    igIndex edgeIds[24];
+    int size = this->GetFaceEdgeIds(faceId, edgeIds);
+    for (int i = 0; i < size; i++) {
+        if (this->IsOnBoundaryEdge(edgeIds[i])) {
+            return true;
+        }
+    }
+    return false;
 }
 
 SurfaceMesh::SurfaceMesh() { m_ViewStyle = IG_SURFACE; };
