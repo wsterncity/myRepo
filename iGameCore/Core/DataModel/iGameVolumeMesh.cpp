@@ -71,6 +71,20 @@ Volume* VolumeMesh::GetVolume(const IGsize volumeId)
 		volume->Points->AddPoint(this->GetPoint(cell[i]));
 	}
 
+	if (InEditStatus()) {
+		volume->EdgeIds->Reset();
+		volume->FaceIds->Reset();
+		ncells = m_VolumeEdges->GetCellIds(volumeId, cell);
+		for (int i = 0; i < ncells; i++) {
+			volume->EdgeIds->AddId(cell[i]);
+		}
+
+		ncells = m_VolumeFaces->GetCellIds(volumeId, cell);
+		for (int i = 0; i < ncells; i++) {
+			volume->FaceIds->AddId(cell[i]);
+		}
+	}
+
 	return volume;
 }
 

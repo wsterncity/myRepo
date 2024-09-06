@@ -27,7 +27,8 @@ public:
     }
     Cell* GetFace(const int faceId) override {
         const int* verts = faces[faceId];
-        Cell* face;
+		const int* edges = faceEdges[faceId];
+        Face* face;
         if (faces[faceId][MaxFaceSize] == 3) {
             face = m_Triangle.get();
         } else {
@@ -36,6 +37,7 @@ public:
         for (int i = 0; i < faces[faceId][MaxFaceSize]; ++i) {
             face->PointIds->SetId(i, this->PointIds->GetId(verts[i]));
             face->Points->SetPoint(i, this->Points->GetPoint(verts[i]));
+			face->EdgeIds->SetId(i, EdgeIds->GetId(edges[i]));
         }
 
         return face;

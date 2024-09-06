@@ -39,6 +39,16 @@ const AttributeSet::Attribute& AttributeSet::GetScalar(const IGsize index) const
     return GetAttribute(index, IG_SCALAR);
 }
 
+AttributeSet::Attribute& AttributeSet::GetScalar(const std::string& name)
+{
+    return GetAttribute(name, IG_SCALAR);
+}
+
+const AttributeSet::Attribute& AttributeSet::GetScalar(const std::string& name) const
+{
+    return GetAttribute(name, IG_SCALAR);
+}
+
 AttributeSet::Attribute& AttributeSet::GetVector()
 {
     return GetVector(0);
@@ -57,6 +67,16 @@ AttributeSet::Attribute& AttributeSet::GetVector(const IGsize index)
 const AttributeSet::Attribute& AttributeSet::GetVector(const IGsize index) const
 {
     return GetAttribute(index, IG_VECTOR);
+}
+
+AttributeSet::Attribute& AttributeSet::GetVector(const std::string& name)
+{
+    return GetAttribute(name, IG_VECTOR);
+}
+
+const AttributeSet::Attribute& AttributeSet::GetVector(const std::string& name) const
+{
+    return GetAttribute(name, IG_VECTOR);
 }
 
 IGsize AttributeSet::AddAttribute(IGenum type, IGenum attachmentType,
@@ -81,19 +101,35 @@ AttributeSet::Attribute& AttributeSet::GetAttribute(const IGsize index, IGenum t
     int count = 0;
     for (int i = 0; i < m_Buffer->GetNumberOfElements(); i++) {
         auto& attrb = m_Buffer->GetElement(i);
-        if (!attrb.isDeleted && attrb.type == type) {
+        if (!attrb.isDeleted && attrb.pointer && attrb.type == type) {
             if (count == index) {
                 return attrb;
             }
             count++;
         }
     }
-    return AttributeSet::Attribute{};
+    return AttributeSet::Attribute::None();
 }
 
 const AttributeSet::Attribute& AttributeSet::GetAttribute(const IGsize index, IGenum type) const
 {
     return GetAttribute(index, type);
+}
+
+AttributeSet::Attribute& AttributeSet::GetAttribute(const std::string& name, IGenum type)
+{
+    for (int i = 0; i < m_Buffer->GetNumberOfElements(); i++) {
+        auto& attrb = m_Buffer->GetElement(i);
+        if (!attrb.isNone() && attrb.type == type && attrb.pointer->GetName() == name) {
+            return attrb;
+        }
+    }
+    return AttributeSet::Attribute::None();
+}
+
+const AttributeSet::Attribute& AttributeSet::GetAttribute(const std::string& name, IGenum type) const
+{
+    return GetAttribute(name, type);
 }
 
 ArrayObject* AttributeSet::GetArrayPointer(IGenum type, IGenum attachmentType,

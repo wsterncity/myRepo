@@ -20,10 +20,10 @@ public:
     virtual int GetNumberOfEdges() = 0;
     virtual int GetNumberOfFaces() = 0;
 
-    igIndex GetPointId(const int ptId) { return this->PointIds->GetId(ptId); }
-    Point& GetPoint(const int ptId) { return this->Points->GetPoint(ptId); }
-    const Point& GetPoint(const int ptId) const {
-        return this->Points->GetPoint(ptId);
+    igIndex GetPointId(const int id) { return this->PointIds->GetId(id); }
+    Point& GetPoint(const int id) { return this->Points->GetPoint(id); }
+    const Point& GetPoint(const int id) const {
+        return this->Points->GetPoint(id);
     }
 
     virtual Cell* GetEdge(const int edgeId) = 0;
