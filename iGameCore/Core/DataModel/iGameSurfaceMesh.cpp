@@ -70,6 +70,14 @@ Face *SurfaceMesh::GetFace(const IGsize faceId) {
     face->Points->AddPoint(this->GetPoint(cell[i]));
   }
 
+  if (InEditStatus()) {
+      face->Reset();
+      ncells = m_FaceEdges->GetCellIds(faceId, cell);
+      for (int i = 0; i < ncells; i++) {
+          face->EdgeIds->AddId(cell[i]);
+      }
+  }
+
   return face;
 }
 

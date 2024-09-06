@@ -17,19 +17,21 @@ public:
     Cell* GetEdge(const int edgeId) override {
         const int* verts = edges[edgeId];
 
-        m_Line->PointIds->SetId(0, this->PointIds->GetId(verts[0]));
-        m_Line->PointIds->SetId(1, this->PointIds->GetId(verts[1]));
+        m_Line->PointIds->SetId(0, PointIds->GetId(verts[0]));
+        m_Line->PointIds->SetId(1, PointIds->GetId(verts[1]));
 
-        m_Line->Points->SetPoint(0, this->Points->GetPoint(verts[0]));
-        m_Line->Points->SetPoint(1, this->Points->GetPoint(verts[1]));
+        m_Line->Points->SetPoint(0, Points->GetPoint(verts[0]));
+        m_Line->Points->SetPoint(1, Points->GetPoint(verts[1]));
 
         return m_Line.get();
     }
     Cell* GetFace(const int faceId) override {
         const int* verts = faces[faceId];
+        const int* edges = faceEdges[faceId];
         for (int i = 0; i < 3; ++i) {
-            m_Triangle->PointIds->SetId(i, this->PointIds->GetId(verts[i]));
-            m_Triangle->Points->SetPoint(i, this->Points->GetPoint(verts[i]));
+            m_Triangle->PointIds->SetId(i, PointIds->GetId(verts[i]));
+            m_Triangle->Points->SetPoint(i, Points->GetPoint(verts[i]));
+			m_Triangle->EdgeIds->SetId(i, EdgeIds->GetId(edges[i]));
         }
 
         return m_Triangle.get();
