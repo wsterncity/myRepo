@@ -128,6 +128,7 @@ public:
     bool IsOnBoundaryEdge(const IGsize edgeId);
     bool IsOnBoundaryFace(const IGsize faceId);
     bool IsOnBoundaryVolume(const IGsize volumeId);
+    bool IsCornerPoint(const IGsize ptId);
 
     void ReplacePointReference(const IGsize fromPtId, const IGsize toPtId) {
         assert(fromPtId < GetNumberOfPoints() && "ptId too large");

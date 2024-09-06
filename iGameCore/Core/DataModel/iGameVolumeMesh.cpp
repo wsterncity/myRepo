@@ -785,12 +785,10 @@ bool VolumeMesh::IsOnBoundaryVolume(const IGsize volumeId)
 	}
 	return false;
 }
-bool VolumeMesh::IsCornerPoint(igIndex PointId)
+bool VolumeMesh::IsCornerPoint(const IGsize ptId)
 {
-	auto& link = m_VolumeLinks->GetLink(PointId);
-	if (link.size == 1)return true;
-	else return false;
-
+	int size = GetNumberOfLinks(ptId, P2V);
+	return size == 1;
 }
 VolumeMesh::VolumeMesh()
 {

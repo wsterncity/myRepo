@@ -377,11 +377,9 @@ void igQtMainWindow::initAllFilters() {
         modelTreeWidget->addDataObjectToModelTree(mesh, ItemSource::File);
         //this->updateCurrentDataObject();
     });
-    auto action = ui->menuTest->addAction("surfaceExtractTest");
 
-	connect(action, &QAction::triggered, this,
-		[&](bool checked) {
-			auto fp = iGameModelGeometryFilter::New();
+	connect(ui->menuTest->addAction("surfaceExtractTest"), &QAction::triggered, this, [&](bool checked) {
+		auto fp = iGameModelGeometryFilter::New();
         auto input = rendererWidget->GetScene()->GetCurrentModel()->GetDataObject();
         fp->Execute(input);
         SceneManager::Instance()->GetCurrentScene()->ChangeModelVisibility(
@@ -389,6 +387,32 @@ void igQtMainWindow::initAllFilters() {
         auto mesh = fp->GetOutPut();
         rendererWidget->AddDataObject(mesh);
     });
+
+	auto action_subdivision = ui->menuTest->addAction("Subdivision");
+	connect(action_subdivision, &QAction::triggered, this,
+		[&](bool checked) {
+			/*	auto filter = HexhedronSubdivision::New();
+				VolumeMesh::Pointer mesh = DynamicCast<VolumeMesh>(rendererWidget->GetScene()->GetCurrentModel()->GetDataObject());*/
+			auto filter = QuadSubdivision::New();
+			SurfaceMesh::Pointer mesh = DynamicCast<SurfaceMesh>(rendererWidget->GetScene()->GetCurrentModel()->GetDataObject());
+			filter->SetMesh(mesh);
+			filter->Execute();
+			auto ControlPoints = filter->GetOutput();
+			ControlPoints->SetName("ControlPoints");
+
+			modelTreeWidget->addDataObjectToModelTree(ControlPoints, ItemSource::File);
+
+		});
+
+	auto action_loadtest = ui->menu_help->addAction("loadtest");
+	connect(action_loadtest, &QAction::triggered, this,
+		[&](bool checked) {
+			std::string filePath = "F:\\OpeniGame\\Model\\secrecy\\DrivAer_fastback_base_0.4_remesh_coarse_kw_CPU_test_P_V.cgns";
+			auto obj = iGame::FileIO::ReadFile(filePath);
+			auto filename = filePath.substr(filePath.find_last_of('/') + 1);
+			obj->SetName(filename.substr(0, filename.find_last_of('.')).c_str());
+			modelTreeWidget->addDataObjectToModelTree(obj, ItemSource::File);
+		});
 
 	connect(ui->menuTest->addAction("addTetra"), &QAction::triggered, this,
 		[&](bool checked) {
