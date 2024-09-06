@@ -36,7 +36,7 @@ public:
 	bool SetOutput(int index, DataObject::Pointer data);
 	bool SetOutput(DataObject::Pointer data);
 	DataObject::Pointer GetOutput(int index);
-	DataObject::Pointer GetOutput();
+	virtual DataObject::Pointer GetOutput();
 	DataObject::Pointer GetNamedOutput(const std::string& name);
 
 	// Update the current task progress.'amount'is between 0 and 1.
