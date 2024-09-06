@@ -62,6 +62,7 @@ bool ProjectSphere(vec3 C, float r, float zNear, float P00, float P11, out vec4 
     if (-C.z - r < zNear) {
         return false;
     }
+    P11 = -P11;
 
     vec2 cx = -C.xz;
     vec2 vx = vec2(sqrt(dot(cx, cx) - r * r), r);
@@ -74,7 +75,10 @@ bool ProjectSphere(vec3 C, float r, float zNear, float P00, float P11, out vec4 
     vec2 maxy = mat2(vy.x, -vy.y, vy.y, vy.x) * cy;
 
     aabb = vec4(minx.x / minx.y * P00, miny.x / miny.y * P11, maxx.x / maxx.y * P00, maxy.x / maxy.y * P11);
-    aabb = 0.5 - 0.5 * aabb;// clip space -> uv space
+    aabb = vec4(0.5f, 0.5f, 0.5f, 0.5f) - vec4(0.5f, 0.5f, 0.5f, 0.5f) * aabb;// clip space -> uv space
+
+    // Vulkan uv -> OpenGL uv
+    aabb = vec4(aabb.x, 1.0f - aabb.w, aabb.z, 1.0f - aabb.y);
 
     return true;
 }
@@ -102,28 +106,22 @@ bool IsVisible(MeshletData meshlet) {
         float width = (aabb.z - aabb.x) * float(drawCullData.pyramidWidth);
         float height = (aabb.w - aabb.y) * float(drawCullData.pyramidHeight);
 
-        float level = ceil(log2(max(width, height) / 2.0));
+        //        float level = floor(log2(max(width, height)));
+        float level = ceil(log2(max(width, height)));
 
-        // Sampler is set up to do min reduction, so this computes the minimum depth of a 2x2 texel quad
-        float depth_0 = textureLod(depthPyramid, aabb.xy, level).x;
-        float depth_1 = textureLod(depthPyramid, aabb.xw, level).x;
-        float depth_2 = textureLod(depthPyramid, aabb.zw, level).x;
-        float depth_3 = textureLod(depthPyramid, aabb.zy, level).x;
+        //Sampler is set up to do min reduction, so this computes the minimum depth of a 2x2 texel quad
+        float depth_0 = textureLod(depthPyramid, aabb.xy, level).r;
+        float depth_1 = textureLod(depthPyramid, aabb.xw, level).r;
+        float depth_2 = textureLod(depthPyramid, aabb.zw, level).r;
+        float depth_3 = textureLod(depthPyramid, aabb.zy, level).r;
         float depth = min(min(depth_0, depth_1), min(depth_2, depth_3));
+
+        float epsilon = 1e-7;
+        depth -= epsilon;
 
         float depthSphere = drawCullData.zNear / (-center.z - radius);
 
         visible = visible && depthSphere >= depth;
-        //        float width = (aabb.z - aabb.x) * float(drawCullData.pyramidWidth);
-        //        float height = (aabb.w - aabb.y) * float(drawCullData.pyramidHeight);
-        //
-        //        float level = floor(log2(max(width, height)));
-        //
-        //        // Sampler is set up to do min reduction, so this computes the minimum depth of a 2x2 texel quad
-        //        float depth = textureLod(depthPyramid, (aabb.xy + aabb.zw) * 0.5, level).x;
-        //        float depthSphere = drawCullData.zNear / (-center.z - radius);
-        //
-        //        visible = visible && depthSphere >= depth;
     }
 
     return visible;

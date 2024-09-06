@@ -1,13 +1,16 @@
 #include "iGameScene.h"
 #include "iGameCommand.h"
+#include <chrono>
 
 IGAME_NAMESPACE_BEGIN
 Scene::Scene() {
     m_Camera = Camera::New();
     m_Camera->Initialize(igm::vec3{0.0f, 0.0f, 1.0f});
 
-    m_ModelRotate = igm::mat4(1.0f);
+    m_ModelRotate = igm::mat4{};
+    m_ModelMatrix = igm::mat4{};
     m_BackgroundColor = {0.5f, 0.5f, 0.5f};
+    //    m_BackgroundColor = {1.f, 1.f, 1.f};
 
     InitOpenGL();
     InitFont();
@@ -137,20 +140,23 @@ void Scene::ChangeModelVisibility(int index, bool visibility) {
     if (model != nullptr) { ChangeModelVisibility(model, visibility); }
 }
 
+void Scene::ResetCenter() {
+    igm::vec4 center = igm::vec4{m_ModelsBoundingSphere.xyz(), 1.0f};
+    igm::vec3 centerInWorld = (m_ModelMatrix * center).xyz();
+    float radius = m_ModelsBoundingSphere.w;
+    m_Camera->SetCameraPos(centerInWorld.x, centerInWorld.y,
+                           centerInWorld.z + 2.0f * radius);
+}
+
 void Scene::ChangeModelVisibility(Model* model, bool visibility) {
+    UpdateModelsBoundingSphere();
+
     if (visibility) {
         m_VisibleModelsCount++;
-        if (m_VisibleModelsCount == 1) {
-            Vector3f center = model->m_DataObject->GetBoundingBox().center();
-            float radius = model->m_DataObject->GetBoundingBox().diag() / 2;
-            m_Camera->SetCameraPos(center[0], center[1],
-                                   center[2] + 2.0f * radius);
-        }
+        if (m_VisibleModelsCount == 1) { ResetCenter(); }
     } else {
         m_VisibleModelsCount--;
     }
-
-    UpdateModelsBoundingSphere();
 }
 
 void Scene::SetShader(IGenum type, GLShaderProgram* sp) {
@@ -210,6 +216,18 @@ GLShaderProgram* Scene::GenShader(IGenum type) {
             GLShader font_frag = GLShader{
                     (std::string(ASSEST_DIR) + "/Shaders/font.frag").c_str(),
                     GL_FRAGMENT_SHADER};
+            sp = new GLShaderProgram;
+            sp->addShaders({font_vert, font_frag});
+        } break;
+        case ATTACHMENTRESOLVE: {
+            GLShader font_vert = GLShader{(std::string(ASSEST_DIR) +
+                                           "/Shaders/attachmentResolve.vert")
+                                                  .c_str(),
+                                          GL_VERTEX_SHADER};
+            GLShader font_frag = GLShader{(std::string(ASSEST_DIR) +
+                                           "/Shaders/attachmentResolve.frag")
+                                                  .c_str(),
+                                          GL_FRAGMENT_SHADER};
             sp = new GLShaderProgram;
             sp->addShaders({font_vert, font_frag});
         } break;
@@ -284,6 +302,9 @@ void Scene::InitOpenGL() {
     // reversed-z buffer, depth range: 1.0(near plane) -> 0.0(far plane)
     glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
 
+    // create empty VAO to render full-screen triangle
+    m_EmptyVAO.create();
+
     // allocate memory
     {
         m_CameraDataBlock.create();
@@ -325,31 +346,6 @@ void Scene::InitOpenGL() {
             auto shader = this->GetShader(MESHLETCULL);
             shader->mapUniformBlock("CameraDataBlock", 0, m_CameraDataBlock);
         }
-    }
-
-    // init screen quad VAO
-    {
-        m_ScreenQuadVAO.create();
-        m_ScreenQuadVBO.create();
-        m_ScreenQuadVBO.target(GL_ARRAY_BUFFER);
-
-        float quadVertices[] = {// positions   // texCoords
-                                -1.0f, 1.0f, 0.0f, 1.0f,  -1.0f, -1.0f,
-                                0.0f,  0.0f, 1.0f, -1.0f, 1.0f,  0.0f,
-                                -1.0f, 1.0f, 0.0f, 1.0f,  1.0f,  -1.0f,
-                                1.0f,  0.0f, 1.0f, 1.0f,  1.0f,  1.0f};
-        m_ScreenQuadVBO.allocate(sizeof(quadVertices), quadVertices,
-                                 GL_STATIC_DRAW);
-
-        // bind VBO to VAO
-        m_ScreenQuadVAO.vertexBuffer(GL_VBO_IDX_0, m_ScreenQuadVBO, 0,
-                                     4 * sizeof(float));
-        // position
-        GLSetVertexAttrib(m_ScreenQuadVAO, GL_LOCATION_IDX_0, GL_VBO_IDX_0, 2,
-                          GL_FLOAT, GL_FALSE, 0);
-        // texture coord
-        GLSetVertexAttrib(m_ScreenQuadVAO, GL_LOCATION_IDX_1, GL_VBO_IDX_0, 2,
-                          GL_FLOAT, GL_FALSE, 2 * sizeof(float));
     }
 
     m_UBO.useColor = false;
@@ -418,26 +414,87 @@ void Scene::ResizeFrameBuffer() {
                       << std::endl;
     }
 
-    ResizeHizTexture();
+    // resolve framebuffer(form multisamples to single sample)
+    {
+        auto width = m_Camera->GetViewPort().x;
+        auto height = m_Camera->GetViewPort().y;
+        int mipLevels =
+                static_cast<int>(std::ceil(std::log2(std::max(width, height))));
+
+        GLFramebuffer fbo;
+        fbo.create();
+        fbo.target(GL_FRAMEBUFFER);
+        fbo.bind();
+
+        GLTexture2d colorTexture;
+        colorTexture.create();
+        colorTexture.bind();
+        colorTexture.storage(mipLevels, GL_RGBA8, width, height);
+        colorTexture.parameteri(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        colorTexture.parameteri(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        colorTexture.parameteri(GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        colorTexture.parameteri(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        fbo.texture(GL_COLOR_ATTACHMENT0, colorTexture, 0);
+
+        GLTexture2d depthTexture;
+        depthTexture.create();
+        depthTexture.bind();
+        depthTexture.storage(1, GL_DEPTH_COMPONENT32F, width, height);
+        depthTexture.parameteri(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        depthTexture.parameteri(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        fbo.texture(GL_DEPTH_ATTACHMENT, depthTexture, 0);
+
+        GLenum buffers[] = {GL_COLOR_ATTACHMENT0};
+        fbo.drawBuffers(1, buffers);
+
+        fbo.release();
+
+        m_ColorTextureResolved = std::move(colorTexture);
+        m_DepthTextureResolved = std::move(depthTexture);
+        m_FramebufferResolved = std::move(fbo);
+
+        if (m_FramebufferResolved.checkStatus() != GL_FRAMEBUFFER_COMPLETE)
+            std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!"
+                      << std::endl;
+    }
+
+    ResizeDepthPyramid();
 }
-void Scene::ResizeHizTexture() {
+void Scene::ResizeDepthPyramid() {
 #ifdef IGAME_OPENGL_VERSION_460
     uint32_t width = m_Camera->GetViewPort().x;
     uint32_t height = m_Camera->GetViewPort().y;
 
-    m_DepthPyramidWidth = width;
-    m_DepthPyramidHeight = height;
-    m_DepthPyramidLevels = 1 + static_cast<unsigned int>(std::floor(
-                                       std::log2(std::max(width, height))));
+    static auto previousPow2 = [](uint32_t v) {
+        uint32_t r = 1;
+        while (r * 2 < v) r *= 2;
+        return r;
+    };
+    static auto compDepthMipLevels = [](uint32_t width, uint32_t height) {
+        uint32_t result = 1;
+        while (width > 1 || height > 1) {
+            result++;
+            width /= 2;
+            height /= 2;
+        }
+        return result;
+    };
+
+    m_DepthPyramidWidth = previousPow2(width);
+    m_DepthPyramidHeight = previousPow2(height);
+    m_DepthPyramidLevels =
+            compDepthMipLevels(m_DepthPyramidWidth, m_DepthPyramidHeight);
+
 
     GLTexture2d texture;
     texture.create();
     texture.bind();
-    texture.storage(m_DepthPyramidLevels, GL_R32F, width, height);
+    texture.storage(m_DepthPyramidLevels, GL_R32F, m_DepthPyramidWidth,
+                    m_DepthPyramidHeight);
     texture.parameteri(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     texture.parameteri(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     texture.parameteri(GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
-    texture.parameteri(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    texture.parameteri(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     texture.release();
 
     m_DepthPyramid = std::move(texture);
@@ -452,7 +509,7 @@ void Scene::Draw() {
     auto width = m_Camera->GetViewPort().x;
     auto height = m_Camera->GetViewPort().y;
 
-    // render to framebuffer
+    // render to multisample framebuffer
     {
         m_FramebufferMultisampled.bind();
 
@@ -472,6 +529,33 @@ void Scene::Draw() {
         m_FramebufferMultisampled.release();
     }
 
+    // resolve to single sample framebuffer
+    {
+        m_FramebufferResolved.bind();
+        glViewport(0, 0, width, height);
+        glClearDepth(0.0f);
+        glClear(GL_DEPTH_BUFFER_BIT);
+
+        glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_ALWAYS);
+
+        auto shader = GetShader(Scene::ATTACHMENTRESOLVE);
+        shader->use();
+
+        shader->setUniform(shader->getUniformLocation("numSamples"), samples);
+        m_ColorTextureMultisampled.active(GL_TEXTURE1);
+        shader->setUniform(shader->getUniformLocation("colorTextureMS"), 1);
+        m_DepthTextureMultisampled.active(GL_TEXTURE2);
+        shader->setUniform(shader->getUniformLocation("depthTextureMS"), 2);
+
+        m_EmptyVAO.bind();
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+        m_EmptyVAO.release();
+
+        glDisable(GL_DEPTH_TEST);
+        m_FramebufferResolved.release();
+    }
+
     // render to screen
     {
         glBindFramebuffer(GL_FRAMEBUFFER, defaultFramebuffer);
@@ -479,51 +563,48 @@ void Scene::Draw() {
         glClear(GL_COLOR_BUFFER_BIT);
         glDisable(GL_DEPTH_TEST);
 
+        // generate mipmap for screen texture
+        m_ColorTextureResolved.generateMipmap();
+
         auto shader = GetShader(Scene::SCREEN);
         shader->use();
 
-        shader->setUniform(shader->getUniformLocation("numSamples"), samples);
+        m_ColorTextureResolved.active(GL_TEXTURE1);
+        m_DepthTextureResolved.active(GL_TEXTURE2);
+        m_DepthPyramid.active(GL_TEXTURE3);
+        shader->setUniform(shader->getUniformLocation("screenTexture"), 1);
 
-        m_ColorTextureMultisampled.active(GL_TEXTURE1);
-        m_DepthTextureMultisampled.active(GL_TEXTURE2);
-        shader->setUniform(shader->getUniformLocation("screenTextureMS"), 1);
-
-        //m_DepthPyramid.active(GL_TEXTURE3);
-        //shader->setUniform(shader->getUniformLocation("depthPyramid"), 3);
-
-        m_ScreenQuadVAO.bind();
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-        m_ScreenQuadVAO.release();
+        m_EmptyVAO.bind();
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+        m_EmptyVAO.release();
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
+    CalculateFrameRate();
     GLCheckError();
 }
 
-void Scene::RefreshHizTexture() {
+void Scene::RefreshDepthPyramid() {
 #ifdef IGAME_OPENGL_VERSION_460
     auto shader = GetShader(DEPTHREDUCE);
-
     shader->use();
     m_DepthTextureMultisampled.active(GL_TEXTURE1);
     m_DepthPyramid.active(GL_TEXTURE2);
-    shader->setUniform(shader->getUniformLocation("inImageMS"), 1);
-    shader->setUniform(shader->getUniformLocation("inImage"), 2);
+    shader->setUniform(shader->getUniformLocation("screenDepthMS"), 1);
+    shader->setUniform(shader->getUniformLocation("myDepthPyramid"), 2);
 
-    // copy level 0
+    // generate level 0
     {
         unsigned int level = 0;
         uint32_t width = m_DepthPyramidWidth;
         uint32_t height = m_DepthPyramidHeight;
-
         shader->use();
         shader->setUniform(shader->getUniformLocation("level"), level);
-        shader->setUniform(shader->getUniformLocation("inImageSize"),
+        shader->setUniform(shader->getUniformLocation("outDepthPyramidSize"),
                            igm::uvec2{width, height});
         m_DepthPyramid.bindImage(0, level, GL_FALSE, 0, GL_WRITE_ONLY, GL_R32F);
-
-        glDispatchCompute((width + 15) / 16, (height + 15) / 16, 1);
+        glDispatchCompute((width + 31) / 32, (height + 31) / 32, 1);
         glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
     }
 
@@ -540,12 +621,14 @@ void Scene::RefreshHizTexture() {
         if (levelHeight < 1) levelHeight = 1;
 
         shader->use();
+
+        shader->use();
         shader->setUniform(shader->getUniformLocation("level"), level);
-        shader->setUniform(shader->getUniformLocation("inImageSize"),
+        shader->setUniform(shader->getUniformLocation("inDepthPyramidSize"),
                            igm::uvec2{width, height});
         m_DepthPyramid.bindImage(0, level, GL_FALSE, 0, GL_WRITE_ONLY, GL_R32F);
 
-        glDispatchCompute((levelWidth + 15) / 16, (levelHeight + 15) / 16, 1);
+        glDispatchCompute((levelWidth + 31) / 32, (levelHeight + 31) / 32, 1);
         glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
     }
 #endif
@@ -563,10 +646,13 @@ void Scene::Resize(int width, int height, int pixelRatio) {
 
 void Scene::DrawFrame() {
     // update ubo data in CPU
+    GLCheckError();
     UpdateUniformData();
-
+    GLCheckError();
     DrawModels();
+    GLCheckError();
     DrawAxes();
+    GLCheckError();
 }
 
 void Scene::DrawModels() {
@@ -580,31 +666,28 @@ void Scene::DrawModels() {
 #elif IGAME_OPENGL_VERSION_460
     bool debug = false;
     if (debug) {
-        std::cout << "-------:Draw:-------" << std::endl;
-        GLCheckError();
+        //std::cout << "-------:Draw:-------" << std::endl;
         RefreshDrawCullDataBuffer();
-        GLCheckError();
 
         for (auto& [id, obj]: m_Models) {
             obj->m_DataObject->ConvertToDrawableData();
         }
-        GLCheckError();
+
         for (auto& [id, obj]: m_Models) {
             obj->m_DataObject->TestOcclusionResults(this);
         }
-        GLCheckError();
+
         // draw phase1: draw visible meshlet
         for (auto& [id, obj]: m_Models) { obj->m_DataObject->DrawPhase1(this); }
-        GLCheckError();
+
         // refresh phase1: generate loacl hierarchical z-buffer
-        RefreshHizTexture();
-        GLCheckError();
+        RefreshDepthPyramid();
+
         // draw phase2: draw invisible meshlet
         for (auto& [id, obj]: m_Models) { obj->m_DataObject->DrawPhase2(this); }
-        GLCheckError();
+
         // refresh phase2: generate global hierarchical z-buffer
-        RefreshHizTexture();
-        GLCheckError();
+        RefreshDepthPyramid();
     } else {
         for (auto& [id, obj]: m_Models) {
             obj->m_DataObject->ConvertToDrawableData();
@@ -622,7 +705,7 @@ void Scene::UpdateUniformData() {
                              m_Camera->GetViewMatrix();
 
     // update object data matrix
-    m_ObjectData.model = m_ModelRotate;
+    m_ObjectData.model = m_ModelMatrix;
     m_ObjectData.normal = m_ObjectData.model.invert().transpose();
 
     // update other ubo
@@ -643,7 +726,7 @@ void Scene::UpdateUniformBuffer() {
 }
 
 void Scene::DrawAxes() {
-    glClear(GL_DEPTH_BUFFER_BIT);
+    //glClear(GL_DEPTH_BUFFER_BIT);
     glViewport(0, 0, 200, 200);
 
     //draw Axes
@@ -674,14 +757,13 @@ void Scene::RefreshDrawCullDataBuffer() {
     igm::mat4 projection = m_Camera->GetProjectionMatrixReversedZ();
     igm::mat4 projectionT = projection.transpose();
 
-    auto normalizePlane = [](igm::vec4 p) { return p / igm::vec3(p).length(); };
     igm::vec4 frustumX =
-            normalizePlane(projectionT[3] + projectionT[0]); // x + w < 0
+            (projectionT[3] + projectionT[0]).normalized(); // x + w < 0
     igm::vec4 frustumY =
-            normalizePlane(projectionT[3] + projectionT[1]); // y + w < 0
+            (projectionT[3] + projectionT[1]).normalized(); // y + w < 0
 
     DrawCullData cullData = {};
-    cullData.view_model = m_Camera->GetViewMatrix() * m_ModelRotate;
+    cullData.view_model = m_Camera->GetViewMatrix() * m_ModelMatrix;
     cullData.P00 = projection[0][0];
     cullData.P11 = projection[1][1];
     cullData.zNear = projection[3][2];
@@ -714,21 +796,22 @@ void Scene::UpdateModelsBoundingSphere() {
     float radius = (max - min).length() / 2;
 
     m_ModelsBoundingSphere = igm::vec4{center, radius};
+}
 
-    //// update camera far plane to cover all models
-    //{
-    //    auto pos = m_Camera->GetCameraPos();
-    //    auto center = m_ModelsBoundingSphere.xyz();
-    //    auto length = (pos - center).length();
-    //    if (length <= m_ModelsBoundingSphere.w) {
-    //        // inside the bounding sphere
-    //        m_Camera->SetNearPlane(0.1f);
-    //        m_Camera->SetFarPlane(length + m_ModelsBoundingSphere.w);
-    //    } else {
-    //        // outside the bounding sphere
-    //        m_Camera->SetNearPlane(length - m_ModelsBoundingSphere.w);
-    //        m_Camera->SetFarPlane(length + m_ModelsBoundingSphere.w);
-    //    }
-    //}
+void Scene::CalculateFrameRate() {
+    static float framesPerSecond = 0.0f; // This will store our fps
+    static auto lastTime = std::chrono::high_resolution_clock ::now();
+
+    auto currentTime = std::chrono::high_resolution_clock ::now();
+    ++framesPerSecond;
+
+    float time = std::chrono::duration<float, std::chrono::seconds::period>(
+                         currentTime - lastTime)
+                         .count();
+    if (time > 1.0f) {
+        lastTime = currentTime;
+        //std::cout << framesPerSecond << std::endl;
+        framesPerSecond = 0;
+    }
 }
 IGAME_NAMESPACE_END

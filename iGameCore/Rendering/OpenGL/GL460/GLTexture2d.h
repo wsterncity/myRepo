@@ -20,14 +20,14 @@ private:
     GLTexture2d(GLuint handle) : GLObject<GLTexture2d>{handle} {}
 
 public:
-    static void copyImageSubData(const GLTexture2d& source, GLenum srcTarget,
+    static void copyImageSubData(const GLTexture2d& source,
                                  GLint srcLevel, GLint srcX, GLint srcY,
                                  GLint srcZ, const GLTexture2d& destination,
-                                 GLenum dstTarget, GLint dstLevel, GLint dstX,
+                                  GLint dstLevel, GLint dstX,
                                  GLint dstY, GLint dstZ, GLsizei srcWidth,
                                  GLsizei srcHeight, GLsizei srcDepth) {
-        glCopyImageSubData(source.handle, srcTarget, srcLevel, srcX, srcY, srcZ,
-                           destination.handle, dstTarget, dstLevel, dstX, dstY,
+        glCopyImageSubData(source.handle, GL_TEXTURE_2D, srcLevel, srcX, srcY, srcZ,
+                           destination.handle, GL_TEXTURE_2D, dstLevel, dstX, dstY,
                            dstZ, srcWidth, srcHeight, srcDepth);
     }
 

@@ -21,9 +21,22 @@ private:
         : GLObject<GLTexture2dMultisample>{handle} {}
 
 public:
-    GLTexture2dMultisample() = default;
+    static void copyImageSubData(const GLTexture2dMultisample& source,
+                                 GLint srcLevel, GLint srcX, GLint srcY,
+                                 GLint srcZ,
+                                 const GLTexture2dMultisample& destination,
+                                 GLint dstLevel, GLint dstX, GLint dstY,
+                                 GLint dstZ, GLsizei srcWidth,
+                                 GLsizei srcHeight, GLsizei srcDepth) {
+        glCopyImageSubData(source.handle, GL_TEXTURE_2D_MULTISAMPLE, srcLevel,
+                           srcX, srcY, srcZ, destination.handle,
+                           GL_TEXTURE_2D_MULTISAMPLE, dstLevel, dstX, dstY,
+                           dstZ, srcWidth, srcHeight, srcDepth);
+    }
 
 public:
+    GLTexture2dMultisample() = default;
+
     // GLenum internal_format: https://registry.khronos.org/OpenGL-Refpages/gl4/html/glTexImage2D.xhtml
     // Sized Internal Format: GL_R8, GL_RG8, GL_RGB8, GL_RGBA8
     // Sized Internal Format: GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT24

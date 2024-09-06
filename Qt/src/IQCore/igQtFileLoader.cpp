@@ -29,7 +29,7 @@ igQtFileLoader::~igQtFileLoader() {
 
 void igQtFileLoader::LoadFile() 
 {
-	std::string filePath = QFileDialog::getOpenFileName(nullptr, "Load file", "", "ALL FIle(*.obj *.off *.stl *.ply *.vtk *.mesh *.pvd *.vts *.vtu *.vtm)").toStdString();
+	std::string filePath = QFileDialog::getOpenFileName(nullptr, "Load file", "", "ALL FIle(*.obj *.off *.stl *.ply *.vtk *.mesh *.pvd *.vts *.vtu *.vtm * cgns);;VTK file(*.vtk);;CGNS file(*.cgns)").toStdString();
 	this->OpenFile(filePath);
 }
 

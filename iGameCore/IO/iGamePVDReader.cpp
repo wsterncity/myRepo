@@ -50,11 +50,14 @@ bool iGame::iGamePVDReader::Parsing() {
     for(auto& [val, strArray] : child_map){
         m_Data.GetTimeData()->AddTimeStep(val, strArray);
     }
+    /* if the pvd data have keyframe. */
     if(!m_Data.GetTimeData()->GetArrays().empty()){
         auto& firstFrame = m_Data.GetTimeData()->GetArrays()[0];
         DataObject::Pointer  newObj;
         m_data_object = DataObject::New();
         m_data_object->SetTimeFrames(m_Data.GetTimeData());
+        auto attributeSet = AttributeSet::New();
+        m_data_object->SetAttributeSet(attributeSet);
         std::string fileName, fileSuffix;
         for(int i = 0; i < firstFrame.SubFileNames->Size(); i ++){
             fileName = firstFrame.SubFileNames->GetElement(i);
@@ -74,9 +77,54 @@ bool iGame::iGamePVDReader::Parsing() {
                 rd->SetFilePath(fileName);
                 rd->Execute();
                 newObj = rd->GetOutput();
+            } else if(fileSuffix == "pvd"){
+                iGamePVDReader::Pointer rd = iGamePVDReader::New();
+                rd->SetFilePath(fileName);
+                rd->Execute();
+                newObj = rd->GetOutput();
             }
             m_data_object->AddSubDataObject(newObj);
         }
+
+        /* Reset DataObject's scalar range. */
+        auto subScalarPointer = m_data_object->GetAttributeSet()->GetAllAttributes();
+        bool scalar_exist_0 = false;
+        if(subScalarPointer != nullptr && subScalarPointer->GetNumberOfElements()) scalar_exist_0 = true;
+        bool scalar_exist_1 = (m_data_object->HasSubDataObject() && m_data_object->SubDataObjectIteratorBegin()->second->GetAttributeSet());
+        /* Model's scalar num is determined by the dataObject and its subDataObject 's scalar num. */
+        if(scalar_exist_0 || scalar_exist_1){
+            IGsize scalarNum = scalar_exist_0 ? subScalarPointer->GetNumberOfElements() :  m_data_object->SubDataObjectIteratorBegin()->second->GetAttributeSet()->GetAllAttributes()->GetNumberOfElements();
+            float range_max, range_min;
+            for(IGsize k = 0; k < scalarNum; k ++)
+            {
+                FloatArray::Pointer array = FloatArray::New();
+                array->SetName(m_data_object->SubDataObjectIteratorBegin()->second->GetAttributeSet()->GetAttribute(k).pointer->GetName());
+                range_max = FLT_MIN;
+                range_min = FLT_MAX;
+                if(scalar_exist_0){
+                    const auto& ScalarDataRange = m_data_object->GetAttributeSet()->GetAttribute(k).dataRange;
+                    range_min = std::min(range_min, ScalarDataRange.first );
+                    range_max = std::max(range_max, ScalarDataRange.second);
+                }
+
+                if(scalar_exist_1){
+                    for(auto it = m_data_object->SubDataObjectIteratorBegin(); it != m_data_object->SubDataObjectIteratorEnd(); ++ it){
+                        const auto& ScalarDataRange = it->second->GetAttributeSet()->GetAttribute(k).dataRange;
+                        range_min = std::min(range_min, ScalarDataRange.first );
+                        range_max = std::max(range_max, ScalarDataRange.second);
+                    }
+//                    std::cout << "range " << range_min << ' ' << range_max << '\n';
+                    for(auto it = m_data_object->SubDataObjectIteratorBegin(); it != m_data_object->SubDataObjectIteratorEnd(); ++ it){
+                        auto& ScalarDataRange = it->second->GetAttributeSet()->GetAttribute(k).dataRange;
+                        ScalarDataRange.first  = range_min;
+                        ScalarDataRange.second = range_max;
+                    }
+                }
+                m_data_object->GetAttributeSet()->AddScalar(IG_POINT, array, {range_min, range_max});
+            }
+        }
+
+//        m_data_object->SetScalarRange({0, 0.12});
     }
 
     return true;

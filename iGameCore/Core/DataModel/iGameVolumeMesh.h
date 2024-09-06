@@ -92,6 +92,9 @@ public:
     void GetCell(igIndex cellId, Cell* cell) {
         cell = this->GetVolume(cellId);
     };
+    Cell* GetCell(igIndex cellId) {
+        return this->GetVolume(cellId);
+    }
     IntArray* GetCellTypes() {
         IntArray::Pointer Types = IntArray::New();
         Types->Resize(this->GetNumberOfVolumes());
@@ -226,7 +229,7 @@ public:
     void ViewCloudPicture(Scene* scene, int index, int demension = -1) override;
 
     void SetAttributeWithPointData(ArrayObject::Pointer attr,
-                                   igIndex i = -1) override;
+                                   igIndex i = -1, const std::pair<float, float>& range = {0.f, 0.f}) override;
 
     void SetAttributeWithCellData(ArrayObject::Pointer attr, igIndex i = -1);
 
@@ -247,7 +250,7 @@ private:
     bool m_Flag{false};
     bool m_UseColor{false};
     bool m_ColorWithCell{false};
-    int m_PointSize{4};
+    int m_PointSize{8};
     int m_LineWidth{1};
     int m_CellPositionSize{};
 

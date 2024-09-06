@@ -22,6 +22,7 @@ public:
 
     /* Model Related */
     int AddModel(Model::Pointer);
+    void ResetCenter();
     Model::Pointer CreateModel(DataObject::Pointer);
     void RemoveModel(int index);
     void RemoveModel(Model*);
@@ -68,11 +69,15 @@ public:
         PURECOLOR,
         AXES,
         FONT,
+        ATTACHMENTRESOLVE,
         DEPTHREDUCE,
         MESHLETCULL,
         SCREEN,
         SHADERTYPE_COUNT
     };
+
+    Camera::Pointer Camera() { return m_Camera; }
+    GLTexture2d& DepthPyramid() { return m_DepthPyramid; }
 
     CameraDataBuffer& CameraData() { return m_CameraData; }
     ObjectDataBuffer& ObjectData() { return m_ObjectData; }
@@ -90,12 +95,11 @@ public:
     void Draw();
     void Resize(int width, int height, int pixelRatio);
     void Update();
+
     template<typename Functor, typename... Args>
     void SetUpdateFunctor(Functor&& functor, Args&&... args) {
         m_UpdateFunctor = std::bind(functor, args...);
     }
-
-    GLTexture2d& HizTexture() { return m_DepthPyramid; }
 
     // TODO: slove z-buffer Accuracy issues
     GLBuffer& GetDrawCullDataBuffer() { return m_DrawCullData; }
@@ -126,22 +130,21 @@ protected:
     void InitAxes();
 
     void ResizeFrameBuffer();
-    void ResizeHizTexture();
-    void RefreshHizTexture();
+    void ResizeDepthPyramid();
+    void RefreshDepthPyramid();
     void RefreshDrawCullDataBuffer();
 
     void UpdateUniformData();
     void DrawFrame();
     void DrawModels();
     void DrawAxes();
-
+    void CalculateFrameRate();
 
     /* Data Object Related */
     std::map<int, Model::Pointer> m_Models;
     int m_IncrementModelId{0};
     int m_CurrentModelId{-1};
     Model* m_CurrentModel{nullptr};
-    //DataObject* m_CurrentObject{nullptr};
 
     std::function<void()> m_UpdateFunctor;
     std::function<void()> m_MakeCurrentFunctor;
@@ -151,13 +154,13 @@ protected:
     Light::Pointer m_Light{};
     Axes::Pointer m_Axes{};
 
-
     /* Rendering related */
     CameraDataBuffer m_CameraData;
     ObjectDataBuffer m_ObjectData;
     UniformBufferObjectBuffer m_UBO;
 
-    igm::mat4 m_ModelRotate{};
+    igm::mat4 m_ModelRotate{}; //Rotation matrix passing through the origin
+    igm::mat4 m_ModelMatrix{};
     igm::vec3 m_BackgroundColor{};
 
     uint32_t m_VisibleModelsCount = 0;
@@ -166,12 +169,16 @@ protected:
     GLBuffer m_CameraDataBlock, m_ObjectDataBlock, m_UBOBlock;
     std::map<IGenum, std::unique_ptr<GLShaderProgram>> m_ShaderPrograms;
 
-    GLVertexArray m_ScreenQuadVAO;
-    GLBuffer m_ScreenQuadVBO;
+    GLVertexArray m_EmptyVAO; // used to draw full-screen triangle
+
     GLint samples = 1;
     GLFramebuffer m_FramebufferMultisampled;
-    GLTexture2dMultisample m_ColorTextureMultisampled,
-            m_DepthTextureMultisampled;
+    GLTexture2dMultisample m_ColorTextureMultisampled;
+    GLTexture2dMultisample m_DepthTextureMultisampled;
+
+    GLFramebuffer m_FramebufferResolved;
+    GLTexture2d m_ColorTextureResolved;
+    GLTexture2d m_DepthTextureResolved;
 
     GLBuffer m_DrawCullData;
     int m_DepthPyramidWidth, m_DepthPyramidHeight, m_DepthPyramidLevels;

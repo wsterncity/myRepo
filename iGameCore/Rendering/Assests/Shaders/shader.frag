@@ -1,4 +1,4 @@
-#version 410 core
+#version 330 core
 
 layout(std140) uniform CameraDataBlock {
 //layout(std140, binding = 0) uniform CameraDataBlock {

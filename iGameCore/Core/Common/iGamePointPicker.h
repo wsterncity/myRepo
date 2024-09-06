@@ -16,6 +16,8 @@ public:
 		if (m_PointSet != points) {
 			m_PointSet = points;
 		}
+//		float len = (m_PointSet->GetBoundingBox().max - m_PointSet->GetBoundingBox().min).length();
+//		m_PickRadius = len > 10.f ? 1.0 : 0.1;
 	}
 
 	void SetPickRadius(double radius) {

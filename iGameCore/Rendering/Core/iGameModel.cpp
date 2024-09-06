@@ -107,25 +107,25 @@ void Model::SetPickedItemSwitch(bool action) {
 
 void Model::SetViewPointsSwitch(bool action) {
     if (action) {
-        m_DataObject->SetViewStyle(IG_POINTS);
+        m_DataObject->AddViewStyle(IG_POINTS);
     } else {
-        m_DataObject->SetViewStyle2(IG_POINTS);
+        m_DataObject->RemoveViewStyle(IG_POINTS);
     }
 }
 
 void Model::SetViewWireframeSwitch(bool action) {
     if (action) {
-        m_DataObject->SetViewStyle(IG_WIREFRAME);
+        m_DataObject->AddViewStyle(IG_WIREFRAME);
     } else {
-        m_DataObject->SetViewStyle2(IG_WIREFRAME);
+        m_DataObject->RemoveViewStyle(IG_WIREFRAME);
     }
 }
 
 void Model::SetViewFillSwitch(bool action) {
     if (action) {
-        m_DataObject->SetViewStyle(IG_SURFACE);
+        m_DataObject->AddViewStyle(IG_SURFACE);
     } else {
-        m_DataObject->SetViewStyle2(IG_SURFACE);
+        m_DataObject->RemoveViewStyle(IG_SURFACE);
     }
 }
 
