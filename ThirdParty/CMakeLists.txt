@@ -4,13 +4,14 @@ add_subdirectory(tinyXML2)
 #add_subdirectory(Eigen)
 add_subdirectory(meshoptimizer)
 
-# CGNSÅäÖÃ
+# CGNSé…ç½®
 set(CGNS_BUILD_SHARED OFF)
 set(CGNS_ENABLE_HDF5 OFF)
-set(CGNS_ENABLE_PARALLEL OFF)  # Èç¹û²»ĞèÒª²¢ĞĞÖ§³Ö¿ÉÒÔ¹Ø±Õ
+set(CGNS_ENABLE_PARALLEL OFF)  # å¦‚æœä¸éœ€è¦å¹¶è¡Œæ”¯æŒå¯ä»¥å…³é—­
 #set(CGNS_HDF5_DIR ${HDF5_ROOT})
 
 # Configure the compilation definition according to the value of MODULE_FLAG
+
 if(ENABLE_CGNS_MODULE)
     add_subdirectory(CGNS)
 endif ()

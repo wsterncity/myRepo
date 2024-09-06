@@ -18,9 +18,18 @@ public:
 	virtual int GetEdgeToNeighborFaces(const int edgeId, const igIndex*& faceIds) = 0;
 	virtual int GetFaceToNeighborFaces(const int faceId, const igIndex*& faceIds) = 0;
 
+		igIndex GetEdgeId(const int id) { return this->EdgeIds->GetId(id); }
+	igIndex GetFaceId(const int id) { return this->FaceIds->GetId(id); }
+	IdArray::Pointer EdgeIds{};
+	IdArray::Pointer FaceIds{};
 protected:
-	QuadraticVolume() = default;
+	QuadraticVolume()
+	{
+		this->EdgeIds = IdArray::New();
+		this->FaceIds = IdArray::New();
+	}
 	~QuadraticVolume() override = default;
+
 };
 IGAME_NAMESPACE_END
 #endif

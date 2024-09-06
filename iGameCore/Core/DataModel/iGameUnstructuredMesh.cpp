@@ -105,9 +105,25 @@ Cell* UnstructuredMesh::GetTypedCell(const IGsize cellId) {
 		if (m_QuadraticTriangle == nullptr) { m_QuadraticTriangle = QuadraticTriangle::New(); }
 		cell = m_QuadraticTriangle.get();
 	}break;
+	case IG_QUADRATIC_QUAD: {
+		if (m_QuadraticQuad == nullptr) { m_QuadraticQuad = QuadraticQuad::New(); }
+		cell = m_QuadraticQuad.get();
+	}break;
 	case IG_QUADRATIC_TETRA: {
 		if (m_QuadraticTetra == nullptr) { m_QuadraticTetra = QuadraticTetra::New(); }
 		cell = m_QuadraticTetra.get();
+	}break;
+	case IG_QUADRATIC_HEXAHEDRON: {
+		if (m_QuadraticHexahedron == nullptr) { m_QuadraticHexahedron = QuadraticHexahedron::New(); }
+		cell = m_QuadraticHexahedron.get();
+	}break;
+	case IG_QUADRATIC_PRISM: {
+		if (m_QuadraticPrism == nullptr) { m_QuadraticPrism = QuadraticPrism::New(); }
+		cell = m_QuadraticPrism.get();
+	}break;
+	case IG_QUADRATIC_PYRAMID: {
+		if (m_QuadraticPyramid == nullptr) { m_QuadraticPyramid = QuadraticPyramid::New(); }
+		cell = m_QuadraticPyramid.get();
 	}break;
 	default: {
 		if (m_EmptyCell == nullptr) { m_EmptyCell = EmptyCell::New(); }
@@ -235,6 +251,26 @@ void UnstructuredMesh::ConvertToDrawableData() {
 			}
 			for (int i = 0; i < size; i++) {
 				m_LineIndices->AddElement2(ids[i], ids[(i + 1) % size]);
+			}
+		} break;
+		case IG_QUADRATIC_TRIANGLE:
+		case IG_QUADRATIC_QUAD: {
+			int trueSize = size / 2;
+			m_TriangleIndices->AddElement3(
+				ids[0], ids[trueSize], ids[trueSize * 2 - 1]
+			);
+			for (int j = 1; j < trueSize; j++) {
+				m_TriangleIndices->AddElement3(
+					ids[j], ids[j + trueSize], ids[j + trueSize - 1]
+				);
+			}
+			for (int j = 2; j < trueSize; j++) {
+				m_TriangleIndices->AddElement3(
+					ids[trueSize], ids[trueSize + j - 1], ids[trueSize + j]);
+			}
+			for (int i = 0; i < trueSize; i++) {
+				m_LineIndices->AddElement2(ids[i], ids[i + trueSize]);
+				m_LineIndices->AddElement2(ids[(i + 1) % trueSize], ids[i + trueSize]);
 			}
 		} break;
 		case IG_TETRA:

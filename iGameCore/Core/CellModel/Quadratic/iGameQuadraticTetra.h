@@ -10,30 +10,30 @@ public:
 	static Pointer New() { return new QuadraticTetra; }
 
 	IGenum GetCellType() const noexcept override { return IG_QUADRATIC_TETRA; }
-	int GetCellSize() const noexcept override { return 10; }
-	int GetNumberOfEdges() override { return 6; }
-	int GetNumberOfFaces() override { return 4; }
+	int GetCellSize() const noexcept override { return NumberOfPoints; }
+	int GetNumberOfEdges() override { return NumberOfEdges; }
+	int GetNumberOfFaces() override { return NumberOfFaces; }
 
 	Cell* GetEdge(const int edgeId) override {
 		const int* verts = edges[edgeId];
-
 		m_Line->PointIds->SetId(0, this->PointIds->GetId(verts[0]));
 		m_Line->PointIds->SetId(1, this->PointIds->GetId(verts[1]));
 		m_Line->PointIds->SetId(2, this->PointIds->GetId(verts[2]));
-
 		m_Line->Points->SetPoint(0, this->Points->GetPoint(verts[0]));
 		m_Line->Points->SetPoint(1, this->Points->GetPoint(verts[1]));
 		m_Line->Points->SetPoint(2, this->Points->GetPoint(verts[2]));
-
 		return m_Line.get();
 	}
 	Cell* GetFace(const int faceId) override {
 		const int* verts = faces[faceId];
-		for (int i = 0; i < 3; ++i) {
-			m_Triangle->PointIds->SetId(i, this->PointIds->GetId(verts[i]));
-			m_Triangle->Points->SetPoint(i, this->Points->GetPoint(verts[i]));
+		const int* edges = faceEdges[faceId];
+		for (int i = 0; i < 6; ++i) {
+			m_Triangle->PointIds->SetId(i, PointIds->GetId(verts[i]));
+			m_Triangle->Points->SetPoint(i, Points->GetPoint(verts[i]));
 		}
-
+		for (int i = 0; i < 3; ++i) {
+			m_Triangle->EdgeIds->SetId(i, EdgeIds->GetId(edges[i]));
+		}
 		return m_Triangle.get();
 	}
 
@@ -101,7 +101,7 @@ public:
 	};
 
 	// 面的邻接面序号
-	static constexpr int faceToNeighborFaces[NumberOfFaces][MaxFaceSize + 1] = {
+	static constexpr int faceToNeighborFaces[NumberOfFaces][MaxFaceSize / 2 + 1] = {
 	  { 3, 1, 2, 3 },
 	  { 3, 2, 0, 3 },
 	  { 3, 0, 1, 3 },
@@ -142,7 +142,7 @@ public:
 	}
 	int GetFaceEdgeIds(const int faceId, const igIndex*& edgeIds) override {
 		edgeIds = faceEdges[faceId];
-		return faceEdges[faceId][MaxFaceSize];
+		return faceEdges[faceId][MaxFaceSize / 2];
 	}
 
 	int GetPointToOneRingPoints(const int pointId, const igIndex*& ptIds) override {
@@ -163,7 +163,7 @@ public:
 	}
 	int GetFaceToNeighborFaces(const int faceId, const igIndex*& faceIds) override {
 		faceIds = faceToNeighborFaces[faceId];
-		return faceToNeighborFaces[faceId][MaxFaceSize];
+		return faceToNeighborFaces[faceId][MaxFaceSize / 2];
 	}
 
 	static int EdgePointIds(const int edgeId, const igIndex*& ptIds) {
@@ -176,7 +176,7 @@ public:
 	}
 	static int FaceEdgeIds(const int faceId, const igIndex*& edgeIds) {
 		edgeIds = faceEdges[faceId];
-		return faceEdges[faceId][MaxFaceSize];
+		return faceEdges[faceId][MaxFaceSize / 2];
 	}
 
 	static int PointToOneRingPoints(const int pointId, const igIndex*& ptIds) {
@@ -197,7 +197,7 @@ public:
 	}
 	static int FaceToNeighborFaces(const int faceId, const igIndex*& faceIds) {
 		faceIds = faceToNeighborFaces[faceId];
-		return faceToNeighborFaces[faceId][MaxFaceSize];
+		return faceToNeighborFaces[faceId][MaxFaceSize / 2];
 	}
 
 private:
