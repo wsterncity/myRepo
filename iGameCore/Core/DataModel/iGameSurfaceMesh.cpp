@@ -71,11 +71,11 @@ Face *SurfaceMesh::GetFace(const IGsize faceId) {
   }
 
   if (InEditStatus()) {
-      face->Reset();
-      ncells = m_FaceEdges->GetCellIds(faceId, cell);
-      for (int i = 0; i < ncells; i++) {
-          face->EdgeIds->AddId(cell[i]);
-      }
+    face->Reset();
+    ncells = m_FaceEdges->GetCellIds(faceId, cell);
+    for (int i = 0; i < ncells; i++) {
+      face->EdgeIds->AddId(cell[i]);
+    }
   }
 
   return face;
@@ -204,23 +204,22 @@ void SurfaceMesh::BuildFaceEdgeLinks() {
 }
 
 int SurfaceMesh::GetNumberOfLinks(const IGsize id, Type type) {
-    int size = 0;
-    switch (type)
-    {
-    case iGame::SurfaceMesh::P2P:
-    case iGame::SurfaceMesh::P2E:
-        size = m_EdgeLinks->GetLinkSize(id);
-        break;
-    case iGame::SurfaceMesh::P2F:
-        size = m_FaceLinks->GetLinkSize(id);
-        break;
-    case iGame::SurfaceMesh::E2F:
-        size = m_FaceEdgeLinks->GetLinkSize(id);
-        break;
-    default:
-        break;
-    }
-    return size;
+  int size = 0;
+  switch (type) {
+  case iGame::SurfaceMesh::P2P:
+  case iGame::SurfaceMesh::P2E:
+    size = m_EdgeLinks->GetLinkSize(id);
+    break;
+  case iGame::SurfaceMesh::P2F:
+    size = m_FaceLinks->GetLinkSize(id);
+    break;
+  case iGame::SurfaceMesh::E2F:
+    size = m_FaceEdgeLinks->GetLinkSize(id);
+    break;
+  default:
+    break;
+  }
+  return size;
 }
 int SurfaceMesh::GetPointToOneRingPoints(const IGsize ptId, igIndex *ptIds) {
   assert(ptId < GetNumberOfPoints() && "ptId too large");
@@ -627,26 +626,26 @@ void SurfaceMesh::ReplacePointReference(const IGsize fromPtId,
   m_FaceLinks->SetLink(toPtId, link2.pointer, link2.size);
 }
 
-bool SurfaceMesh::IsOnBoundaryPoint(igIndex ptId)
-{
-    int nNeiEdges = GetNumberOfLinks(ptId, P2E);
-    int nNeiFaces = GetNumberOfLinks(ptId, P2F);
-    if (nNeiEdges == 0 || nNeiFaces == 0) return true; // ╧ба╒╣Ц
-    return nNeiFaces == nNeiEdges - 1;
+bool SurfaceMesh::IsOnBoundaryPoint(igIndex ptId) {
+  int nNeiEdges = GetNumberOfLinks(ptId, P2E);
+  int nNeiFaces = GetNumberOfLinks(ptId, P2F);
+  if (nNeiEdges == 0 || nNeiFaces == 0)
+    return true; // О©╫О©╫О©╫О©╫О©╫О©╫
+  return nNeiFaces == nNeiEdges - 1;
 }
 bool SurfaceMesh::IsOnBoundaryEdge(igIndex edgeId) {
-    int size = GetNumberOfLinks(edgeId, E2F);
-    return size == 1;
+  int size = GetNumberOfLinks(edgeId, E2F);
+  return size == 1;
 }
 bool SurfaceMesh::IsOnBoundaryFace(igIndex faceId) {
-    igIndex edgeIds[24];
-    int size = this->GetFaceEdgeIds(faceId, edgeIds);
-    for (int i = 0; i < size; i++) {
-        if (this->IsOnBoundaryEdge(edgeIds[i])) {
-            return true;
-        }
+  igIndex edgeIds[24];
+  int size = this->GetFaceEdgeIds(faceId, edgeIds);
+  for (int i = 0; i < size; i++) {
+    if (this->IsOnBoundaryEdge(edgeIds[i])) {
+      return true;
     }
-    return false;
+  }
+  return false;
 }
 
 SurfaceMesh::SurfaceMesh() { m_ViewStyle = IG_SURFACE; };
@@ -697,7 +696,7 @@ void SurfaceMesh::Draw(Scene *scene) {
     // TODO: A better way to render wireframes
     auto boundingBoxDiag = this->GetBoundingBox().diag();
     auto scaleFactor =
-        1e-6 / std::pow(10, std::floor(std::log10(boundingBoxDiag)));
+        1e-5 / std::pow(10, std::floor(std::log10(boundingBoxDiag)));
     glad_glDepthRange(scaleFactor, 1);
     glad_glDepthFunc(GL_GEQUAL);
 

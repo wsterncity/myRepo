@@ -96,6 +96,16 @@ public:
     void Resize(int width, int height, int pixelRatio);
     void Update();
 
+    void lookAtPositiveX();
+    void lookAtNegativeX();
+    void lookAtPositiveY();
+    void lookAtNegativeY();
+    void lookAtPositiveZ();
+    void lookAtNegativeZ();
+    void lookAtIsometric();
+    void rotateNinetyClockwise();
+    void rotateNinetyCounterClockwise();
+
     template<typename Functor, typename... Args>
     void SetUpdateFunctor(Functor&& functor, Args&&... args) {
         m_UpdateFunctor = std::bind(functor, args...);
