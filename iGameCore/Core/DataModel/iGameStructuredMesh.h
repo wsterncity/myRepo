@@ -11,6 +11,8 @@ class StructuredMesh : public PointSet {
 public:
 	I_OBJECT(StructuredMesh);
 	static StructuredMesh* New() { return new StructuredMesh; }
+	IGenum GetDataObjectType() const { return IG_STRUCTURED_MESH; }
+
 	~StructuredMesh() override;
 
 	Points::Pointer GetPoints() { return this->m_Points; }
@@ -151,9 +153,6 @@ public:
 
 protected:
 	StructuredMesh() {};
-
-	Points::Pointer m_Points{ nullptr };
-	AttributeSet::Pointer m_Attributes{nullptr};
 	CellArray::Pointer Quads{ nullptr };
 	CellArray::Pointer Hexahedrons{ nullptr };
 
@@ -163,10 +162,6 @@ protected:
 	//ist,ied,jst,jed,kst,ked
 	igIndex extent[6] = { 0,0,0,0,0,0 };
 
-public:
-	int GetDataObjectType() {
-		return IG_STRUCTURED_MESH;
-	}
 public:
 	void Draw(Scene*) override;
 	void ConvertToDrawableData() override;

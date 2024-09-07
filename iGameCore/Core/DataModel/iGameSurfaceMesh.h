@@ -18,7 +18,7 @@ class SurfaceMesh : public PointSet {
 public:
   I_OBJECT(SurfaceMesh);
   static Pointer New() { return new SurfaceMesh; }
-
+  IGenum GetDataObjectType() const { return IG_SURFACE_MESH; }
   // Get the number of all edges
   IGsize GetNumberOfEdges() const noexcept;
   // Get the number of all faces

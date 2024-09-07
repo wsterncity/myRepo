@@ -6,13 +6,9 @@
 #include "iGameSurfaceMesh.h"
 #include "iGameVolumeMesh.h"
 #include "iGameUnstructuredMesh.h"
+#include "iGameStructuredMesh.h"
 IGAME_NAMESPACE_BEGIN
 
-class StructuredGrid : public DataObject {
-public:
-    I_OBJECT(StructuredGrid);
-    int GetDimension() { return 3; };
-};
 class PolyData : public SurfaceMesh {
 public:
     I_OBJECT(PolyData);
@@ -65,9 +61,6 @@ public:
         PolyData::Pointer output,
                                           bool* extractFace = nullptr);
 
-    int ExecuteWithDataSet(DataObject::Pointer input, PolyData::Pointer output,
-        PolyData::Pointer exc);
-    virtual int ExecuteWithDataSet(DataObject::Pointer input, PolyData::Pointer output);
     ///@}
     void SetInput(DataObject::Pointer ip) { this->input = ip; }
     PolyData::Pointer GetOutPut() { return this->output; }

@@ -16,6 +16,7 @@
 #include "iGameHexahedron.h"
 #include "iGamePrism.h"
 #include "iGamePyramid.h"
+#include "iGamePolyhedron.h"
 #include "Quadratic/Base/iGameQuadraticLine.h"
 #include "Quadratic/iGameQuadraticTriangle.h"
 #include "Quadratic/iGameQuadraticTetra.h"
@@ -51,9 +52,7 @@ public:
 	// Get cell by index cellId, which is Thread-Unsafe
 	Cell* GetCell(const IGsize cellId);
 
-	int GetDataObjectType() {
-		return IG_UNSTRUCTURED_MESH;
-	}
+	IGenum GetDataObjectType() const { return IG_UNSTRUCTURED_MESH; }
 protected:
 	UnstructuredMesh();
 	~UnstructuredMesh() override = default;
@@ -77,6 +76,7 @@ private:
 	Hexahedron::Pointer m_Hexahedron{};
 	Prism::Pointer m_Prism{};
 	Pyramid::Pointer m_Pyramid{};
+	Polyhedron::Pointer m_Polyhedron{};
 	QuadraticLine::Pointer m_QuadraticLine{};
 	QuadraticTriangle::Pointer m_QuadraticTriangle{};
 	QuadraticQuad::Pointer m_QuadraticQuad{};

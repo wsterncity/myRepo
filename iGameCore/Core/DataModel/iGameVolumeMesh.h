@@ -13,7 +13,7 @@ class VolumeMesh : public SurfaceMesh {
 public:
     I_OBJECT(VolumeMesh);
     static Pointer New() { return new VolumeMesh; }
-
+    IGenum GetDataObjectType() const { return IG_VOLUME_MESH; }
     // Get the number of all volumes
     IGsize GetNumberOfVolumes() const noexcept;
 
