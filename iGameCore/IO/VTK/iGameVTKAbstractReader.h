@@ -2,6 +2,9 @@
 #define iGameVTKAbstractReader_h
 
 #include "iGameFileReader.h"
+#include "iGameUnstructuredMesh.h"
+#include "iGameStructuredMesh.h"
+#include "iGameSurfaceMesh.h"
 
 #define POINT_TYPE 1
 #define CELL_TYPE 2
@@ -62,8 +65,8 @@ public:
 	int ReadHeader();
 	int ReadPointCoordinates(Points::Pointer ps, int numPts);
 
-	const void TransferVtkCellToiGameCell(IntArray::Pointer, IntArray::Pointer);
 	const void TransferVtkCellToiGameCell(ArrayObject::Pointer, ArrayObject::Pointer, IntArray::Pointer VtkCellsType);
+	CellArray::Pointer CreateCellArray(ArrayObject::Pointer, ArrayObject::Pointer);
 
 	static void TransferVtkCellToiGameCell(DataCollection& m_Data, ArrayObject::Pointer, ArrayObject::Pointer, ArrayObject::Pointer VtkCellsType);
 	int ReadPointData(int numPts);
@@ -81,6 +84,18 @@ public:
 	int ReadPedigreeIds(int num);
 	int ReadEdgeFlags(int num);
 
+	//read cells with offset type, that means cells load with cellId(offset) and cell connectivity
+	int ReadCellsWithOffsetType(int& CellNum,ArrayObject::Pointer& CellsId, ArrayObject::Pointer& CellsConnect);
+	//read cells with offset type, that means cells load with cellsize and cell vert set
+	int ReadCellsWithCellSizeType(int CellNum,int size, ArrayObject::Pointer& CellsId, ArrayObject::Pointer& CellsConnect);
+
+
+	bool ProcessMetaData();
+
+	bool ReadUnstructuredGrid();
+	bool ReadSurfaceMesh();
+	bool ReadStructuredGrid();
+
 protected:
 	VTKAbstractReader();
 	~VTKAbstractReader() override;
@@ -90,6 +105,11 @@ protected:
 	int FileMinorVersion;
 	char* Header;
 	int DataType = POINT_TYPE;
+	CellArray::Pointer m_CellArray{ nullptr };
+	UnstructuredMesh::Pointer m_UnstructuredMesh{ nullptr };
+	StructuredMesh::Pointer m_StructuredMesh{ nullptr };
+	SurfaceMesh::Pointer m_SurfaceMesh{ nullptr };
+	int m_DataObjectType = IG_NONE;
 };
 
 IGAME_NAMESPACE_END

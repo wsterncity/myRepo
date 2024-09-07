@@ -11,6 +11,7 @@
 #include <iGameDataSource.h>
 #include <iGameSurfaceMeshFilterTest.h>
 #include <iGameVolumeMeshFilterTest.h>
+#include <VolumeMeshAlgorithm/iGameTetraDecimation.h>
 #include <iGameModelSurfaceFilters/iGameModelGeometryFilter.h>
 #include <iGameSubdivision/iGameHexhedronSubdivision.h>
 #include <iGameSubdivision/iGameQuadSubdivision.h>
@@ -372,30 +373,27 @@ void igQtMainWindow::initAllFilters() {
 		mesh->SetCells(cells, types);
 		mesh->SetName("undefined_unstructured_mesh");
 
-		SceneManager::Instance()->GetCurrentScene()->CreateModel(mesh);
-		modelTreeWidget->addDataObjectToModelTree(mesh, ItemSource::File);
-		//this->updateCurrentDataObject();
-		});
-	auto action = ui->menuTest->addAction("surfaceExtractTest");
 
-	connect(action, &QAction::triggered, this,
-		[&](bool checked) {
-			auto fp = iGameModelGeometryFilter::New();
-			auto input = rendererWidget->GetScene()->GetCurrentModel()->GetDataObject();
-			fp->Execute(input);
-			SceneManager::Instance()->GetCurrentScene()->ChangeModelVisibility(
-				0, false);
-			auto mesh = fp->GetOutPut();
-			rendererWidget->AddDataObject(mesh);
-		});
-	
+        modelTreeWidget->addDataObjectToModelTree(mesh, ItemSource::File);
+        //this->updateCurrentDataObject();
+    });
+
+	connect(ui->menuTest->addAction("surfaceExtractTest"), &QAction::triggered, this, [&](bool checked) {
+		auto fp = iGameModelGeometryFilter::New();
+        auto input = rendererWidget->GetScene()->GetCurrentModel()->GetDataObject();
+        fp->Execute(input);
+        SceneManager::Instance()->GetCurrentScene()->ChangeModelVisibility(
+                0, false);
+        auto mesh = fp->GetOutPut();
+        rendererWidget->AddDataObject(mesh);
+    });
+
 	auto action_subdivision = ui->menuTest->addAction("Subdivision");
-
 	connect(action_subdivision, &QAction::triggered, this,
 		[&](bool checked) {
-		/*	auto filter = HexhedronSubdivision::New();
-			VolumeMesh::Pointer mesh = DynamicCast<VolumeMesh>(rendererWidget->GetScene()->GetCurrentModel()->GetDataObject());*/
-			auto filter =QuadSubdivision::New();
+			/*	auto filter = HexhedronSubdivision::New();
+				VolumeMesh::Pointer mesh = DynamicCast<VolumeMesh>(rendererWidget->GetScene()->GetCurrentModel()->GetDataObject());*/
+			auto filter = QuadSubdivision::New();
 			SurfaceMesh::Pointer mesh = DynamicCast<SurfaceMesh>(rendererWidget->GetScene()->GetCurrentModel()->GetDataObject());
 			filter->SetMesh(mesh);
 			filter->Execute();
@@ -405,7 +403,8 @@ void igQtMainWindow::initAllFilters() {
 			modelTreeWidget->addDataObjectToModelTree(ControlPoints, ItemSource::File);
 
 		});
-	auto action_loadtest= ui->menu_help->addAction("loadtest");
+
+	auto action_loadtest = ui->menu_help->addAction("loadtest");
 	connect(action_loadtest, &QAction::triggered, this,
 		[&](bool checked) {
 			std::string filePath = "F:\\OpeniGame\\Model\\secrecy\\DrivAer_fastback_base_0.4_remesh_coarse_kw_CPU_test_P_V.cgns";
@@ -414,6 +413,74 @@ void igQtMainWindow::initAllFilters() {
 			obj->SetName(filename.substr(0, filename.find_last_of('.')).c_str());
 			modelTreeWidget->addDataObjectToModelTree(obj, ItemSource::File);
 		});
+
+	connect(ui->menuTest->addAction("addTetra"), &QAction::triggered, this,
+		[&](bool checked) {
+			VolumeMesh::Pointer mesh = VolumeMesh::New();
+			Points::Pointer points = Points::New();
+			CellArray::Pointer cells = CellArray::New();
+
+			points->AddPoint(-1, -1, 0);
+			points->AddPoint(1, -1, 0);
+			points->AddPoint(1, 1, 0);
+			points->AddPoint(-1, 1, 0);
+
+			points->AddPoint(-1, -1, 2);
+			points->AddPoint(1, -1, 2);
+			points->AddPoint(1, 1, 2);
+			points->AddPoint(-1, 1, 2);
+
+			cells->AddCellId4(0, 1, 2, 4);
+			cells->AddCellId4(2, 3, 0, 4);
+
+			mesh->SetPoints(points);
+			mesh->SetVolumes(cells);
+			mesh->SetName("undefined_unstructured_mesh");
+			mesh->RequestEditStatus();
+			mesh->PrintSelf();
+			modelTreeWidget->addDataObjectToModelTree(mesh, ItemSource::File);
+		});
+
+	connect(ui->menuTest->addAction("addVolume"), &QAction::triggered, this,
+		[&](bool checked) {
+			VolumeMesh::Pointer mesh = VolumeMesh::New();
+			Points::Pointer points = Points::New();
+			CellArray::Pointer cells = CellArray::New();
+
+			points->AddPoint(-1, -1, 0);
+			points->AddPoint(1, -1, 0);
+			points->AddPoint(1, 1, 0);
+			points->AddPoint(-1, 1, 0);
+
+			points->AddPoint(-1, -1, 2);
+			points->AddPoint(1, -1, 2);
+			points->AddPoint(1, 1, 2);
+			points->AddPoint(-1, 1, 2);
+
+			cells->AddCellId4(0, 1, 2, 4);
+			mesh->SetPoints(points);
+			mesh->SetVolumes(cells);
+			mesh->SetName("undefined_unstructured_mesh");
+
+			mesh->RequestEditStatus();
+			igIndex v[4]{ 2, 3, 0, 4 };
+			mesh->AddVolume(v, 4);
+			mesh->GarbageCollection();
+
+			mesh->RequestEditStatus();
+			mesh->PrintSelf();
+			modelTreeWidget->addDataObjectToModelTree(mesh, ItemSource::File);
+		});
+
+	connect(ui->menuTest->addAction("tetraSimplTest"), &QAction::triggered, this,
+		[&](bool checked) {
+			auto td = TetraDecimation::New();
+			auto input = rendererWidget->GetScene()->GetCurrentModel()->GetDataObject();
+			td->SetInput(input);
+			td->Execute();
+			rendererWidget->update();
+		});
+
 }
 
 void igQtMainWindow::initAllDockWidgetConnectWithAction()

@@ -1,96 +1,96 @@
-#ifndef iGameTetra_h
-#define iGameTetra_h
+#ifndef iGameQuadraticTetra_h
+#define iGameQuadraticTetra_h
 
-#include "iGameVolume.h"
-
+#include "Base/iGameQuadraticVolume.h"
+#include "iGameQuadraticTriangle.h"
 IGAME_NAMESPACE_BEGIN
-class Tetra : public Volume {
+class QuadraticTetra : public QuadraticVolume {
 public:
-	I_OBJECT(Tetra);
-	static Pointer New() { return new Tetra; }
-	
-	IGenum GetCellType() const noexcept override { return IG_TETRA; }
-    int GetCellSize() const noexcept override { return 4; }
-    int GetNumberOfEdges() override { return 6; }
-    int GetNumberOfFaces() override { return 4; }
+	I_OBJECT(QuadraticTetra);
+	static Pointer New() { return new QuadraticTetra; }
 
-    Cell* GetEdge(const int edgeId) override {
-        const int* verts = edges[edgeId];
+	IGenum GetCellType() const noexcept override { return IG_QUADRATIC_TETRA; }
+	int GetCellSize() const noexcept override { return NumberOfPoints; }
+	int GetNumberOfEdges() override { return NumberOfEdges; }
+	int GetNumberOfFaces() override { return NumberOfFaces; }
 
-        m_Line->PointIds->SetId(0, PointIds->GetId(verts[0]));
-        m_Line->PointIds->SetId(1, PointIds->GetId(verts[1]));
-
-        m_Line->Points->SetPoint(0, Points->GetPoint(verts[0]));
-        m_Line->Points->SetPoint(1, Points->GetPoint(verts[1]));
-
-        return m_Line.get();
-    }
-    Cell* GetFace(const int faceId) override {
-        const int* verts = faces[faceId];
-        const int* edges = faceEdges[faceId];
-        for (int i = 0; i < 3; ++i) {
-            m_Triangle->PointIds->SetId(i, PointIds->GetId(verts[i]));
-            m_Triangle->Points->SetPoint(i, Points->GetPoint(verts[i]));
+	Cell* GetEdge(const int edgeId) override {
+		const int* verts = edges[edgeId];
+		m_Line->PointIds->SetId(0, this->PointIds->GetId(verts[0]));
+		m_Line->PointIds->SetId(1, this->PointIds->GetId(verts[1]));
+		m_Line->PointIds->SetId(2, this->PointIds->GetId(verts[2]));
+		m_Line->Points->SetPoint(0, this->Points->GetPoint(verts[0]));
+		m_Line->Points->SetPoint(1, this->Points->GetPoint(verts[1]));
+		m_Line->Points->SetPoint(2, this->Points->GetPoint(verts[2]));
+		return m_Line.get();
+	}
+	Cell* GetFace(const int faceId) override {
+		const int* verts = faces[faceId];
+		const int* edges = faceEdges[faceId];
+		for (int i = 0; i < 6; ++i) {
+			m_Triangle->PointIds->SetId(i, PointIds->GetId(verts[i]));
+			m_Triangle->Points->SetPoint(i, Points->GetPoint(verts[i]));
+		}
+		for (int i = 0; i < 3; ++i) {
 			m_Triangle->EdgeIds->SetId(i, EdgeIds->GetId(edges[i]));
-        }
-
-        return m_Triangle.get();
-    }
+		}
+		return m_Triangle.get();
+	}
 
 	/**
-	 * µ¥ÔªµÄ¶¥µã¸öÊý¡£
+	 * å•å…ƒçš„é¡¶ç‚¹ä¸ªæ•°ã€‚
 	 */
-	static constexpr int NumberOfPoints = 4;
+	static constexpr int NumberOfPoints = 10;
 
 	/**
-	 * µ¥ÔªµÄ±ß¸öÊý¡£
+	 * å•å…ƒçš„è¾¹ä¸ªæ•°ã€‚
 	 */
 	static constexpr int NumberOfEdges = 6;
 
 	/**
-	 * µ¥ÔªµÄÃæ¸öÊý¡£
+	 * å•å…ƒçš„é¢ä¸ªæ•°ã€‚
 	 */
 	static constexpr int NumberOfFaces = 4;
 
 	/**
-	 * µ¥ÔªÃæ×î´óµÄ¶¥µã¸öÊý¡£
+	 * å•å…ƒé¢æœ€å¤§çš„é¡¶ç‚¹ä¸ªæ•°ã€‚
 	 */
-	static constexpr int MaxFaceSize = 3;
+	static constexpr int MaxFaceSize = 6;
 
 	/**
-	 * µ¥Ôª¶¥µã×î´óµÄ¶È¡£
+	 * å•å…ƒé¡¶ç‚¹æœ€å¤§çš„åº¦ã€‚
 	 */
 	static constexpr int MaxValence = 3;
 
-	/***************** ËùÓÐMax + 1µÄÊý×é×îºóÒ»Î»Êý×Ö±íÊ¾¸öÊý *****************/
+	/***************** æ‰€æœ‰Max + 1çš„æ•°ç»„æœ€åŽä¸€ä½æ•°å­—è¡¨ç¤ºä¸ªæ•° *****************/
 
-	// ±ßµÄ¶¥µãÐòºÅ
-	static constexpr int edges[NumberOfEdges][2] = {
-	  { 0, 1 },
-	  { 1, 2 },
-	  { 2, 0 },
-	  { 0, 3 },
-	  { 1, 3 },
-	  { 2, 3 },
+	// è¾¹çš„é¡¶ç‚¹åºå·
+	static constexpr int edges[NumberOfEdges][3] = {
+	  { 0, 1, 4},
+	  { 1, 2, 5},
+	  { 2, 0, 6},
+	  { 0, 3, 7},
+	  { 1, 3, 8},
+	  { 2, 3, 9},
 	};
 
-	// ÃæµÄ¶¥µãÐòºÅ
+	// é¢çš„é¡¶ç‚¹åºå·
 	static constexpr int faces[NumberOfFaces][MaxFaceSize + 1] = {
-	  { 0, 1, 3, 3 },
-	  { 1, 2, 3, 3 },
-	  { 2, 0, 3, 3 },
-	  { 0, 2, 1, 3 },
-	}; 
+	  { 0, 1, 3, 4, 8, 7, 6 },
+	  { 1, 2, 3, 5, 9, 8, 6 },
+	  { 2, 0, 3, 6, 7, 9, 6 },
+	  { 0, 2, 1, 6, 5, 4, 6 },
+	};
 
-	// ÃæµÄ±ßÐòºÅ
-	static constexpr int faceEdges[NumberOfFaces][MaxFaceSize + 1] = {
+	// é¢çš„è¾¹åºå·
+	static constexpr int faceEdges[NumberOfFaces][MaxFaceSize / 2 + 1] = {
 	  { 0, 4, 3, 3 },
 	  { 1, 5, 4, 3 },
 	  { 2, 3, 5, 3 },
 	  { 2, 1, 0, 3 },
 	};
 
-	// ±ßµÄÁÚ½ÓÃæÐòºÅ
+	// è¾¹çš„é‚»æŽ¥é¢åºå·
 	static constexpr int edgeToNeighborFaces[NumberOfEdges][2] = {
 	  { 0, 3 },
 	  { 1, 3 },
@@ -100,15 +100,15 @@ public:
 	  { 1, 2 },
 	};
 
-	// ÃæµÄÁÚ½ÓÃæÐòºÅ
-	static constexpr int faceToNeighborFaces[NumberOfFaces][MaxFaceSize + 1] = {
+	// é¢çš„é‚»æŽ¥é¢åºå·
+	static constexpr int faceToNeighborFaces[NumberOfFaces][MaxFaceSize / 2 + 1] = {
 	  { 3, 1, 2, 3 },
 	  { 3, 2, 0, 3 },
 	  { 3, 0, 1, 3 },
 	  { 2, 1, 0, 3 },
 	};
 
-	// ¶¥µãµÄÁÚ½Ó±ßÐòºÅ
+	// é¡¶ç‚¹çš„é‚»æŽ¥è¾¹åºå·
 	static constexpr int pointToNeighborEdges[NumberOfPoints][MaxValence + 1] = {
 	  { 0, 3, 2, 3 },
 	  { 0, 1, 4, 3 },
@@ -116,7 +116,7 @@ public:
 	  { 3, 4, 5, 3 },
 	};
 
-	// ¶¥µãµÄÁÚ½ÓÃæÐòºÅ
+	// é¡¶ç‚¹çš„é‚»æŽ¥é¢åºå·
 	static constexpr int pointToNeighborFaces[NumberOfPoints][MaxValence + 1] = {
 	  { 0, 2, 3, 3 },
 	  { 3, 1, 0, 3 },
@@ -124,7 +124,7 @@ public:
 	  { 0, 1, 2, 3 },
 	};
 
-	// ¶¥µãµÄÒ»ÁÚÓò¶¥µãÐòºÅ
+	// é¡¶ç‚¹çš„ä¸€é‚»åŸŸé¡¶ç‚¹åºå·
 	static constexpr int pointToOneRingPoints[NumberOfPoints][MaxValence + 1] = {
 	  { 1, 3, 2, 3 },
 	  { 0, 2, 3, 3 },
@@ -133,20 +133,20 @@ public:
 	};
 
 	int GetEdgePointIds(const int edgeId, const igIndex*& ptIds) override {
-        ptIds = edges[edgeId];
-        return 2;
+		ptIds = edges[edgeId];
+		return 3;
 	}
-    int GetFacePointIds(const int faceId, const igIndex*& ptIds) override {
-        ptIds = faces[faceId];
+	int GetFacePointIds(const int faceId, const igIndex*& ptIds) override {
+		ptIds = faces[faceId];
 		return faces[faceId][MaxFaceSize];
 	}
 	int GetFaceEdgeIds(const int faceId, const igIndex*& edgeIds) override {
 		edgeIds = faceEdges[faceId];
-		return faceEdges[faceId][MaxFaceSize];
+		return faceEdges[faceId][MaxFaceSize / 2];
 	}
 
 	int GetPointToOneRingPoints(const int pointId, const igIndex*& ptIds) override {
-        ptIds = pointToOneRingPoints[pointId];
+		ptIds = pointToOneRingPoints[pointId];
 		return pointToOneRingPoints[pointId][MaxValence];
 	}
 	int GetPointToNeighborEdges(const int pointId, const igIndex*& edgeIds) override {
@@ -158,17 +158,17 @@ public:
 		return pointToNeighborFaces[pointId][MaxValence];
 	}
 	int GetEdgeToNeighborFaces(const int edgeId, const igIndex*& ptIds) override {
-        ptIds = edgeToNeighborFaces[edgeId];
-        return 2;
+		ptIds = edgeToNeighborFaces[edgeId];
+		return 2;
 	}
 	int GetFaceToNeighborFaces(const int faceId, const igIndex*& faceIds) override {
 		faceIds = faceToNeighborFaces[faceId];
-		return faceToNeighborFaces[faceId][MaxFaceSize];
+		return faceToNeighborFaces[faceId][MaxFaceSize / 2];
 	}
 
 	static int EdgePointIds(const int edgeId, const igIndex*& ptIds) {
 		ptIds = edges[edgeId];
-		return 2;
+		return 3;
 	}
 	static int FacePointIds(const int faceId, const igIndex*& ptIds) {
 		ptIds = faces[faceId];
@@ -176,7 +176,7 @@ public:
 	}
 	static int FaceEdgeIds(const int faceId, const igIndex*& edgeIds) {
 		edgeIds = faceEdges[faceId];
-		return faceEdges[faceId][MaxFaceSize];
+		return faceEdges[faceId][MaxFaceSize / 2];
 	}
 
 	static int PointToOneRingPoints(const int pointId, const igIndex*& ptIds) {
@@ -197,27 +197,27 @@ public:
 	}
 	static int FaceToNeighborFaces(const int faceId, const igIndex*& faceIds) {
 		faceIds = faceToNeighborFaces[faceId];
-		return faceToNeighborFaces[faceId][MaxFaceSize];
+		return faceToNeighborFaces[faceId][MaxFaceSize / 2];
 	}
 
 private:
-	Tetra()
+	QuadraticTetra()
 	{
-		this->Points->SetNumberOfPoints(4);
-		this->PointIds->SetNumberOfIds(4);
-		for (int i = 0; i < 4; i++)
+		this->Points->SetNumberOfPoints(10);
+		this->PointIds->SetNumberOfIds(10);
+		for (int i = 0; i < 10; i++)
 		{
 			this->Points->SetPoint(i, 0.0, 0.0, 0.0);
 			this->PointIds->SetId(i, 0);
 		}
 
-		m_Line = Line::New();
-        m_Triangle = Triangle::New();
+		m_Line = QuadraticLine::New();
+		m_Triangle = QuadraticTriangle::New();
 	}
-	~Tetra() override = default;
+	~QuadraticTetra() override = default;
 
-	Line::Pointer m_Line;
-    Triangle::Pointer m_Triangle;
+	QuadraticLine::Pointer m_Line;
+	QuadraticTriangle::Pointer m_Triangle;
 };
 
 

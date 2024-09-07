@@ -28,7 +28,8 @@ public:
 
     Cell* GetFace(const int faceId) override {
         const int* verts = faces[faceId];
-        Cell* face;
+		const int* edges = faceEdges[faceId];
+        Face* face;
         if (faces[faceId][MaxFaceSize] == 3) {
             face = m_Triangle.get();
         } else {
@@ -37,6 +38,7 @@ public:
         for (int i = 0; i < faces[faceId][MaxFaceSize]; ++i) {
             face->PointIds->SetId(i, this->PointIds->GetId(verts[i]));
             face->Points->SetPoint(i, this->Points->GetPoint(verts[i]));
+			face->EdgeIds->SetId(i, EdgeIds->GetId(edges[i]));
         }
 
         return face;
@@ -88,6 +90,15 @@ public:
 	  { 1, 2, 4, -1, 3 },
 	  { 2, 3, 4, -1, 3 },
 	  { 3, 0, 4, -1, 3 },
+	};
+
+	// 面的边序号
+	static constexpr int faceEdges[NumberOfFaces][MaxFaceSize + 1] = {
+	  { 0, 4, 7, 3, 4 },//还没改
+	  { 1, 2, 6, 5, 4 },
+	  { 0, 1, 5, 4, 4 },
+	  { 3, 7, 6, 2, 4 },
+	  { 0, 3, 2, 1, 4 },
 	};
 
 	// 边的邻接面序号
@@ -145,6 +156,10 @@ public:
     int GetFacePointIds(const int faceId, const igIndex*& pts) override {
 		pts = faces[faceId];
 		return faces[faceId][MaxFaceSize];
+	}
+	int GetFaceEdgeIds(const int faceId, const igIndex*& edgeIds) override {
+		edgeIds = faceEdges[faceId];
+		return faceEdges[faceId][MaxFaceSize];
 	}
     int GetEdgeToNeighborFaces(const int edgeId, const igIndex*& pts) override {
 		pts = edgeToNeighborFaces[edgeId];

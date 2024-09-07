@@ -540,7 +540,7 @@ ELSEIF (UNIX)
 ENDIF ()
 ```
 
-Mac系统最高只支持``OpenGL4.1``，因此需要设置``main.cpp``中的相关代码
+Mac系统最高只支持``OpenGL4.1``，因此必须设置为``OpenGL3.3``，还需要在``main.cpp``中修改相关代码
 
 ```Cpp
 format.setVersion(4, 6); //Mac set to format.setVersion(4, 1);

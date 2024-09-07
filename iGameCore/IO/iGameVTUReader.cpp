@@ -10,7 +10,7 @@
 #include "iGameFileReader.h"
 #include "iGameVTUReader.h"
 
-#include "iGameVTKAbstractReader.h"
+#include "VTK/iGameVTKAbstractReader.h"
 #include "iGameBase64Util.h"
 
 #include <tinyxml2.h>

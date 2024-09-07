@@ -6,6 +6,7 @@ add_subdirectory(meshoptimizer)
 
 # CGNS≈‰÷√
 # Configure the compilation definition according to the value of MODULE_FLAG
+
 if(ENABLE_CGNS_MODULE)
 #    find_package(Git QUIET)
 #    if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/../.git")

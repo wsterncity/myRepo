@@ -35,6 +35,11 @@ public:
 
 	void SetFilePath(const std::string& filePath);
 
+	DataObject::Pointer ReadFile(const std::string& filePath) {
+		SetFilePath(filePath);
+		Execute();
+		return this->GetOutput();
+	}
 	/**
 	 * Internal function to read in a value.  Returns zero if there was an
 	 * error.
@@ -57,7 +62,9 @@ public:
 	int ReadString(std::string& str);
 	char* LowerCase(char* str, const size_t len = 256);
 	ArrayObject::Pointer ReadArray(const char* dataType, int numTuples, int numComp);
-
+	void SkipNullData() {
+		while (this->IS && (*this->IS == ' ' || *this->IS == '\r' || *this->IS == '\n' || *this->IS == '\t'))this->IS++;
+	}
 	void UpdateReadProgress() {
 		if (!this->IS)return;
 		double progress = 1.0 * (this->IS - m_Buffer->RawPointer()) / m_Buffer->GetNumberOfValues();
@@ -104,7 +111,7 @@ public:
 	}
 
 protected:
-    FileReader();
+	FileReader();
 	~FileReader() override = default;
 
 	CellArray::Pointer m_CellArray;

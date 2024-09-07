@@ -71,6 +71,20 @@ Volume* VolumeMesh::GetVolume(const IGsize volumeId)
 		volume->Points->AddPoint(this->GetPoint(cell[i]));
 	}
 
+	if (InEditStatus()) {
+		volume->EdgeIds->Reset();
+		volume->FaceIds->Reset();
+		ncells = m_VolumeEdges->GetCellIds(volumeId, cell);
+		for (int i = 0; i < ncells; i++) {
+			volume->EdgeIds->AddId(cell[i]);
+		}
+
+		ncells = m_VolumeFaces->GetCellIds(volumeId, cell);
+		for (int i = 0; i < ncells; i++) {
+			volume->FaceIds->AddId(cell[i]);
+		}
+	}
+
 	return volume;
 }
 
@@ -119,15 +133,17 @@ void VolumeMesh::BuildFaces() {
 void VolumeMesh::BuildFacesAndEdges() {
 	FaceTable::Pointer FaceTable = FaceTable::New();
 	EdgeTable::Pointer EdgeTable = EdgeTable::New();
-	igIndex cell[64]{}, faceIds[64]{}, edgeIds[64]{}, face[64]{}, edge[2]{};
+	igIndex cell[64]{}, faceIds[64]{}, edgeIds[64]{}, face[64]{}, edge[2]{}, isInsert[64]{};
 
 	m_VolumeEdges = CellArray::New();
 	m_VolumeFaces = CellArray::New();
+	m_FaceEdges = CellArray::New();
 
 	for (IGsize i = 0; i < this->GetNumberOfVolumes(); i++)
 	{
 		Volume* vol = this->GetVolume(i);
 		int size = m_Volumes->GetCellIds(i, cell);
+		memset(isInsert, 0, vol->GetNumberOfFaces() * sizeof(igIndex));
 		for (int j = 0; j < vol->GetNumberOfFaces(); j++) // number of faces
 		{
 			const igIndex* index;
@@ -139,6 +155,7 @@ void VolumeMesh::BuildFacesAndEdges() {
 			if ((idx = FaceTable->IsFace(face, size)) == -1) {
 				idx = FaceTable->GetNumberOfFaces();
 				FaceTable->InsertFace(face, size);
+				isInsert[j] = 1;
 			}
 			faceIds[j] = idx;
 		}
@@ -159,6 +176,18 @@ void VolumeMesh::BuildFacesAndEdges() {
 			edgeIds[j] = idx;
 		}
 		m_VolumeEdges->AddCellIds(edgeIds, vol->GetNumberOfEdges());
+
+		for (int j = 0; j < vol->GetNumberOfFaces(); j++)
+		{
+			if (isInsert[j]) {
+				const igIndex* index;
+				int size = vol->GetFacePointIds(j, index);
+				for (int k = 0; k < size; k++) {
+					face[k] = edgeIds[index[k]];
+				}
+				m_FaceEdges->AddCellIds(face, size);
+			}
+		}
 	}
 
 	m_Faces = FaceTable->GetOutput();
@@ -250,6 +279,25 @@ void VolumeMesh::BuildVolumeFaceLinks()
 			m_VolumeFaceLinks->AddReference(cell[j], i);
 		}
 	}
+}
+
+int VolumeMesh::GetNumberOfLinks(const IGsize id, Type type) {
+	int size = 0;
+	switch (type)
+	{
+	case iGame::SurfaceMesh::P2V:
+		size = m_VolumeLinks->GetLinkSize(id);
+		break;
+	case iGame::SurfaceMesh::E2V:
+		size = m_VolumeEdgeLinks->GetLinkSize(id);
+		break;
+	case iGame::SurfaceMesh::F2V:
+		size = m_VolumeFaceLinks->GetLinkSize(id);
+		break;
+	default:
+		return SurfaceMesh::GetNumberOfLinks(id, type);
+	}
+	return size;
 }
 
 int VolumeMesh::GetPointToNeighborVolumes(const IGsize ptId, igIndex* volumeIds)
@@ -544,6 +592,85 @@ IGsize VolumeMesh::AddFace(igIndex* ptIds, int size)
 	return faceId;
 }
 
+IGsize VolumeMesh::AddVolume(igIndex* volumeIds, int size)
+{
+	igIndex faceIds[64]{}, edgeIds[64]{}, face[64]{}, edge[64]{}, isInsert[64]{};
+	igIndex volumeId = GetNumberOfVolumes();
+	m_Volumes->AddCellIds(volumeIds, size);
+	for (int i = 0; i < size; i++) {
+		m_VolumeLinks->AddReference(volumeIds[i], volumeId);
+	}
+	m_VolumeDeleteMarker->AddTag();
+	if (size == Tetra::NumberOfPoints) {
+		memset(isInsert, 0, size * 4);
+		for (int j = 0; j < Tetra::NumberOfFaces; j++)
+		{
+			const igIndex* index;
+			int size = Tetra::FacePointIds(j, index);
+			for (int k = 0; k < size; k++) {
+				face[k] = volumeIds[index[k]];
+			}
+			igIndex idx;
+			if ((idx = GetFaceIdFormPointIds(face, size)) == -1) {
+				idx = this->GetNumberOfFaces();
+				m_Faces->AddCellIds(face, size);
+				m_FaceDeleteMarker->AddTag();
+				m_VolumeFaceLinks->AddLink();
+				for (int i = 0; i < size; i++) {
+					m_FaceLinks->AddReference(face[i], idx);
+				}
+				isInsert[j] = idx;
+			}
+			faceIds[j] = idx;
+		}
+		m_VolumeFaces->AddCellIds(faceIds, Tetra::NumberOfFaces);
+		for (int i = 0; i < Tetra::NumberOfFaces; i++) {
+			m_VolumeFaceLinks->AddReference(faceIds[i], volumeId);
+		}
+
+		for (int j = 0; j < Tetra::NumberOfEdges; j++)
+		{
+			const igIndex* index;
+			int size = Tetra::EdgePointIds(j, index); 
+			for (int k = 0; k < 2; k++) {
+				edge[k] = volumeIds[index[k]];
+			}
+			igIndex idx;
+			if ((idx = GetEdgeIdFormPointIds(edge[0], edge[1])) == -1) {
+				idx = this->GetNumberOfEdges();
+				m_Edges->AddCellIds(edge, size);
+				m_EdgeDeleteMarker->AddTag();
+				m_FaceEdgeLinks->AddLink();
+				m_VolumeEdgeLinks->AddLink();
+				for (int i = 0; i < 2; i++) {
+					m_EdgeLinks->AddReference(edge[i], idx);
+				}
+			}
+			edgeIds[j] = idx;
+		}
+		m_VolumeEdges->AddCellIds(edgeIds, Tetra::NumberOfEdges);
+		for (int i = 0; i < Tetra::NumberOfEdges; i++) {
+			m_VolumeEdgeLinks->AddReference(edgeIds[i], volumeId);
+		}
+
+		for (int j = 0; j < Tetra::NumberOfFaces; j++)
+		{
+			if (isInsert[j]) {
+				const igIndex* index;
+				int size = Tetra::FacePointIds(j, index);
+				for (int k = 0; k < size; k++) {
+					face[k] = edgeIds[index[k]];
+				}
+				m_FaceEdges->AddCellIds(face, size);
+				for (int i = 0; i < size; i++) {
+					m_FaceEdgeLinks->AddReference(face[i], isInsert[j]);
+				}
+			}
+		}
+	}
+	return volumeId;
+}
+
 void VolumeMesh::DeletePoint(const IGsize ptId) {
 	if (!InEditStatus())
 	{
@@ -637,45 +764,45 @@ void VolumeMesh::DeleteVolume(const IGsize volumeId) {
 	m_VolumeDeleteMarker->MarkDeleted(volumeId);
 }
 
-bool VolumeMesh::IsBoundryVolume(igIndex VolumeId)
+bool VolumeMesh::IsOnBoundaryPoint(const IGsize ptId)
 {
-	igIndex fhs[64];
-	igIndex fcnt = this->GetVolumeFaceIds(VolumeId, fhs);
-	for (int i = 0; i < fcnt; i++) {
-		if (IsBoundryFace(fhs[i]))return true;
+	igIndex ids[64]{};
+	int size = GetPointToNeighborEdges(ptId, ids);
+	for (int i = 0; i < size; i++) {
+		if (IsOnBoundaryEdge(ids[i])) {
+			return true;
+		}
 	}
 	return false;
 }
-bool VolumeMesh::IsBoundryFace(igIndex FaceId)
+bool VolumeMesh::IsOnBoundaryEdge(const IGsize edgeId)
 {
-	auto& link = m_VolumeFaceLinks->GetLink(FaceId);
-	if (link.size <= 1)return true;
-	else return false;
+	// 如果相邻体的数量比相邻面的数量少1，说明是在边界上
+	int nNeiFaces = GetNumberOfLinks(edgeId, E2F);
+	int nNeiVolumes = GetNumberOfLinks(edgeId, E2V);
+	if (nNeiFaces == 0 || nNeiVolumes == 0) return true;
+	return nNeiVolumes == nNeiFaces - 1;
 }
-bool VolumeMesh::IsBoundryEdge(igIndex EdgeId)
+bool VolumeMesh::IsOnBoundaryFace(const IGsize faceId)
 {
-	igIndex fhs[64];
-	igIndex fcnt = this->GetEdgeToNeighborFaces(EdgeId, fhs);
-	for (int i = 0; i < fcnt; i++) {
-		if (IsBoundryFace(fhs[i]))return true;
+	int size = GetNumberOfLinks(faceId, F2V);
+	return size <= 1;
+}
+bool VolumeMesh::IsOnBoundaryVolume(const IGsize volumeId)
+{
+	igIndex faceIds[16], ncell;
+	ncell = this->GetVolumeFaceIds(volumeId, faceIds);
+	for (int i = 0; i < ncell; i++) {
+		if (this->IsOnBoundaryFace(faceIds[i])) {
+			return true;
+		}
 	}
 	return false;
 }
-bool VolumeMesh::IsBoundryPoint(igIndex PointId)
+bool VolumeMesh::IsCornerPoint(const IGsize ptId)
 {
-	igIndex fhs[64];
-	igIndex fcnt = this->GetPointToNeighborFaces(PointId, fhs);
-	for (int i = 0; i < fcnt; i++) {
-		if (IsBoundryFace(fhs[i]))return true;
-	}
-	return false;
-}
-bool VolumeMesh::IsCornerPoint(igIndex PointId)
-{
-	auto& link = m_VolumeLinks->GetLink(PointId);
-	if (link.size == 1)return true;
-	else return false;
-
+	int size = GetNumberOfLinks(ptId, P2V);
+	return size == 1;
 }
 VolumeMesh::VolumeMesh()
 {
