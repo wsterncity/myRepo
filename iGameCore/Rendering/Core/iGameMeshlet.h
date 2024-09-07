@@ -1,6 +1,7 @@
 #pragma once
 #include "OpenGL/GLBuffer.h"
 #include "OpenGL/GLIndirectCommand.h"
+#include "Timer.h"
 #include "iGameObject.h"
 #include "meshoptimizer.h"
 

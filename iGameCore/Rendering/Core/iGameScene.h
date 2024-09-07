@@ -169,7 +169,8 @@ protected:
     GLBuffer m_CameraDataBlock, m_ObjectDataBlock, m_UBOBlock;
     std::map<IGenum, std::unique_ptr<GLShaderProgram>> m_ShaderPrograms;
 
-    GLVertexArray m_EmptyVAO; // used to draw full-screen triangle
+    // used to draw full-screen triangle
+    GLVertexArray m_EmptyVAO;
 
     GLint samples = 1;
     GLFramebuffer m_FramebufferMultisampled;
@@ -188,4 +189,4 @@ protected:
 };
 
 IGAME_NAMESPACE_END
-#endif // OPENIGAME_SCENCE_H
+#endif // OPENIGAME_SCENC

@@ -1,10 +1,14 @@
 #version 330 core
 
 uniform vec3 viewPos;
+uniform bool isDrawFont;
+uniform sampler2D fontTexture;
+uniform vec3 textColor;
 
 in vec3 fragPosition;
 in vec3 fragColor;
 in vec3 fragNormal;
+in vec2 fragTexCoord;
 
 out vec4 outColor;
 
@@ -35,24 +39,26 @@ vec3 BlinnPhong(vec3 normal, vec3 fragPos, Light light)
 }
 
 void main() {
-    vec3 color = vec3(0.0, 0.0, 0.0);
+    if (isDrawFont) {
+        float alpha = texture(fontTexture, fragTexCoord).r;
+        if (alpha < 0.1) discard;
+        outColor = vec4(textColor, alpha);
+    } else {
+        vec3 color = vec3(0.0, 0.0, 0.0);
 
-    // continuous patch
-    //    vec3 normal = normalize(fragNormal);
-    // discrete patch
-    vec3 normal = normalize(cross(dFdx(fragPosition), dFdy(fragPosition)));
+        // discrete patch
+        vec3 normal = normalize(cross(dFdx(fragPosition), dFdy(fragPosition)));
 
-    // ambient
-    color += ambient * fragColor;
+        // ambient
+        color += ambient * fragColor;
 
-    // lighting
-    vec3 lighting = BlinnPhong(normal, fragPosition, light);
-    color += lighting * fragColor;
+        // lighting
+        vec3 lighting = BlinnPhong(normal, fragPosition, light);
+        color += lighting * fragColor;
 
-    if (gamma) {
-        color = pow(color, vec3(1.0 / 2.2));
+        if (gamma) {
+            color = pow(color, vec3(1.0 / 2.2));
+        }
+        outColor = vec4(color, 1.0);
     }
-    outColor = vec4(color, 1.0);
-
-    // outColor = vec4(fragColor, 1.0);
 }

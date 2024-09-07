@@ -54,5 +54,5 @@ void main() {
         minDepth = min(min(depth_0, depth_1), min(depth_2, depth_3));
     }
 
-    imageStore(outDepthPyramid, ivec2(pos), vec4(minDepth));
+    imageStore(outDepthPyramid, ivec2(pos), vec4(minDepth, 0.0f, 0.0f, 0.0f));
 }
