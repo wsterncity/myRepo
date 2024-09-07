@@ -14,8 +14,8 @@ void Meshlet::CreateBuffer() {
 
 void Meshlet::BuildMeshlet(const float* vertex_positions, size_t vertex_count,
                            const int* indices, size_t index_count) {
-    clock_t start, end;
-    start = clock();
+    Timer timer;
+    timer.reset();
 
     // Preprocessing: Vertex Cache Optimization
     std::vector<int> optimized_indices(index_count);
@@ -103,16 +103,11 @@ void Meshlet::BuildMeshlet(const float* vertex_positions, size_t vertex_count,
     m_FinalDrawCommandBuffer.allocate(
             drawCommands.size() * sizeof(DrawElementsIndirectCommand), nullptr,
             GL_DYNAMIC_DRAW);
-
-    end = clock();
-
-    std::string out;
-    out.append("Build meshlets [count: ");
-    out.append(std::to_string(meshlet_count));
-    out.append(", time: ");
-    out.append(FormatTime(end - start));
-    out.append("]");
-    std::cout << out << std::endl;
+    
+    std::ostringstream out;
+    out << "Build meshlets [count: " << meshlet_count
+        << ", time: " << FormatTime(timer.elapsedMicroseconds()) << "]";
+    std::cout << out.str() << std::endl;
 }
 
 size_t Meshlet::MeshletsCount() { return m_MeshletsCount; };
