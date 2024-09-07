@@ -823,7 +823,7 @@ void ExtractCellGeometry(VolumeMesh::Pointer input, igIndex cellId,
 	default:
 		break;
 	}
-	
+
 } // ExtractCellGeometry()
 
 struct ExtractCellBoundaries {
@@ -911,7 +911,7 @@ struct ExtractVM : public ExtractCellBoundaries {
 		auto GFaceMap = this->FaceMap.get();
 		if (this->Grid) {
 			for (cellId = beginCellId; cellId < endCellId; cellId++) {
-				if (isGhost ) {
+				if (isGhost) {
 					continue;
 				}
 				// If the cell is visible process it

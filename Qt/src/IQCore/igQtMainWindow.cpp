@@ -374,19 +374,20 @@ void igQtMainWindow::initAllFilters() {
 		mesh->SetName("undefined_unstructured_mesh");
 
 
-        modelTreeWidget->addDataObjectToModelTree(mesh, ItemSource::File);
-        //this->updateCurrentDataObject();
-    });
+		modelTreeWidget->addDataObjectToModelTree(mesh, ItemSource::File);
+		//this->updateCurrentDataObject();
+		});
 
 	connect(ui->menuTest->addAction("surfaceExtractTest"), &QAction::triggered, this, [&](bool checked) {
 		auto fp = iGameModelGeometryFilter::New();
-        auto input = rendererWidget->GetScene()->GetCurrentModel()->GetDataObject();
-        fp->Execute(input);
-        SceneManager::Instance()->GetCurrentScene()->ChangeModelVisibility(
-                0, false);
-        auto mesh = fp->GetOutPut();
-        rendererWidget->AddDataObject(mesh);
-    });
+		auto input = rendererWidget->GetScene()->GetCurrentModel()->GetDataObject();
+		fp->Execute(input);
+		SceneManager::Instance()->GetCurrentScene()->ChangeModelVisibility(
+			0, false);
+		auto mesh = fp->GetOutPut();
+		mesh->SetName("SURFACE");
+		modelTreeWidget->addDataObjectToModelTree(mesh, ItemSource::File);
+		});
 
 	auto action_subdivision = ui->menuTest->addAction("Subdivision");
 	connect(action_subdivision, &QAction::triggered, this,
@@ -404,14 +405,36 @@ void igQtMainWindow::initAllFilters() {
 
 		});
 
+
 	auto action_loadtest = ui->menu_help->addAction("loadtest");
 	connect(action_loadtest, &QAction::triggered, this,
 		[&](bool checked) {
-			std::string filePath = "F:\\OpeniGame\\Model\\secrecy\\DrivAer_fastback_base_0.4_remesh_coarse_kw_CPU_test_P_V.cgns";
+			std::string filePath = "F:\\OpeniGame\\Model\\secrecy\\driver_polyhedron_allcell_noarray_ascii.vtk";
 			auto obj = iGame::FileIO::ReadFile(filePath);
 			auto filename = filePath.substr(filePath.find_last_of('/') + 1);
 			obj->SetName(filename.substr(0, filename.find_last_of('.')).c_str());
 			modelTreeWidget->addDataObjectToModelTree(obj, ItemSource::File);
+			auto mesh = DynamicCast<UnstructuredMesh>(obj);
+			std::cout << mesh->GetNumberOfPoints() << ' ' << mesh->GetNumberOfCells() << '\n';
+			for (int i = 0; i < mesh->GetNumberOfCells(); i++) {
+				auto cell = mesh->GetCell(i);
+				if (cell->GetCellType() == IG_POLYHEDRON) {
+					std::cout << "right" << '\n';
+					int fcnt = cell->GetNumberOfFaces();
+					std::cout << "face num: " << fcnt << '\n';
+					for (int j = 0; j < fcnt; j++) {
+						auto face = cell->GetFace(j);
+						std::cout << "face id: " << j << '\n';
+
+						for (int k = 0; k < face->GetCellSize(); k++) {
+							auto p = face->GetPoint(k);
+							std::cout << face->GetPointId(k) << ' ' << p[0] << " " << p[1] << ' ' << p[2] << '\n';
+						}
+					}
+				}
+			}
+
+
 		});
 
 	connect(ui->menuTest->addAction("addTetra"), &QAction::triggered, this,
@@ -765,34 +788,34 @@ void igQtMainWindow::changeFacesSelectionInteractor()
 }
 
 void igQtMainWindow::initAllSources() {
-    connect(ui->action_LineSource, &QAction::triggered, this, [&](){
-        UnstructuredMesh::Pointer newLinePointSet = UnstructuredMesh::New();
-        newLinePointSet->SetViewStyle(IG_POINTS);
-        newLinePointSet->AddPoint(Point(0.f, 0.f, 0.f));
-        newLinePointSet->AddPoint(Point(1.f, 1.0f, 1.f));
-        igIndex cell[1] = {0};
-        newLinePointSet->AddCell(cell, 1, IG_VERTEX);
-        cell[0] = 1;
-        newLinePointSet->AddCell(cell, 1, IG_VERTEX);
-        auto curScene = SceneManager::Instance()->GetCurrentScene();
+	connect(ui->action_LineSource, &QAction::triggered, this, [&]() {
+		UnstructuredMesh::Pointer newLinePointSet = UnstructuredMesh::New();
+		newLinePointSet->SetViewStyle(IG_POINTS);
+		newLinePointSet->AddPoint(Point(0.f, 0.f, 0.f));
+		newLinePointSet->AddPoint(Point(1.f, 1.0f, 1.f));
+		igIndex cell[1] = { 0 };
+		newLinePointSet->AddCell(cell, 1, IG_VERTEX);
+		cell[0] = 1;
+		newLinePointSet->AddCell(cell, 1, IG_VERTEX);
+		auto curScene = SceneManager::Instance()->GetCurrentScene();
 
-        LineTypePointsSource::Pointer lineSource = LineTypePointsSource::New();
+		LineTypePointsSource::Pointer lineSource = LineTypePointsSource::New();
 
-        lineSource->SetInput(newLinePointSet);
-        lineSource->SetResolution(20);
-        lineSource->GetOutput()->SetName("lineSource");
+		lineSource->SetInput(newLinePointSet);
+		lineSource->SetResolution(20);
+		lineSource->GetOutput()->SetName("lineSource");
 
-        auto model = curScene->CreateModel(lineSource->GetOutput());
-        modelTreeWidget->addModelToModelTree(model);
-        auto interactor = LineSourceInteractor::New();
+		auto model = curScene->CreateModel(lineSource->GetOutput());
+		modelTreeWidget->addModelToModelTree(model);
+		auto interactor = LineSourceInteractor::New();
 
-//        auto interactor = PointDragInteractor::New();
-        interactor->SetPointSet(DynamicCast<PointSet>(SceneManager::Instance()->GetCurrentScene()->GetCurrentModel()->GetDataObject()));
+		//        auto interactor = PointDragInteractor::New();
+		interactor->SetPointSet(DynamicCast<PointSet>(SceneManager::Instance()->GetCurrentScene()->GetCurrentModel()->GetDataObject()));
 
-        rendererWidget->ChangeInteractor(interactor);
-    });
+		rendererWidget->ChangeInteractor(interactor);
+		});
 }
 
 void igQtMainWindow::UpdateRenderingWidget() {
-    rendererWidget->update();
+	rendererWidget->update();
 }
