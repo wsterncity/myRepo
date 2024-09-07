@@ -6,13 +6,9 @@
 #include "iGameSurfaceMesh.h"
 #include "iGameVolumeMesh.h"
 #include "iGameUnstructuredMesh.h"
+#include "iGameStructuredMesh.h"
 IGAME_NAMESPACE_BEGIN
 
-class StructuredGrid : public DataObject {
-public:
-    I_OBJECT(StructuredGrid);
-    int GetDimension() { return 3; };
-};
 class PolyData : public SurfaceMesh {
 public:
     I_OBJECT(PolyData);
