@@ -153,9 +153,6 @@ public:
 
 protected:
 	StructuredMesh() {};
-
-	Points::Pointer m_Points{ nullptr };
-	AttributeSet::Pointer m_Attributes{nullptr};
 	CellArray::Pointer Quads{ nullptr };
 	CellArray::Pointer Hexahedrons{ nullptr };
 

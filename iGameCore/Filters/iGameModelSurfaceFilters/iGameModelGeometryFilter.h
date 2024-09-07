@@ -65,9 +65,6 @@ public:
         PolyData::Pointer output,
                                           bool* extractFace = nullptr);
 
-    int ExecuteWithDataSet(DataObject::Pointer input, PolyData::Pointer output,
-        PolyData::Pointer exc);
-    virtual int ExecuteWithDataSet(DataObject::Pointer input, PolyData::Pointer output);
     ///@}
     void SetInput(DataObject::Pointer ip) { this->input = ip; }
     PolyData::Pointer GetOutPut() { return this->output; }
