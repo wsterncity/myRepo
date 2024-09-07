@@ -85,7 +85,9 @@ bool VTKReader::Parsing() {
 	else {
 		igError("Unrecognized keyword: " << line);
 	}
-
+	if (m_Data.Data) {
+		this->GetOutput()->SetAttributeSet(m_Data.GetData());
+	}
 	this->UpdateProgress(1.0);
 	//igDebug("Read " << this->DataSet->GetNumberOfPoints() << " points,"
 	//	<< this->DataSet->GetNumberOfCells() << " cells.\n");

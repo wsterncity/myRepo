@@ -87,8 +87,13 @@ public:
 	void SetData(IdArray* ids,UnsignedIntArray* offsets) { 
 		m_Buffer = ids;
         m_Offsets = offsets;
+		m_NumberOfCells = ids->GetNumberOfIds() - 1;
 	}
 
+	void SetFixedSize(int fixedSize) {
+		this->m_UseOffsets = false;
+		this->m_FixedCellSize = fixedSize;
+	}
 protected:
 	CellArray();
     ~CellArray() override = default;

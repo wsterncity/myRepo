@@ -71,18 +71,18 @@ bool iGameModelGeometryFilter::Execute() {
 }
 bool iGameModelGeometryFilter::Execute(DataObject* input) {
 
-	this->output = PolyData::New();
+	this->output = SurfaceMesh::New();
 	return Execute(input, output);
 }
 
-bool iGameModelGeometryFilter::Execute(DataObject* input, PolyData* output) {
+bool iGameModelGeometryFilter::Execute(DataObject* input, SurfaceMesh* output) {
 
 	switch (input->GetDataObjectType())
 	{
 	case IG_NONE:
 		return true;
 	case IG_VOLUME_MESH:
-		 return this->ExecuteWithVolumeMesh(input, output, excFaces);;
+		return this->ExecuteWithVolumeMesh(input, output, excFaces);;
 	case IG_SURFACE_MESH:
 		return true;
 	case IG_UNSTRUCTURED_MESH:
@@ -895,14 +895,14 @@ struct ExtractCellBoundaries {
 
 };
 
-int iGameModelGeometryFilter::ExecuteWithPolyData(DataObject::Pointer input,
-	PolyData::Pointer output,
-	PolyData::Pointer  exc) {
+int iGameModelGeometryFilter::ExecuteWithSurfaceMesh(DataObject::Pointer input,
+	SurfaceMesh::Pointer output,
+	SurfaceMesh::Pointer  exc) {
 	return 1;
 }
-int iGameModelGeometryFilter::ExecuteWithPolyData(DataObject::Pointer input,
-	PolyData::Pointer  output) {
-	return this->ExecuteWithPolyData(input, output, nullptr);
+int iGameModelGeometryFilter::ExecuteWithSurfaceMesh(DataObject::Pointer input,
+	SurfaceMesh::Pointer  output) {
+	return this->ExecuteWithSurfaceMesh(input, output, nullptr);
 }
 
 
@@ -954,7 +954,7 @@ struct ExtractVM : public ExtractCellBoundaries {
 };
 
 int iGameModelGeometryFilter::ExecuteWithVolumeMesh(
-	DataObject::Pointer input, PolyData::Pointer output, PolyData::Pointer exc) {
+	DataObject::Pointer input, SurfaceMesh::Pointer output, SurfaceMesh::Pointer exc) {
 	clock_t time1 = clock();
 	VolumeMesh::Pointer Grid = DynamicCast<VolumeMesh>(input);
 	igDebug("Input has " << Grid->GetNumberOfPoints() << " points and "
@@ -1047,7 +1047,7 @@ int iGameModelGeometryFilter::ExecuteWithVolumeMesh(
 		}
 	}
 
-	CompositeAttribute(f2c, inAllDataArray, outAllDataArray);
+	CompositeCellAttribute(f2c, inAllDataArray, outAllDataArray);
 	for (i = 0; i < outAllDataArray->GetAllAttributes().GetPointer()->Size(); i++) {
 		attrbNameArray->AddElement(
 			outAllDataArray->GetAttribute(i).pointer.get()->GetName());
@@ -1058,7 +1058,7 @@ int iGameModelGeometryFilter::ExecuteWithVolumeMesh(
 	output->GetMetadata()->AddStringArray(ATTRIBUTE_NAME_ARRAY, attrbNameArray);
 
 	igDebug("Extracted " << output->GetNumberOfPoints() << " points,"
-		<< output->GetNumberOfCells() << " cells.");
+		<< output->GetNumberOfFaces() << " faces.");
 	f2c.swap(std::vector<igIndex>());
 	delete extract;
 	clock_t time2 = clock();
@@ -1066,7 +1066,7 @@ int iGameModelGeometryFilter::ExecuteWithVolumeMesh(
 	return 1;
 }
 int iGameModelGeometryFilter::ExecuteWithVolumeMesh(DataObject::Pointer input,
-	PolyData::Pointer output)
+	SurfaceMesh::Pointer output)
 {
 	return  ExecuteWithVolumeMesh(input, output, nullptr);
 }
@@ -1121,14 +1121,18 @@ struct ExtractUG : public ExtractCellBoundaries {
 
 };
 int iGameModelGeometryFilter::ExecuteWithUnstructuredGrid(
-	DataObject::Pointer input, PolyData::Pointer output, PolyData::Pointer exc) {
+	DataObject::Pointer input, SurfaceMesh::Pointer output, SurfaceMesh::Pointer exc) {
 	clock_t time1 = clock();
 	UnstructuredMesh* Grid = DynamicCast<UnstructuredMesh>(input);
 	igDebug("Input has " << Grid->GetNumberOfPoints() << " points and "
 		<< Grid->GetNumberOfCells() << " cells.");
-	//if (Grid->GetNumberOfCells() == 0) {
-	//    igDebug(this, "This unstructured grid doesn't have cell.");
-	//}
+	bool is3D = false;
+	for (int i = 0; i < Grid->GetNumberOfCells(); i++) {
+		if (Cell::GetCellDimension(Grid->GetCellType(i)) == 3) {
+			is3D = true;
+		}
+	}
+	if (is3D == false)return 0;
 	igIndex i = 0, j = 0, k = 0;
 	igIndex64 cellId = 0, pointId = 0;
 	igIndex64 numCells = Grid->GetNumberOfCells();
@@ -1217,7 +1221,7 @@ int iGameModelGeometryFilter::ExecuteWithUnstructuredGrid(
 		}
 	}
 
-	CompositeAttribute(f2c, inAllDataArray, outAllDataArray);
+	CompositeCellAttribute(f2c, inAllDataArray, outAllDataArray);
 	for (i = 0; i < outAllDataArray->GetAllAttributes().GetPointer()->Size(); i++) {
 		attrbNameArray->AddElement(
 			outAllDataArray->GetAttribute(i).pointer.get()->GetName());
@@ -1228,14 +1232,267 @@ int iGameModelGeometryFilter::ExecuteWithUnstructuredGrid(
 	output->GetMetadata()->AddStringArray(ATTRIBUTE_NAME_ARRAY, attrbNameArray);
 
 	igDebug("Extracted " << output->GetNumberOfPoints() << " points,"
-		<< output->GetNumberOfCells() << " cells.");
+		<< output->GetNumberOfFaces() << " faces.");
 	f2c.swap(std::vector<igIndex>());
 	delete extract;
 	clock_t time2 = clock();
 	igDebug("Extracted surface cost " << time2 - time1 << "ms.");
 	return 1;
 }
-void iGameModelGeometryFilter::CompositeAttribute(std::vector<igIndex>& F2C,
+
+int iGameModelGeometryFilter::ExecuteWithUnstructuredGrid(
+	DataObject::Pointer input, SurfaceMesh::Pointer  output) {
+	return this->ExecuteWithUnstructuredGrid(input, output, nullptr);
+}
+
+struct ExtractSG : public ExtractCellBoundaries {
+	// The unstructured grid to process
+	StructuredMesh::Pointer Grid;
+	bool RemoveGhostInterFaces;
+	igIndex* Quads;
+	std::vector<igIndex>f2c;
+	ExtractSG(StructuredMesh::Pointer grid, const char* cellVis,
+		const unsigned char* cellGhost, const unsigned char* pointGhost,
+		bool merging, bool removeGhostInterFaces, CellArray::Pointer quads)
+		: ExtractCellBoundaries(cellVis, cellGhost, pointGhost), Grid(grid),
+		RemoveGhostInterFaces(removeGhostInterFaces) {
+		if (merging) { this->CreatePointMap(grid->GetNumberOfPoints()); }
+		quads->SetFixedSize(4);
+		auto size = Grid->GetDimensionSize();
+		int faceNum = (size[0] - 1) * (size[1] - 1) + (size[0] - 1) * (size[2] - 1) + (size[2] - 1) * (size[1] - 1);
+		faceNum *= 2;
+		if (faceNum > 0) {
+			quads->SetNumberOfCells(faceNum);
+			quads->Resize(faceNum * 4);
+			Quads = quads->GetCellIdArray()->RawPointer();
+			f2c.resize(faceNum);
+		}
+		this->Initialize();
+	}
+	~ExtractSG() {
+		f2c.swap(std::vector<igIndex>());
+	}
+	// Initialize thread data
+	void Initialize() override {
+
+		this->ExtractCellBoundaries::Initialize();
+	}
+
+	void Execute() {
+		auto size = Grid->GetDimensionSize();
+		igIndex i = 0, j = 0, k = 0;
+		igIndex vhs[4] = { 0 };
+		igIndex st = 0;
+		igIndex tmpvhs[4] = {
+	0,1,1 + size[0] * size[1],size[0] * size[1]
+		};
+		int faceIndex = 0;
+		int VolumeIndex = 0;
+		// ij面的定义
+		tmpvhs[1] = 1;
+		tmpvhs[2] = 1 + size[0];
+		tmpvhs[3] = size[0];
+		k = 0;
+		for (j = 0; j < size[1] - 1; j++) {
+			st = j * size[0];
+			VolumeIndex = j * (size[0] - 1);
+			for (i = 0; i < size[0] - 1; i++) {
+				for (int it = 0; it < 4; it++) {
+					vhs[it] = st + tmpvhs[it];
+					*Quads++ = vhs[it];
+				}
+				st++;
+				f2c[faceIndex++] = VolumeIndex++;
+
+			}
+		}
+		k = size[2] - 1;
+		if (k > 0) {
+			for (j = 0; j < size[1] - 1; ++j) {
+				st = j * size[0] + k * size[0] * size[1];
+				VolumeIndex = j * (size[0] - 1) + (k - 1) * (size[0] - 1) * (size[1] - 1);
+				for (i = 0; i < size[0] - 1; ++i) {
+					for (int it = 0; it < 4; it++) {
+						vhs[it] = st + tmpvhs[it];
+						*Quads++ = vhs[it];
+					}
+					st++;
+					f2c[faceIndex++] = VolumeIndex++;
+				}
+			}
+		}
+
+		// ik方向面的定义
+		tmpvhs[1] = 1;
+		tmpvhs[2] = 1 + size[0] * size[1];
+		tmpvhs[3] = size[0] * size[1];
+		j = 0;
+		for (k = 0; k < size[2] - 1; k++) {
+			st = j * size[0] + k * size[0] * size[1];
+			VolumeIndex = k * (size[0] - 1) * (size[1] - 1);
+			for (i = 0; i < size[0] - 1; i++) {
+				for (int it = 0; it < 4; it++) {
+					vhs[it] = st + tmpvhs[it];
+					*Quads++ = vhs[it];
+				}
+				st++;
+				f2c[faceIndex++] = VolumeIndex++;
+			}
+		}
+		j = size[1] - 1;
+		if (j > 0) {
+			for (k = 0; k < size[2] - 1; k++) {
+				st = j * size[0] + k * size[0] * size[1];
+				VolumeIndex = k * (size[0] - 1) * (size[1] - 1) + (j - 1) * (size[0] - 1);
+				for (i = 0; i < size[0] - 1; i++) {
+					for (int it = 0; it < 4; it++) {
+						vhs[it] = st + tmpvhs[it];
+						*Quads++ = vhs[it];
+					}
+					st++;
+					f2c[faceIndex++] = VolumeIndex++;
+				}
+			}
+		}
+
+		// jk方向面的定义
+		tmpvhs[1] = size[0];
+		tmpvhs[2] = size[0] + size[0] * size[1];
+		tmpvhs[3] = size[0] * size[1];
+		i = 0;
+		for (k = 0; k < size[2] - 1; k++) {
+			st = i + k * size[0] * size[1];
+			VolumeIndex = k * (size[0] - 1) * (size[1] - 1);
+			for (j = 0; j < size[1] - 1; j++) {
+				for (int it = 0; it < 4; it++) {
+					vhs[it] = st + tmpvhs[it];
+					*Quads++ = vhs[it];
+				}
+				st += size[0];
+				f2c[faceIndex++] = VolumeIndex;
+				VolumeIndex += size[0] - 1;
+			}
+		}
+		i = size[0] - 1;
+		if (i > 0) {
+			for (k = 0; k < size[2] - 1; k++) {
+				st = i + k * size[0] * size[1];
+				VolumeIndex = k * (size[0] - 1) * (size[1] - 1) + i - 1;
+				for (j = 0; j < size[1] - 1; j++) {
+					for (int it = 0; it < 4; it++) {
+						vhs[it] = st + tmpvhs[it];
+						*Quads++ = vhs[it];
+					}
+					st += size[0];
+					f2c[faceIndex++] = VolumeIndex;
+					VolumeIndex += size[0] - 1;
+				}
+			}
+		}
+	} // operator()
+
+
+};
+
+int iGameModelGeometryFilter::ExecuteWithStructuredGrid(
+	DataObject::Pointer input, SurfaceMesh::Pointer  output, SurfaceMesh::Pointer  exc,
+	bool* extracTFace) {
+	clock_t time1 = clock();
+	StructuredMesh* Grid = DynamicCast<StructuredMesh>(input);
+	if (Grid->GetDimension() != 3) {
+		return 0;
+	}
+	igDebug("Input has " << Grid->GetNumberOfPoints() << " points and "
+		<< Grid->GetNumberOfCells() << " cells.");
+	igIndex i = 0, j = 0, k = 0;
+	igIndex64 cellId = 0, pointId = 0;
+	igIndex64 numCells = Grid->GetNumberOfCells();
+	igIndex64 numInputPts = Grid->GetNumberOfPoints();
+	igIndex64 numOutputPts = 0;
+	auto inPoints = Grid->GetPoints();
+	auto inAllDataArray = input->GetAttributeSet();
+	auto outAllDataArray = AttributeSet::New();
+	StringArray::Pointer attrbNameArray = StringArray::New();
+	CellArray::Pointer Polygons = CellArray::New();
+	CharArray::Pointer CellVisibleArray = CharArray::New();
+	char* CellVisible = nullptr;
+	unsigned char* cellGhosts = nullptr;
+	unsigned char* pointGhosts = nullptr;
+
+	// Determine nature of what we have to do
+	if ((!CellClipping) && (!PointClipping) && (!ExtentClipping)) {
+		CellVisible = nullptr;
+	}
+	else {
+		CellVisibleArray->Resize(numCells);
+		CellVisible = CellVisibleArray->RawPointer();
+	}
+	// Mark cells as being visible or not
+	//
+	if (CellVisible) {
+		CellArray::Pointer Polygons;
+		igIndex vhs[256] = { 0 };
+		igIndex vnum = 0;
+		Point x;
+		auto Volumes = Grid->GetHexahedrons();
+		for (cellId = 0; cellId < numCells; cellId++) {
+			CellVisible[cellId] = 1;
+			if (CellClipping &&
+				(cellId < CellMinimum || cellId > CellMaximum)) {
+				CellVisible[cellId] = 0;
+			}
+			else {
+				vnum = Volumes->GetCellIds(cellId, vhs);
+				for (i = 0; i < vnum; i++) {
+					pointId = vhs[i];
+					x = inPoints->GetPoint(i);
+					if ((PointClipping &&
+						(pointId < PointMinimum || pointId > PointMaximum)) ||
+						(ExtentClipping &&
+							(x[0] < Extent[0] || x[0] > Extent[1] ||
+								x[1] < Extent[2] || x[1] > Extent[3] ||
+								x[2] < Extent[4] || x[2] > Extent[5]))) {
+						CellVisible[cellId] = 0;
+						break;
+					}
+				}
+			}
+		}
+	}
+	auto* extract = new ExtractSG(Grid, CellVisible, cellGhosts, pointGhosts,
+		this->Merging, this->RemoveGhostInterfaces, Polygons);
+	extract->Execute();
+
+	numCells = extract->NumCells;
+
+	clock_t time_2 = clock();
+	igDebug("Extracted surface(not composite) cost " << time_2 - time1 << "ms.");
+
+
+	CompositeCellAttribute(extract->f2c, inAllDataArray, outAllDataArray);
+	for (i = 0; i < outAllDataArray->GetAllAttributes().GetPointer()->Size(); i++) {
+		attrbNameArray->AddElement(
+			outAllDataArray->GetAttribute(i).pointer.get()->GetName());
+	}
+	output->SetPoints(inPoints);
+	output->SetFaces(Polygons);
+	output->SetAttributeSet(outAllDataArray);
+	output->GetMetadata()->AddStringArray(ATTRIBUTE_NAME_ARRAY, attrbNameArray);
+
+	igDebug("Extracted " << output->GetNumberOfPoints() << " points,"
+		<< output->GetNumberOfFaces() << " faces.");
+	delete extract;
+	clock_t time2 = clock();
+	igDebug("Extracted surface cost " << time2 - time1 << "ms.");
+	return 1;
+}
+
+int iGameModelGeometryFilter::ExecuteWithStructuredGrid(
+	DataObject::Pointer input, SurfaceMesh::Pointer  output, bool* extracTFace) {
+	return this->ExecuteWithStructuredGrid(input, output, nullptr, extracTFace);
+}
+
+void iGameModelGeometryFilter::CompositeCellAttribute(std::vector<igIndex>& F2C,
 	AttributeSet* inAllDataArray, AttributeSet* outAllDataArray) {
 
 	igIndex i = 0, j = 0;
@@ -1277,53 +1534,5 @@ void iGameModelGeometryFilter::CompositeAttribute(std::vector<igIndex>& F2C,
 	}
 	for (int i = 0; i < threadSize; i++) { threads[i].join(); }
 }
-
-int iGameModelGeometryFilter::ExecuteWithUnstructuredGrid(
-	DataObject::Pointer input, PolyData::Pointer  output) {
-	return this->ExecuteWithUnstructuredGrid(input, output, nullptr);
-}
-
-struct ExtractSG: public ExtractCellBoundaries {
-	// The unstructured grid to process
-	StructuredMesh::Pointer Grid;
-	std::shared_ptr<FaceHashMap> FaceMap;
-	bool RemoveGhostInterFaces;
-
-	ExtractSG(StructuredMesh::Pointer grid, const char* cellVis,
-		const unsigned char* cellGhost, const unsigned char* pointGhost,
-		bool merging, bool removeGhostInterFaces)
-		: ExtractCellBoundaries(cellVis, cellGhost, pointGhost), Grid(grid),
-		RemoveGhostInterFaces(removeGhostInterFaces) {
-		if (merging) { this->CreatePointMap(grid->GetNumberOfPoints()); }
-		this->FaceMap = std::make_shared<FaceHashMap>(
-			static_cast<size_t>(grid->GetNumberOfPoints()));
-		this->Initialize();
-	}
-
-	// Initialize thread data
-	void Initialize() override {
-		this->ExtractCellBoundaries::Initialize();
-	}
-
-	void Execute(igIndex beginCellId, igIndex endCellId,
-		FaceMemoryPool* GFacePool) {
-	
-	} // operator()
-
-
-};
-
-int iGameModelGeometryFilter::ExecuteWithStructuredGrid(
-	DataObject::Pointer input, PolyData::Pointer  output, PolyData::Pointer  exc,
-	bool* extracTFace) {
-
-	return 1;
-}
-
-int iGameModelGeometryFilter::ExecuteWithStructuredGrid(
-	DataObject::Pointer input, PolyData::Pointer  output, bool* extracTFace) {
-	return this->ExecuteWithStructuredGrid(input, output, nullptr, extracTFace);
-}
-
 
 IGAME_NAMESPACE_END

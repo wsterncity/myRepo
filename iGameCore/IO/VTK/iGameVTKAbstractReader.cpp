@@ -1198,7 +1198,7 @@ bool VTKAbstractReader::ReadStructuredGrid()
 			return false;
 		}
 	}
-	if (m_StructuredMesh->GetPoints() == nullptr) {
+	if (m_StructuredMesh->GetPoints() == nullptr|| m_StructuredMesh->GetPoints()->GetNumberOfPoints()==0) {
 		igIndex i, j, k;
 		Point p;
 		Points::Pointer points = Points::New();
@@ -1222,6 +1222,7 @@ bool VTKAbstractReader::ReadStructuredGrid()
 		//	std::cout << p[0] << ' ' << p[1] << ' ' << p[2] << '\n';
 		//}
 	}
+	m_StructuredMesh->GenStructuredCellConnectivities();
 	return true;
 }
 CellArray::Pointer VTKAbstractReader::CreateCellArray(ArrayObject::Pointer CellsID, ArrayObject::Pointer CellsConnect)

@@ -631,7 +631,7 @@ bool SurfaceMesh::IsOnBoundaryPoint(igIndex ptId)
 {
     int nNeiEdges = GetNumberOfLinks(ptId, P2E);
     int nNeiFaces = GetNumberOfLinks(ptId, P2F);
-    if (nNeiEdges == 0 || nNeiFaces == 0) return true; // ¹ÂÁ¢µã
+    if (nNeiEdges == 0 || nNeiFaces == 0) return true; // å­¤ç«‹ç‚¹
     return nNeiFaces == nNeiEdges - 1;
 }
 bool SurfaceMesh::IsOnBoundaryEdge(igIndex edgeId) {
