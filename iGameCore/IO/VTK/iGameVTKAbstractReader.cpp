@@ -1,4 +1,5 @@
 #include "iGameVTKAbstractReader.h"
+#include "iGameByteSwap.h"
 IGAME_NAMESPACE_BEGIN
 
 VTKAbstractReader::VTKAbstractReader()
@@ -85,20 +86,31 @@ int VTKAbstractReader::ReadHeader()
 int VTKAbstractReader::ReadPointCoordinates(Points::Pointer points, int PointsNum)
 {
 	char line[256];
-	FloatArray::Pointer data;
+	FloatArray::Pointer floatData;
+	DoubleArray::Pointer doubleData;
 	if (!this->ReadString(line)) {
 		//igError("Cannot read points type!"
 		//	<< " for file: " << (fname ? fname : "(Null FileName)"));
 		return 0;
 	}
-	//精度到时候再转换
-	//data = DynamicCast<FloatArray>(this->ReadArray(line, PointsNum, 3));
-    data = DynamicCast<FloatArray>(this->ReadArray("float", PointsNum, 3));
-	if (data != nullptr) {
+	if (!strcmp(this->LowerCase(line), "double")) {
+		doubleData = DynamicCast<DoubleArray>(this->ReadArray("double", PointsNum, 3));
+	}
+	else {
+		floatData = DynamicCast<FloatArray>(this->ReadArray("float", PointsNum, 3));
+	}
+	if (floatData != nullptr) {
 		//points->SetArray(data->RawPointer(), PointsNum);
 		float p[3]{};
 		for (int i = 0; i < PointsNum; i++) {
-			data->GetElement(i, p);
+			floatData->GetElement(i, p);
+			points->AddPoint(p);
+		}
+	}
+	else if (doubleData != nullptr) {
+		float p[3]{};
+		for (int i = 0; i < PointsNum; i++) {
+			doubleData->GetElement(i, p);
 			points->AddPoint(p);
 		}
 	}
@@ -224,6 +236,12 @@ int VTKAbstractReader::ReadCellData(int CellsNum)
 			this->ReadPointData(npts);
 			break;
 		}
+		else if (!strncmp(line, "metadata", 8)) {
+			if (!ProcessMetaData()) {
+				igDebug("Read metadata error!");
+			}
+			continue;
+		}
 		else {
 			//igError("Unsupported cell attribute type: " << line
 			//	<< " for file: " << (fname ? fname : "(Null FileName)"));
@@ -243,7 +261,7 @@ int VTKAbstractReader::ReadPointData(int PointsNum)
 {
 	char line[256];
 	AttributeSet::Pointer PointData = m_Data.GetData();
-	
+
 	this->DataType = POINT_TYPE;
 	igDebug("Reading vtk point data");
 	//
@@ -359,6 +377,12 @@ int VTKAbstractReader::ReadPointData(int PointsNum)
 			}
 			this->ReadCellData(ncells);
 			break;
+		}
+		else if (!strncmp(this->LowerCase(line), "metadata", 8)) {
+			if (!ProcessMetaData()) {
+				igDebug("Read metadata error!");
+			}
+			continue;
 		}
 		else {
 			//igError("Unsupported point attribute type: " << line
@@ -763,13 +787,29 @@ int VTKAbstractReader::ReadFieldData()
 	for (i = 0; i < numArrays; i++) {
 		char buffer[256];
 		this->ReadString(buffer);
-		if (strcmp(buffer, "NULL_ARRAY") == 0) {
+		if (strcmp(this->LowerCase(buffer), "null_array") == 0) {
+			continue;
+		}
+		if (strcmp(buffer, "metadata") == 0) {
+			i--;
+			ProcessMetaData();
 			continue;
 		}
 		this->DecodeString(name, buffer);
 		this->Read(&numComp);
 		this->Read(&numTuples);
 		this->ReadString(type);
+		if (!strncmp(this->LowerCase(type), "string", 6)) {
+			if (this->m_FileType == IGAME_BINARY) {
+				this->ReadLine(buffer);
+			}
+			else {
+				for (int i = 0; i < numComp * numTuples; i++) {
+					this->ReadString(buffer);
+				}
+			}
+			continue;
+		}
 		data = this->ReadArray(type, numTuples, numComp);
 		if (data != nullptr) {
 			data->SetName(name);
@@ -780,29 +820,452 @@ int VTKAbstractReader::ReadFieldData()
 				m_Data.GetData()->AddAttribute(IG_SCALAR, IG_CELL, data);
 			}
 		}
+
+	}
+	this->UpdateReadProgress();
+	return 1;
+}
+bool VTKAbstractReader::ProcessMetaData() {
+	char buffer[IGAME_CELL_MAX_SIZE];
+	int infoNum = 0;
+	if (!this->ReadString(buffer) || strncmp(this->LowerCase(buffer), "information", 6)) {
+		igError("metadata error!");
+		return false;
+	}
+	if (!this->Read(&infoNum)) {
+		igError("metadata error!");
+		return false;
+	}
+	for (int i = 0; i < infoNum; i++) {
+		if (!this->ReadLine(buffer))return false;
+		if (!this->ReadLine(buffer))return false;
+	}
+	return true;
+}
+int  VTKAbstractReader::ReadCellsWithOffsetType(int& CellsNum, ArrayObject::Pointer& CellsId, ArrayObject::Pointer& CellsConnect)
+{
+	int offsetsSize{ 0 };
+	int connSize{ 0 };
+	char buffer[256];
+	if (!(this->Read(&offsetsSize) && this->Read(&connSize))) {
+		igError("Error while reading cell array header.");
+		return 0;
+	}
+	if (offsetsSize < 1) {
+		return 1;
+	}
+	CellsNum = offsetsSize - 1;
+	if (!this->ReadString(buffer) || // "offsets"
+		(strcmp(this->LowerCase(buffer, 256), "offsets") != 0) || !this->ReadString(buffer)) {// datatype
+		igError("Error reading cell array offset header.");
+		return 0;
+	}
+
+	this->LowerCase(buffer, 256);
+	CellsId = this->ReadArray(buffer, offsetsSize, 1);
+	if (!CellsId)
+	{
+		igError("Error reading cell array offset data.");
+		return 0;
+	}
+	if (!this->ReadString(buffer) || // "connectivity"
+		(strcmp(this->LowerCase(buffer, 256), "connectivity") != 0) ||
+		!this->ReadString(buffer)) // datatype
+	{
+		igError("Error reading cell array connectivity header.");
+		return 0;
+	}
+	this->LowerCase(buffer, 256);
+	CellsConnect = this->ReadArray(buffer, connSize, 1);
+	if (!CellsConnect)
+	{
+		igError("Error reading cell array connectivity data.");
+		return 0;
 	}
 	this->UpdateReadProgress();
 	return 1;
 }
 
-
-const void VTKAbstractReader::TransferVtkCellToiGameCell(IntArray::Pointer VtkCells, IntArray::Pointer VtkCellsType)
+int  VTKAbstractReader::ReadCellsWithCellSizeType(int CellNum, int size, ArrayObject::Pointer& CellsId, ArrayObject::Pointer& CellsConnect)
 {
-	CellArray::Pointer Lines = m_Data.GetLines();
-	CellArray::Pointer Faces = m_Data.GetFaces();
-	CellArray::Pointer Volumes = m_Data.GetVolumes();
+	auto m_CellsId = IntArray::New();
+	m_CellsId->Reserve(CellNum + 1);
+	auto m_CellsConnect = IntArray::New();
+	m_CellsConnect->Reserve(size - CellNum);
+	int component, i, j;
+	int x;
+	int index = 0;
+	for (i = 0; i < CellNum; i++) {
+		m_CellsId->AddValue(index);
+		if (!this->Read(&component)) {
+			igError("Cell id error!");
+			return 0;
+		}
+		index += component;
+		for (j = 0; j < component; j++) {
+			if (!this->Read(&x)) {
+				igError("Cell id error!");
+				return 0;
+			}
+			m_CellsConnect->AddValue(x);
+		}
+	}
+	m_CellsId->AddValue(index);
+	this->UpdateReadProgress();
+	CellsId = m_CellsId;
+	CellsConnect = m_CellsConnect;
+	return 1;
+}
+bool VTKAbstractReader::ReadUnstructuredGrid()
+{
+	if (m_UnstructuredMesh == nullptr) {
+		m_UnstructuredMesh = UnstructuredMesh::New();
+	}
+	this->m_DataObjectType = IG_UNSTRUCTURED_MESH;
+	char line[IGAME_CELL_MAX_SIZE];
+	igIndex i = 0, PointsNum = 0, CellsNum = 0;
+	igIndex npts, size = 0, ncells = 0;
+	IntArray::Pointer Types;
+	ArrayObject::Pointer CellsId;
+	ArrayObject::Pointer CellsConnect;
+	while (true) {
+		if (!this->ReadString(line)) { break; }
+		if (line[0] == '\0') {
+			continue;
+		}
+		else if (!strncmp(this->LowerCase(line), "field", 5)) {
+			this->ReadFieldData();
+		}
+		else if (!strncmp(line, "points", 6)) {
+			if (!this->Read(&npts)) {
+				igError("Cannot read number of points!");
+				return false;
+			}
+			Points::Pointer points = Points::New();
+			points->Reserve(npts);
+			if (!this->ReadPointCoordinates(points, npts)) {
+				return false;
+			}
+			m_UnstructuredMesh->SetPoints(points);
+		}
+		else if (!strncmp(line, "cells", 5)) {
+			if (this->m_FileType == IGAME_BINARY) {
+				this->ReadCellsWithOffsetType(ncells, CellsId, CellsConnect);
+			}
+			else { // ascii
+				const char* tmpIS = this->IS;
+				if (!(this->Read(&ncells) && this->Read(&size))) {
+					igError("Cannot read cells!");
+					return false;
+				}
+				this->SkipNullData();
+				if (strncmp(this->IS, "OFFSETS", 7) == 0) {
+					this->IS = tmpIS;
+					this->ReadCellsWithOffsetType(ncells, CellsId, CellsConnect);
+				}
+				else {
+					this->ReadCellsWithCellSizeType(ncells, size, CellsId, CellsConnect);
+				}
+			}
+			if (Types) {
+				this->TransferVtkCellToiGameCell(CellsId, CellsConnect, Types);
+			}
+		}
+		else if (!strncmp(line, "cell_types", 10)) {
+			if (!this->Read(&ncells)) {
+				igError("Cannot read cell types!");
+				return false;
+			}
+			Types = DynamicCast<IntArray>(
+				this->ReadArray("int", ncells, 1));
+			// Update the dataset
+			if (CellsId && CellsConnect) {
+				this->TransferVtkCellToiGameCell(CellsId, CellsConnect, Types);
+			}
+		}
+		else if (!strncmp(line, "cell_data", 9)) {
+			if (!this->Read(&CellsNum)) {
+				igError("Cannot read cell data!");
+				return false;
+			}
+			if (ncells != CellsNum) {
+				igError("Number of cells don't match!");
+				return false;
+			}
+			this->ReadCellData(CellsNum);
+			break; // out of this loop
+		}
 
-	int CellNum = VtkCellsType->GetNumberOfElements();
-	int IndexNum = VtkCells->GetNumberOfValues();
+		else if (!strncmp(line, "point_data", 10)) {
+			if (!this->Read(&PointsNum)) {
+				igError("Cannot read point data!");
+				return false;
+			}
+			if (npts != PointsNum) {
+				igError("Number of points don't match!");
+				return false;
+			}
+			this->ReadPointData(PointsNum);
+			break; // out of this loop
+		}
+		else if (!strncmp(line, "metadata", 8)) {
+			this->ProcessMetaData();
+		}
+		else {
+			//igDebug("Unrecognized keyword: " << line);
+			//return false;
+		}
+	}
+	return true;
+}
+
+bool VTKAbstractReader::ReadSurfaceMesh()
+{
+	if (m_SurfaceMesh == nullptr) {
+		m_SurfaceMesh = SurfaceMesh::New();
+	}
+	m_DataObjectType = IG_SURFACE_MESH;
+	char line[IGAME_CELL_MAX_SIZE];
+	char buffer[IGAME_CELL_MAX_SIZE];
+	igIndex i = 0, PointsNum = 0, CellsNum = 0, size = 0;
+	igIndex npts = 0, ncells = 0;
+	igIndex offsetsSize = 0, connSize = 0;
+	ArrayObject::Pointer CellsId;
+	ArrayObject::Pointer CellsConnect;
+	while (true) {
+		if (!this->ReadString(line)) { break; }
+		if (line[0] == '\0') {
+			continue;
+		}
+		else if (!strncmp(this->LowerCase(line), "field", 5)) {
+			this->ReadFieldData();
+		}
+		else if (!strncmp(line, "points", 6)) {
+			if (!this->Read(&npts)) {
+				igError("Cannot read number of points!");
+				return false;
+			}
+			Points::Pointer points = Points::New();
+			points->Reserve(npts);
+			if (!this->ReadPointCoordinates(points, npts)) {
+				return false;
+			}
+			m_SurfaceMesh->SetPoints(points);
+		}
+		else if (!strncmp(line, "polygons", 8)) {
+
+			if (this->m_FileType == IGAME_BINARY) {
+				this->ReadCellsWithOffsetType(ncells, CellsId, CellsConnect);
+			}
+			else {
+				const char* tmpIS = this->IS;
+				if (!(this->Read(&ncells) && this->Read(&size))) {
+					igError("Cannot read cells!");
+					return false;
+				}
+				this->SkipNullData();
+				if (strncmp(this->IS, "OFFSETS", 7) == 0) {
+					this->IS = tmpIS;
+					this->ReadCellsWithOffsetType(ncells, CellsId, CellsConnect);
+				}
+				else {
+					this->ReadCellsWithCellSizeType(ncells, size, CellsId, CellsConnect);
+				}
+			}
+			m_SurfaceMesh->SetFaces(this->CreateCellArray(CellsId, CellsConnect));
+		}
+		else if (!strncmp(line, "cell_data", 9)) {
+			if (!this->Read(&CellsNum)) {
+				igError("Cannot read cell data!");
+				return false;
+			}
+			if (ncells != CellsNum) {
+				igError("Number of cells don't match!");
+				return false;
+			}
+			this->ReadCellData(ncells);
+			break; // out of this loop
+		}
+		else if (!strncmp(line, "point_data", 10)) {
+			if (!this->Read(&PointsNum)) {
+				igError("Cannot read point data!");
+				return false;
+			}
+			if (npts != PointsNum) {
+				igError("Number of points don't match!");
+				return false;
+			}
+			this->ReadPointData(PointsNum);
+			break; // out of this loop
+		}
+		else if (!strncmp(line, "metadata", 8)) {
+			this->ProcessMetaData();
+		}
+		else {
+			//igDebug("Unrecognized keyword: " << line);
+			//return false;
+		}
+	}
+	return true;
+}
+bool VTKAbstractReader::ReadStructuredGrid()
+{
+	if (m_StructuredMesh == nullptr) {
+		m_StructuredMesh = StructuredMesh::New();
+	}
+	m_DataObjectType = IG_STRUCTURED_MESH;
+	char line[IGAME_CELL_MAX_SIZE];
+	char buffer[IGAME_CELL_MAX_SIZE];
+	igIndex size[3];
+	double origin[3];
+	double aspectRatio[3];
+	igIndex npts = 0;
+	igIndex ncells = 0;
+
+	while (true) {
+		if (!this->ReadString(line)) { break; }
+		if (line[0] == '\0') {
+			continue;
+		}
+		if (!strncmp(this->LowerCase(line), "dimensions", 10)) {
+			if (!this->Read(&size[0]) || !this->Read(&size[1]) || !this->Read(&size[2])) {
+				igError("Read dimension error!");
+				return false;
+			}
+			if (size[2] == 0) {
+				size[2] = 1;
+			}
+			m_StructuredMesh->SetDimensionSize(size);
+		}
+		else if (!strncmp(line, "aspect_ratio", 12)) {
+			if (!this->Read(&aspectRatio[0]) || !this->Read(&aspectRatio[1]) || !this->Read(&aspectRatio[2])) {
+				igError("Read extend error!");
+				return false;
+			}
+		}
+		else if (!strncmp(line, "origin", 6)) {
+			if (!this->Read(&origin[0]) || !this->Read(&origin[1]) || !this->Read(&origin[2])) {
+				igError("Read extend error!");
+				return false;
+			}
+		}
+		else if (!strncmp(line, "points", 6)) {
+			if (!this->Read(&npts)) {
+				igError("Cannot read number of points!");
+				return false;
+			}
+			if (size[0] * size[1] * size[2] != npts) {
+				igError("Number of points don't match!");
+				return false;
+			}
+			Points::Pointer points = Points::New();
+			if (!this->ReadPointCoordinates(points, npts)) {
+				return false;
+			}
+			m_StructuredMesh->SetPoints(points);
+		}
+		else if (!strncmp(line, "cell_data", 9)) {
+			if (!this->Read(&ncells)) {
+				igError("Cannot read cell data!");
+				return false;
+			}
+			if ((size[2] == 1 && (ncells != (size[0] - 1) * (size[1] - 1)))
+				|| (size[2] != 1 && (ncells != (size[0] - 1) * (size[1] - 1) * (size[2] - 1)))
+				) {
+				igError("Number of cells don't match!");
+				return false;
+			}
+			this->ReadCellData(ncells);
+			break; // out of this loop
+		}
+		else if (!strncmp(line, "point_data", 10)) {
+			if (!this->Read(&npts)) {
+				igError("Cannot read point data!");
+				return false;
+			}
+			if (size[0] * size[1] * size[2] != npts) {
+				igError("Number of points don't match!");
+				return false;
+			}
+			this->ReadPointData(npts);
+			break; // out of this loop
+		}
+		else if (!strncmp(line, "metadata", 8)) {
+			this->ProcessMetaData();
+		}
+		else {
+			igDebug("Unrecognized keyword: " << line);
+			return false;
+		}
+	}
+	if (m_StructuredMesh->GetPoints() == nullptr) {
+		igIndex i, j, k;
+		Point p;
+		Points::Pointer points = Points::New();
+		points->Reserve(npts);
+		p[2] = origin[2];
+		for (k = 0; k < size[2]; ++k) {
+			p[1] = origin[1];
+			for (j = 0; j < size[1]; ++j) {
+				p[0] = origin[0];
+				for (i = 0; i < size[0]; ++i) {
+					points->AddPoint(p);
+					p[0] += aspectRatio[0];
+				}
+				p[1] += aspectRatio[1];
+			}
+			p[2] += aspectRatio[2];
+		}
+		m_StructuredMesh->SetPoints(points);
+		//for (int i = 0; i < npts; i++) {
+		//	p = points->GetPoint(i);
+		//	std::cout << p[0] << ' ' << p[1] << ' ' << p[2] << '\n';
+		//}
+	}
+	return true;
+}
+CellArray::Pointer VTKAbstractReader::CreateCellArray(ArrayObject::Pointer CellsID, ArrayObject::Pointer CellsConnect)
+{
+	if (m_CellArray == nullptr) {
+		m_CellArray = CellArray::New();
+	}
+	int CellNum = CellsID->GetNumberOfElements() - 1;
 	int index = 0;
 	int size = 0;
-	int* vhs;
+	int vhs[IGAME_CELL_MAX_SIZE];
+	int st, ed;
+
 	for (int i = 0; i < CellNum; i++) {
-		size = VtkCells->GetValue(index);
-		vhs = VtkCells->RawPointer() + index + 1;
-		index += size + 1;
+		st = static_cast<int>(CellsID->GetValue(i));
+		ed = static_cast<int>(CellsID->GetValue(i + 1));
+		size = ed - st;
+		for (int j = 0; j < size; j++) {
+			vhs[j] = static_cast<int>(CellsConnect->GetValue(st + j));
+		}
+		m_CellArray->AddCellIds(vhs, size);
+	}
+	return m_CellArray;
+}
+
+const void VTKAbstractReader::TransferVtkCellToiGameCell(ArrayObject::Pointer CellsID, ArrayObject::Pointer CellsConnect, IntArray::Pointer VtkCellsType)
+{
+	if (m_UnstructuredMesh == nullptr) {
+		m_UnstructuredMesh = UnstructuredMesh::New();
+	}
+	this->m_DataObjectType = IG_UNSTRUCTURED_MESH;
+	int CellNum = VtkCellsType->GetNumberOfElements();
+	int index = 0;
+	int size = 0;
+	int vhs[IGAME_CELL_MAX_SIZE];
+	int st, ed;
+	for (int i = 0; i < CellNum; i++) {
+		st = static_cast<int>(CellsID->GetValue(i));
+		ed = static_cast<int>(CellsID->GetValue(i + 1));
+		size = ed - st;
+		for (int j = 0; j < size; j++) {
+			vhs[j] = static_cast<int>(CellsConnect->GetValue(st + j));
+		}
 		VTKTYPE type = (VTKTYPE)VtkCellsType->GetValue(i);
-		//if(type != 7)
 		switch (type)
 		{
 		case iGame::VTKAbstractReader::T0:
@@ -812,44 +1275,38 @@ const void VTKAbstractReader::TransferVtkCellToiGameCell(IntArray::Pointer VtkCe
 		case iGame::VTKAbstractReader::POLYVERTEX:
 			break;
 		case iGame::VTKAbstractReader::LINE:
-			assert(size == 2);
-			Lines->AddCellId2(vhs[0], vhs[1]);
+			m_UnstructuredMesh->AddCell(vhs, size, IG_LINE);
 			break;
 		case iGame::VTKAbstractReader::POLYLINE:
-			for (int k = 0; k < size; k++) {
-				Lines->AddCellId2(vhs[k], vhs[(k + 1) % size]);
-			}
+			m_UnstructuredMesh->AddCell(vhs, size, IG_POLY_LINE);
 			break;
 		case iGame::VTKAbstractReader::TRIANGLE:
-			assert(size == 3);
-			Faces->AddCellIds(vhs, size);
+			m_UnstructuredMesh->AddCell(vhs, size, IG_TRIANGLE);
 			break;
 		case iGame::VTKAbstractReader::TRIANGLESTRIP:
 			break;
 		case iGame::VTKAbstractReader::POLYGON:
-			Faces->AddCellIds(vhs, size);
+			m_UnstructuredMesh->AddCell(vhs, size, IG_POLYGON);
 			break;
 		case iGame::VTKAbstractReader::PIXEL:
+			m_UnstructuredMesh->AddCell(vhs, size, IG_QUAD);
 			break;
 		case iGame::VTKAbstractReader::QUAD:
-			assert(size == 4);
-			Faces->AddCellIds(vhs, size);
+			m_UnstructuredMesh->AddCell(vhs, size, IG_QUAD);
 			break;
 		case iGame::VTKAbstractReader::TETRA:
-			assert(size == 4);
-			Volumes->AddCellIds(vhs, size);
+			m_UnstructuredMesh->AddCell(vhs, size, IG_TETRA);
 			break;
 		case iGame::VTKAbstractReader::VOXEL:
 			break;
 		case iGame::VTKAbstractReader::HEXAHEDRON:
-			assert(size == 8);
-			Volumes->AddCellIds(vhs, size);
+			m_UnstructuredMesh->AddCell(vhs, size, IG_HEXAHEDRON);
 			break;
 		case iGame::VTKAbstractReader::WEDGE:
-			Volumes->AddCellIds(vhs, size);
+			m_UnstructuredMesh->AddCell(vhs, size, IG_PRISM);
 			break;
 		case iGame::VTKAbstractReader::PYRAMID:
-			Volumes->AddCellIds(vhs, size);
+			m_UnstructuredMesh->AddCell(vhs, size, IG_PYRAMID);
 			break;
 		case iGame::VTKAbstractReader::PENTAGONAL_PRISM:
 			break;
@@ -864,29 +1321,25 @@ const void VTKAbstractReader::TransferVtkCellToiGameCell(IntArray::Pointer VtkCe
 		case iGame::VTKAbstractReader::T20:
 			break;
 		case iGame::VTKAbstractReader::QUADRATIC_EDGE:
+			m_UnstructuredMesh->AddCell(vhs, size, IG_QUADRATIC_EDGE);
 			break;
 		case iGame::VTKAbstractReader::QUADRATIC_TRIANGLE:
+			m_UnstructuredMesh->AddCell(vhs, size, IG_QUADRATIC_TRIANGLE);
 			break;
 		case iGame::VTKAbstractReader::QUADRATIC_QUAD:
+			m_UnstructuredMesh->AddCell(vhs, size, IG_QUADRATIC_QUAD);
 			break;
 		case iGame::VTKAbstractReader::QUADRATIC_TETRA:
-		{
-			igIndex tmp[16][3] = { {0,6,4},{6,2,5},{5,1,4},{6,5,4},
-				{0,4,7},{4,1,8},{7,8,3},{7,4,8},
-				{1,5,8},{5,2,9},{8,9,3},{8,5,9},
-				{0,7,6},{3,9,7},{9,6,7},{2,6,9}
-			};
-			for (int i = 0; i < 16; i++) {
-				igIndex tmpvhs[3] = { vhs[tmp[i][0]] ,vhs[tmp[i][1]] ,vhs[tmp[i][2]] };
-				Faces->AddCellIds(tmpvhs, 3);
-			}
-		}
-		break;
+			m_UnstructuredMesh->AddCell(vhs, size, IG_QUADRATIC_TETRA);
+			break;
 		case iGame::VTKAbstractReader::QUADRATIC_HEXAHEDRON:
+			m_UnstructuredMesh->AddCell(vhs, size, IG_QUADRATIC_HEXAHEDRON);
 			break;
 		case iGame::VTKAbstractReader::QUADRATIC_WEDGE:
+			m_UnstructuredMesh->AddCell(vhs, size, IG_QUADRATIC_PRISM);
 			break;
 		case iGame::VTKAbstractReader::QUADRATIC_PYRAMID:
+			m_UnstructuredMesh->AddCell(vhs, size, IG_QUADRATIC_PYRAMID);
 			break;
 		case iGame::VTKAbstractReader::BIQUADRATIC_QUAD:
 			break;
@@ -910,7 +1363,7 @@ const void VTKAbstractReader::TransferVtkCellToiGameCell(IntArray::Pointer VtkCe
 			break;
 		case iGame::VTKAbstractReader::POLYHEDRON://42
 		{
-            Volumes->AddCellIds(vhs, size);
+			m_UnstructuredMesh->AddCell(vhs, size, IG_POLYHEDRON);
 			//igIndex index = 0;
 			//igIndex realvhs[256];
 			//igIndex realsize = 0;
@@ -928,11 +1381,13 @@ const void VTKAbstractReader::TransferVtkCellToiGameCell(IntArray::Pointer VtkCe
 			break;
 		}
 	}
-
 	this->UpdateReadProgress();
 }
-const void VTKAbstractReader::TransferVtkCellToiGameCell(ArrayObject::Pointer CellsID, ArrayObject::Pointer CellsConnect, IntArray::Pointer VtkCellsType)
-{
+
+void VTKAbstractReader::TransferVtkCellToiGameCell(DataCollection& m_Data, ArrayObject::Pointer CellsID,
+	ArrayObject::Pointer CellsConnect, ArrayObject::Pointer VtkCellsType) {
+
+
 	CellArray::Pointer Lines = m_Data.GetLines();
 	CellArray::Pointer Faces = m_Data.GetFaces();
 	CellArray::Pointer Volumes = m_Data.GetVolumes();
@@ -1019,9 +1474,9 @@ const void VTKAbstractReader::TransferVtkCellToiGameCell(ArrayObject::Pointer Ce
 		case iGame::VTKAbstractReader::QUADRATIC_TETRA:
 		{
 			igIndex tmp[16][3] = { {0,6,4},{6,2,5},{5,1,4},{6,5,4},
-				{0,4,7},{4,1,8},{7,8,3},{7,4,8},
-				{1,5,8},{5,2,9},{8,9,3},{8,5,9},
-				{0,7,6},{3,9,7},{9,6,7},{2,6,9}
+								   {0,4,7},{4,1,8},{7,8,3},{7,4,8},
+								   {1,5,8},{5,2,9},{8,9,3},{8,5,9},
+								   {0,7,6},{3,9,7},{9,6,7},{2,6,9}
 			};
 			for (int i = 0; i < 16; i++) {
 				igIndex tmpvhs[3] = { vhs[tmp[i][0]] ,vhs[tmp[i][1]] ,vhs[tmp[i][2]] };
@@ -1057,8 +1512,7 @@ const void VTKAbstractReader::TransferVtkCellToiGameCell(ArrayObject::Pointer Ce
 			break;
 		case iGame::VTKAbstractReader::POLYHEDRON://42
 		{
-            Volumes->AddCellIds(vhs, size);
-			/*igIndex index = 0;
+			igIndex index = 0;
 			igIndex realvhs[256];
 			igIndex realsize = 0;
 			while (index < size)
@@ -1068,162 +1522,16 @@ const void VTKAbstractReader::TransferVtkCellToiGameCell(ArrayObject::Pointer Ce
 					realvhs[id] = vhs[index++];
 				}
 				Faces->AddCellIds(realvhs, realsize);
-			}*/
+			}
 		}
 		break;
 		default:
 			break;
 		}
 	}
-
-	this->UpdateReadProgress();
 }
 
-void VTKAbstractReader::TransferVtkCellToiGameCell(DataCollection &m_Data, ArrayObject::Pointer CellsID,
-												   ArrayObject::Pointer CellsConnect, ArrayObject::Pointer VtkCellsType) {
 
 
-	CellArray::Pointer Lines = m_Data.GetLines();
-	CellArray::Pointer Faces = m_Data.GetFaces();
-	CellArray::Pointer Volumes = m_Data.GetVolumes();
-
-	int CellNum = VtkCellsType->GetNumberOfElements();
-	int index = 0;
-	int size = 0;
-	int vhs[64];
-	int st, ed;
-	for (int i = 0; i < CellNum; i++) {
-		st = static_cast<int>(CellsID->GetValue(i));
-		ed = static_cast<int>(CellsID->GetValue(i + 1));
-		size = ed - st;
-		for (int j = 0; j < size; j++) {
-			vhs[j] = static_cast<int>(CellsConnect->GetValue(st + j));
-		}
-		VTKTYPE type = (VTKTYPE)VtkCellsType->GetValue(i);
-		switch (type)
-		{
-			case iGame::VTKAbstractReader::T0:
-				break;
-			case iGame::VTKAbstractReader::VERTEX:
-				break;
-			case iGame::VTKAbstractReader::POLYVERTEX:
-				break;
-			case iGame::VTKAbstractReader::LINE:
-				assert(size == 2);
-				Lines->AddCellId2(vhs[0], vhs[1]);
-				break;
-			case iGame::VTKAbstractReader::POLYLINE:
-				for (int k = 0; k < size; k++) {
-					Lines->AddCellId2(vhs[k], vhs[(k + 1) % size]);
-				}
-				break;
-			case iGame::VTKAbstractReader::TRIANGLE:
-				assert(size == 3);
-				Faces->AddCellIds(vhs, size);
-				break;
-			case iGame::VTKAbstractReader::TRIANGLESTRIP:
-				break;
-			case iGame::VTKAbstractReader::POLYGON:
-				Faces->AddCellIds(vhs, size);
-				break;
-			case iGame::VTKAbstractReader::PIXEL:
-				break;
-			case iGame::VTKAbstractReader::QUAD:
-				assert(size == 4);
-				Faces->AddCellIds(vhs, size);
-				break;
-			case iGame::VTKAbstractReader::TETRA:
-				assert(size == 4);
-				Volumes->AddCellIds(vhs, size);
-				break;
-			case iGame::VTKAbstractReader::VOXEL:
-				break;
-			case iGame::VTKAbstractReader::HEXAHEDRON:
-				assert(size == 8);
-				Volumes->AddCellIds(vhs, size);
-				break;
-			case iGame::VTKAbstractReader::WEDGE:
-				Volumes->AddCellIds(vhs, size);
-				break;
-			case iGame::VTKAbstractReader::PYRAMID:
-				Volumes->AddCellIds(vhs, size);
-				break;
-			case iGame::VTKAbstractReader::PENTAGONAL_PRISM:
-				break;
-			case iGame::VTKAbstractReader::HEXAGONAL_PRISM:
-				break;
-			case iGame::VTKAbstractReader::T17:
-				break;
-			case iGame::VTKAbstractReader::T18:
-				break;
-			case iGame::VTKAbstractReader::T19:
-				break;
-			case iGame::VTKAbstractReader::T20:
-				break;
-			case iGame::VTKAbstractReader::QUADRATIC_EDGE:
-				break;
-			case iGame::VTKAbstractReader::QUADRATIC_TRIANGLE:
-				break;
-			case iGame::VTKAbstractReader::QUADRATIC_QUAD:
-				break;
-			case iGame::VTKAbstractReader::QUADRATIC_TETRA:
-			{
-				igIndex tmp[16][3] = { {0,6,4},{6,2,5},{5,1,4},{6,5,4},
-									   {0,4,7},{4,1,8},{7,8,3},{7,4,8},
-									   {1,5,8},{5,2,9},{8,9,3},{8,5,9},
-									   {0,7,6},{3,9,7},{9,6,7},{2,6,9}
-				};
-				for (int i = 0; i < 16; i++) {
-					igIndex tmpvhs[3] = { vhs[tmp[i][0]] ,vhs[tmp[i][1]] ,vhs[tmp[i][2]] };
-					Faces->AddCellIds(tmpvhs, 3);
-				}
-			}
-				break;
-			case iGame::VTKAbstractReader::QUADRATIC_HEXAHEDRON:
-				break;
-			case iGame::VTKAbstractReader::QUADRATIC_WEDGE:
-				break;
-			case iGame::VTKAbstractReader::QUADRATIC_PYRAMID:
-				break;
-			case iGame::VTKAbstractReader::BIQUADRATIC_QUAD:
-				break;
-			case iGame::VTKAbstractReader::TRIQUADRATIC_HEXAHEDRON:
-				break;
-			case iGame::VTKAbstractReader::QUADRATIC_LINEAR_QUAD:
-				break;
-			case iGame::VTKAbstractReader::QUADRATIC_LINEAR_WEDGE:
-				break;
-			case iGame::VTKAbstractReader::BIQUADRATIC_QUADRATIC_WEDGE:
-				break;
-			case iGame::VTKAbstractReader::BIQUADRATIC_QUADRATIC_HEXAHEDRON:
-				break;
-			case iGame::VTKAbstractReader::BIQUADRATIC_TRIANGLE:
-				break;
-			case iGame::VTKAbstractReader::CUBIC_LINE:
-				break;
-			case iGame::VTKAbstractReader::QUADRATIC_POLYGON:
-				break;
-			case iGame::VTKAbstractReader::TRIQUADRATIC_PYRAMID:
-				break;
-			case iGame::VTKAbstractReader::POLYHEDRON://42
-			{
-				igIndex index = 0;
-				igIndex realvhs[256];
-				igIndex realsize = 0;
-				while (index < size)
-				{
-					realsize = vhs[index++];
-					for (igIndex id = 0; id < realsize; id++) {
-						realvhs[id] = vhs[index++];
-					}
-					Faces->AddCellIds(realvhs, realsize);
-				}
-			}
-			break;
-			default:
-				break;
-		}
-	}
-}
 
 IGAME_NAMESPACE_END

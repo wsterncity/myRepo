@@ -1,46 +1,50 @@
-#ifndef iGameHexahedron_h
-#define iGameHexahedron_h
+#ifndef iGameQuadraticHexahedron_h
+#define iGameQuadraticHexahedron_h
 
-#include "iGameVolume.h"
+#include "Base/iGameQuadraticVolume.h"
+#include "iGameQuadraticQuad.h"
 
 IGAME_NAMESPACE_BEGIN
-class Hexahedron : public Volume {
+class QuadraticHexahedron : public QuadraticVolume {
 public:
-	I_OBJECT(Hexahedron);
-	static Pointer New() { return new Hexahedron; }
+	I_OBJECT(QuadraticHexahedron);
+	static Pointer New() { return new QuadraticHexahedron; }
 
-	IGenum GetCellType() const noexcept override { return IG_HEXAHEDRON; }
-	int GetCellSize() const noexcept override { return 8; }
-	int GetNumberOfEdges() override { return 12; }
-	int GetNumberOfFaces() override { return 6; }
+	IGenum GetCellType() const noexcept override { return IG_QUADRATIC_HEXAHEDRON; }
+	int GetCellSize() const noexcept override { return NumberOfPoints; }
+	int GetNumberOfEdges() override { return NumberOfEdges; }
+	int GetNumberOfFaces() override { return NumberOfFaces; }
 
 	Cell* GetEdge(const int edgeId) override {
 		const int* verts = edges[edgeId];
 
 		m_Line->PointIds->SetId(0, this->PointIds->GetId(verts[0]));
 		m_Line->PointIds->SetId(1, this->PointIds->GetId(verts[1]));
+		m_Line->PointIds->SetId(2, this->PointIds->GetId(verts[2]));
 
 		m_Line->Points->SetPoint(0, this->Points->GetPoint(verts[0]));
 		m_Line->Points->SetPoint(1, this->Points->GetPoint(verts[1]));
+		m_Line->Points->SetPoint(2, this->Points->GetPoint(verts[2]));
 
 		return m_Line.get();
 	}
 	Cell* GetFace(const int faceId) override {
 		const int* verts = faces[faceId];
 		const int* edges = faceEdges[faceId];
-		for (int i = 0; i < 4; ++i) {
+		for (int i = 0; i < 8; ++i) {
 			m_Quad->PointIds->SetId(i, PointIds->GetId(verts[i]));
 			m_Quad->Points->SetPoint(i, Points->GetPoint(verts[i]));
+		}
+		for (int i = 0; i < 4; ++i) {
 			m_Quad->EdgeIds->SetId(i, EdgeIds->GetId(edges[i]));
 		}
-
 		return m_Quad.get();
 	}
 
 	/**
 	 * 单元的顶点个数。
 	 */
-	static constexpr int NumberOfPoints = 8;
+	static constexpr int NumberOfPoints = 20;
 
 	/**
 	 * 单元的边个数。
@@ -55,7 +59,7 @@ public:
 	/**
 	 * 单元面最大的顶点个数。
 	 */
-	static constexpr int MaxFaceSize = 4;
+	static constexpr int MaxFaceSize = 8;
 
 	/**
 	 * 单元顶点最大的度。
@@ -65,33 +69,33 @@ public:
 	/***************** 所有Max + 1的数组最后一位数字表示个数 *****************/
 
 	// 边的顶点序号
-	static constexpr int edges[NumberOfEdges][2] = {
-	  { 0, 1 },
-	  { 1, 2 },
-	  { 3, 2 },
-	  { 0, 3 },
-	  { 4, 5 },
-	  { 5, 6 },
-	  { 7, 6 },
-	  { 4, 7 },
-	  { 0, 4 },
-	  { 1, 5 },
-	  { 2, 6 },
-	  { 3, 7 },
+	static constexpr int edges[NumberOfEdges][3] = {
+	  { 0, 1 ,8 },
+	  { 1, 2 ,9 },
+	  { 3, 2 ,10 },
+	  { 0, 3 ,11 },
+	  { 4, 5 ,12 },
+	  { 5, 6 ,13 },
+	  { 7, 6 ,14 },
+	  { 4, 7 ,15 },
+	  { 0, 4 ,16 },
+	  { 1, 5 ,17 },
+	  { 2, 6 ,18 },
+	  { 3, 7 ,19 },
 	};
 
 	// 面的顶点序号
 	static constexpr int faces[NumberOfFaces][MaxFaceSize + 1] = {
-	  { 0, 4, 7, 3, 4 },
-	  { 1, 2, 6, 5, 4 },
-	  { 0, 1, 5, 4, 4 },
-	  { 3, 7, 6, 2, 4 },
-	  { 0, 3, 2, 1, 4 },
-	  { 4, 5, 6, 7, 4 },
+	  { 0, 4, 7, 3, 16, 15, 19, 11, 4 },
+	  { 1, 2, 6, 5, 9, 18, 13, 17, 4 },
+	  { 0, 1, 5, 4, 8, 17, 12, 16, 4 },
+	  { 3, 7, 6, 2, 19, 14, 18, 10, 4 },
+	  { 0, 3, 2, 1, 11, 10, 9, 8, 4 },
+	  { 4, 5, 6, 7, 12, 13, 14, 15, 4 },
 	};
 
 	// 面的边序号
-	static constexpr int faceEdges[NumberOfFaces][MaxFaceSize + 1] = {
+	static constexpr int faceEdges[NumberOfFaces][MaxFaceSize / 2 + 1] = {
 	  { 8, 7, 11, 3, 4 },
 	  { 1, 10, 5, 9, 4 },
 	  { 0, 9, 4, 8, 4 },
@@ -117,7 +121,7 @@ public:
 	};
 
 	// 面的邻接面序号
-	static constexpr int faceToNeighborFaces[NumberOfFaces][MaxFaceSize + 1] = {
+	static constexpr int faceToNeighborFaces[NumberOfFaces][MaxFaceSize / 2 + 1] = {
 		{ 4, 2, 5, 3, 4 },
 		{ 4, 3, 5, 2, 4 },
 		{ 4, 1, 5, 0, 4 },
@@ -164,7 +168,7 @@ public:
 
 	int GetEdgePointIds(const int edgeId, const igIndex*& pts) override {
 		pts = edges[edgeId];
-		return 2;
+		return 3;
 	}
 	int GetFacePointIds(const int faceId, const igIndex*& pts) override {
 		pts = faces[faceId];
@@ -172,7 +176,7 @@ public:
 	}
 	int GetFaceEdgeIds(const int faceId, const igIndex*& edgeIds) override {
 		edgeIds = faceEdges[faceId];
-		return faceEdges[faceId][MaxFaceSize];
+		return faceEdges[faceId][MaxFaceSize / 2];
 	}
 	int GetEdgeToNeighborFaces(const int edgeId, const igIndex*& pts) override {
 		pts = edgeToNeighborFaces[edgeId];
@@ -180,7 +184,7 @@ public:
 	}
 	int GetFaceToNeighborFaces(const int faceId, const igIndex*& faceIds) override {
 		faceIds = faceToNeighborFaces[faceId];
-		return faceToNeighborFaces[faceId][MaxFaceSize];
+		return faceToNeighborFaces[faceId][MaxFaceSize / 2];
 	}
 	int GetPointToNeighborEdges(const int pointId, const igIndex*& edgeIds) override {
 		edgeIds = pointToNeighborEdges[pointId];
@@ -197,23 +201,23 @@ public:
 
 
 private:
-	Hexahedron()
+	QuadraticHexahedron()
 	{
-		this->Points->SetNumberOfPoints(4);
-		this->PointIds->SetNumberOfIds(4);
-		for (int i = 0; i < 4; i++)
+		this->Points->SetNumberOfPoints(20);
+		this->PointIds->SetNumberOfIds(20);
+		for (int i = 0; i < 20; i++)
 		{
 			this->Points->SetPoint(i, 0.0, 0.0, 0.0);
 			this->PointIds->SetId(i, 0);
 		}
 
-		m_Line = Line::New();
-		m_Quad = Quad::New();
+		m_Line = QuadraticLine::New();
+		m_Quad = QuadraticQuad::New();
 	}
-	~Hexahedron() override = default;
+	~QuadraticHexahedron() override = default;
 
-	Line::Pointer m_Line;
-	Quad::Pointer m_Quad;
+	QuadraticLine::Pointer m_Line;
+	QuadraticQuad::Pointer m_Quad;
 };
 
 

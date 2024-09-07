@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.19)
-project(OpeniGame)
+project(OpeniGame LANGUAGES C CXX)
 add_definitions(/D_USE_MATH_DEFINES)
 set(CMAKE_CXX_STANDARD 17)
 
@@ -16,7 +16,8 @@ add_executable(${PROJECT_NAME}
 # if need to Enable remote ThirdParty module. Follow this step:
 # 1. use git command1(git submodule init) and command2(git submodule update) to clone remote Submodule which are defined in .gitmodules file
 # 2. Set OFF to On.
-option(ENABLE_CGNS_MODULE "Enable CGNS ThirdParty Module" OFF)
+#option(ENABLE_CGNS_MODULE "Enable CGNS ThirdParty Module" OFF)
+set(ENABLE_CGNS_MODULE CACHE BOOL FORCE "Enable CGNS ThirdParty Module" OFF)
 
 #--------------------------------------------------------------------
 # Add subdirectories
@@ -30,10 +31,8 @@ add_subdirectory(iGameCore)
 #导入Qt模块
 add_subdirectory(Qt)
 
-#   由于Windows不会搜索其他目录下的dll文件因此要使用cmake指令将dll移至exe目录
+##   由于Windows不会搜索其他目录下的dll文件因此要使用cmake指令将dll移至exe目录
 if (WIN32)
     add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-            COMMAND ${DEPLOYQT_EXECUTABLE} "$<TARGET_FILE:${PROJECT_NAME}>"
-    )
-
+            COMMAND ${DEPLOYQT_EXECUTABLE} "$<TARGET_FILE:${PROJECT_NAME}>")
 endif ()

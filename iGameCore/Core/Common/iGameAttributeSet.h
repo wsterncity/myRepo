@@ -20,6 +20,19 @@ public:
         bool isDeleted{ false };
 
         std::pair<float, float> dataRange {0.f, 0.f};
+
+        static Attribute None() {
+            Attribute att;
+            att.pointer = nullptr;
+            att.type = IG_NONE;
+            att.attachmentType = IG_NONE;
+            att.isDeleted = false;
+            return att;
+        }
+
+        bool isNone() const {
+            return pointer == nullptr || type == IG_NONE || attachmentType == IG_NONE || isDeleted == true;
+        }
     };
 
     // Add a scalar attribute to array back.
@@ -34,11 +47,15 @@ public:
     const Attribute& GetScalar() const;
     Attribute& GetScalar(const IGsize i);
     const Attribute& GetScalar(const IGsize i) const;
+    Attribute& GetScalar(const std::string& name);
+    const Attribute& GetScalar(const std::string& name) const;
 
     Attribute& GetVector();
     const Attribute& GetVector() const;
     Attribute& GetVector(const IGsize i);
     const Attribute& GetVector(const IGsize i) const;
+    Attribute& GetVector(const std::string& name);
+    const Attribute& GetVector(const std::string& name) const;
 
     // Add a attribute to array back.
     // @param type: The type of attribute
@@ -53,6 +70,10 @@ public:
     // Get a attribute by index and type
     Attribute& GetAttribute(const IGsize index, IGenum type);
     const Attribute& GetAttribute(const IGsize index, IGenum type) const;
+
+    // Get a attribute by name and type
+    Attribute& GetAttribute(const std::string& name, IGenum type);
+    const Attribute& GetAttribute(const std::string& name, IGenum type) const;
 
     // Get pointer of a attribute by type,attachmentType and name.
     ArrayObject* GetArrayPointer(IGenum type, IGenum attachmentType,

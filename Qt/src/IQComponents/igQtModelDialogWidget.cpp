@@ -42,7 +42,7 @@ igQtModelDialogWidget::igQtModelDialogWidget(QWidget* parent)
 //    QtVariantEditorFactory* editFactory = new QtVariantEditorFactory(propertyTreeWidget);
 //    propertyTreeWidget->setFactoryForManager(varManager, editFactory);
 //
-//    QtProperty* groupItem1 = varManager->addProperty(QtVariantPropertyManager::groupTypeId(), QString("åˆ†ç»„1"));
+//    QtProperty* groupItem1 = varManager->addProperty(QtVariantPropertyManager::groupTypeId(), QString("·Ö×é1"));
 //
 //    QtVariantProperty* item = varManager->addProperty(QVariant::Int, QString("Int: "));
 //    item->setValue(100);
@@ -67,16 +67,16 @@ igQtModelDialogWidget::igQtModelDialogWidget(QWidget* parent)
 //    auto* enumFactory = new QtEnumEditorFactory();
 //    auto* enumManager = new QtEnumPropertyManager();
 //    propertyTreeWidget->setFactoryForManager(enumManager,enumFactory);
-//// åˆå§‹åŒ–ï¼Œé€šè¿‡enumManageræ¥åˆå§‹åŒ–ï¼Œç»™å®ƒä¸€ä¸ªåå­—â€œCOLORâ€
+//// ³õÊ¼»¯£¬Í¨¹ıenumManagerÀ´³õÊ¼»¯£¬¸øËüÒ»¸öÃû×Ö¡°COLOR¡±
 //    QtProperty *colorType =  enumManager->addProperty("COLOR");
-////è¿™é‡Œæ˜¯å°†æšä¸¾ç±»å‹è£…åœ¨ä¸€ä¸ªQStringListé‡Œ
+////ÕâÀïÊÇ½«Ã¶¾ÙÀàĞÍ×°ÔÚÒ»¸öQStringListÀï
 //    QStringList colors;
 //    colors<<"Red"<<"Green"<<"Blue";
-////æšä¸¾ç®¡ç†å™¨æ·»åŠ æšä¸¾å€¼
+////Ã¶¾Ù¹ÜÀíÆ÷Ìí¼ÓÃ¶¾ÙÖµ
 //    enumManager->setEnumNames(colorType,colors);
-////æ·»åŠ é»˜è®¤å€¼ï¼Œå¦‚æœä¸å†™ï¼Œè‡ªåŠ¨é€‰æ‹©0ä½çš„å€¼
+////Ìí¼ÓÄ¬ÈÏÖµ£¬Èç¹û²»Ğ´£¬×Ô¶¯Ñ¡Ôñ0Î»µÄÖµ
 //    enumManager->setValue(colorType,1);
-////å°†è¿™ä¸€æ¡å€¼åŠ åˆ°browserä¹‹ä¸­
+////½«ÕâÒ»ÌõÖµ¼Óµ½browserÖ®ÖĞ
 //    propertyTreeWidget->addProperty(colorType);
 }
 #include "Sources/iGameLineTypePointsSource.h"
@@ -88,12 +88,12 @@ void igQtModelDialogWidget::UpdateCurrentModel(Model::Pointer model) {
     QtVariantPropertyManager* varManager = new QtVariantPropertyManager(propertyTreeWidget);
     QtVariantEditorFactory* editFactory = new QtVariantEditorFactory(propertyTreeWidget);
     propertyTreeWidget->setFactoryForManager(varManager, editFactory);
-    QtProperty* properties_groupItem = varManager->addProperty(QtVariantPropertyManager::groupTypeId(), QString("å±æ€§"));
+    QtProperty* properties_groupItem = varManager->addProperty(QtVariantPropertyManager::groupTypeId(), QString("ÊôĞÔ"));
     auto metadata = model->GetDataObject()->GetMetadata();
     for(auto& [propName, propValue] : metadata->entries()){
         QtVariantProperty* item = nullptr;
         std::visit([&](auto && arg){
-            using T = std::decay_t<decltype(arg)>;  // è·å–å®é™…å­˜å‚¨çš„ç±»å‹
+            using T = std::decay_t<decltype(arg)>;  // »ñÈ¡Êµ¼Ê´æ´¢µÄÀàĞÍ
             if constexpr (std::is_same_v<T, int>) {
 
                 item = varManager->addProperty(QVariant::Int, QString(propName.c_str()));
@@ -124,7 +124,7 @@ void igQtModelDialogWidget::UpdateCurrentModel(Model::Pointer model) {
 }
 
 int igQtModelDialogWidget::addDataObjectToModelTree(DataObject::Pointer obj, ItemSource source) {
-	// åˆ›å»ºä¸€ä¸ªé¡¹ç›®
+	// ´´½¨Ò»¸öÏîÄ¿
 	ModelTreeWidgetItem* item = new ModelTreeWidgetItem(modelTreeWidget);
 	auto scene = iGame::SceneManager::Instance()->GetCurrentScene();
 	auto model = scene->CreateModel(obj);

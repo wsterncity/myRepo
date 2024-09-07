@@ -1,28 +1,27 @@
-#ifndef iGameFace_h
-#define iGameFace_h
+#ifndef iGameQuadraticFace_h
+#define iGameQuadraticFace_h
 
-#include "iGameCell.h"
-#include "iGameLine.h"
+#include "iGameQuadraticLine.h"
 
 IGAME_NAMESPACE_BEGIN
-class Face : public Cell {
+class QuadraticFace : public Cell {
 public:
-	I_OBJECT(Face);
+	I_OBJECT(QuadraticFace);
 
 	int GetNumberOfFaces() override { return 0; }
-    Cell* GetEdge(const int edgeId) override 
+	Cell* GetEdge(const int edgeId) override
 	{
 		int edgeIdPlus = (edgeId + 1) % this->GetNumberOfEdges();
-
+		int edgeIdCenter = (edgeId + this->GetNumberOfEdges()) % this->GetNumberOfEdges();
 		m_Line->PointIds->SetId(0, this->PointIds->GetId(edgeId));
 		m_Line->PointIds->SetId(1, this->PointIds->GetId(edgeIdPlus));
-
+		m_Line->PointIds->SetId(2, this->PointIds->GetId(edgeIdCenter));
 		m_Line->Points->SetPoint(0, this->Points->GetPoint(edgeId));
 		m_Line->Points->SetPoint(1, this->Points->GetPoint(edgeIdPlus));
-
+		m_Line->Points->SetPoint(2, this->Points->GetPoint(edgeIdCenter));
 		return m_Line;
 	}
-    Cell* GetFace(const int) override { return nullptr; }
+	Cell* GetFace(const int) override { return nullptr; }
 
 	virtual Vector3f GetNormal() = 0;
 
@@ -31,14 +30,14 @@ public:
 	IdArray::Pointer EdgeIds{};
 
 protected:
-	Face()
+	QuadraticFace()
 	{
-		m_Line = Line::New();
+		m_Line = QuadraticLine::New();
 		EdgeIds = IdArray::New();
 	}
-	~Face() override = default;
+	~QuadraticFace() override = default;
 
-	Line::Pointer m_Line;
+	QuadraticLine::Pointer m_Line;
 };
 IGAME_NAMESPACE_END
 #endif
