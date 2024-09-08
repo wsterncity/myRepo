@@ -1130,6 +1130,7 @@ int iGameModelGeometryFilter::ExecuteWithUnstructuredGrid(
 	for (int i = 0; i < Grid->GetNumberOfCells(); i++) {
 		if (Cell::GetCellDimension(Grid->GetCellType(i)) == 3) {
 			is3D = true;
+			break;
 		}
 	}
 	if (is3D == false)return 0;
@@ -1263,7 +1264,7 @@ struct ExtractSG : public ExtractCellBoundaries {
 		faceNum *= 2;
 		if (faceNum > 0) {
 			quads->SetNumberOfCells(faceNum);
-			quads->Resize(faceNum * 4);
+			quads->Reserve(faceNum * 4);
 			Quads = quads->GetCellIdArray()->RawPointer();
 			f2c.resize(faceNum);
 		}

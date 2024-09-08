@@ -17,7 +17,9 @@ void CellArray::Reserve(const IGsize _Newsize) { m_Buffer->Reserve(_Newsize); }
 // Allocate memory, and the old memory is preserved. The array
 // size will change. '_Newsize'is the size of the array, is
 // not the number of cells.
-void CellArray::Resize(const IGsize _Newsize) { m_Buffer->Resize(_Newsize); }
+void CellArray::Resize(const IGsize _Newsize) {
+    m_Buffer->Resize(_Newsize);
+}
 
 // Reset the array size, and the old memory will not change.
 void CellArray::Reset() {
@@ -35,6 +37,7 @@ void CellArray::Squeeze() {
 // '_Newsize' is the number of cells
 void CellArray::SetNumberOfCells(const IGsize _Newsize) {
     m_NumberOfCells = _Newsize;
+    m_DeleteMasker->Resize(_Newsize);
 }
 
 // Get the number of cells
