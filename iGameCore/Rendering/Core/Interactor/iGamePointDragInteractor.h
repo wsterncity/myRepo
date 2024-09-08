@@ -9,8 +9,8 @@
 #pragma once
 
 #include "iGameInteractor.h"
-#include "iGamePointSet.h"
 #include "iGamePointPicker.h"
+#include "iGamePointSet.h"
 
 IGAME_NAMESPACE_BEGIN
 class PointDragInteractor : public Interactor {
@@ -38,13 +38,10 @@ public:
 
     void MouseMoveEvent(int posX, int posY) override {
         igm::vec2 pos = {float(posX), (float) posY};
-        m_Width = m_Camera->GetViewPort().x;
-        m_Height = m_Camera->GetViewPort().y;
-        m_DevicePixelRatio = m_Camera->GetDevicePixelRatio();
 
         // ��Ļ����
-        float width = (float) m_Width / m_DevicePixelRatio;
-        float height = (float) m_Height / m_DevicePixelRatio;
+        auto width = (float) m_Camera->GetViewPort().x;
+        auto height = (float) m_Camera->GetViewPort().y;
 
         // ����Ļ����תΪNDC����[-1,1]
         float x = 2.0f * pos.x / width - 1.0f;
@@ -56,7 +53,7 @@ public:
         auto mvp_invert = mvp.invert();
         if (m_MouseMode == NoButton) {
             // NDC����תΪ�ü�����
-            igm::vec4 point(x, y, 1, 1); 
+            igm::vec4 point(x, y, 1, 1);
             igm::vec4 pointEnd(x, y, 0.001, 1);
 
             // �ü�����תΪ��������
@@ -105,8 +102,6 @@ protected:
     igIndex Selected_Point_Index{-1};
 
     float Selected_NDC_Z{0};
-    int m_Width{}, m_Height{};
-    int m_DevicePixelRatio{};
 };
 
 IGAME_NAMESPACE_END

@@ -20,12 +20,8 @@ public:
         igm::vec2 pos = {float(posX), (float) posY};
         if (m_Points == nullptr || m_Model == nullptr) { return; }
 
-        m_Width = m_Camera->GetViewPort().x;
-        m_Height = m_Camera->GetViewPort().y;
-        m_DevicePixelRatio = m_Camera->GetDevicePixelRatio();
-
-        float width = (float) m_Width / m_DevicePixelRatio;
-        float height = (float) m_Height / m_DevicePixelRatio;
+        auto width = (float) m_Camera->GetViewPort().x;
+        auto height = (float) m_Camera->GetViewPort().y;
 
         // NDC coordinate [-1,1]
         float x = 2.0f * pos.x / width - 1.0f;
@@ -70,9 +66,6 @@ protected:
 
     PointSet* m_Points{nullptr};
     Model* m_Model{nullptr};
-
-    int m_Width{}, m_Height{};
-    int m_DevicePixelRatio{};
 };
 IGAME_NAMESPACE_END
 #endif // OPENIGAME_INTERACTOR_H

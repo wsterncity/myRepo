@@ -1,6 +1,7 @@
 # OpeniGame developer version
 
 ## Requirements
+
 - QT 5.14.2
 
 ## Install
@@ -11,9 +12,7 @@ git clone https://github.com/mky8812/OpeniGame_main.git
 
 ## Build
 
-To Build this Project, you need to check if you have Configured Qt5 Cmake Path in your `environment variables`. 
-
-
+To Build this Project, you need to check if you have Configured Qt5 Cmake Path in your `environment variables`.
 
 If `NOT`, you have to edit `Qt `module's CMakeLists.txt. Replace the Qt5 cmake path with the Qt path on your computer.
 
@@ -36,8 +35,6 @@ cmake --build . --target clean
 
 Then you can open the Project correctly. Enjoy it !
 
-
-
 ps. Use Cmake to Build in Command
 
 ```shell
@@ -46,7 +43,7 @@ cmake --build build --parallel 12
 cmake -build build --target install
 ```
 
-use qt-cmake to build  project(Only available in qt6 version)
+use qt-cmake to build project(Only available in qt6 version)
 
 ```shell
 cd build
@@ -56,6 +53,7 @@ cmake --build . --parallel 8
 ```
 
 Compile OpeniGame on Web by using Wasm(Temporarily not applicable)
+
 ```shell
 cd build/wasm
 source ~/projects/packages/emsdk/emsdk_env.sh
