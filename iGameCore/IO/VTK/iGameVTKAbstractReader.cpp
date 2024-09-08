@@ -1198,7 +1198,7 @@ bool VTKAbstractReader::ReadStructuredGrid()
 			return false;
 		}
 	}
-	if (m_StructuredMesh->GetPoints() == nullptr|| m_StructuredMesh->GetPoints()->GetNumberOfPoints()==0) {
+	if (m_StructuredMesh->GetPoints() == nullptr || m_StructuredMesh->GetPoints()->GetNumberOfPoints() == 0) {
 		igIndex i, j, k;
 		Point p;
 		Points::Pointer points = Points::New();
@@ -1385,18 +1385,15 @@ const void VTKAbstractReader::TransferVtkCellToiGameCell(ArrayObject::Pointer Ce
 	this->UpdateReadProgress();
 }
 
-void VTKAbstractReader::TransferVtkCellToiGameCell(DataCollection& m_Data, ArrayObject::Pointer CellsID,
-	ArrayObject::Pointer CellsConnect, ArrayObject::Pointer VtkCellsType) {
-
-
-	CellArray::Pointer Lines = m_Data.GetLines();
-	CellArray::Pointer Faces = m_Data.GetFaces();
-	CellArray::Pointer Volumes = m_Data.GetVolumes();
-
+void VTKAbstractReader::TransferVtkCellToiGameCell(UnstructuredMesh::Pointer& mesh, ArrayObject::Pointer CellsID, ArrayObject::Pointer CellsConnect, ArrayObject::Pointer VtkCellsType)
+{
+	if (mesh == nullptr) {
+		mesh = UnstructuredMesh::New();
+	}
 	int CellNum = VtkCellsType->GetNumberOfElements();
 	int index = 0;
 	int size = 0;
-	int vhs[64];
+	int vhs[IGAME_CELL_MAX_SIZE];
 	int st, ed;
 	for (int i = 0; i < CellNum; i++) {
 		st = static_cast<int>(CellsID->GetValue(i));
@@ -1415,44 +1412,38 @@ void VTKAbstractReader::TransferVtkCellToiGameCell(DataCollection& m_Data, Array
 		case iGame::VTKAbstractReader::POLYVERTEX:
 			break;
 		case iGame::VTKAbstractReader::LINE:
-			assert(size == 2);
-			Lines->AddCellId2(vhs[0], vhs[1]);
+			mesh->AddCell(vhs, size, IG_LINE);
 			break;
 		case iGame::VTKAbstractReader::POLYLINE:
-			for (int k = 0; k < size; k++) {
-				Lines->AddCellId2(vhs[k], vhs[(k + 1) % size]);
-			}
+			mesh->AddCell(vhs, size, IG_POLY_LINE);
 			break;
 		case iGame::VTKAbstractReader::TRIANGLE:
-			assert(size == 3);
-			Faces->AddCellIds(vhs, size);
+			mesh->AddCell(vhs, size, IG_TRIANGLE);
 			break;
 		case iGame::VTKAbstractReader::TRIANGLESTRIP:
 			break;
 		case iGame::VTKAbstractReader::POLYGON:
-			Faces->AddCellIds(vhs, size);
+			mesh->AddCell(vhs, size, IG_POLYGON);
 			break;
 		case iGame::VTKAbstractReader::PIXEL:
+			mesh->AddCell(vhs, size, IG_QUAD);
 			break;
 		case iGame::VTKAbstractReader::QUAD:
-			assert(size == 4);
-			Faces->AddCellIds(vhs, size);
+			mesh->AddCell(vhs, size, IG_QUAD);
 			break;
 		case iGame::VTKAbstractReader::TETRA:
-			assert(size == 4);
-			Volumes->AddCellIds(vhs, size);
+			mesh->AddCell(vhs, size, IG_TETRA);
 			break;
 		case iGame::VTKAbstractReader::VOXEL:
 			break;
 		case iGame::VTKAbstractReader::HEXAHEDRON:
-			assert(size == 8);
-			Volumes->AddCellIds(vhs, size);
+			mesh->AddCell(vhs, size, IG_HEXAHEDRON);
 			break;
 		case iGame::VTKAbstractReader::WEDGE:
-			Volumes->AddCellIds(vhs, size);
+			mesh->AddCell(vhs, size, IG_PRISM);
 			break;
 		case iGame::VTKAbstractReader::PYRAMID:
-			Volumes->AddCellIds(vhs, size);
+			mesh->AddCell(vhs, size, IG_PYRAMID);
 			break;
 		case iGame::VTKAbstractReader::PENTAGONAL_PRISM:
 			break;
@@ -1467,29 +1458,25 @@ void VTKAbstractReader::TransferVtkCellToiGameCell(DataCollection& m_Data, Array
 		case iGame::VTKAbstractReader::T20:
 			break;
 		case iGame::VTKAbstractReader::QUADRATIC_EDGE:
+			mesh->AddCell(vhs, size, IG_QUADRATIC_EDGE);
 			break;
 		case iGame::VTKAbstractReader::QUADRATIC_TRIANGLE:
+			mesh->AddCell(vhs, size, IG_QUADRATIC_TRIANGLE);
 			break;
 		case iGame::VTKAbstractReader::QUADRATIC_QUAD:
+			mesh->AddCell(vhs, size, IG_QUADRATIC_QUAD);
 			break;
 		case iGame::VTKAbstractReader::QUADRATIC_TETRA:
-		{
-			igIndex tmp[16][3] = { {0,6,4},{6,2,5},{5,1,4},{6,5,4},
-								   {0,4,7},{4,1,8},{7,8,3},{7,4,8},
-								   {1,5,8},{5,2,9},{8,9,3},{8,5,9},
-								   {0,7,6},{3,9,7},{9,6,7},{2,6,9}
-			};
-			for (int i = 0; i < 16; i++) {
-				igIndex tmpvhs[3] = { vhs[tmp[i][0]] ,vhs[tmp[i][1]] ,vhs[tmp[i][2]] };
-				Faces->AddCellIds(tmpvhs, 3);
-			}
-		}
-		break;
+			mesh->AddCell(vhs, size, IG_QUADRATIC_TETRA);
+			break;
 		case iGame::VTKAbstractReader::QUADRATIC_HEXAHEDRON:
+			mesh->AddCell(vhs, size, IG_QUADRATIC_HEXAHEDRON);
 			break;
 		case iGame::VTKAbstractReader::QUADRATIC_WEDGE:
+			mesh->AddCell(vhs, size, IG_QUADRATIC_PRISM);
 			break;
 		case iGame::VTKAbstractReader::QUADRATIC_PYRAMID:
+			mesh->AddCell(vhs, size, IG_QUADRATIC_PYRAMID);
 			break;
 		case iGame::VTKAbstractReader::BIQUADRATIC_QUAD:
 			break;
@@ -1513,17 +1500,7 @@ void VTKAbstractReader::TransferVtkCellToiGameCell(DataCollection& m_Data, Array
 			break;
 		case iGame::VTKAbstractReader::POLYHEDRON://42
 		{
-			igIndex index = 0;
-			igIndex realvhs[256];
-			igIndex realsize = 0;
-			while (index < size)
-			{
-				realsize = vhs[index++];
-				for (igIndex id = 0; id < realsize; id++) {
-					realvhs[id] = vhs[index++];
-				}
-				Faces->AddCellIds(realvhs, realsize);
-			}
+			mesh->AddCell(vhs, size, IG_POLYHEDRON);
 		}
 		break;
 		default:
@@ -1531,6 +1508,7 @@ void VTKAbstractReader::TransferVtkCellToiGameCell(DataCollection& m_Data, Array
 		}
 	}
 }
+
 
 
 

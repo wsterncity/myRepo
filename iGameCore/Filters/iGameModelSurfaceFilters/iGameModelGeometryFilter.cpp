@@ -575,7 +575,7 @@ void ExtractCellGeometry(UnstructuredMesh::Pointer input, igIndex cellId, int ce
 		break;
 
 	case IG_PRISM:
-		for (FaceId = 0; FaceId < 6; FaceId++) {
+		for (FaceId = 0; FaceId < 5; FaceId++) {
 			FaceVerts = Prism::faces[FaceId];
 			ptIds[0] = pts[FaceVerts[0]];
 			ptIds[1] = pts[FaceVerts[1]];
@@ -698,7 +698,63 @@ void ExtractCellGeometry(UnstructuredMesh::Pointer input, igIndex cellId, int ce
 	}
 
 					  break;
-
+	case IG_QUADRATIC_EDGE:
+		break;
+	case IG_QUADRATIC_TRIANGLE:
+	case IG_QUADRATIC_QUAD:
+	case IG_QUADRATIC_POLYGON:
+		break;
+	case IG_QUADRATIC_TETRA:
+		for (FaceId = 0; FaceId < 4; FaceId++) {
+			FaceVerts = QuadraticTetra::faces[FaceId];
+			ptIds[0] = pts[FaceVerts[0]];
+			ptIds[1] = pts[FaceVerts[1]];
+			ptIds[2] = pts[FaceVerts[2]];
+			GFaceMap->Insert(GTriangle(cellId, ptIds, isGhost), GFacePool);
+		}
+		break;
+	case IG_QUADRATIC_HEXAHEDRON:
+		for (FaceId = 0; FaceId < 6; FaceId++) {
+			FaceVerts = QuadraticHexahedron::faces[FaceId];
+			ptIds[0] = pts[FaceVerts[0]];
+			ptIds[1] = pts[FaceVerts[1]];
+			ptIds[2] = pts[FaceVerts[2]];
+			ptIds[3] = pts[FaceVerts[3]];
+			GFaceMap->Insert(GQuad(cellId, ptIds, isGhost), GFacePool);
+		}
+		break;
+	case IG_QUADRATIC_PRISM:
+		for (FaceId = 0; FaceId < 5; FaceId++) {
+			FaceVerts = QuadraticPrism::faces[FaceId];
+			ptIds[0] = pts[FaceVerts[0]];
+			ptIds[1] = pts[FaceVerts[1]];
+			ptIds[2] = pts[FaceVerts[2]];
+			if (FaceVerts[6] < 0) {
+				GFaceMap->Insert(GTriangle(cellId, ptIds, isGhost),
+					GFacePool);
+			}
+			else {
+				ptIds[3] = pts[FaceVerts[3]];
+				GFaceMap->Insert(GQuad(cellId, ptIds, isGhost), GFacePool);
+			}
+		}
+		break;
+	case IG_QUADRATIC_PYRAMID:
+		for (FaceId = 0; FaceId < 5; FaceId++) {
+			FaceVerts = QuadraticPyramid::faces[FaceId];
+			ptIds[0] = pts[FaceVerts[0]];
+			ptIds[1] = pts[FaceVerts[1]];
+			ptIds[2] = pts[FaceVerts[2]];
+			if (FaceVerts[6] < 0) {
+				GFaceMap->Insert(GTriangle(cellId, ptIds, isGhost),
+					GFacePool);
+			}
+			else {
+				ptIds[3] = pts[FaceVerts[3]];
+				GFaceMap->Insert(GQuad(cellId, ptIds, isGhost), GFacePool);
+			}
+		}
+		break;
 	default:
 		//一般为多面体，需要通过cell找到面片
 		Cell* cell = input->GetCell(cellId);
@@ -942,7 +998,7 @@ struct ExtractVM : public ExtractCellBoundaries {
 				}
 				// If the cell is visible process it
 				if (!this->CellVis || this->CellVis[cellId]) {
-					npts=this->Grid->GetVolumePointIds(cellId, pts);
+					npts = this->Grid->GetVolumePointIds(cellId, pts);
 					ExtractCellGeometry(this->Grid, cellId, npts, pts,
 						GFacePool, GFaceMap, isGhost);
 				}
@@ -1129,7 +1185,7 @@ int iGameModelGeometryFilter::ExecuteWithUnstructuredGrid(
 		<< Grid->GetNumberOfCells() << " cells.");
 	bool is3D = false;
 	for (int i = 0; i < Grid->GetNumberOfCells(); i++) {
-		if (Cell::GetCellDimension(Grid->GetCellType(i)) == 3) {
+		if (Cell::GetCellDimension(Grid->GetCellType(i)) >= 3) {
 			is3D = true;
 			break;
 		}
