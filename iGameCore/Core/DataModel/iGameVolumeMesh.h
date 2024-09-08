@@ -257,6 +257,7 @@ private:
 
     ArrayObject::Pointer m_ViewAttribute{};
     int m_ViewDemension{};
+    SurfaceMesh::Pointer m_DrawMesh{ nullptr };
 };
 IGAME_NAMESPACE_END
 #endif

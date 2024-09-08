@@ -5,6 +5,7 @@
 #include "iGameHexahedron.h"
 #include "iGameCellArray.h"
 #include "iGameAttributeSet.h"
+#include "iGameSurfaceMesh.h"
 #include "iGamePointSet.h"
 IGAME_NAMESPACE_BEGIN
 class StructuredMesh : public PointSet {
@@ -29,7 +30,10 @@ public:
 	unsigned int GetNumberOfQuads() { return this->Quads == nullptr ? 0 : this->Quads->GetNumberOfCells(); }
 	unsigned int GetNumberOfFaces() { return this->Quads == nullptr ? 0 : this->Quads->GetNumberOfCells(); }
 	unsigned int GetNumberOfHexahedrons() { return this->Hexahedrons == nullptr ? 0 : this->Hexahedrons->GetNumberOfCells(); }
-	unsigned int GetNumberOfCells() { return this->Hexahedrons == nullptr ? 0 : this->Hexahedrons->GetNumberOfCells(); }
+	unsigned int GetNumberOfCells() {
+		if (size[2] > 1) return GetNumberOfHexahedrons();
+		else return GetNumberOfFaces();
+	}
 
 
 
@@ -50,6 +54,66 @@ public:
 		if (!this->m_Points)this->m_Points = Points::New();
 		this->m_Points->AddPoint(p);
 	}
+	void BuildFaces() {
+		igIndex i = 0, j = 0, k = 0;
+		igIndex vhs[4] = { 0 };
+		igIndex st = 0;
+		igIndex tmpvhs[4] = {
+	0,1,1 + size[0] * size[1],size[0] * size[1]
+		};
+		this->Quads->Resize(size[2] * (size[1] - 1) * (size[0] - 1) +
+			size[0] * (size[1] - 1) * (size[2] - 1) +
+			size[1] * (size[2] - 1) * (size[0] - 1));
+		// ij面的定义
+		tmpvhs[1] = 1;
+		tmpvhs[2] = 1 + size[0];
+		tmpvhs[3] = size[0];
+		for (k = 0; k < size[2]; ++k) {
+			for (j = 0; j < size[1] - 1; ++j) {
+				st = j * size[0] + k * size[0] * size[1];
+				for (i = 0; i < size[0] - 1; ++i) {
+					for (int it = 0; it < 4; it++) {
+						vhs[it] = st + tmpvhs[it];
+					}
+					st++;
+					Quads->AddCellIds(vhs, 4);
+				}
+			}
+		}
+		// ik方向面的定义
+		tmpvhs[1] = 1;
+		tmpvhs[2] = 1 + size[0] * size[1];
+		tmpvhs[3] = size[0] * size[1];
+		for (j = 0; j < size[1]; j++) {
+			for (k = 0; k < size[2] - 1; k++) {
+				st = j * size[0] + k * size[0] * size[1];
+				for (i = 0; i < size[0] - 1; i++) {
+					for (int it = 0; it < 4; it++) {
+						vhs[it] = st + tmpvhs[it];
+					}
+					st++;
+					Quads->AddCellIds(vhs, 4);
+				}
+			}
+		}
+
+		// jk方向面的定义
+		tmpvhs[1] = size[0];
+		tmpvhs[2] = size[0] + size[0] * size[1];
+		tmpvhs[3] = size[0] * size[1];
+		for (i = 0; i < size[0]; i++) {
+			for (k = 0; k < size[2] - 1; k++) {
+				st = i + k * size[0] * size[1];
+				for (j = 0; j < size[1] - 1; j++) {
+					for (int it = 0; it < 4; it++) {
+						vhs[it] = st + tmpvhs[it];
+					}
+					st += size[0];
+					Quads->AddCellIds(vhs, 4);
+				}
+			}
+		}
+	}
 	void GenStructuredCellConnectivities() {
 		if (size[2] <= 1) {
 			size[2] = 1;
@@ -66,7 +130,6 @@ public:
 				0,1,1 + size[0] * size[1],size[0] * size[1],
 				size[0],1 + size[0],1 + size[0] + size[0] * size[1],size[0] + size[0] * size[1]
 			};
-			std::cout << size[0] << ' ' << size[1] << ' ' << size[2] << '\n';
 			for (k = 0; k < size[2] - 1; ++k) {
 				for (j = 0; j < size[1] - 1; ++j) {
 					st = j * size[0] + k * size[0] * size[1];
@@ -79,58 +142,7 @@ public:
 					}
 				}
 			}
-			this->Quads->Resize(size[2] * (size[1] - 1) * (size[0] - 1) +
-				size[0] * (size[1] - 1) * (size[2] - 1) +
-				size[1] * (size[2] - 1) * (size[0] - 1));
-			// ij面的定义
-			tmpvhs[1] = 1;
-			tmpvhs[2] = 1 + size[0];
-			tmpvhs[3] = size[0];
-			for (k = 0; k < size[2]; ++k) {
-				for (j = 0; j < size[1] - 1; ++j) {
-					st = j * size[0] + k * size[0] * size[1];
-					for (i = 0; i < size[0] - 1; ++i) {
-						for (int it = 0; it < 4; it++) {
-							vhs[it] = st + tmpvhs[it];
-						}
-						st++;
-						Quads->AddCellIds(vhs, 4);
-					}
-				}
-			}
-			// ik方向面的定义
-			tmpvhs[1] = 1;
-			tmpvhs[2] = 1 + size[0] * size[1];
-			tmpvhs[3] = size[0] * size[1];
-			for (j = 0; j < size[1]; j++) {
-				for (k = 0; k < size[2] - 1; k++) {
-					st = j * size[0] + k * size[0] * size[1];
-					for (i = 0; i < size[0] - 1; i++) {
-						for (int it = 0; it < 4; it++) {
-							vhs[it] = st + tmpvhs[it];
-						}
-						st++;
-						Quads->AddCellIds(vhs, 4);
-					}
-				}
-			}
 
-			// jk方向面的定义
-			tmpvhs[1] = size[0];
-			tmpvhs[2] = size[0] + size[0] * size[1];
-			tmpvhs[3] = size[0] * size[1];
-			for (i = 0; i < size[0]; i++) {
-				for (k = 0; k < size[2] - 1; k++) {
-					st = i + k * size[0] * size[1];
-					for (j = 0; j < size[1] - 1; j++) {
-						for (int it = 0; it < 4; it++) {
-							vhs[it] = st + tmpvhs[it];
-						}
-						st += size[0];
-						Quads->AddCellIds(vhs, 4);
-					}
-				}
-			}
 		}
 		else {
 			this->Quads->Resize((size[0] - 1) * (size[1] - 1));
@@ -147,7 +159,7 @@ public:
 			}
 		}
 	}
-	igIndex GetPointIndex(igIndex i, igIndex j, igIndex k) {
+	igIndex GetStructuredIndex(igIndex i, igIndex j, igIndex k) {
 		return i + j * size[0] + k * size[0] * size[1];
 	}
 
@@ -166,7 +178,7 @@ public:
 	void Draw(Scene*) override;
 	void ConvertToDrawableData() override;
 	bool IsDrawable() override { return true; }
-
+	void ViewCloudPicture(Scene* scene, int index, int demension = -1) override;
 
 private:
 	GLVertexArray m_PointVAO, m_LineVAO, m_TriangleVAO;
@@ -191,6 +203,7 @@ private:
 
 	ArrayObject::Pointer m_ViewAttribute{};
 	int m_ViewDemension{};
+	SurfaceMesh::Pointer m_DrawMesh{ nullptr };
 };
 
 inline StructuredMesh::~StructuredMesh()

@@ -1,5 +1,5 @@
 #include "iGameUnstructuredMesh.h"
-
+#include "iGameModelSurfaceFilters/iGameModelGeometryFilter.h"
 IGAME_NAMESPACE_BEGIN
 void UnstructuredMesh::SetCells(CellArray::Pointer cell,
 	UnsignedIntArray::Pointer type) {
@@ -163,7 +163,10 @@ Cell* UnstructuredMesh::GetTypedCell(const IGsize cellId) {
 
 void UnstructuredMesh::Draw(Scene* scene) {
 	if (!m_Visibility) { return; }
-
+	if (m_DrawMesh) {
+		m_DrawMesh->SetViewStyle(m_ViewStyle);
+		return m_DrawMesh->Draw(scene);
+	}
 	// Update uniform buffer
 	if (m_UseColor) {
 		scene->UBO().useColor = true;
@@ -240,6 +243,17 @@ void UnstructuredMesh::Draw(Scene* scene) {
 }
 void UnstructuredMesh::ConvertToDrawableData() {
 	if (m_Positions && m_Positions->GetMTime() > this->GetMTime()) { return; }
+	if (m_DrawMesh == nullptr || m_DrawMesh->GetMTime() < this->GetMTime()) {
+		iGameModelGeometryFilter::Pointer extract = iGameModelGeometryFilter::New();
+		m_DrawMesh = SurfaceMesh::New();
+		if (!extract->Execute(this, m_DrawMesh)) {
+			m_DrawMesh = nullptr;
+		}
+		m_DrawMesh->Modified();
+	}
+	if (m_DrawMesh) {
+		return m_DrawMesh->ConvertToDrawableData();
+	}
 
 	this->Create();
 
@@ -412,6 +426,9 @@ void UnstructuredMesh::ConvertToDrawableData() {
 
 void UnstructuredMesh::ViewCloudPicture(Scene* scene, int index, int demension)
 {
+	if (m_DrawMesh) {
+		return m_DrawMesh->ViewCloudPicture(scene, index, demension);
+	}
 	if (index == -1) {
 		m_UseColor = false;
 		m_ViewAttribute = nullptr;

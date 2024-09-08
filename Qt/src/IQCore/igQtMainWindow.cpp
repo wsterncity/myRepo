@@ -343,12 +343,14 @@ void igQtMainWindow::initAllFilters() {
     dialog->setApplyFunctor([&]() { std::cout << "123\n"; });
   });
 
-  // connect(ui->action_test_05, &QAction::triggered, this, [&](bool checked) {
-  //	VolumeMeshFilterTest::Pointer fp = VolumeMeshFilterTest::New();
-  //	fp->SetInput(rendererWidget->GetScene()->GetCurrentObject());
-  //	fp->Execute();
-  //	rendererWidget->update();
-  //	});
+   //connect(ui->action_test_05, &QAction::triggered, this, [&](bool checked) {
+   //    VolumeMesh::Pointer mesh = DynamicCast<VolumeMesh>(
+   //        rendererWidget->GetScene()->GetCurrentModel()->GetDataObject());
+   //    for (int i = 0; i < 100; i++) {
+   //        mesh->DeleteVolume(i);
+   //    }
+
+  	//});
 
   connect(ui->action_test_06, &QAction::triggered, this, [&](bool checked) {
     //      LineSource::Pointer source = LineSource::New();
@@ -442,15 +444,23 @@ void igQtMainWindow::initAllFilters() {
     /*	auto filter = HexhedronSubdivision::New();
             VolumeMesh::Pointer mesh =
        DynamicCast<VolumeMesh>(rendererWidget->GetScene()->GetCurrentModel()->GetDataObject());*/
-    auto filter = QuadSubdivision::New();
-    SurfaceMesh::Pointer mesh = DynamicCast<SurfaceMesh>(
-        rendererWidget->GetScene()->GetCurrentModel()->GetDataObject());
-    filter->SetMesh(mesh);
-    filter->Execute();
-    auto ControlPoints = filter->GetOutput();
-    ControlPoints->SetName("ControlPoints");
+    //auto filter = QuadSubdivision::New();
+    //SurfaceMesh::Pointer mesh = DynamicCast<SurfaceMesh>(
+    //    rendererWidget->GetScene()->GetCurrentModel()->GetDataObject());
+    //filter->SetMesh(mesh);
+    //filter->Execute();
+    //auto ControlPoints = filter->GetOutput();
+    //ControlPoints->SetName("ControlPoints");
 
-    modelTreeWidget->addDataObjectToModelTree(ControlPoints, ItemSource::File);
+    //modelTreeWidget->addDataObjectToModelTree(ControlPoints, ItemSource::File);
+      VolumeMesh::Pointer mesh = DynamicCast<VolumeMesh>(
+          rendererWidget->GetScene()->GetCurrentModel()->GetDataObject());
+      mesh->RequestEditStatus();
+      for (int i = 0; i < 100; i++) {
+          mesh->DeleteVolume(i);
+      }
+      mesh->GarbageCollection();
+ 
   });
 
   auto action_loadtest = ui->menu_help->addAction("loadtest");

@@ -1,7 +1,7 @@
 #include "iGameVolumeMesh.h"
 #include "iGameScene.h"
 #include "iGameFaceTable.h"
-
+#include "iGameModelSurfaceFilters/iGameModelGeometryFilter.h"
 
 IGAME_NAMESPACE_BEGIN
 
@@ -631,7 +631,7 @@ IGsize VolumeMesh::AddVolume(igIndex* volumeIds, int size)
 		for (int j = 0; j < Tetra::NumberOfEdges; j++)
 		{
 			const igIndex* index;
-			int size = Tetra::EdgePointIds(j, index); 
+			int size = Tetra::EdgePointIds(j, index);
 			for (int k = 0; k < 2; k++) {
 				edge[k] = volumeIds[index[k]];
 			}
@@ -777,7 +777,7 @@ bool VolumeMesh::IsOnBoundaryPoint(const IGsize ptId)
 }
 bool VolumeMesh::IsOnBoundaryEdge(const IGsize edgeId)
 {
-	// 如果相邻体的数量比相邻面的数量少1，说明是在边界上
+	// 濡傛灉鐩搁偦浣撶殑鏁伴噺姣旂浉閭婚潰鐨勬暟閲忓皯1锛岃鏄庢槸鍦ㄨ竟鐣屼笂
 	int nNeiFaces = GetNumberOfLinks(edgeId, E2F);
 	int nNeiVolumes = GetNumberOfLinks(edgeId, E2V);
 	if (nNeiFaces == 0 || nNeiVolumes == 0) return true;
@@ -881,7 +881,10 @@ void VolumeMesh::Draw(Scene* scene)
 	{
 		return;
 	}
-
+	if (m_DrawMesh) {
+		m_DrawMesh->SetViewStyle(m_ViewStyle);
+		return m_DrawMesh->Draw(scene);
+	}
 	//update uniform buffer
 	if (m_UseColor) {
 		scene->UBO().useColor = true;
@@ -932,8 +935,8 @@ void VolumeMesh::Draw(Scene* scene)
 		glad_glDrawElements(GL_LINES, m_LineIndices->GetNumberOfIds(),
 			GL_UNSIGNED_INT, 0);
 
-//		glad_glDepthFunc(GL_GREATER);
-//		glad_glDepthRange(0, 1);
+		//		glad_glDepthFunc(GL_GREATER);
+		//		glad_glDepthRange(0, 1);
 
 		m_LineVAO.release();
 	}
@@ -974,6 +977,17 @@ void VolumeMesh::ConvertToDrawableData()
 {
 	if (m_Positions && m_Positions->GetMTime() > this->GetMTime()) {
 		return;
+	}
+	if (m_DrawMesh == nullptr || m_DrawMesh->GetMTime() < this->GetMTime()) {
+		iGameModelGeometryFilter::Pointer extract = iGameModelGeometryFilter::New();
+		m_DrawMesh = SurfaceMesh::New();
+		if (!extract->Execute(this, m_DrawMesh)) {
+			m_DrawMesh = nullptr;
+		}
+		m_DrawMesh->Modified();
+	}
+	if (m_DrawMesh) {
+		return m_DrawMesh->ConvertToDrawableData();
 	}
 
 	if (!m_Flag)
@@ -1068,6 +1082,9 @@ void VolumeMesh::ConvertToDrawableData()
 }
 
 void VolumeMesh::ViewCloudPicture(Scene* scene, int index, int demension) {
+	if (m_DrawMesh) {
+		return m_DrawMesh->ViewCloudPicture(scene, index, demension);
+	}
 	if (index == -1) {
 		m_UseColor = false;
 		m_ViewAttribute = nullptr;
@@ -1077,13 +1094,13 @@ void VolumeMesh::ViewCloudPicture(Scene* scene, int index, int demension) {
 		return;
 	}
 	scene->MakeCurrent();
-    auto& attr = this->GetAttributeSet()->GetAttribute(index);
-    if (!attr.isDeleted) {
-        if (attr.attachmentType == IG_POINT)
-            this->SetAttributeWithPointData(attr.pointer, demension, attr.dataRange);
-        else if (attr.attachmentType == IG_CELL)
-            this->SetAttributeWithCellData(attr.pointer, demension);
-    }
+	auto& attr = this->GetAttributeSet()->GetAttribute(index);
+	if (!attr.isDeleted) {
+		if (attr.attachmentType == IG_POINT)
+			this->SetAttributeWithPointData(attr.pointer, demension, attr.dataRange);
+		else if (attr.attachmentType == IG_CELL)
+			this->SetAttributeWithCellData(attr.pointer, demension);
+	}
 	scene->DoneCurrent();
 	scene->Update();
 }
@@ -1097,13 +1114,15 @@ void VolumeMesh::SetAttributeWithPointData(ArrayObject::Pointer attr,
 		m_ColorWithCell = false;
 		ScalarsToColors::Pointer mapper = ScalarsToColors::New();
 
-        if(range.first != range.second){
-            mapper->SetRange(range.first, range.second * 2);
-        } else if (i == -1) {
-            mapper->InitRange(attr);
-        } else {
-            mapper->InitRange(attr, i);
-        }
+		if (range.first != range.second) {
+			mapper->SetRange(range.first, range.second * 2);
+		}
+		else if (i == -1) {
+			mapper->InitRange(attr);
+		}
+		else {
+			mapper->InitRange(attr, i);
+		}
 
 		m_Colors = mapper->MapScalars(attr, i);
 		if (m_Colors == nullptr) { return; }

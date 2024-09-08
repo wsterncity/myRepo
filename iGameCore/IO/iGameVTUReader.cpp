@@ -20,6 +20,7 @@ bool iGame::iGameVTUReader::Parsing() {
     tinyxml2::XMLElement* elem;
     const char* data;
     const char* attribute;
+    const char* delimiters = " \n";
     char* token;
     /*
      *  used in binary encoded files, if true, the header presents a unsigned long long type number as the total byte num of the binary part.
@@ -50,19 +51,41 @@ bool iGame::iGameVTUReader::Parsing() {
         Points::Pointer dataSetPoints = m_Data.GetPoints();
         char* data_p = const_cast<char*>(data);
         while (*data_p == '\n' || *data_p == ' ' || *data_p == '\t') data_p ++;
-        if(strcmp(attribute, "ascii") == 0){
+//        if(strcmp(attribute, "ascii") == 0){
+//            float p[3] = { 0 };
+//            token = strtok(data_p, delimiters);
+//
+//            while (token != nullptr) {
+//                for(float & i : p) {
+//                    i = mAtof(token);
+//                    token = strtok(nullptr, delimiters);
+//                }
+//                dataSetPoints->AddPoint(p);
+//            }
+//        } else if(strcmp(attribute, "binary") == 0){
+//            ReadBase64EncodedPoints(data_p, dataSetPoints);
+//        }
+        const char* type = elem->Attribute("type");
+        if(strcmp(attribute, "binary") == 0){
+            if(!strncmp(type, "Float", 5)) {
+                //  Float32
+                if (!strncmp(type + 5, "32", 2)) {
+                    ReadBase64EncodedPoints<float>(data_p, dataSetPoints);
+                } else /*Float64*/{
+                    ReadBase64EncodedPoints<double>(data_p, dataSetPoints);
+                }
+            }
+        } else if(strcmp(attribute, "ascii") == 0){
             float p[3] = { 0 };
-            token = strtok(data_p, " ");
+            token = strtok(data_p, delimiters);
 
             while (token != nullptr) {
                 for(float & i : p) {
                     i = mAtof(token);
-                    token = strtok(nullptr, " ");
+                    token = strtok(nullptr, delimiters);
                 }
                 dataSetPoints->AddPoint(p);
             }
-        } else if(strcmp(attribute, "binary") == 0){
-            ReadBase64EncodedPoints(data_p, dataSetPoints);
         }
     }
 
@@ -101,13 +124,13 @@ bool iGame::iGameVTUReader::Parsing() {
                 } else if(strcmp(attribute, "ascii") == 0){
                     FloatArray::Pointer arr = FloatArray::New();
                     float* ps = new float[scalarComponents];
-                    token = strtok(data_p, " ");
+                    token = strtok(data_p, delimiters);
                     while (token != nullptr) {
                         for(int i = 0; i < scalarComponents; i ++) {
 
                             auto& it = ps[i];
                             it = mAtof(token);
-                            token = strtok(nullptr, " ");
+                            token = strtok(nullptr, delimiters);
                         }
                         arr->AddElement(ps);
                     }
@@ -129,13 +152,13 @@ bool iGame::iGameVTUReader::Parsing() {
                 } else if(strcmp(attribute, "ascii") == 0){
                     IntArray::Pointer arr = IntArray::New();
                     int* ps = new int[scalarComponents];
-                    token = strtok(data_p, " ");
+                    token = strtok(data_p, delimiters);
                     while (token != nullptr) {
                         for(int i = 0; i < scalarComponents; i ++) {
 
                             auto& it = ps[i];
                             it = mAtoi(token);
-                            token = strtok(nullptr, " ");
+                            token = strtok(nullptr, delimiters);
                         }
                         arr->AddElement(ps);
                     }
@@ -174,13 +197,13 @@ bool iGame::iGameVTUReader::Parsing() {
         attribute = elem->Attribute("format");
         if(strcmp(attribute, "ascii") == 0){
             LongLongArray::Pointer arr = LongLongArray::New();
-            token = strtok(data_p, " ");
+            token = strtok(data_p, delimiters);
             int conn = -1;
             while(token)
             {
                 conn = mAtoi(token);
                 arr->AddValue(conn);
-                token = strtok(nullptr, " ");
+                token = strtok(nullptr, delimiters);
             }
             CellConnects = arr;
         } else if(strcmp(attribute, "binary") == 0){
@@ -212,12 +235,12 @@ bool iGame::iGameVTUReader::Parsing() {
             LongLongArray::Pointer arr = LongLongArray::New();
             arr->AddValue(0);
             int offset = -1;
-            token = strtok(data_p, " ");
+            token = strtok(data_p, delimiters);
             while(token)
             {
                 offset = mAtoi(token);
                 arr->AddValue(offset);
-                token = strtok(nullptr, " ");
+                token = strtok(nullptr, delimiters);
             }
             CellOffsets = arr;
         } else if(strcmp(attribute, "binary") == 0){
@@ -248,12 +271,12 @@ bool iGame::iGameVTUReader::Parsing() {
         attribute = elem->Attribute("format");
         if(strcmp(attribute, "ascii") == 0){
             int type = -1;
-            token = strtok(data_p, " ");
+            token = strtok(data_p, delimiters);
             while(token)
             {
                 type = mAtoi(token);
                 CellTypes->AddValue(type);
-                token = strtok(nullptr, " ");
+                token = strtok(nullptr, delimiters);
             }
         } else if(strcmp(attribute, "binary") == 0){
             ReadBase64EncodedArray<uint8_t>(data_p, CellTypes);

@@ -4,7 +4,6 @@
 #include "iGamePointSet.h"
 #include "iGameScene.h"
 #include "iGameCellArray.h"
-
 #include "iGameEmptyCell.h"
 #include "iGameVertex.h"
 #include "iGameLine.h"
@@ -24,6 +23,7 @@
 #include "Quadratic/iGameQuadraticHexahedron.h"
 #include "Quadratic/iGameQuadraticPrism.h"
 #include "Quadratic/iGameQuadraticPyramid.h"
+#include "iGameSurfaceMesh.h"
 
 IGAME_NAMESPACE_BEGIN
 
@@ -114,6 +114,7 @@ private:
 	bool m_ColorWithCell{ false };
 	ArrayObject::Pointer m_ViewAttribute{};
 	int m_ViewDemension{ -1 };
+	SurfaceMesh::Pointer m_DrawMesh{ nullptr };
 };
 IGAME_NAMESPACE_END
 #endif
