@@ -6,7 +6,6 @@
 
 #pragma once
 #include "iGameFilter.h"
-#include "iGameSurfaceMesh.h"
 #include "iGameDataCollection.h"
 #include "iGameBase64Util.h"
 

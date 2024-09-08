@@ -38,7 +38,6 @@ bool iGameXMLFileReader::Execute() {
     }
     CreateDataObject();
     int size = m_Output->GetAttributeSet()->GetAllAttributes()->GetNumberOfElements();
-    std::cout << "size : " << size << '\n';
     if (size > 0) {
         StringArray::Pointer attrbNameArray = StringArray::New();
         for (int i = 0; i < size; i++) {

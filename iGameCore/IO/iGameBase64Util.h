@@ -113,7 +113,7 @@ static void Base64_ConvertTo_Float_Points(const char* p, int offset_byte_num, ui
     int target_byte_count = 0;
     int point_count = 0;
     uint64_t total_byte_count = 0;
-    uint64_t sum_byte = byte_length + offset_byte_num;
+    uint64_t sum_byte = byte_length / 2 + offset_byte_num;
     while (total_byte_count <= sum_byte) {
         char_array_4[i++] = *p;
         if (i == 4) {
@@ -144,47 +144,47 @@ static void Base64_ConvertTo_Float_Points(const char* p, int offset_byte_num, ui
     }
     delete[] target_bytes;
 }
-
-static void Base64_ConvertTo_Float_Points(const char* p, int offset_byte_num, uint32_t byte_length, Points::Pointer pointSet){
-    int i = 0;
-    unsigned char char_array_4[4], char_array_3[3];
-    int type_size = sizeof(float);
-    unsigned char* target_bytes = new unsigned char[type_size];
-    float point_array[3] = {0};
-    int target_byte_count = 0;
-    int point_count = 0;
-    uint32_t total_byte_count = 0;
-    uint32_t sum_byte = byte_length + offset_byte_num;
-    while (total_byte_count <= sum_byte) {
-        char_array_4[i++] = *p;
-        if (i == 4) {
-            for (i = 0; i < 4; i++)
-                char_array_4[i] = base64_chars.find(char_array_4[i]);
-
-            char_array_3[0] = (char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4);
-            char_array_3[1] = ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
-            char_array_3[2] = ((char_array_4[2] & 0x3) << 6) + char_array_4[3];
-
-            for (i = 0; (i < 3); i++) {
-                total_byte_count++;
-                if (total_byte_count > offset_byte_num && total_byte_count <= sum_byte) {
-                    target_bytes[target_byte_count++] = char_array_3[i];
-                    if (target_byte_count == type_size) {
-                        target_byte_count = 0;
-                        point_array[point_count ++] = bytes_to_target<float>(target_bytes);
-                        if(point_count == 3){
-                            pointSet->AddPoint(point_array);
-                            point_count = 0;
-                        }
-                    }
-                }
-            }
-            i = 0;
-        }
-        p ++;
-    }
-    delete[] target_bytes;
-}
+//
+//static void Base64_ConvertTo_Float_Points(const char* p, int offset_byte_num, uint32_t byte_length, Points::Pointer pointSet){
+//    int i = 0;
+//    unsigned char char_array_4[4], char_array_3[3];
+//    int type_size = sizeof(float);
+//    unsigned char* target_bytes = new unsigned char[type_size];
+//    float point_array[3] = {0};
+//    int target_byte_count = 0;
+//    int point_count = 0;
+//    uint32_t total_byte_count = 0;
+//    uint32_t sum_byte = byte_length + offset_byte_num;
+//    while (total_byte_count <= sum_byte) {
+//        char_array_4[i++] = *p;
+//        if (i == 4) {
+//            for (i = 0; i < 4; i++)
+//                char_array_4[i] = base64_chars.find(char_array_4[i]);
+//
+//            char_array_3[0] = (char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4);
+//            char_array_3[1] = ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
+//            char_array_3[2] = ((char_array_4[2] & 0x3) << 6) + char_array_4[3];
+//
+//            for (i = 0; (i < 3); i++) {
+//                total_byte_count++;
+//                if (total_byte_count > offset_byte_num && total_byte_count <= sum_byte) {
+//                    target_bytes[target_byte_count++] = char_array_3[i];
+//                    if (target_byte_count == type_size) {
+//                        target_byte_count = 0;
+//                        point_array[point_count ++] = bytes_to_target<float>(target_bytes);
+//                        if(point_count == 3){
+//                            pointSet->AddPoint(point_array);
+//                            point_count = 0;
+//                        }
+//                    }
+//                }
+//            }
+//            i = 0;
+//        }
+//        p ++;
+//    }
+//    delete[] target_bytes;
+//}
 
 template<typename T>
 static void Base64_ConvertTo_FlatArray(const char* p, int offset_byte_num, uint64_t byte_length, typename FlatArray<T>::Pointer flatArray){
