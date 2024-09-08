@@ -81,7 +81,98 @@ UnstructuredMesh::UnstructuredMesh()
 	m_Cells = CellArray::New();
 	m_Types = UnsignedIntArray::New();
 }
+SurfaceMesh::Pointer UnstructuredMesh::TransferToSurfaceMesh()
+{
 
+	int cellNum = this->GetNumberOfCells();
+	bool CouldTransfer = true;
+	igIndex cellType = IG_NONE;
+	for (igIndex i = 0; i < cellNum; i++) {
+		cellType = this->GetCellType(i);
+		if (Cell::GetCellDimension(cellType) != 2) {
+			CouldTransfer = false;
+			break;
+		}
+	}
+	if (CouldTransfer == false) {
+		return nullptr;
+	}
+	SurfaceMesh::Pointer mesh = SurfaceMesh::New();
+	mesh->SetPoints(this->m_Points);
+	mesh->SetFaces(this->m_Cells);
+	mesh->SetAttributeSet(this->m_Attributes);
+	return mesh;
+}
+
+VolumeMesh::Pointer UnstructuredMesh::TransferToVolumeMesh()
+{
+
+	int cellNum = this->GetNumberOfCells();
+	bool CouldTransfer = true;
+	igIndex cellType = IG_NONE;
+	for (igIndex i = 0; i < cellNum; i++) {
+		cellType = this->GetCellType(i);
+		if (Cell::GetCellDimension(cellType) != 3) {
+			CouldTransfer = false;
+			break;
+		}
+	}
+	if (CouldTransfer == false) {
+		return nullptr;
+	}
+	VolumeMesh::Pointer mesh = VolumeMesh::New();
+	mesh->SetPoints(this->m_Points);
+	mesh->SetVolumes(this->m_Cells);
+	mesh->SetAttributeSet(this->m_Attributes);
+	return mesh;
+}
+
+SurfaceMesh::Pointer UnstructuredMesh::ExtractSurfaceMesh()
+{
+	int cellNum = this->GetNumberOfCells();
+	bool CouldTransfer = true;
+	igIndex cellType = IG_NONE;
+	CellArray::Pointer faces = CellArray::New();
+	igIndex vcnt = 0;
+	igIndex vhs[IGAME_CELL_MAX_SIZE];
+	for (igIndex i = 0; i < cellNum; i++) {
+		cellType = this->GetCellType(i);
+		if (Cell::GetCellDimension(cellType) == 2) {
+			vcnt = this->m_Cells->GetCellIds(i, vhs);
+			faces->AddCellIds(vhs, vcnt);
+		}
+	}
+	if (!faces->GetNumberOfCells()) {
+		return nullptr;
+	}
+	SurfaceMesh::Pointer mesh = SurfaceMesh::New();
+	mesh->SetPoints(this->m_Points);
+	mesh->SetFaces(faces);
+	return mesh;
+}
+VolumeMesh::Pointer UnstructuredMesh::ExtractVolumeMesh()
+{
+	int cellNum = this->GetNumberOfCells();
+	bool CouldTransfer = true;
+	igIndex cellType = IG_NONE;
+	CellArray::Pointer volumes = CellArray::New();
+	igIndex vcnt = 0;
+	igIndex vhs[IGAME_CELL_MAX_SIZE];
+	for (igIndex i = 0; i < cellNum; i++) {
+		cellType = this->GetCellType(i);
+		if (Cell::GetCellDimension(cellType) == 3) {
+			vcnt = this->m_Cells->GetCellIds(i, vhs);
+			volumes->AddCellIds(vhs, vcnt);
+		}
+	}
+	if (!volumes->GetNumberOfCells()) {
+		return nullptr;
+	}
+	VolumeMesh::Pointer mesh = VolumeMesh::New();
+	mesh->SetPoints(this->m_Points);
+	mesh->SetVolumes(volumes);
+	return mesh;
+}
 Cell* UnstructuredMesh::GetTypedCell(const IGsize cellId) {
 	Cell* cell = nullptr;
 	switch (GetCellType(cellId)) {
@@ -249,7 +340,9 @@ void UnstructuredMesh::ConvertToDrawableData() {
 		if (!extract->Execute(this, m_DrawMesh)) {
 			m_DrawMesh = nullptr;
 		}
-		m_DrawMesh->Modified();
+		if (m_DrawMesh) {
+			m_DrawMesh->Modified();
+		}
 	}
 	if (m_DrawMesh) {
 		return m_DrawMesh->ConvertToDrawableData();

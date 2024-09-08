@@ -984,7 +984,9 @@ void VolumeMesh::ConvertToDrawableData()
 		if (!extract->Execute(this, m_DrawMesh)) {
 			m_DrawMesh = nullptr;
 		}
-		m_DrawMesh->Modified();
+		if (m_DrawMesh) {
+			m_DrawMesh->Modified();
+		}
 	}
 	if (m_DrawMesh) {
 		return m_DrawMesh->ConvertToDrawableData();

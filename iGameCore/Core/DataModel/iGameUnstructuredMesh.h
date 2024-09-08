@@ -24,6 +24,7 @@
 #include "Quadratic/iGameQuadraticPrism.h"
 #include "Quadratic/iGameQuadraticPyramid.h"
 #include "iGameSurfaceMesh.h"
+#include "iGameVolumeMesh.h"
 
 IGAME_NAMESPACE_BEGIN
 
@@ -51,8 +52,16 @@ public:
 
 	// Get cell by index cellId, which is Thread-Unsafe
 	Cell* GetCell(const IGsize cellId);
-
+	//Get DataObject Type
 	IGenum GetDataObjectType() const { return IG_UNSTRUCTURED_MESH; }
+	
+	//Transfer to other mesh, if could not transfer , it will return nullptr;
+	SurfaceMesh::Pointer TransferToSurfaceMesh();
+	VolumeMesh::Pointer TransferToVolumeMesh();
+	//extract other mesh, if could not transfer , you can use this to extract data to generate
+	//a new mesh if it has other mesh's cell.
+	SurfaceMesh::Pointer ExtractSurfaceMesh();
+	VolumeMesh::Pointer ExtractVolumeMesh();
 protected:
 	UnstructuredMesh();
 	~UnstructuredMesh() override = default;

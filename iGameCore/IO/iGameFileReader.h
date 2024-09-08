@@ -10,8 +10,6 @@
 
 IGAME_NAMESPACE_BEGIN
 
-#define IGAME_ASCII 1
-#define IGAME_BINARY 2
 
 inline size_t GetFileSize(std::ifstream& file) {
 	file.seekg(0, std::ios::end);

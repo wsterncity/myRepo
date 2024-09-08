@@ -4,7 +4,7 @@
 #include "iGameObject.h"
 #include "iGameDataObject.h"
 #include "iGameFileReader.h"
-
+#include "iGameFileWriter.h"
 IGAME_NAMESPACE_BEGIN
 class FileIO : public Object {
 public:
