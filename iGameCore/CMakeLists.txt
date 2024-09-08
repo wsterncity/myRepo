@@ -39,26 +39,23 @@ target_include_directories(${MODULE_NAME} PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/Rendering/Core
         ${CMAKE_CURRENT_SOURCE_DIR}/Rendering/Core/Interactor
         ${CMAKE_CURRENT_SOURCE_DIR}/Rendering/OpenGL
-
-#        ${CMAKE_SOURCE_DIR}/
-
-        ${EIGEN_INCLUDE_DIR}
 )
 
 message("moudule : ${CMAKE_CURRENT_SOURCE_DIR}")
 target_link_libraries(${MODULE_NAME} PUBLIC
         gladLib
         freetype
+        eigen
         meshoptimizer
         tinyXML2
 
-#        hdf5
-#        cgns
+        #        hdf5
+        #        cgns
 )
 
-if(ENABLE_CGNS_MODULE)
+if (ENABLE_CGNS_MODULE)
     target_compile_definitions(${MODULE_NAME} PRIVATE CGNS_ENABLE)
-    target_link_libraries(${MODULE_NAME} PUBLIC cgns_static )
+    target_link_libraries(${MODULE_NAME} PUBLIC cgns_static)
 ENDIF ()
 target_compile_definitions(${MODULE_NAME} PRIVATE ASSEST_DIR="${CMAKE_CURRENT_SOURCE_DIR}/Rendering/Assests")
 

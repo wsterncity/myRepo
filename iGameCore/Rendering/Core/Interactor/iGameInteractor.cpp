@@ -1,4 +1,5 @@
 ﻿#include "iGameInteractor.h"
+#include <Eigen/Dense>
 
 IGAME_NAMESPACE_BEGIN
 
@@ -105,9 +106,9 @@ void Interactor::ModelRotation() {
 void Interactor::ViewTranslation() {
     if (m_Camera) {
         auto offset = m_NewPoint2D - m_OldPoint2D;
+        UpdateCameraMoveSpeed(m_Scene->m_ModelsBoundingSphere);
         m_Camera->moveXY(-offset.x * m_CameraMoveSpeed,
                          offset.y * m_CameraMoveSpeed);
-        UpdateCameraMoveSpeed(m_Scene->m_ModelsBoundingSphere);
     }
 }
 
@@ -122,8 +123,13 @@ void Interactor::MapToSphere(igm::vec3& old_v3D, igm::vec3& new_v3D) {
     auto p_mvp = (proj * view * model * p);
     p_mvp /= p_mvp.w;
 
-    int width = m_Camera->GetViewPort().x / m_Camera->GetDevicePixelRatio();
-    int height = m_Camera->GetViewPort().y / m_Camera->GetDevicePixelRatio();
+    // if the perspective enters the model, rotate around (0,0)
+    if (p_mvp.x > 1.0f || p_mvp.x < 0.0f || p_mvp.y > 1.0f || p_mvp.y < 0.0f) {
+        p_mvp = igm::vec4{0.0f, 0.0f, 0.0f, 0.0f};
+    }
+
+    auto width = m_Camera->GetViewPort().x;
+    auto height = m_Camera->GetViewPort().y;
 
     const double trackballradius = 0.6;
     const double rsqr = trackballradius * trackballradius;
@@ -155,32 +161,73 @@ void Interactor::MapToSphere(igm::vec3& old_v3D, igm::vec3& new_v3D) {
     }
 }
 
-void Interactor::UpdateCameraMoveSpeed(const igm::vec4& _center) {
+void Interactor::UpdateCameraMoveSpeed(const igm::vec4& center) {
+    auto viewport = m_Camera->GetViewPort();
+    auto viewportF = igm::vec2{static_cast<float>(viewport.x),
+                               static_cast<float>(viewport.y)};
+
     igm::mat4 model = m_Scene->m_ModelMatrix;
     igm::mat4 view = m_Camera->GetViewMatrix();
     igm::mat4 proj = m_Camera->GetProjectionMatrixReversedZ();
+    auto mvp = proj * view * model;
 
-    // update camera movement speed to adapt to pan
-    auto center = _center.xyz();
-    auto radius = _center.w;
+    auto boundingCenterMvp = mvp * igm::vec4{center.xyz(), 1.0f};
+    boundingCenterMvp /= boundingCenterMvp.w;
+    auto bz = boundingCenterMvp.z;
 
-    // the w component of the homogeneous coordinates will not change after the model transformation
-    auto centerInWorldHomogeneous = model * igm::vec4{center, 1.0f};
-    auto centerUpInWorldHomogeneous =
-            centerInWorldHomogeneous +
-            igm::vec4{m_Camera->GetCameraUp().normalize() * radius, 0.0f};
+    // the center of the bounding-sphere is located behind the near plane
+    if (bz > 1.0f || bz < 0.0f) {
+        auto cameraFront = m_Camera->GetCameraFront().normalized();
+        auto boundingBehind = center.xyz() + cameraFront * center.w;
+        auto boundingBehindMvp = mvp * igm::vec4{boundingBehind, 1.0f};
+        boundingBehindMvp /= boundingBehindMvp.w;
+        bz = boundingBehindMvp.z;
 
-    // no need to multiply the model on the left
-    auto p1_mvp = (proj * view * centerInWorldHomogeneous);
-    p1_mvp /= p1_mvp.w;
-    auto p2_mvp = (proj * view * centerUpInWorldHomogeneous);
-    p2_mvp /= p2_mvp.w;
+        // the bounding-sphere is behind camera
+        if (bz > 1.0f) return;
+    }
 
-    auto height = m_Camera->GetViewPort().y /
-                  static_cast<float>(m_Camera->GetDevicePixelRatio());
-    auto acturalPixel = igm::vec2(p1_mvp - p2_mvp).length() * height / 2.0f;
+    Eigen::Matrix4f A;
+    Eigen::Vector4f b;
+    A << mvp[0][0], mvp[1][0], mvp[2][0], mvp[3][0], mvp[0][1], mvp[1][1],
+            mvp[2][1], mvp[3][1], mvp[0][2], mvp[1][2], mvp[2][2], mvp[3][2],
+            mvp[0][3], mvp[1][3], mvp[2][3], mvp[3][3];
 
-    m_CameraMoveSpeed = radius / acturalPixel;
+    igm::vec3 c{0.0f};
+    // c is the point located at the center of the screen after mvp transformation
+    {
+        // | x11 x12 x13 x14 |   |  x  | =  |  0  |
+        // | x21 x22 x23 x24 | * |  y  |    |  0  |
+        // | x31 x32 x33 x34 |   |  z  |    | w*bz|
+        // | x41 x42 x43 x44 |   | 1.0 |    |  w  |
+        b << 0.0f, 0.0f, bz, 1.0f;
+
+        Eigen::Vector4f solution = A.colPivHouseholderQr().solve(b);
+        float x = solution(0);
+        float y = solution(1);
+        float z = solution(2);
+        float w = solution(3);
+        c = igm::vec3{x / w, y / w, z / w};
+    }
+
+    igm::vec3 p{0.0f};
+    // p is the point located at the screen pixel (0,1) after mvp transformation
+    {
+        // | x11 x12 x13 x14 |   |  x  | =  |        0       |
+        // | x21 x22 x23 x24 | * |  y  |    | w * 2 / height |
+        // | x31 x32 x33 x34 |   |  z  |    |      w * bz    |
+        // | x41 x42 x43 x44 |   | 1.0 |    |        w       |
+        b << 0.0f, 2.0f / viewportF.y, bz, 1.0f;
+
+        Eigen::Vector4f solution = A.colPivHouseholderQr().solve(b);
+        float x = solution(0);
+        float y = solution(1);
+        float z = solution(2);
+        float w = solution(3);
+        p = igm::vec3{x / w, y / w, z / w};
+    }
+    
+    m_CameraMoveSpeed = (p - c).length();
 }
 
 IGAME_NAMESPACE_END

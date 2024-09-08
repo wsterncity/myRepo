@@ -377,8 +377,9 @@ void Scene::InitAxes() {
 }
 
 void Scene::ResizeFrameBuffer() {
-    uint32_t width = m_Camera->GetViewPort().x;
-    uint32_t height = m_Camera->GetViewPort().y;
+    auto viewport = m_Camera->GetScaledViewPort();
+    uint32_t width = viewport.x;
+    uint32_t height = viewport.y;
 
     // resize multisample framebuffer
     {
@@ -416,8 +417,8 @@ void Scene::ResizeFrameBuffer() {
 
     // resize resolve framebuffer(form multisamples to single sample)
     {
-        auto width = m_Camera->GetViewPort().x;
-        auto height = m_Camera->GetViewPort().y;
+        auto width = m_Camera->GetScaledViewPort().x;
+        auto height = m_Camera->GetScaledViewPort().y;
         int mipLevels =
                 static_cast<int>(std::ceil(std::log2(std::max(width, height))));
 
@@ -464,8 +465,8 @@ void Scene::ResizeFrameBuffer() {
 }
 void Scene::ResizeDepthPyramid() {
 #ifdef IGAME_OPENGL_VERSION_460
-    uint32_t width = m_Camera->GetViewPort().x;
-    uint32_t height = m_Camera->GetViewPort().y;
+    auto width = m_Camera->GetScaledViewPort().x;
+    auto height = m_Camera->GetScaledViewPort().y;
 
     static auto previousPow2 = [](uint32_t v) {
         uint32_t r = 1;
@@ -507,8 +508,8 @@ void Scene::Draw() {
     GLint defaultFramebuffer = GL_NONE;
     glGetIntegerv(GL_FRAMEBUFFER_BINDING, &defaultFramebuffer);
 
-    auto width = m_Camera->GetViewPort().x;
-    auto height = m_Camera->GetViewPort().y;
+    auto width = m_Camera->GetScaledViewPort().x;
+    auto height = m_Camera->GetScaledViewPort().y;
 
     // render to multisample framebuffer
     {
@@ -653,7 +654,8 @@ void Scene::DrawFrame() {
 }
 
 void Scene::DrawModels() {
-    glViewport(0, 0, m_Camera->GetViewPort().x, m_Camera->GetViewPort().y);
+    auto viewport = m_Camera->GetScaledViewPort();
+    glViewport(0, 0, viewport.x, viewport.y);
 
 #ifdef IGAME_OPENGL_VERSION_330
     for (auto& [id, obj]: m_Models) {
@@ -725,8 +727,8 @@ void Scene::UpdateUniformBuffer() {
 void Scene::DrawAxes() {
     glClear(GL_DEPTH_BUFFER_BIT);
 
-    uint32_t width = m_Camera->GetViewPort().x;
-    uint32_t height = m_Camera->GetViewPort().y;
+    uint32_t width = m_Camera->GetScaledViewPort().x;
+    uint32_t height = m_Camera->GetScaledViewPort().y;
     float scale = static_cast<float>(std::max(width, height)) / 10.0f;
     igm::vec4 viewport = igm::vec4{0, 0, scale, scale};
     glViewport(viewport.x, viewport.y, viewport.z, viewport.w);
