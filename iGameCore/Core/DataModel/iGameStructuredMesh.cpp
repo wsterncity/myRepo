@@ -82,12 +82,13 @@ void StructuredMesh::ConvertToDrawableData()
 	if (m_Positions && m_Positions->GetMTime() > this->GetMTime()) {
 		return;
 	}
-	if (m_DrawMesh == nullptr) {
+	if (m_DrawMesh == nullptr || m_DrawMesh->GetMTime() < this->GetMTime()) {
 		iGameModelGeometryFilter::Pointer extract = iGameModelGeometryFilter::New();
 		m_DrawMesh = SurfaceMesh::New();
 		if (!extract->Execute(this, m_DrawMesh)) {
 			m_DrawMesh = nullptr;
 		}
+		m_DrawMesh->Modified();
 	}
 	if (m_DrawMesh) {
 		return m_DrawMesh->ConvertToDrawableData();
