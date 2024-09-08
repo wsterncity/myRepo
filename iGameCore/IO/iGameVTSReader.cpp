@@ -17,6 +17,8 @@ bool iGame::iGameVTSReader::Parsing() {
     tinyxml2::XMLElement* elem;
     const char* data;
     const char* attribute;
+    const char* delimiters = " \n";
+    char* token;
     // get x y z range.
     elem = FindTargetItem(root, "StructuredGrid");
     int x_dimension, y_dimension, z_dimension;
@@ -54,19 +56,43 @@ bool iGame::iGameVTSReader::Parsing() {
     Points::Pointer Points = m_Data.GetPoints();
     if(data)
     {
+        Points::Pointer dataSetPoints = m_Data.GetPoints();
         char* data_p = const_cast<char*>(data);
         while (*data_p == '\n' || *data_p == ' ' || *data_p == '\t') data_p ++;
-        if(attribute && strcmp(attribute, "binary") == 0){
-            ReadBase64EncodedPoints(data, Points);
-        } else {
+//        if(strcmp(attribute, "ascii") == 0){
+//            float p[3] = { 0 };
+//            token = strtok(data_p, delimiters);
+//
+//            while (token != nullptr) {
+//                for(float & i : p) {
+//                    i = mAtof(token);
+//                    token = strtok(nullptr, delimiters);
+//                }
+//                dataSetPoints->AddPoint(p);
+//            }
+//        } else if(strcmp(attribute, "binary") == 0){
+//            ReadBase64EncodedPoints(data_p, dataSetPoints);
+//        }
+        const char* type = elem->Attribute("type");
+        if(strcmp(attribute, "binary") == 0){
+            if(!strncmp(type, "Float", 5)) {
+                //  Float32
+                if (!strncmp(type + 5, "32", 2)) {
+                    ReadBase64EncodedPoints<float>(data_p, dataSetPoints);
+                } else /*Float64*/{
+                    ReadBase64EncodedPoints<double>(data_p, dataSetPoints);
+                }
+            }
+        } else if(strcmp(attribute, "ascii") == 0){
             float p[3] = { 0 };
-            char* token = strtok(const_cast<char*>(data_p), " ");
+            token = strtok(data_p, delimiters);
+
             while (token != nullptr) {
                 for(float & i : p) {
                     i = mAtof(token);
-                    token = strtok(nullptr, " ");
+                    token = strtok(nullptr, delimiters);
                 }
-                Points->AddPoint(p);
+                dataSetPoints->AddPoint(p);
             }
         }
     }

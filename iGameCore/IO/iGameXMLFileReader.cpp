@@ -38,7 +38,6 @@ bool iGameXMLFileReader::Execute() {
     }
     CreateDataObject();
     int size = m_Output->GetAttributeSet()->GetAllAttributes()->GetNumberOfElements();
-    std::cout << "size : " << size << '\n';
     if (size > 0) {
         StringArray::Pointer attrbNameArray = StringArray::New();
         for (int i = 0; i < size; i++) {
@@ -144,14 +143,6 @@ tinyxml2::XMLElement * iGameXMLFileReader::FindTargetAttributeItem(tinyxml2::XML
     return res;
 }
 
-void iGameXMLFileReader::ReadBase64EncodedPoints(const char *p, const Points::Pointer& pointSet) {
-    if(is_header_type_uint64){
-        auto byte_size = Base64_Convert_TargetValue<uint64_t>(p);
-        Base64_ConvertTo_Float_Points(p, 8, byte_size, pointSet);
-    } else {
-        auto byte_size = Base64_Convert_TargetValue<uint32_t>(p);
-        Base64_ConvertTo_Float_Points(p, 4, byte_size, pointSet);
-    }
-}
+
 
 IGAME_NAMESPACE_END
