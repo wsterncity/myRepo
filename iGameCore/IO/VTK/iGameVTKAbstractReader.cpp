@@ -236,6 +236,12 @@ int VTKAbstractReader::ReadCellData(int CellsNum)
 			this->ReadPointData(npts);
 			break;
 		}
+		else if (!strncmp(line, "metadata", 8)) {
+			if (!ProcessMetaData()) {
+				igDebug("Read metadata error!");
+			}
+			continue;
+		}
 		else {
 			//igError("Unsupported cell attribute type: " << line
 			//	<< " for file: " << (fname ? fname : "(Null FileName)"));
@@ -371,6 +377,12 @@ int VTKAbstractReader::ReadPointData(int PointsNum)
 			}
 			this->ReadCellData(ncells);
 			break;
+		}
+		else if (!strncmp(this->LowerCase(line), "metadata", 8)) {
+			if (!ProcessMetaData()) {
+				igDebug("Read metadata error!");
+			}
+			continue;
 		}
 		else {
 			//igError("Unsupported point attribute type: " << line
@@ -930,6 +942,7 @@ bool VTKAbstractReader::ReadUnstructuredGrid()
 				return false;
 			}
 			Points::Pointer points = Points::New();
+			points->Reserve(npts);
 			if (!this->ReadPointCoordinates(points, npts)) {
 				return false;
 			}
@@ -999,8 +1012,8 @@ bool VTKAbstractReader::ReadUnstructuredGrid()
 			this->ProcessMetaData();
 		}
 		else {
-			igDebug("Unrecognized keyword: " << line);
-			return false;
+			//igDebug("Unrecognized keyword: " << line);
+			//return false;
 		}
 	}
 	return true;
@@ -1033,6 +1046,7 @@ bool VTKAbstractReader::ReadSurfaceMesh()
 				return false;
 			}
 			Points::Pointer points = Points::New();
+			points->Reserve(npts);
 			if (!this->ReadPointCoordinates(points, npts)) {
 				return false;
 			}
@@ -1084,9 +1098,12 @@ bool VTKAbstractReader::ReadSurfaceMesh()
 			this->ReadPointData(PointsNum);
 			break; // out of this loop
 		}
+		else if (!strncmp(line, "metadata", 8)) {
+			this->ProcessMetaData();
+		}
 		else {
 			//igDebug("Unrecognized keyword: " << line);
-			//return;
+			//return false;
 		}
 	}
 	return true;
@@ -1097,6 +1114,115 @@ bool VTKAbstractReader::ReadStructuredGrid()
 		m_StructuredMesh = StructuredMesh::New();
 	}
 	m_DataObjectType = IG_STRUCTURED_MESH;
+	char line[IGAME_CELL_MAX_SIZE];
+	char buffer[IGAME_CELL_MAX_SIZE];
+	igIndex size[3];
+	double origin[3];
+	double aspectRatio[3];
+	igIndex npts = 0;
+	igIndex ncells = 0;
+
+	while (true) {
+		if (!this->ReadString(line)) { break; }
+		if (line[0] == '\0') {
+			continue;
+		}
+		if (!strncmp(this->LowerCase(line), "dimensions", 10)) {
+			if (!this->Read(&size[0]) || !this->Read(&size[1]) || !this->Read(&size[2])) {
+				igError("Read dimension error!");
+				return false;
+			}
+			if (size[2] == 0) {
+				size[2] = 1;
+			}
+			m_StructuredMesh->SetDimensionSize(size);
+		}
+		else if (!strncmp(line, "aspect_ratio", 12)) {
+			if (!this->Read(&aspectRatio[0]) || !this->Read(&aspectRatio[1]) || !this->Read(&aspectRatio[2])) {
+				igError("Read extend error!");
+				return false;
+			}
+		}
+		else if (!strncmp(line, "origin", 6)) {
+			if (!this->Read(&origin[0]) || !this->Read(&origin[1]) || !this->Read(&origin[2])) {
+				igError("Read extend error!");
+				return false;
+			}
+		}
+		else if (!strncmp(line, "points", 6)) {
+			if (!this->Read(&npts)) {
+				igError("Cannot read number of points!");
+				return false;
+			}
+			if (size[0] * size[1] * size[2] != npts) {
+				igError("Number of points don't match!");
+				return false;
+			}
+			Points::Pointer points = Points::New();
+			if (!this->ReadPointCoordinates(points, npts)) {
+				return false;
+			}
+			m_StructuredMesh->SetPoints(points);
+		}
+		else if (!strncmp(line, "cell_data", 9)) {
+			if (!this->Read(&ncells)) {
+				igError("Cannot read cell data!");
+				return false;
+			}
+			if ((size[2] == 1 && (ncells != (size[0] - 1) * (size[1] - 1)))
+				|| (size[2] != 1 && (ncells != (size[0] - 1) * (size[1] - 1) * (size[2] - 1)))
+				) {
+				igError("Number of cells don't match!");
+				return false;
+			}
+			this->ReadCellData(ncells);
+			break; // out of this loop
+		}
+		else if (!strncmp(line, "point_data", 10)) {
+			if (!this->Read(&npts)) {
+				igError("Cannot read point data!");
+				return false;
+			}
+			if (size[0] * size[1] * size[2] != npts) {
+				igError("Number of points don't match!");
+				return false;
+			}
+			this->ReadPointData(npts);
+			break; // out of this loop
+		}
+		else if (!strncmp(line, "metadata", 8)) {
+			this->ProcessMetaData();
+		}
+		else {
+			igDebug("Unrecognized keyword: " << line);
+			return false;
+		}
+	}
+	if (m_StructuredMesh->GetPoints() == nullptr|| m_StructuredMesh->GetPoints()->GetNumberOfPoints()==0) {
+		igIndex i, j, k;
+		Point p;
+		Points::Pointer points = Points::New();
+		points->Reserve(npts);
+		p[2] = origin[2];
+		for (k = 0; k < size[2]; ++k) {
+			p[1] = origin[1];
+			for (j = 0; j < size[1]; ++j) {
+				p[0] = origin[0];
+				for (i = 0; i < size[0]; ++i) {
+					points->AddPoint(p);
+					p[0] += aspectRatio[0];
+				}
+				p[1] += aspectRatio[1];
+			}
+			p[2] += aspectRatio[2];
+		}
+		m_StructuredMesh->SetPoints(points);
+		//for (int i = 0; i < npts; i++) {
+		//	p = points->GetPoint(i);
+		//	std::cout << p[0] << ' ' << p[1] << ' ' << p[2] << '\n';
+		//}
+	}
+	m_StructuredMesh->GenStructuredCellConnectivities();
 	return true;
 }
 CellArray::Pointer VTKAbstractReader::CreateCellArray(ArrayObject::Pointer CellsID, ArrayObject::Pointer CellsConnect)

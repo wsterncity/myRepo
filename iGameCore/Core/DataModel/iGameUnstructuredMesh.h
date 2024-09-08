@@ -4,7 +4,6 @@
 #include "iGamePointSet.h"
 #include "iGameScene.h"
 #include "iGameCellArray.h"
-
 #include "iGameEmptyCell.h"
 #include "iGameVertex.h"
 #include "iGameLine.h"
@@ -16,6 +15,7 @@
 #include "iGameHexahedron.h"
 #include "iGamePrism.h"
 #include "iGamePyramid.h"
+#include "iGamePolyhedron.h"
 #include "Quadratic/Base/iGameQuadraticLine.h"
 #include "Quadratic/iGameQuadraticTriangle.h"
 #include "Quadratic/iGameQuadraticTetra.h"
@@ -23,6 +23,7 @@
 #include "Quadratic/iGameQuadraticHexahedron.h"
 #include "Quadratic/iGameQuadraticPrism.h"
 #include "Quadratic/iGameQuadraticPyramid.h"
+#include "iGameSurfaceMesh.h"
 
 IGAME_NAMESPACE_BEGIN
 
@@ -51,9 +52,7 @@ public:
 	// Get cell by index cellId, which is Thread-Unsafe
 	Cell* GetCell(const IGsize cellId);
 
-	int GetDataObjectType() {
-		return IG_UNSTRUCTURED_MESH;
-	}
+	IGenum GetDataObjectType() const { return IG_UNSTRUCTURED_MESH; }
 protected:
 	UnstructuredMesh();
 	~UnstructuredMesh() override = default;
@@ -77,6 +76,7 @@ private:
 	Hexahedron::Pointer m_Hexahedron{};
 	Prism::Pointer m_Prism{};
 	Pyramid::Pointer m_Pyramid{};
+	Polyhedron::Pointer m_Polyhedron{};
 	QuadraticLine::Pointer m_QuadraticLine{};
 	QuadraticTriangle::Pointer m_QuadraticTriangle{};
 	QuadraticQuad::Pointer m_QuadraticQuad{};
@@ -114,6 +114,7 @@ private:
 	bool m_ColorWithCell{ false };
 	ArrayObject::Pointer m_ViewAttribute{};
 	int m_ViewDemension{ -1 };
+	SurfaceMesh::Pointer m_DrawMesh{ nullptr };
 };
 IGAME_NAMESPACE_END
 #endif

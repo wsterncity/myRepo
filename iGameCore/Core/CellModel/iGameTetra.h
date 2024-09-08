@@ -33,38 +33,37 @@ public:
             m_Triangle->Points->SetPoint(i, Points->GetPoint(verts[i]));
 			m_Triangle->EdgeIds->SetId(i, EdgeIds->GetId(edges[i]));
         }
-
         return m_Triangle.get();
     }
 
 	/**
-	 * µ¥ÔªµÄ¶¥µã¸öÊı¡£
+	 * å•å…ƒçš„é¡¶ç‚¹ä¸ªæ•°ã€‚
 	 */
 	static constexpr int NumberOfPoints = 4;
 
 	/**
-	 * µ¥ÔªµÄ±ß¸öÊı¡£
+	 * å•å…ƒçš„è¾¹ä¸ªæ•°ã€‚
 	 */
 	static constexpr int NumberOfEdges = 6;
 
 	/**
-	 * µ¥ÔªµÄÃæ¸öÊı¡£
+	 * å•å…ƒçš„é¢ä¸ªæ•°ã€‚
 	 */
 	static constexpr int NumberOfFaces = 4;
 
 	/**
-	 * µ¥ÔªÃæ×î´óµÄ¶¥µã¸öÊı¡£
+	 * å•å…ƒé¢æœ€å¤§çš„é¡¶ç‚¹ä¸ªæ•°ã€‚
 	 */
 	static constexpr int MaxFaceSize = 3;
 
 	/**
-	 * µ¥Ôª¶¥µã×î´óµÄ¶È¡£
+	 * å•å…ƒé¡¶ç‚¹æœ€å¤§çš„åº¦ã€‚
 	 */
 	static constexpr int MaxValence = 3;
 
-	/***************** ËùÓĞMax + 1µÄÊı×é×îºóÒ»Î»Êı×Ö±íÊ¾¸öÊı *****************/
+	/***************** æ‰€æœ‰Max + 1çš„æ•°ç»„æœ€åä¸€ä½æ•°å­—è¡¨ç¤ºä¸ªæ•° *****************/
 
-	// ±ßµÄ¶¥µãĞòºÅ
+	// è¾¹çš„é¡¶ç‚¹åºå·
 	static constexpr int edges[NumberOfEdges][2] = {
 	  { 0, 1 },
 	  { 1, 2 },
@@ -74,7 +73,7 @@ public:
 	  { 2, 3 },
 	};
 
-	// ÃæµÄ¶¥µãĞòºÅ
+	// é¢çš„é¡¶ç‚¹åºå·
 	static constexpr int faces[NumberOfFaces][MaxFaceSize + 1] = {
 	  { 0, 1, 3, 3 },
 	  { 1, 2, 3, 3 },
@@ -82,7 +81,7 @@ public:
 	  { 0, 2, 1, 3 },
 	}; 
 
-	// ÃæµÄ±ßĞòºÅ
+	// é¢çš„è¾¹åºå·
 	static constexpr int faceEdges[NumberOfFaces][MaxFaceSize + 1] = {
 	  { 0, 4, 3, 3 },
 	  { 1, 5, 4, 3 },
@@ -90,7 +89,7 @@ public:
 	  { 2, 1, 0, 3 },
 	};
 
-	// ±ßµÄÁÚ½ÓÃæĞòºÅ
+	// è¾¹çš„é‚»æ¥é¢åºå·
 	static constexpr int edgeToNeighborFaces[NumberOfEdges][2] = {
 	  { 0, 3 },
 	  { 1, 3 },
@@ -100,7 +99,7 @@ public:
 	  { 1, 2 },
 	};
 
-	// ÃæµÄÁÚ½ÓÃæĞòºÅ
+	// é¢çš„é‚»æ¥é¢åºå·
 	static constexpr int faceToNeighborFaces[NumberOfFaces][MaxFaceSize + 1] = {
 	  { 3, 1, 2, 3 },
 	  { 3, 2, 0, 3 },
@@ -108,7 +107,7 @@ public:
 	  { 2, 1, 0, 3 },
 	};
 
-	// ¶¥µãµÄÁÚ½Ó±ßĞòºÅ
+	// é¡¶ç‚¹çš„é‚»æ¥è¾¹åºå·
 	static constexpr int pointToNeighborEdges[NumberOfPoints][MaxValence + 1] = {
 	  { 0, 3, 2, 3 },
 	  { 0, 1, 4, 3 },
@@ -116,7 +115,7 @@ public:
 	  { 3, 4, 5, 3 },
 	};
 
-	// ¶¥µãµÄÁÚ½ÓÃæĞòºÅ
+	// é¡¶ç‚¹çš„é‚»æ¥é¢åºå·
 	static constexpr int pointToNeighborFaces[NumberOfPoints][MaxValence + 1] = {
 	  { 0, 2, 3, 3 },
 	  { 3, 1, 0, 3 },
@@ -124,7 +123,7 @@ public:
 	  { 0, 1, 2, 3 },
 	};
 
-	// ¶¥µãµÄÒ»ÁÚÓò¶¥µãĞòºÅ
+	// é¡¶ç‚¹çš„ä¸€é‚»åŸŸé¡¶ç‚¹åºå·
 	static constexpr int pointToOneRingPoints[NumberOfPoints][MaxValence + 1] = {
 	  { 1, 3, 2, 3 },
 	  { 0, 2, 3, 3 },

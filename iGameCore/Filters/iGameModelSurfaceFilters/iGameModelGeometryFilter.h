@@ -6,20 +6,10 @@
 #include "iGameSurfaceMesh.h"
 #include "iGameVolumeMesh.h"
 #include "iGameUnstructuredMesh.h"
+#include "iGameStructuredMesh.h"
 IGAME_NAMESPACE_BEGIN
 
-class StructuredGrid : public DataObject {
-public:
-    I_OBJECT(StructuredGrid);
-    int GetDimension() { return 3; };
-};
-class PolyData : public SurfaceMesh {
-public:
-    I_OBJECT(PolyData);
-    static Pointer New() { return new PolyData; };
-    IGsize GetNumberOfCells() { return this->GetNumberOfFaces(); }
-    PolyData(){};
-};
+
 class iGameModelGeometryFilter : public Filter {
 public:
     I_OBJECT(iGameModelGeometryFilter);
@@ -33,7 +23,7 @@ public:
     ~iGameModelGeometryFilter();
     bool Execute() override;
     bool Execute(DataObject*);
-    bool Execute(DataObject*, PolyData*);
+    bool Execute(DataObject*, SurfaceMesh*);
     /**
      * Specify a (xmin,xmax, ymin,ymax, zmin,zmax) bounding box to clip data.
      */
@@ -46,42 +36,39 @@ public:
      * algorithm without using it as a filter (i.e., no pipeline updates).
      * Also some internal methods with additional options.
      */
-    int ExecuteWithPolyData(DataObject::Pointer input, PolyData::Pointer output,
-        PolyData::Pointer exc);
-    virtual int ExecuteWithPolyData(DataObject::Pointer, PolyData::Pointer);
+    int ExecuteWithSurfaceMesh(DataObject::Pointer input, SurfaceMesh::Pointer output,
+        SurfaceMesh::Pointer exc);
+    virtual int ExecuteWithSurfaceMesh(DataObject::Pointer, SurfaceMesh::Pointer);
 
-    int ExecuteWithVolumeMesh(DataObject::Pointer input, PolyData::Pointer output,
-        PolyData::Pointer exc);
+    int ExecuteWithVolumeMesh(DataObject::Pointer input, SurfaceMesh::Pointer output,
+        SurfaceMesh::Pointer exc);
     virtual int ExecuteWithVolumeMesh(DataObject::Pointer input,
-        PolyData::Pointer output);
-    int ExecuteWithUnstructuredGrid(DataObject::Pointer input, PolyData::Pointer output,
-        PolyData::Pointer exc);
+        SurfaceMesh::Pointer output);
+    int ExecuteWithUnstructuredGrid(DataObject::Pointer input, SurfaceMesh::Pointer output,
+        SurfaceMesh::Pointer exc);
     virtual int ExecuteWithUnstructuredGrid(DataObject::Pointer input,
-        PolyData::Pointer output);
+        SurfaceMesh::Pointer output);
 
-    int ExecuteWithStructuredGrid(DataObject::Pointer input, PolyData::Pointer output,
-        PolyData::Pointer exc, bool* extractFace = nullptr);
+    int ExecuteWithStructuredGrid(DataObject::Pointer input, SurfaceMesh::Pointer output,
+        SurfaceMesh::Pointer exc, bool* extractFace = nullptr);
     virtual int ExecuteWithStructuredGrid(DataObject::Pointer input,
-        PolyData::Pointer output,
+        SurfaceMesh::Pointer output,
                                           bool* extractFace = nullptr);
 
-    int ExecuteWithDataSet(DataObject::Pointer input, PolyData::Pointer output,
-        PolyData::Pointer exc);
-    virtual int ExecuteWithDataSet(DataObject::Pointer input, PolyData::Pointer output);
     ///@}
     void SetInput(DataObject::Pointer ip) { this->input = ip; }
-    PolyData::Pointer GetOutPut() { return this->output; }
+    SurfaceMesh::Pointer GetOutPut() { return this->output; }
 
-    void CompositeAttribute(std::vector<igIndex>& f2c,AttributeSet* inAllDataArray,AttributeSet* outAllDataArray);
+    void CompositeCellAttribute(std::vector<igIndex>& f2c,AttributeSet* inAllDataArray,AttributeSet* outAllDataArray);
 
 
 protected:
     iGameModelGeometryFilter();
     //通常在文件里会有标注表面信息，如果有则不需要这边运算，
     //只需要把attribute的信息copy一份给表面就可以
-    PolyData::Pointer excFaces;
+    SurfaceMesh::Pointer excFaces;
     DataObject::Pointer input;
-    PolyData::Pointer output;
+    SurfaceMesh::Pointer output;
     igIndex PointMaximum;
     igIndex PointMinimum;
     igIndex CellMinimum;

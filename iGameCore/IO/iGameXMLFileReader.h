@@ -44,7 +44,16 @@ protected:
     tinyxml2::XMLElement* FindTargetAttributeItem(tinyxml2::XMLElement* root, const char* itemName,
                                           const char* attributeName, const char* attributeData);
 
-    void ReadBase64EncodedPoints(const char* p, const Points::Pointer& pointSet);
+    template<typename  T>
+    void ReadBase64EncodedPoints(const char *p, const Points::Pointer& pointSet) {
+        if(is_header_type_uint64){
+            auto byte_size = Base64_Convert_TargetValue<uint64_t>(p);
+            Base64_ConvertTo_Points<T>(p, 8, byte_size, pointSet);
+        } else {
+            auto byte_size = Base64_Convert_TargetValue<uint32_t>(p);
+            Base64_ConvertTo_Points<T>(p, 4, byte_size, pointSet);
+        }
+    }
 
     template<typename T>
     void ReadBase64EncodedArray(const char* p, typename FlatArray<T>::Pointer arr){

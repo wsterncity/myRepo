@@ -1,5 +1,5 @@
 #include "iGameUnstructuredMesh.h"
-
+#include "iGameModelSurfaceFilters/iGameModelGeometryFilter.h"
 IGAME_NAMESPACE_BEGIN
 void UnstructuredMesh::SetCells(CellArray::Pointer cell,
 	UnsignedIntArray::Pointer type) {
@@ -35,12 +35,36 @@ int UnstructuredMesh::GetCellPointIds(const IGsize cellId,
 Cell* UnstructuredMesh::GetCell(const IGsize cellId) {
 	Cell* cell = GetTypedCell(cellId);
 	if (cell == nullptr) { return nullptr; }
-	GetCellPointIds(cellId, cell->PointIds);
-
-	for (int i = 0; i < cell->PointIds->GetNumberOfIds(); i++) {
-		cell->Points->AddPoint(GetPoint(cell->PointIds->GetId(i)));
+	if (cell->GetCellType() != IG_POLYHEDRON) {
+		GetCellPointIds(cellId, cell->PointIds);
+		for (int i = 0; i < cell->PointIds->GetNumberOfIds(); i++) {
+			cell->Points->AddPoint(GetPoint(cell->PointIds->GetId(i)));
+		}
 	}
+	else {
+		igIndex ids[IGAME_CELL_MAX_SIZE];
+		igIndex size = m_Cells->GetCellIds(cellId, ids);
+		Polyhedron::Pointer polyhedron = DynamicCast<Polyhedron>(cell);
+		polyhedron->m_FaceOffset->Reserve(ids[0]);
+		polyhedron->PointIds->Reserve(size);
 
+		igIndex index = 1;
+		igIndex realsize = 0;
+		int offset = 0;
+		while (index < size)
+		{
+			polyhedron->m_FaceOffset->AddId(offset);
+			realsize = ids[index++];
+			for (igIndex id = 0; id < realsize; id++) {
+				polyhedron->PointIds->AddId(ids[index++]);
+			}
+			offset += realsize;
+		}
+		polyhedron->m_FaceOffset->AddId(offset);
+		for (int i = 0; i < cell->PointIds->GetNumberOfIds(); i++) {
+			cell->Points->AddPoint(GetPoint(cell->PointIds->GetId(i)));
+		}
+	}
 	return cell;
 }
 UnsignedIntArray* UnstructuredMesh::GetCellTypes() const {
@@ -97,6 +121,10 @@ Cell* UnstructuredMesh::GetTypedCell(const IGsize cellId) {
 		if (m_Pyramid == nullptr) { m_Pyramid = Pyramid::New(); }
 		cell = m_Pyramid.get();
 	} break;
+	case IG_POLYHEDRON: {
+		if (m_Polyhedron == nullptr) { m_Polyhedron = Polyhedron::New(); }
+		cell = m_Polyhedron.get();
+	} break;
 	case IG_QUADRATIC_EDGE: {
 		if (m_QuadraticLine == nullptr) { m_QuadraticLine = QuadraticLine::New(); }
 		cell = m_QuadraticLine.get();
@@ -135,7 +163,10 @@ Cell* UnstructuredMesh::GetTypedCell(const IGsize cellId) {
 
 void UnstructuredMesh::Draw(Scene* scene) {
 	if (!m_Visibility) { return; }
-
+	if (m_DrawMesh) {
+		m_DrawMesh->SetViewStyle(m_ViewStyle);
+		return m_DrawMesh->Draw(scene);
+	}
 	// Update uniform buffer
 	if (m_UseColor) {
 		scene->UBO().useColor = true;
@@ -212,6 +243,16 @@ void UnstructuredMesh::Draw(Scene* scene) {
 }
 void UnstructuredMesh::ConvertToDrawableData() {
 	if (m_Positions && m_Positions->GetMTime() > this->GetMTime()) { return; }
+	if (m_DrawMesh == nullptr) {
+		iGameModelGeometryFilter::Pointer extract = iGameModelGeometryFilter::New();
+		m_DrawMesh = SurfaceMesh::New();
+		if (!extract->Execute(this, m_DrawMesh)) {
+			m_DrawMesh = nullptr;
+		}
+	}
+	if (m_DrawMesh) {
+		return m_DrawMesh->ConvertToDrawableData();
+	}
 
 	this->Create();
 
@@ -225,7 +266,7 @@ void UnstructuredMesh::ConvertToDrawableData() {
 	m_TriangleIndices->SetElementSize(3);
 
 
-	igIndex ids[128]{};
+	igIndex ids[IGAME_CELL_MAX_SIZE]{};
 	for (int id = 0; id < GetNumberOfCells(); id++) {
 		int size = GetCellPointIds(id, ids);
 		IGenum type = GetCellType(id);
@@ -293,7 +334,22 @@ void UnstructuredMesh::ConvertToDrawableData() {
 				}
 			}
 		} break;
-
+		case IG_POLYHEDRON: {
+			igIndex index = 1;
+			igIndex realsize = 0;
+			while (index < size)
+			{
+				realsize = ids[index++];
+				for (igIndex id = 1; id < realsize; id++) {
+					m_LineIndices->AddElement2(ids[index + id - 1], ids[index + id]);
+				}
+				for (igIndex id = 2; id < realsize; id++) {
+					m_TriangleIndices->AddElement3(
+						ids[index], ids[index + id - 1], ids[index + id]);
+				}
+				index += realsize;
+			}
+		}break;
 		case IG_QUADRATIC_TETRA:
 		case IG_QUADRATIC_HEXAHEDRON:
 		case IG_QUADRATIC_PRISM:
@@ -369,6 +425,9 @@ void UnstructuredMesh::ConvertToDrawableData() {
 
 void UnstructuredMesh::ViewCloudPicture(Scene* scene, int index, int demension)
 {
+	if (m_DrawMesh) {
+		return m_DrawMesh->ViewCloudPicture(scene, index, demension);
+	}
 	if (index == -1) {
 		m_UseColor = false;
 		m_ViewAttribute = nullptr;

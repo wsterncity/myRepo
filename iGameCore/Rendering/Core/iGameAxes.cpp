@@ -39,7 +39,6 @@ void Axes::DrawAxes() {
     m_TriangleVAO.bind();
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glDrawElements(GL_TRIANGLES, 207, GL_UNSIGNED_INT, 0);
-
     m_TriangleVAO.release();
 }
 void Axes::DrawXYZ(const GLShaderProgram* shader, const GLUniform texture,
@@ -47,6 +46,10 @@ void Axes::DrawXYZ(const GLShaderProgram* shader, const GLUniform texture,
     // draw xyz
     m_FontVAO.bind();
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+    igm::vec3 red = igm::vec3{1.0f, 0.0f, 0.0f};
+    igm::vec3 green = igm::vec3{0.0f, 1.0f, 0.0f};
+    igm::vec3 blue = igm::vec3{0.0f, 0.0f, 1.0f};
 
     auto& textureX = FontSet::Instance().GetTexture(L'X');
     textureX.active(GL_TEXTURE1);
@@ -56,23 +59,23 @@ void Axes::DrawXYZ(const GLShaderProgram* shader, const GLUniform texture,
     textureZ.active(GL_TEXTURE3);
 
     shader->setUniform(texture, 1);
-    shader->setUniform(color, igm::vec3{1.0f, 0.0f, 0.0f});
+    shader->setUniform(color, red);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
     shader->setUniform(texture, 2);
-    shader->setUniform(color, igm::vec3{0.0f, 1.0f, 0.0f});
+    shader->setUniform(color, green);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT,
                    (void*) (6 * sizeof(GLuint)));
 
     shader->setUniform(texture, 3);
-    shader->setUniform(color, igm::vec3{0.0f, 0.0f, 1.0f});
+    shader->setUniform(color, blue);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT,
                    (void*) (12 * sizeof(GLuint)));
 
     m_FontVAO.release();
 }
 
-void Axes::Update(const igm::mat4& _mvp, const std::vector<int>& viewPort) {
+void Axes::Update(const igm::mat4& _mvp, const igm::vec4& viewPort) {
     mvp = _mvp;
     inv_mvp = _mvp.invert();
 
@@ -205,7 +208,7 @@ void Axes::initialize() {
                       GL_FALSE, 0);
     m_FontVAO.vertexBuffer(GL_VBO_IDX_1, m_TextureCoordVBO, 0,
                            2 * sizeof(float));
-    GLSetVertexAttrib(m_FontVAO, GL_LOCATION_IDX_1, GL_VBO_IDX_1, 2, GL_FLOAT,
+    GLSetVertexAttrib(m_FontVAO, GL_LOCATION_IDX_3, GL_VBO_IDX_1, 2, GL_FLOAT,
                       GL_FALSE, 0);
     m_FontVAO.elementBuffer(m_FontTextureEBO);
 }

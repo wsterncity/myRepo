@@ -1,6 +1,7 @@
 #include "iGameStructuredMesh.h"
 #include "iGameScene.h"
 #include "iGameFaceTable.h"
+#include "iGameModelSurfaceFilters/iGameModelGeometryFilter.h"
 IGAME_NAMESPACE_BEGIN
 
 void StructuredMesh::Draw(Scene* scene)
@@ -9,7 +10,10 @@ void StructuredMesh::Draw(Scene* scene)
 	{
 		return;
 	}
-
+	if (m_DrawMesh) {
+		m_DrawMesh->SetViewStyle(m_ViewStyle);
+		return m_DrawMesh->Draw(scene);
+	}
 	//update uniform buffer
 	if (m_UseColor) {
 		scene->UBO().useColor = true;
@@ -78,7 +82,16 @@ void StructuredMesh::ConvertToDrawableData()
 	if (m_Positions && m_Positions->GetMTime() > this->GetMTime()) {
 		return;
 	}
-
+	if (m_DrawMesh == nullptr) {
+		iGameModelGeometryFilter::Pointer extract = iGameModelGeometryFilter::New();
+		m_DrawMesh = SurfaceMesh::New();
+		if (!extract->Execute(this, m_DrawMesh)) {
+			m_DrawMesh = nullptr;
+		}
+	}
+	if (m_DrawMesh) {
+		return m_DrawMesh->ConvertToDrawableData();
+	}
 	if (!m_Flag)
 	{
 		m_PointVAO.create();
@@ -131,16 +144,16 @@ void StructuredMesh::ConvertToDrawableData()
 		for (int j = 0; j < size[1]; j++) {
 			for (int i = 0; i < size[0]; i++) {
 				if (i != size[0] - 1) {
-					edgeIndices->AddId(GetPointIndex(i, j, k));
-					edgeIndices->AddId(GetPointIndex(i + 1, j, k));
+					edgeIndices->AddId(GetStructuredIndex(i, j, k));
+					edgeIndices->AddId(GetStructuredIndex(i + 1, j, k));
 				}
 				if (j != size[1] - 1) {
-					edgeIndices->AddId(GetPointIndex(i, j, k));
-					edgeIndices->AddId(GetPointIndex(i, j + 1, k));
+					edgeIndices->AddId(GetStructuredIndex(i, j, k));
+					edgeIndices->AddId(GetStructuredIndex(i, j + 1, k));
 				}
 				if (k != size[2] - 1) {
-					edgeIndices->AddId(GetPointIndex(i, j, k));
-					edgeIndices->AddId(GetPointIndex(i, j, k + 1));
+					edgeIndices->AddId(GetStructuredIndex(i, j, k));
+					edgeIndices->AddId(GetStructuredIndex(i, j, k + 1));
 				}
 			}
 		}
@@ -185,5 +198,11 @@ void StructuredMesh::ConvertToDrawableData()
 		m_TriangleVAO.elementBuffer(m_TriangleEBO);
 	}
 }
-
+void StructuredMesh::ViewCloudPicture(Scene* scene, int index, int demension)
+{
+	//if (m_DrawMesh) {
+	//	return m_DrawMesh->ViewCloudPicture(scene, index, demension);
+	//}
+	//return;
+}
 IGAME_NAMESPACE_END

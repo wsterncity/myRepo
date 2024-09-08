@@ -19,10 +19,7 @@ public:
 
     void MousePressEvent(int posX, int posY, MouseButton mouseMode) override {
         igm::vec2 pos = {float(posX), (float) posY};
-        if (m_Mesh == nullptr || m_Model == nullptr)
-        {
-            return;
-        }
+        if (m_Mesh == nullptr || m_Model == nullptr) { return; }
 
         m_Width = m_Camera->GetViewPort().x;
         m_Height = m_Camera->GetViewPort().y;
@@ -36,7 +33,7 @@ public:
         float y = 1.0f - (2.0f * pos.y / height);
 
         auto mvp =
-                (m_Scene->CameraData().projview * m_Scene->ObjectData().model);
+                (m_Scene->CameraData().proj_view * m_Scene->ObjectData().model);
         auto mvp_invert = mvp.invert();
 
         // Clipping coordinate
@@ -60,7 +57,7 @@ public:
         //        Vector3d(dir.x, dir.y, dir.z));
 
         //m_Model->GetPointPainter()->Clear();
-        //if (id != -1) 
+        //if (id != -1)
         //{
         //    m_Model->GetPointPainter()->DrawPoint(m_Points->GetPoint(id));
         //}

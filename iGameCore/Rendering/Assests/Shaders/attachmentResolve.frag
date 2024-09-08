@@ -2,8 +2,8 @@
 
 in vec2 fragTexCoord;
 
-layout(location = 0) out vec4 outColor;// Output to color attachment 0
-//layout(location = 1) out vec4 outDepth;// Output to color attachment 1 (GL_R8 format)
+layout(location = 0) out vec4 outColor;// Output to color attachment 0 (GL_RGBA8 format)
+layout(location = 1) out vec4 outDepth;// Output to color attachment 1 (GL_R32F format)
 
 uniform int numSamples;
 uniform sampler2DMS colorTextureMS;
@@ -25,6 +25,7 @@ void main()
             color += sampleColor;
         }
         outColor = color / float(numSamples);
+        outDepth = vec4(color.r);
     }
 
     // depth resolve(from multisamples to single sample)
@@ -37,6 +38,6 @@ void main()
             float sampleDepth = texelFetch(depthTextureMS, texCoord, i).r;
             minDepth = min(minDepth, sampleDepth);
         }
-        gl_FragDepth  = minDepth;
+        outDepth  = vec4(minDepth, minDepth, minDepth, 1.0f);
     }
 }

@@ -13,7 +13,7 @@ class VolumeMesh : public SurfaceMesh {
 public:
     I_OBJECT(VolumeMesh);
     static Pointer New() { return new VolumeMesh; }
-
+    IGenum GetDataObjectType() const { return IG_VOLUME_MESH; }
     // Get the number of all volumes
     IGsize GetNumberOfVolumes() const noexcept;
 
@@ -257,6 +257,7 @@ private:
 
     ArrayObject::Pointer m_ViewAttribute{};
     int m_ViewDemension{};
+    SurfaceMesh::Pointer m_DrawMesh{ nullptr };
 };
 IGAME_NAMESPACE_END
 #endif

@@ -63,7 +63,7 @@ border:2px solid #EEF1F7
      <x>0</x>
      <y>0</y>
      <width>1200</width>
-     <height>25</height>
+     <height>24</height>
     </rect>
    </property>
    <widget class="QMenu" name="menua">
@@ -371,15 +371,15 @@ border:2px solid #EEF1F7
    <attribute name="toolBarBreak">
     <bool>true</bool>
    </attribute>
-   <addaction name="action_setViewTo_X"/>
-   <addaction name="action_setViewTo_X1"/>
-   <addaction name="action_setViewTo_Y"/>
-   <addaction name="action_setViewTo_Y1"/>
-   <addaction name="action_setViewTo_Z"/>
-   <addaction name="action_setViewTo_Z1"/>
-   <addaction name="action_IsometricView"/>
-   <addaction name="action_LeftRotate"/>
-   <addaction name="action_RightRotate"/>
+   <addaction name="action_setViewToPositiveX"/>
+   <addaction name="action_setViewToNegativeX"/>
+   <addaction name="action_setViewToPositiveY"/>
+   <addaction name="action_setViewToNegativeY"/>
+   <addaction name="action_setViewToPositiveZ"/>
+   <addaction name="action_setViewToNegativeZ"/>
+   <addaction name="action_setViewToIsometric"/>
+   <addaction name="action_rotateNinetyCounterClockwise"/>
+   <addaction name="action_rotateNinetyClockwise"/>
    <addaction name="action_IsShowColorBar"/>
   </widget>
   <widget class="QDockWidget" name="dockWidget_ScalarField">
@@ -472,8 +472,8 @@ border:2px solid #EEF1F7
   <widget class="QDockWidget" name="dockWidget_Animation">
    <property name="minimumSize">
     <size>
-     <width>20</width>
-     <height>10</height>
+     <width>49</width>
+     <height>33</height>
     </size>
    </property>
    <property name="allowedAreas">
@@ -761,31 +761,31 @@ border:2px solid #EEF1F7
     <string>关于iGameMeshView</string>
    </property>
   </action>
-  <action name="action_LeftRotate">
+  <action name="action_rotateNinetyCounterClockwise">
    <property name="icon">
     <iconset resource="../iGameQtMainWindow.qrc">
      <normaloff>:/Ticon/Icons/zuoxuanzhuan90du.svg</normaloff>:/Ticon/Icons/zuoxuanzhuan90du.svg</iconset>
    </property>
    <property name="text">
-    <string>左旋转90°</string>
+    <string>逆时针旋转90°</string>
    </property>
    <property name="toolTip">
-    <string>左旋转90°</string>
+    <string>逆时针旋转90°</string>
    </property>
   </action>
-  <action name="action_RightRotate">
+  <action name="action_rotateNinetyClockwise">
    <property name="icon">
     <iconset resource="../iGameQtMainWindow.qrc">
      <normaloff>:/Ticon/Icons/youxuanzhuan90du.svg</normaloff>:/Ticon/Icons/youxuanzhuan90du.svg</iconset>
    </property>
    <property name="text">
-    <string>右旋转90°</string>
+    <string>顺时针旋转90°</string>
    </property>
    <property name="toolTip">
-    <string>右旋转90°</string>
+    <string>顺时针旋转90°</string>
    </property>
   </action>
-  <action name="action_setViewTo_X">
+  <action name="action_setViewToPositiveX">
    <property name="icon">
     <iconset resource="../iGameQtMainWindow.qrc">
      <normaloff>:/Ticon/Icons/+X.svg</normaloff>:/Ticon/Icons/+X.svg</iconset>
@@ -797,7 +797,7 @@ border:2px solid #EEF1F7
     <string>Set view direction to +X</string>
    </property>
   </action>
-  <action name="action_setViewTo_X1">
+  <action name="action_setViewToNegativeX">
    <property name="icon">
     <iconset resource="../iGameQtMainWindow.qrc">
      <normaloff>:/Ticon/Icons/-X.svg</normaloff>:/Ticon/Icons/-X.svg</iconset>
@@ -809,7 +809,7 @@ border:2px solid #EEF1F7
     <string>Set view direction to -X</string>
    </property>
   </action>
-  <action name="action_setViewTo_Y">
+  <action name="action_setViewToPositiveY">
    <property name="icon">
     <iconset resource="../iGameQtMainWindow.qrc">
      <normaloff>:/Ticon/Icons/+Y.svg</normaloff>:/Ticon/Icons/+Y.svg</iconset>
@@ -821,7 +821,7 @@ border:2px solid #EEF1F7
     <string>Set view direction to +Y</string>
    </property>
   </action>
-  <action name="action_setViewTo_Y1">
+  <action name="action_setViewToNegativeY">
    <property name="icon">
     <iconset resource="../iGameQtMainWindow.qrc">
      <normaloff>:/Ticon/Icons/-Y.svg</normaloff>:/Ticon/Icons/-Y.svg</iconset>
@@ -833,7 +833,7 @@ border:2px solid #EEF1F7
     <string>Set view direction to -Y</string>
    </property>
   </action>
-  <action name="action_setViewTo_Z">
+  <action name="action_setViewToPositiveZ">
    <property name="icon">
     <iconset resource="../iGameQtMainWindow.qrc">
      <normaloff>:/Ticon/Icons/+Z.svg</normaloff>:/Ticon/Icons/+Z.svg</iconset>
@@ -845,7 +845,7 @@ border:2px solid #EEF1F7
     <string>Set view direction to +Z</string>
    </property>
   </action>
-  <action name="action_setViewTo_Z1">
+  <action name="action_setViewToNegativeZ">
    <property name="icon">
     <iconset resource="../iGameQtMainWindow.qrc">
      <normaloff>:/Ticon/Icons/-Z.svg</normaloff>:/Ticon/Icons/-Z.svg</iconset>
@@ -905,7 +905,7 @@ border:2px solid #EEF1F7
     <string>face fill</string>
    </property>
   </action>
-  <action name="action_IsometricView">
+  <action name="action_setViewToIsometric">
    <property name="icon">
     <iconset resource="../iGameQtMainWindow.qrc">
      <normaloff>:/Ticon/Icons/IsometricView.svg</normaloff>:/Ticon/Icons/IsometricView.svg</iconset>
