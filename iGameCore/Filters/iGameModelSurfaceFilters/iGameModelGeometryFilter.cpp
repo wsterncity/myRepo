@@ -942,6 +942,7 @@ struct ExtractVM : public ExtractCellBoundaries {
 				}
 				// If the cell is visible process it
 				if (!this->CellVis || this->CellVis[cellId]) {
+					npts=this->Grid->GetVolumePointIds(cellId, pts);
 					ExtractCellGeometry(this->Grid, cellId, npts, pts,
 						GFacePool, GFaceMap, isGhost);
 				}
