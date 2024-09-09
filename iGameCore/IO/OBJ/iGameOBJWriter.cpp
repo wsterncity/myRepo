@@ -23,8 +23,9 @@ bool OBJWriter::GenerateBuffers()
 	m_Buffers.resize(2, nullptr);
 	WritePointsToBuffer(m_Buffers[0]);
 	WriteFacesToBuffer(m_Buffers[1]);
+
 }
-bool OBJWriter::WritePointsToBuffer(CharArray::Pointer& buffer)
+const void OBJWriter::WritePointsToBuffer(CharArray::Pointer& buffer)
 {
 	if (buffer == nullptr) {
 		buffer = CharArray::New();
@@ -46,7 +47,7 @@ bool OBJWriter::WritePointsToBuffer(CharArray::Pointer& buffer)
 		buffer->AddValue('\n');
 	}
 }
-bool OBJWriter::WriteFacesToBuffer(CharArray::Pointer& buffer)
+const void OBJWriter::WriteFacesToBuffer(CharArray::Pointer& buffer)
 {
 	if (buffer == nullptr) {
 		buffer = CharArray::New();

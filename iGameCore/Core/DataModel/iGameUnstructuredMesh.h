@@ -34,7 +34,7 @@ public:
 	static Pointer New() { return new UnstructuredMesh; }
 
 	void SetCells(CellArray::Pointer cell, UnsignedIntArray::Pointer type);
-
+	CellArray::Pointer GetCells() { return this->m_Cells; };
 	void AddCell(igIndex* cell, int size, IGenum type);
 
 	IGsize GetNumberOfCells() const noexcept;

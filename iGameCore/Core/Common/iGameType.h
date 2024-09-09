@@ -92,6 +92,9 @@ enum {
 	IGAME_ASCII = 1,
 	IGAME_BINARY = 2
 };
+
+
+
 inline constexpr int IG_VOID = 0;
 inline constexpr int IG_CHAR = 1;
 inline constexpr int IG_UNSIGNED_CHAR = 2;

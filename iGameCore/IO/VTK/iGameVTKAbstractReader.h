@@ -17,6 +17,7 @@ public:
 	//virtual void ParseBufferWithFileType() = 0;
 	//virtual void GenerateBufferWithFileType() = 0;
 
+	//VTKTYPE
 	enum VTKTYPE {
 		T0,
 		VERTEX = 1,

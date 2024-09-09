@@ -70,7 +70,7 @@ bool FileWriter::SaveBufferDataToFileWithWindows()
 	// 将缓冲区数据写入文件
 	size_t offset = 0;
 	for (int i = 0; i < m_Buffers.size(); i++) {
-		if (m_Buffers[i]) {
+		if (m_Buffers[i]&&m_Buffers[i]->RawPointer()) {
 			memcpy((char*)lpBaseAddress + offset, m_Buffers[i]->RawPointer(), m_Buffers[i]->GetNumberOfValues());
 			offset += m_Buffers[i]->GetNumberOfValues();
 		}

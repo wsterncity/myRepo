@@ -17,7 +17,7 @@
 #include <iGameSurfaceMeshFilterTest.h>
 #include <iGameUnstructuredMesh.h>
 #include <iGameVolumeMeshFilterTest.h>
-#include "OBJ/igameOBJWriter.h"
+#include "VTK/igameVTKWriter.h"
 #include "iGameFileIO.h"
 #include <IQComponents/igQtFilterDialogDockWidget.h>
 #include <IQComponents/igQtModelDialogWidget.h>
@@ -463,7 +463,11 @@ void igQtMainWindow::initAllFilters() {
 
 	auto action_loadtest = ui->menu_help->addAction("loadtest");
 	connect(action_loadtest, &QAction::triggered, this, [&](bool checked) {
-		std::string filePath = "F:\\OpeniGame\\Model\\secrecy\\driver_polyhedron_allcell_noarray_ascii.vtk";
+		std::string filePath = "F:\\OpeniGame\\Model\\Common\\Tri_Rocket_1.vtk";
+		auto writer = VTKWriter::New();
+		auto mesh = SceneManager::Instance()->GetCurrentScene()->GetCurrentModel()->GetDataObject();
+		writer->WriteToFile(mesh, filePath);
+
 		CharArray::Pointer m_Buffer = CharArray::New();
 		size_t m_FileSize;
 		clock_t time1 = clock();

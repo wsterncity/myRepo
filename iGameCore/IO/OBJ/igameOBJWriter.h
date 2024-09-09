@@ -12,8 +12,8 @@ public:
 
 	bool GenerateBuffers() override;
 
-	bool WritePointsToBuffer(CharArray::Pointer&);
-	bool WriteFacesToBuffer(CharArray::Pointer&);
+	const void WritePointsToBuffer(CharArray::Pointer&);
+	const void WriteFacesToBuffer(CharArray::Pointer&);
 protected:
 	OBJWriter() = default;
 	~OBJWriter() override = default;
