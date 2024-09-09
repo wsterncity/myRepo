@@ -76,7 +76,6 @@ public:
 
 	char* ComputeCellVisibleArray(CharArray::Pointer& CellVisibleArray, Points::Pointer inPoints, CellArray::Pointer Cells);
 protected:
-<<<<<<< HEAD
 	iGameModelGeometryFilter();
 	//有时候在文件里会有标注表面信息，如果有则不需要这边运算，
 	//只需要把attribute的信息copy一份给表面就可以
@@ -93,24 +92,6 @@ protected:
 	bool CellClipping;
 	bool ExtentClipping;
 	bool PlaneClipping;
-=======
-    iGameModelGeometryFilter();
-    // Usually, there is surface information in the file, if there is, there is 
-    // no need to do this operation, just copy the attribute information to the surface
-    SurfaceMesh::Pointer excFaces;
-    DataObject::Pointer input;
-    SurfaceMesh::Pointer output;
-    igIndex PointMaximum;
-    igIndex PointMinimum;
-    igIndex CellMinimum;
-    igIndex CellMaximum;
-    double Extent[6];
-    bool PointClipping;
-    bool CellClipping;
-    bool ExtentClipping;
-    int OutputPointsPrecision;
-    bool RemoveGhostInterfaces;
->>>>>>> b2e085d5ae3daee6dabef8068038451a4dedfa47
 
 	int OutputPointsPrecision;
 

@@ -28,17 +28,6 @@ bool VTKWriter::GenerateBuffers()
 	default:
 		return false;
 	}
-<<<<<<< HEAD
-=======
-	m_Buffers.resize(10, nullptr);
-	WriteHeaderToBuffer(m_Buffers[0]);
-	WritePointsToBuffer(m_Buffers[1]);
-	WriteCellsToBuffer(m_Buffers[2]);
-	WriteCellsTypeToBuffer(m_Buffers[3]);
-	WritePointsAttributesToBuffer(m_Buffers[4]);
-	WriteCellsAttributesToBuffer(m_Buffers[5]);
-	return true;
->>>>>>> b2e085d5ae3daee6dabef8068038451a4dedfa47
 }
 const void VTKWriter::WriteHeaderToBuffer(CharArray::Pointer& buffer)
 {
