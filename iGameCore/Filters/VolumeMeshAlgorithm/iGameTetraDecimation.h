@@ -147,7 +147,7 @@ protected:
         int type = EvaluateFace(faceId);
 
         double priority = 0.0;
-        if (type == 0) { // 内部三角形
+        if (type == 0) {
             priority = ComputePriority(faceId);
         }
 
