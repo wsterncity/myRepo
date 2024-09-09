@@ -1378,7 +1378,7 @@
   }
 
 
-  /* Initialize hinting engine. */
+  /* Initalize hinting engine. */
 
   FT_LOCAL_DEF( FT_Error )
   af_cjk_hints_init( AF_GlyphHints    hints,
