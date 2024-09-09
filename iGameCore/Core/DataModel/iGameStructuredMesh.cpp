@@ -4,208 +4,136 @@
 #include "iGameModelSurfaceFilters/iGameModelGeometryFilter.h"
 IGAME_NAMESPACE_BEGIN
 
-void StructuredMesh::Draw(Scene* scene)
+StructuredMesh::~StructuredMesh()
 {
-	if (!m_Visibility)
-	{
-		return;
-	}
-	if (m_DrawMesh) {
-		m_DrawMesh->SetViewStyle(m_ViewStyle);
-		return m_DrawMesh->Draw(scene);
-	}
-	//update uniform buffer
-	if (m_UseColor) {
-		scene->UBO().useColor = true;
-	}
-	else {
-		scene->UBO().useColor = false;
-	}
-	scene->UpdateUniformBuffer();
-
-	if (m_UseColor && m_ColorWithCell) {
-		scene->GetShader(Scene::PATCH)->use();
-		m_CellVAO.bind();
-		glad_glDrawArrays(GL_TRIANGLES, 0, m_CellPositionSize);
-		m_CellVAO.release();
-		return;
-	}
-
-	if (m_ViewStyle & IG_POINTS) {
-		scene->GetShader(Scene::NOLIGHT)->use();
-		m_PointVAO.bind();
-		glad_glPointSize(m_PointSize);
-		glad_glDepthRange(0, 0.99999);
-		glad_glDrawArrays(GL_POINTS, 0, m_Positions->GetNumberOfValues() / 3);
-		glad_glDepthRange(0, 1);
-		m_PointVAO.release();
-	}
-	if (m_ViewStyle & IG_WIREFRAME) {
-		if (m_UseColor) {
-			scene->GetShader(Scene::NOLIGHT)->use();
-		}
-		else {
-			auto shader = scene->GetShader(Scene::PURECOLOR);
-			shader->use();
-			shader->setUniform(shader->getUniformLocation("inputColor"),
-				igm::vec3{ 0.0f, 0.0f, 0.0f });
-		}
-
-		m_LineVAO.bind();
-		glLineWidth(m_LineWidth);
-
-		// TODO: A better way to render wireframes
-		auto boundingBoxDiag = this->GetBoundingBox().diag();
-		auto scaleFactor =
-			1e-6 / std::pow(10, std::floor(std::log10(boundingBoxDiag)));
-		glad_glDepthRange(scaleFactor, 1);
-		glad_glDepthFunc(GL_GEQUAL);
-
-		glad_glDrawElements(GL_LINES, m_LineIndices->GetNumberOfIds(),
-			GL_UNSIGNED_INT, 0);
-
-		glad_glDepthFunc(GL_GREATER);
-		glad_glDepthRange(0, 1);
-
-		m_LineVAO.release();
-	}
-	if (m_ViewStyle & IG_SURFACE) {
-		scene->GetShader(Scene::PATCH)->use();
-		m_TriangleVAO.bind();
-		glad_glDrawElements(GL_TRIANGLES, m_TriangleIndices->GetNumberOfIds(),
-			GL_UNSIGNED_INT, 0);
-		m_TriangleVAO.release();
-	}
 }
-void StructuredMesh::ConvertToDrawableData()
-{
-	if (m_Positions && m_Positions->GetMTime() > this->GetMTime()) {
-		return;
+void StructuredMesh::SetDimensionSize(igIndex s[3]) {
+	std::copy(s, s + 3, this->size);
+	if (size[2] <= 1) {
+		size[2] = 1;
+		this->Dimension = 2;
 	}
-	if (m_DrawMesh == nullptr || m_DrawMesh->GetMTime() < this->GetMTime()) {
-		iGameModelGeometryFilter::Pointer extract = iGameModelGeometryFilter::New();
-		m_DrawMesh = SurfaceMesh::New();
-		if (!extract->Execute(this, m_DrawMesh)) {
-			m_DrawMesh = nullptr;
-		}
-		if (m_DrawMesh) {
-			m_DrawMesh->Modified();
-		}
-	}
-	if (m_DrawMesh) {
-		return m_DrawMesh->ConvertToDrawableData();
-	}
-	if (!m_Flag)
-	{
-		m_PointVAO.create();
-		m_LineVAO.create();
-		m_TriangleVAO.create();
-		m_PositionVBO.create();
-		m_PositionVBO.target(GL_ARRAY_BUFFER);
-		m_ColorVBO.create();
-		m_ColorVBO.target(GL_ARRAY_BUFFER);
-		m_NormalVBO.create();
-		m_NormalVBO.target(GL_ARRAY_BUFFER);
-		m_TextureVBO.create();
-		m_TextureVBO.target(GL_ARRAY_BUFFER);
-		m_PointEBO.create();
-		m_PointEBO.target(GL_ELEMENT_ARRAY_BUFFER);
-		m_LineEBO.create();
-		m_LineEBO.target(GL_ELEMENT_ARRAY_BUFFER);
-		m_TriangleEBO.create();
-		m_TriangleEBO.target(GL_ELEMENT_ARRAY_BUFFER);
-
-		m_CellVAO.create();
-		m_CellPositionVBO.create();
-		m_CellPositionVBO.target(GL_ARRAY_BUFFER);
-		m_CellColorVBO.create();
-		m_CellColorVBO.target(GL_ARRAY_BUFFER);
-		m_Flag = true;
-	}
-
-	m_Positions = m_Points->ConvertToArray();
-	m_Positions->Modified();
-
-	IdArray::Pointer triangleIndices = IdArray::New();
-	IdArray::Pointer edgeIndices = IdArray::New();
-
-	if (this->Hexahedrons == nullptr && this->Quads == nullptr) {
-		this->GenStructuredCellConnectivities();
-	}
-	int fcnt = this->GetNumberOfQuads();
-	igIndex vhs[IGAME_CELL_MAX_SIZE];
-	igIndex vcnt = 0;
-	for (int i = 0; i < fcnt; i++) {
-		vcnt = this->Quads->GetCellIds(i, vhs);
-		for (int k = 2; k < vcnt; k++) {
-			triangleIndices->AddId(vhs[0]);
-			triangleIndices->AddId(vhs[k - 1]);
-			triangleIndices->AddId(vhs[k]);
+	else this->Dimension = 3;
+}
+IGsize StructuredMesh::GetNumberOfCells() {
+	if (size[2] > 1) return GetNumberOfVolumes();
+	else return GetNumberOfFaces();
+}
+void StructuredMesh::BuildStructuredFaces() {
+	igIndex i = 0, j = 0, k = 0;
+	igIndex vhs[4] = { 0 };
+	igIndex st = 0;
+	igIndex tmpvhs[4] = {
+0,1,1 + size[0] * size[1],size[0] * size[1]
+	};
+	this->m_Faces->Resize(size[2] * (size[1] - 1) * (size[0] - 1) +
+		size[0] * (size[1] - 1) * (size[2] - 1) +
+		size[1] * (size[2] - 1) * (size[0] - 1));
+	// ij面的定义
+	tmpvhs[1] = 1;
+	tmpvhs[2] = 1 + size[0];
+	tmpvhs[3] = size[0];
+	for (k = 0; k < size[2]; ++k) {
+		for (j = 0; j < size[1] - 1; ++j) {
+			st = j * size[0] + k * size[0] * size[1];
+			for (i = 0; i < size[0] - 1; ++i) {
+				for (int it = 0; it < 4; it++) {
+					vhs[it] = st + tmpvhs[it];
+				}
+				st++;
+				m_Faces->AddCellIds(vhs, 4);
+			}
 		}
 	}
-	for (int k = 0; k < size[2]; k++) {
-		for (int j = 0; j < size[1]; j++) {
-			for (int i = 0; i < size[0]; i++) {
-				if (i != size[0] - 1) {
-					edgeIndices->AddId(GetStructuredIndex(i, j, k));
-					edgeIndices->AddId(GetStructuredIndex(i + 1, j, k));
+	// ik方向面的定义
+	tmpvhs[1] = 1;
+	tmpvhs[2] = 1 + size[0] * size[1];
+	tmpvhs[3] = size[0] * size[1];
+	for (j = 0; j < size[1]; j++) {
+		for (k = 0; k < size[2] - 1; k++) {
+			st = j * size[0] + k * size[0] * size[1];
+			for (i = 0; i < size[0] - 1; i++) {
+				for (int it = 0; it < 4; it++) {
+					vhs[it] = st + tmpvhs[it];
 				}
-				if (j != size[1] - 1) {
-					edgeIndices->AddId(GetStructuredIndex(i, j, k));
-					edgeIndices->AddId(GetStructuredIndex(i, j + 1, k));
-				}
-				if (k != size[2] - 1) {
-					edgeIndices->AddId(GetStructuredIndex(i, j, k));
-					edgeIndices->AddId(GetStructuredIndex(i, j, k + 1));
-				}
+				st++;
+				m_Faces->AddCellIds(vhs, 4);
 			}
 		}
 	}
 
-	m_TriangleIndices = triangleIndices;
-	m_LineIndices = edgeIndices;
-
-	// allocate buffer
-	{
-		GLAllocateGLBuffer(m_PositionVBO,
-			m_Positions->GetNumberOfValues() * sizeof(float),
-			m_Positions->RawPointer());
-
-		GLAllocateGLBuffer(m_LineEBO,
-			m_LineIndices->GetNumberOfIds() * sizeof(igIndex),
-			m_LineIndices->RawPointer());
-
-		GLAllocateGLBuffer(m_TriangleEBO,
-			m_TriangleIndices->GetNumberOfIds() * sizeof(igIndex),
-			m_TriangleIndices->RawPointer());
+	// jk方向面的定义
+	tmpvhs[1] = size[0];
+	tmpvhs[2] = size[0] + size[0] * size[1];
+	tmpvhs[3] = size[0] * size[1];
+	for (i = 0; i < size[0]; i++) {
+		for (k = 0; k < size[2] - 1; k++) {
+			st = i + k * size[0] * size[1];
+			for (j = 0; j < size[1] - 1; j++) {
+				for (int it = 0; it < 4; it++) {
+					vhs[it] = st + tmpvhs[it];
+				}
+				st += size[0];
+				m_Faces->AddCellIds(vhs, 4);
+			}
+		}
 	}
-
-	// set vertex attribute pointer
-	{
-		// point
-		m_PointVAO.vertexBuffer(GL_VBO_IDX_0, m_PositionVBO, 0, 3 * sizeof(float));
-		GLSetVertexAttrib(m_PointVAO, GL_LOCATION_IDX_0, GL_VBO_IDX_0, 3, GL_FLOAT,
-			GL_FALSE, 0);
-
-		// line
-		m_LineVAO.vertexBuffer(GL_VBO_IDX_0, m_PositionVBO, 0, 3 * sizeof(float));
-		GLSetVertexAttrib(m_LineVAO, GL_LOCATION_IDX_0, GL_VBO_IDX_0, 3, GL_FLOAT,
-			GL_FALSE, 0);
-		m_LineVAO.elementBuffer(m_LineEBO);
-
-		// triangle
-		m_TriangleVAO.vertexBuffer(GL_VBO_IDX_0, m_PositionVBO, 0,
-			3 * sizeof(float));
-		GLSetVertexAttrib(m_TriangleVAO, GL_LOCATION_IDX_0, GL_VBO_IDX_0, 3,
-			GL_FLOAT, GL_FALSE, 0);
-		m_TriangleVAO.elementBuffer(m_TriangleEBO);
+}
+void StructuredMesh::GenStructuredCellConnectivities() {
+	if (size[2] <= 1) {
+		size[2] = 1;
+		this->Dimension = 2;
 	}
+	igIndex i = 0, j = 0, k = 0;
+	igIndex vhs[8] = { 0 };
+	igIndex st = 0;
+	this->m_Faces = CellArray::New();
+	if (this->Dimension == 3) {
+		this->m_Volumes = CellArray::New();
+		this->m_Volumes->Resize((size[0] - 1) * (size[1] - 1) * (size[2] - 1));
+		igIndex tmpvhs[8] = {
+			0,1,1 + size[0] * size[1],size[0] * size[1],
+			size[0],1 + size[0],1 + size[0] + size[0] * size[1],size[0] + size[0] * size[1]
+		};
+		for (k = 0; k < size[2] - 1; ++k) {
+			for (j = 0; j < size[1] - 1; ++j) {
+				st = j * size[0] + k * size[0] * size[1];
+				for (i = 0; i < size[0] - 1; ++i) {
+					for (int it = 0; it < 8; it++) {
+						vhs[it] = st + tmpvhs[it];
+					}
+					m_Volumes->AddCellIds(vhs, 8);
+					st++;
+				}
+			}
+		}
+
+	}
+	else {
+		this->m_Faces->Resize((size[0] - 1) * (size[1] - 1));
+		igIndex tmpvhs[4] = { 0,1,size[0] + 1,size[0] };
+		for (j = 0; j < size[1] - 1; ++j) {
+			st = j * size[0];
+			for (i = 0; i < size[0] - 1; ++i) {
+				for (int it = 0; it < 4; it++) {
+					vhs[it] = st + tmpvhs[it];
+				}
+				st++;
+				m_Faces->AddCellIds(vhs, 4);
+			}
+		}
+	}
+	m_BuildStructuredConnectivty = true;
+}
+igIndex StructuredMesh::GetPointIndex(igIndex i, igIndex j, igIndex k) {
+	return i + j * size[0] + k * size[0] * size[1];
+}
+igIndex StructuredMesh::GetVolumeIndex(igIndex i, igIndex j, igIndex k) {
+	return i + j * (size[0] - 1) + k * (size[0] - 1) * (size[1] - 1);
 }
 void StructuredMesh::ViewCloudPicture(Scene* scene, int index, int demension)
 {
-	//if (m_DrawMesh) {
-	//	return m_DrawMesh->ViewCloudPicture(scene, index, demension);
-	//}
-	//return;
+	//Structured meshes come in special forms such as IJ planes
+	return this->VolumeMesh::ViewCloudPicture(scene, index, demension);
 }
 IGAME_NAMESPACE_END

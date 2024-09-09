@@ -21,7 +21,7 @@ bool FileWriter::WriteToFile()
 	return SaveBufferDataToFile();
 
 }
-bool FileWriter::WriteToFile(DataObject::Pointer dataObject,std::string filePath)
+bool FileWriter::WriteToFile(DataObject::Pointer dataObject, std::string filePath)
 {
 	this->m_DataObject = dataObject;
 	this->m_FilePath = filePath;
@@ -70,7 +70,7 @@ bool FileWriter::SaveBufferDataToFileWithWindows()
 	// 将缓冲区数据写入文件
 	size_t offset = 0;
 	for (int i = 0; i < m_Buffers.size(); i++) {
-		if (m_Buffers[i]&&m_Buffers[i]->RawPointer()) {
+		if (m_Buffers[i] && m_Buffers[i]->RawPointer()) {
 			memcpy((char*)lpBaseAddress + offset, m_Buffers[i]->RawPointer(), m_Buffers[i]->GetNumberOfValues());
 			offset += m_Buffers[i]->GetNumberOfValues();
 		}
@@ -88,6 +88,7 @@ bool FileWriter::SaveBufferDataToFileWithWindows()
 
 bool FileWriter::SaveBufferDataToFileWithLinux()
 {
+	//用mmap就行，原理和上面的一样，实在不行用fwrite
 	return true;
 }
 void FileWriter::SetFilePath(const std::string& filePath)
@@ -99,5 +100,12 @@ void FileWriter::SetDataObject(DataObject::Pointer dataObject)
 {
 	this->m_DataObject = dataObject;
 }
-
+void FileWriter::AddStringToBuffer(std::string& data, CharArray::Pointer buffer)
+{
+	if (!buffer)return;
+	for (int i = 0; i < data.size(); i++) {
+		buffer->AddValue(data[i]);
+	}
+	return;
+}
 IGAME_NAMESPACE_END

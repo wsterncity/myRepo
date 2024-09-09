@@ -11,7 +11,11 @@ FileReader::FileReader()
 	this->SetNumberOfOutputs(1);
 
 }
-
+DataObject::Pointer FileReader::ReadFile(const std::string& filePath) {
+	SetFilePath(filePath);
+	Execute();
+	return this->GetOutput();
+}
 bool FileReader::Execute()
 {
 	clock_t start, end;
@@ -719,5 +723,50 @@ void FileReader::SetFilePath(const std::string& filePath) {
 	this->m_FileName = filePath.substr(filePath.find_last_of('/') + 1, filePath.size());;
 }
 
-
+void FileReader::SkipNullData(){
+	while (this->IS && (*this->IS == ' ' || *this->IS == '\r' || *this->IS == '\n' || *this->IS == '\t'))this->IS++;
+}
+void FileReader::UpdateReadProgress() {
+	if (!this->IS)return;
+	double progress = 1.0 * (this->IS - this->FILESTART) / m_FileSize;
+	this->UpdateProgress(progress);
+}
+int FileReader::DecodeString(char* resname, const char* name)
+{
+	if (!resname || !name)
+	{
+		return 0;
+	}
+	std::ostringstream str;
+	size_t cc = 0;
+	unsigned int ch;
+	size_t len = strlen(name);
+	size_t reslen = 0;
+	char buffer[10] = "0x";
+	while (name[cc])
+	{
+		if (name[cc] == '%')
+		{
+			if (cc <= (len - 3))
+			{
+				buffer[2] = name[cc + 1];
+				buffer[3] = name[cc + 2];
+				buffer[4] = 0;
+				sscanf(buffer, "%x", &ch);
+				str << static_cast<char>(ch);
+				cc += 2;
+				reslen++;
+			}
+		}
+		else
+		{
+			str << name[cc];
+			reslen++;
+		}
+		cc++;
+	}
+	strncpy(resname, str.str().c_str(), reslen + 1);
+	resname[reslen] = 0;
+	return static_cast<int>(reslen);
+}
 IGAME_NAMESPACE_END

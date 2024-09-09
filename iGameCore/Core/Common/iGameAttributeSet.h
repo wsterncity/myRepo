@@ -83,10 +83,10 @@ public:
     void DeleteAttribute(const IGsize index);
     // Get all attributes
     ElementArray<Attribute>::Pointer GetAllAttributes();
-    // Get all point attributes
+    // Get all point attributes, not thread safe
     ElementArray<Attribute>::Pointer GetAllPointAttributes();
 
-    // Get all cell attributes
+    // Get all cell attributes, not thread safe
     ElementArray<Attribute>::Pointer GetAllCellAttributes();
     void AllocateSizeWithCopy(AttributeSet* ps,IGsize numCells) {
         auto& allarray = ps->GetAllAttributes();

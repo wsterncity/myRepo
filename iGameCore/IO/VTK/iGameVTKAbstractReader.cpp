@@ -1194,8 +1194,8 @@ bool VTKAbstractReader::ReadStructuredGrid()
 			this->ProcessMetaData();
 		}
 		else {
-			igDebug("Unrecognized keyword: " << line);
-			return false;
+			//igDebug("Unrecognized keyword: " << line);
+			//return false;
 		}
 	}
 	if (m_StructuredMesh->GetPoints() == nullptr || m_StructuredMesh->GetPoints()->GetNumberOfPoints() == 0) {
@@ -1217,10 +1217,6 @@ bool VTKAbstractReader::ReadStructuredGrid()
 			p[2] += aspectRatio[2];
 		}
 		m_StructuredMesh->SetPoints(points);
-		//for (int i = 0; i < npts; i++) {
-		//	p = points->GetPoint(i);
-		//	std::cout << p[0] << ' ' << p[1] << ' ' << p[2] << '\n';
-		//}
 	}
 	m_StructuredMesh->GenStructuredCellConnectivities();
 	return true;

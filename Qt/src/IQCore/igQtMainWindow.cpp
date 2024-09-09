@@ -429,10 +429,22 @@ void igQtMainWindow::initAllFilters() {
 			auto fp = iGameModelGeometryFilter::New();
 			auto input =
 				rendererWidget->GetScene()->GetCurrentModel()->GetDataObject();
+			/*	fp->SetCellIndexExtent(100, 100000);*/
+				//fp->SetPointIndexExtent(0, 100);
+			auto bound = input->GetBoundingBox();
+			auto a = (bound.max + bound.min * 2) / 3;
+			auto b = (bound.max * 2 + bound.min) / 3;
+			double extent[6] = { a[0],b[0], a[1],b[1], a[2],b[2] };
+
+			for (int i = 0; i < 3; i++) {
+				std::cout << a[i] << ' ' << b[i] << '\n';
+			}
+			fp->SetExtent(extent);
+
 			fp->Execute(input);
 			SceneManager::Instance()->GetCurrentScene()->ChangeModelVisibility(
 				0, false);
-			auto mesh = fp->GetOutPut();
+			auto mesh = fp->GetExtractMesh();
 			mesh->SetName("SURFACE");
 			modelTreeWidget->addDataObjectToModelTree(mesh, ItemSource::File);
 		});
