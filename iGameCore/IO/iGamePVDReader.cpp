@@ -103,15 +103,15 @@ bool iGame::iGamePVDReader::Parsing() {
                 range_min = FLT_MAX;
                 if(scalar_exist_0){
                     const auto& ScalarDataRange = m_data_object->GetAttributeSet()->GetAttribute(k).dataRange;
-                    range_min = std::min(range_min, ScalarDataRange.first );
-                    range_max = std::max(range_max, ScalarDataRange.second);
+                    range_min = min(range_min, ScalarDataRange.first );
+                    range_max = max(range_max, ScalarDataRange.second);
                 }
 
                 if(scalar_exist_1){
                     for(auto it = m_data_object->SubDataObjectIteratorBegin(); it != m_data_object->SubDataObjectIteratorEnd(); ++ it){
                         const auto& ScalarDataRange = it->second->GetAttributeSet()->GetAttribute(k).dataRange;
-                        range_min = std::min(range_min, ScalarDataRange.first );
-                        range_max = std::max(range_max, ScalarDataRange.second);
+                        range_min = min(range_min, ScalarDataRange.first );
+                        range_max =max(range_max, ScalarDataRange.second);
                     }
 //                    std::cout << "range " << range_min << ' ' << range_max << '\n';
                     for(auto it = m_data_object->SubDataObjectIteratorBegin(); it != m_data_object->SubDataObjectIteratorEnd(); ++ it){

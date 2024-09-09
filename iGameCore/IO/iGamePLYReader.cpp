@@ -8,7 +8,7 @@ bool PLYReader::Parsing()
 	int EdgeNum = 0;
 
 	auto& left = this->IS;
-	auto right = left + m_Buffer->GetNumberOfValues();
+	auto right = this->FILEEND;
 
 	while (left < right) {
 		while (*left == ' ')left++;

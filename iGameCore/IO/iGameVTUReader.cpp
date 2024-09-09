@@ -184,8 +184,8 @@ bool iGame::iGameVTUReader::Parsing() {
 				float value;
 				for (int i = 0; i < array->GetNumberOfElements(); i++) {
 					value = array->GetValue(i);
-					scalar_range_max = std::max(scalar_range_max, value);
-					scalar_range_min = std::min(scalar_range_min, value);
+					scalar_range_max = max(scalar_range_max, value);
+					scalar_range_min = min(scalar_range_min, value);
 				}
 				m_Data.GetData()->AddScalar(IG_POINT, array, { scalar_range_min, scalar_range_max });
 			}

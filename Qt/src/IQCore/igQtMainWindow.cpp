@@ -1,7 +1,6 @@
 //
 // Created by m_ky on 2024/4/10.
 //
-
 #include "Interactor/iGameFacesSelection.h"
 #include "Interactor/iGameLineSourceInteractor.h"
 #include "Interactor/iGamePointPickedInteractor.h"
@@ -27,7 +26,6 @@
 #include <IQWidgets/ColorManager/igQtBasicColorAreaWidget.h>
 #include <IQWidgets/ColorManager/igQtColorManagerWidget.h>
 #include <IQWidgets/igQtTensorWidget.h>
-
 #include <Sources/iGameLineTypePointsSource.h>
 
 igQtMainWindow::igQtMainWindow(QWidget* parent)
@@ -465,12 +463,43 @@ void igQtMainWindow::initAllFilters() {
 
 	auto action_loadtest = ui->menu_help->addAction("loadtest");
 	connect(action_loadtest, &QAction::triggered, this, [&](bool checked) {
-		std::string filePath = "F:\\OpeniGame\\Model\\Common\\Tri_Rocket.obj";
-		auto dataObject = SceneManager::Instance()->GetCurrentScene()->GetCurrentModel()->GetDataObject();
-		auto test = OBJWriter::New();
-		test->SetFilePath(filePath);
-		test->SetDataObject(dataObject);
-		test->WriteToFile();
+		std::string filePath = "F:\\OpeniGame\\Model\\secrecy\\driver_polyhedron_allcell_noarray_ascii.vtk";
+		CharArray::Pointer m_Buffer = CharArray::New();
+		size_t m_FileSize;
+		clock_t time1 = clock();
+
+		//auto file_ = fopen(filePath.c_str(), "rb");
+		//if (fseek(file_, SEEK_SET, SEEK_END) != 0) {
+		//	return false;
+		//}
+		//m_FileSize = static_cast<size_t>(_ftelli64(file_));
+		//rewind(file_);
+		//if (m_FileSize == 0) {
+		//	return false;
+		//}
+		//m_Buffer->Resize(m_FileSize);
+		//fread(m_Buffer->RawPointer(), 1, m_FileSize, file_) == m_FileSize;
+		//fclose(file_);
+
+
+
+		//auto m_File = std::make_unique<std::ifstream>(filePath, std::ios::binary);
+		//m_File->seekg(0, std::ios::end);
+		//m_FileSize = m_File->tellg();
+		//m_File->seekg(0, std::ios::beg);
+		//if (m_FileSize == 0) {
+		//	return false;
+		//}
+		//m_Buffer->Resize(m_FileSize);
+		//m_File->read(m_Buffer->RawPointer(), m_FileSize);
+
+
+
+		clock_t time2 = clock();
+		std::cout << "Read file to buffer Cost " << time2 - time1 << "ms\n";
+
+
+
 		});
 
 	connect(ui->menuTest->addAction("addTetra"), &QAction::triggered, this,

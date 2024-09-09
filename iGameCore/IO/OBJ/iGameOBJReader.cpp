@@ -6,8 +6,8 @@ bool OBJReader::Parsing()
 	int VertexNum = 0;
 	int FaceNum = 0;
 
-	const char* left = m_Buffer->RawPointer();
-	const char* right = left + m_Buffer->GetNumberOfValues();
+	const char* left = this->FILESTART;
+	const char* right = this->FILEEND;
 
 	size_t idx = -1;
 	{

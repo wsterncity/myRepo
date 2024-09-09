@@ -60,7 +60,7 @@ public:
     static Pointer New() { return new Viewer; }
 
 public:
-    void SetNearPlane(float near) { nearPlane = near; };
+    void SetNearPlane(float _near) { nearPlane = _near; };
     //void SetFarPlane(float far) { farPlane = far; };
     float GetNearPlane() { return nearPlane; };
     //float GetFarPlane() { return farPlane; };

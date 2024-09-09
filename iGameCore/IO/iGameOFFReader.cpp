@@ -7,7 +7,7 @@ bool OFFReader::Parsing()
 	int FaceNum = 0;
 	int LineNum = 0;
 	auto& left = this->IS;
-	const char* right = left + m_Buffer->GetNumberOfValues();
+	const char* right = this->FILEEND;
 
 	while (left < right)
 	{

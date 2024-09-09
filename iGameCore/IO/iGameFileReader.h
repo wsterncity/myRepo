@@ -7,16 +7,12 @@
 #include "iGameDataCollection.h"
 #include "iGameFlatArray.h"
 #include <algorithm>
-
+#include<windows.h>
+#include<stdio.h>
+#include <tchar.h>
 IGAME_NAMESPACE_BEGIN
 
 
-inline size_t GetFileSize(std::ifstream& file) {
-	file.seekg(0, std::ios::end);
-	size_t size = file.tellg();
-	file.seekg(0, std::ios::beg);
-	return size;
-}
 
 class FileReader : public Filter {
 public:
@@ -24,9 +20,8 @@ public:
 	// static Pointer New() { return new FileReader; }
 
 	bool Open();
-	bool ReadToBuffer();
 	virtual bool Parsing() = 0;
-	bool CreateDataObject();
+	virtual bool CreateDataObject();
 	bool Close();
 
 	bool Execute() override;
@@ -65,7 +60,7 @@ public:
 	}
 	void UpdateReadProgress() {
 		if (!this->IS)return;
-		double progress = 1.0 * (this->IS - m_Buffer->RawPointer()) / m_Buffer->GetNumberOfValues();
+		double progress = 1.0 * (this->IS - this->FILESTART) / m_FileSize;
 		this->UpdateProgress(progress);
 	}
 
@@ -114,18 +109,19 @@ protected:
 
 	CellArray::Pointer m_CellArray;
 	DataCollection m_Data;
-	CharArray::Pointer m_Buffer;
 
 	DataObject::Pointer m_Output;
 
 	std::string m_FilePath;
 	std::string m_FileName;
 	std::string m_FileSuffix;
+	FILE* file_;
 	size_t m_FileSize;
-	std::unique_ptr<std::ifstream> m_File{};
-
+	HANDLE m_File;
+	HANDLE m_MapFile;
 	const char* IS;
-
+	char* FILESTART;
+	char* FILEEND;
 	IGenum m_FileType{ IGAME_ASCII };
 };
 
@@ -224,7 +220,7 @@ inline double mAtof(const char* p)
 	{
 		p++; int i; double v = 0;
 		for (i = 0; i < 20; i++) { if (p[i] != '0') break; } double k = morn_atof_k[i]; p = p + i;
-		for (i = 0; (p[i] >= '0') && (p[i] <= '9'); i++) { v = v + morn_atof[std::min(i, 16)][p[i] - '0']; } p = p + i;
+		for (i = 0; (p[i] >= '0') && (p[i] <= '9'); i++) { v = v + morn_atof[min(i, 16)][p[i] - '0']; } p = p + i;
 		d = v * k + d;
 	}
 	if ((*p == 'e') || (*p == 'E'))
@@ -252,7 +248,7 @@ inline const char* mAtof(const char* p, float& val)
 	{
 		p++; int i; double v = 0;
 		for (i = 0; i < 20; i++) { if (p[i] != '0') break; } double k = morn_atof_k[i]; p = p + i;
-		for (i = 0; (p[i] >= '0') && (p[i] <= '9'); i++) { v = v + morn_atof[std::min(i, 16)][p[i] - '0']; } p = p + i;
+		for (i = 0; (p[i] >= '0') && (p[i] <= '9'); i++) { v = v + morn_atof[min(i, 16)][p[i] - '0']; } p = p + i;
 		d = v * k + d;
 	}
 	if ((*p == 'e') || (*p == 'E'))
@@ -280,7 +276,7 @@ inline const char* mAtof(const char* p, double& val)
 	{
 		p++; int i; double v = 0;
 		for (i = 0; i < 20; i++) { if (p[i] != '0') break; } double k = morn_atof_k[i]; p = p + i;
-		for (i = 0; (p[i] >= '0') && (p[i] <= '9'); i++) { v = v + morn_atof[std::min(i, 16)][p[i] - '0']; } p = p + i;
+		for (i = 0; (p[i] >= '0') && (p[i] <= '9'); i++) { v = v + morn_atof[min(i, 16)][p[i] - '0']; } p = p + i;
 		d = v * k + d;
 	}
 	if ((*p == 'e') || (*p == 'E'))
