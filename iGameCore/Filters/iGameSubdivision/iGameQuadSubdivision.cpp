@@ -1,6 +1,6 @@
 #include "iGameQuadSubdivision.h"
 IGAME_NAMESPACE_BEGIN
-// 计算 Bernstein 多项式的值
+
 double Bernstein(int i, int n, double t) {
 	double binomial_coeff = 1.0;
 	for (int j = 0; j < i; ++j) {
@@ -25,19 +25,19 @@ double BSplineBasisFunction(int i, int p, double t, const std::vector<double>& k
 	}
 }
 
-// 生成 Bezier 曲面上的点
+// Generate points on a Bezier surface
 std::vector<std::vector<Point>>GenerateBezierSurface(Point ControlPts[4][4], int resolution) {
 	std::vector<std::vector<Point>> bezierSurface(resolution, std::vector<Point>(resolution));
 
-	// 定义节点向量（均匀节点向量示例）
-	std::vector<double> knots = { 0, 0, 0, 0, 1+1e-10, 1 + 1e-10, 1 + 1e-10, 1 + 1e-10 }; // 双三次 B 样条的节点向量
+	// Define node vectors (uniform node vector example)
+	std::vector<double> knots = { 0, 0, 0, 0, 1+1e-10, 1 + 1e-10, 1 + 1e-10, 1 + 1e-10 }; // Node vectors of bicubic B-splines
 	for (int u = 0; u < resolution; ++u) {
 		for (int v = 0; v < resolution; ++v) {
 			double u_t = static_cast<double>(u) / (resolution - 1);
 			double v_t = static_cast<double>(v) / (resolution - 1);
 			Point p = { 0, 0, 0 }; // Assuming Point has a default constructor
 
-			// 双重循环计算每个控制点的权重
+			// The double loop computes the weight of each control point
 			for (int i = 0; i < 4; ++i) {
 				for (int j = 0; j < 4; ++j) {
 					double Bu = Bernstein(i, 3, u_t);
@@ -74,11 +74,9 @@ bool QuadSubdivision::Execute()
 	igIndex fhs[IGAME_CELL_MAX_SIZE];
 	igIndex ecnt = 0;
 	igIndex ehs[IGAME_CELL_MAX_SIZE];
-	//面点
-	std::vector<std::vector<Point>>FacePts(FaceNum);
-	//边点
-	std::vector<std::vector<Point>>EdgePts(EdgeNum);
-	//角点
+
+	std::vector<std::vector<Point>>FacePts(FaceNum); // pastry
+	std::vector<std::vector<Point>>EdgePts(EdgeNum); // Edge point
 	std::vector<Point>CornerPts(PointNum);
 	std::vector<Point>CornerNormals(PointNum);
 	std::vector<Point>PointNormals(PointNum);
@@ -106,11 +104,10 @@ bool QuadSubdivision::Execute()
 	//	PointNormals[i].normalize();
 	//}
 
-	//计算面点
 	for (i = 0; i < FaceNum; i++) {
 		vcnt = Faces->GetCellIds(i, vhs);
 		assert(vcnt == 4);
-		//每个面有四个内点
+		// Each face has four interior points
 		FacePts[i].resize(4);
 		Point p[4];
 		for (j = 0; j < vcnt; j++) {
@@ -123,14 +120,14 @@ bool QuadSubdivision::Execute()
 		}
 	}
 
-	//计算边点
+	// Computing edge points
 	for (i = 0; i < EdgeNum; i++) {
 		vcnt = Edges->GetCellIds(i, vhs);
 		assert(vcnt == 2);
-		//每个边都有两个内点
+		// Each edge has two interior points
 		EdgePts[i].resize(2);
 		fcnt = mesh->GetEdgeToNeighborFaces(i, fhs);
-		//如果是内部边
+		// If it's an internal edge
 		if (!mesh->IsBoundryEdge(i)) {
 			for (j = 0; j < 2; j++) {
 				EdgePts[i][j] = Point{ 0,0,0 };
@@ -146,7 +143,7 @@ bool QuadSubdivision::Execute()
 				EdgePts[i][j] /= fcnt;
 			}
 		}
-		//如果是Boundry
+
 		else {
 			Point p[2];
 			for (j = 0; j < vcnt; j++) {
@@ -156,7 +153,7 @@ bool QuadSubdivision::Execute()
 			EdgePts[i][1] = (p[1] * 2 + p[0]) / 3;
 		}
 	}
-	//计算角点
+
 	for (i = 0; i < PointNum; i++) {
 		auto p = mesh->GetPoint(i);
 		fcnt = mesh->GetPointToNeighborFaces(i, fhs);
@@ -187,7 +184,7 @@ bool QuadSubdivision::Execute()
 			CornerPts[i] = p;
 		}
 	}
-	////计算角点的法向量
+
 	//for (i = 0; i < PointNum; i++) {
 	//	int n = mesh->GetPointToOneRingPoints(i, vhs);
 	//	if (mesh->IsBoundryPoint(i))continue;
@@ -199,7 +196,7 @@ bool QuadSubdivision::Execute()
 	//	fcnt = mesh->GetPointToNeighborFaces(i, fhs);
 	//	std::vector<Point>ep(n);
 	//	std::vector<Point>fp(n);
-	//    //这里需要按照半边顺序进行放入
+
 	//	for (j = 0; j < n; j++) {
 	//		auto edge = mesh->GetEdge(ehs[j]);
 	//		if (edge->GetPointId(0) == i) {
@@ -230,7 +227,7 @@ bool QuadSubdivision::Execute()
 
 
 	for (auto FaceId = 0; FaceId < FaceNum; FaceId++) {
-		//每个面有十六个控制点
+		// Each face has sixteen control points
 		Point ControlPts[4][4];
 		vcnt = Faces->GetCellIds(FaceId, vhs);
 		for (i = 0; i < 4; i++) {

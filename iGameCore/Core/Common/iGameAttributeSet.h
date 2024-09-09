@@ -112,6 +112,8 @@ protected:
 
     ElementArray<Attribute>::Pointer m_Buffer{};
     ElementArray<Attribute>::Pointer tmpBuffer{};
+
+    Attribute NONE{ AttributeSet::Attribute::None() };
 };
 IGAME_NAMESPACE_END
 #endif
