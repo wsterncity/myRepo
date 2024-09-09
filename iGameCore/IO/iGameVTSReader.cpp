@@ -25,22 +25,22 @@ bool iGame::iGameVTSReader::Parsing() {
     if(elem){
         data = elem->Attribute("WholeExtent");
 //        char* nextToken;
-        char* token = strtok(const_cast<char*>(data), " ");
+        token = strtok(const_cast<char*>(data), delimiters);
         int l, r;
         l = mAtoi(token);
-        token = strtok(nullptr, " ");
+        token = strtok(nullptr, delimiters);
         r = mAtoi(token);
-        token = strtok(nullptr, " ");
+        token = strtok(nullptr, delimiters);
         x_dimension = r - l + 1;
 
         l = mAtoi(token);
-        token = strtok(nullptr, " ");
+        token = strtok(nullptr, delimiters);
         r = mAtoi(token);
-        token = strtok(nullptr, " ");
+        token = strtok(nullptr, delimiters);
         y_dimension = r - l + 1;
 
         l = mAtoi(token);
-        token = strtok(nullptr, " ");
+        token = strtok(nullptr, delimiters);
         r = mAtoi(token);
         z_dimension = r - l + 1;
     } else {
@@ -97,7 +97,7 @@ bool iGame::iGameVTSReader::Parsing() {
         }
     }
     int vhs[16] = { 0 };
-    int CellNum = (x_dimension - 1) * (y_dimension - 1) * (z_dimension - 1);
+//    int CellNum = (x_dimension - 1) * (y_dimension - 1) * (z_dimension - 1);
     CellArray::Pointer volume = m_Data.GetVolumes();
 
     int xy_multi_dimensions = x_dimension * y_dimension;
@@ -134,10 +134,10 @@ bool iGame::iGameVTSReader::Parsing() {
         {
             float range_max = FLT_MIN;
             float range_min = FLT_MAX;
-            if(!strncmp(type, "Float32", 7)){
+            if(!strncmp(type, "Float", 5)){
                 FloatArray::Pointer arr = FloatArray::New();
                 float ps[3] = { 0 };
-                char* token = strtok(const_cast<char*>(data), " ");
+                token = strtok(const_cast<char*>(data), delimiters);
                 while (token != nullptr) {
                     for(float & i : ps) {
                         i = mAtof(token);
@@ -146,7 +146,7 @@ bool iGame::iGameVTSReader::Parsing() {
 //                        i = std::abs(i);
                         if(i > range_max) range_max = i;
                         else if(i < range_min) range_min = i;
-                        token = strtok(nullptr, " ");
+                        token = strtok(nullptr, delimiters);
                     }
                     arr->AddElement(ps);
                 }
