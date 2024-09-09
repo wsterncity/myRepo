@@ -4,7 +4,7 @@
 #include "iGameObject.h"
 #include "iGameDataObject.h"
 #include "iGameFileReader.h"
-
+#include "iGameFileWriter.h"
 IGAME_NAMESPACE_BEGIN
 class FileIO : public Object {
 public:
@@ -32,6 +32,7 @@ public:
 	};
 
     static DataObject::Pointer ReadFile(const std::string &file_name);  
+	static bool WriteFile(const std::string& file_name, DataObject::Pointer);
 	static IGenum GetFileType(const std::string& file_name);
 	static std::string GetFileTypeAsString(IGenum type);
 

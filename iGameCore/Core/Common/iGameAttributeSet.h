@@ -83,7 +83,11 @@ public:
     void DeleteAttribute(const IGsize index);
     // Get all attributes
     ElementArray<Attribute>::Pointer GetAllAttributes();
+    // Get all point attributes
+    ElementArray<Attribute>::Pointer GetAllPointAttributes();
 
+    // Get all cell attributes
+    ElementArray<Attribute>::Pointer GetAllCellAttributes();
     void AllocateSizeWithCopy(AttributeSet* ps,IGsize numCells) {
         auto& allarray = ps->GetAllAttributes();
         this->m_Buffer->Resize(allarray->Size());
@@ -107,6 +111,7 @@ protected:
     ~AttributeSet() override = default;
 
     ElementArray<Attribute>::Pointer m_Buffer{};
+    ElementArray<Attribute>::Pointer tmpBuffer{};
 };
 IGAME_NAMESPACE_END
 #endif

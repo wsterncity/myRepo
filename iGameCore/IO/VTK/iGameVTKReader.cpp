@@ -2,29 +2,10 @@
 #include "iGameByteSwap.h"
 #include "iGameUnstructuredMesh.h"
 IGAME_NAMESPACE_BEGIN
-bool VTKReader::Execute()
-{
-	if (!Open())
-	{
-		std::cerr << "Open failure\n";
-		return false;
-	}
-	if (!ReadToBuffer())
-	{
-		std::cerr << "Read to buffer failure\n";
-		return false;
-	}
-	this->IS = m_Buffer->RawPointer();
-	if (!Parsing())
-	{
-		std::cerr << "Parsing failure\n";
-		return false;
-	}
-	if (!Close())
-	{
-		std::cerr << "Close failure\n";
-		return false;
-	}
+
+bool VTKReader::CreateDataObject() {
+	if (!this->GetOutput())return false;
+	m_Output = this->GetOutput();
 	return true;
 }
 bool VTKReader::Parsing() {

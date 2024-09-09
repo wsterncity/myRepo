@@ -10,7 +10,6 @@ FileReader::FileReader()
 	this->SetNumberOfInputs(0);
 	this->SetNumberOfOutputs(1);
 
-	m_Buffer = CharArray::New();
 }
 
 bool FileReader::Execute()
@@ -18,17 +17,14 @@ bool FileReader::Execute()
 	clock_t start, end;
 	start = clock();
 
+	clock_t time1 = clock();
 	if (!Open())
 	{
 		std::cerr << "Open failure\n";
 		return false;
 	}
-	if (!ReadToBuffer())
-	{
-		std::cerr << "Read to buffer failure\n";
-		return false;
-	}
-	this->IS = m_Buffer->RawPointer();
+	clock_t time2 = clock();
+	std::cout << "Read file to buffer Cost " << time2 - time1 << "ms\n";
 	if (!Parsing())
 	{
 		std::cerr << "Parsing failure\n";
@@ -44,19 +40,11 @@ bool FileReader::Execute()
 		std::cerr << "Generate DataObject failure\n";
 		return false;
 	}
-	int size = m_Output->GetAttributeSet()->GetAllAttributes()->GetNumberOfElements();
-	StringArray::Pointer attrbNameArray = StringArray::New();
-	if (size > 0) {
-		for (int i = 0; i < size; i++) {
-			auto& data = m_Output->GetAttributeSet()->GetAttribute(i);
-			attrbNameArray->AddElement(data.pointer->GetName());
-		}
-	}
-	m_Output->GetMetadata()->AddStringArray(ATTRIBUTE_NAME_ARRAY, attrbNameArray);
+	clock_t time3 = clock();
+	std::cout << "Generate DataObject Cost " << time3 - time2 << "ms\n";
 	this->SetOutput(0, m_Output);
 	end = clock();
-	std::cout << "Read file success!" << std::endl;
-	std::cout << "   The time cost: " << end - start << "ms" << std::endl;
+	std::cout << "Read file success! The time cost: " << end - start << "ms" << std::endl;
 	return true;
 }
 
@@ -66,59 +54,93 @@ bool FileReader::Open()
 	{
 		return false;
 	}
-	m_File = std::make_unique<std::ifstream>(m_FilePath, std::ios::binary);
 
-	if (!m_File->is_open()) {
+	//file_ = fopen(m_FilePath.c_str(), "rb");
+	//if (fseek(file_, SEEK_SET, SEEK_END) != 0) {
+	//	return false;
+	//}
+	//m_FileSize = static_cast<size_t>(_ftelli64(file_));
+	//rewind(file_);
+	//if (m_FileSize == 0) {
+	//	return false;
+	//}
+	//this->FILESTART = (char*)malloc(m_FileSize);
+	//if (fread(this->FILESTART, 1, m_FileSize, file_) == m_FileSize)
+	//{
+	//	this->IS = this->FILESTART;
+	//	this->FILEEND = this->FILESTART + m_FileSize;
+	//	return true;
+	//}
+	//return false;
+
+
+
+
+
+	// 打开文件
+	this->m_File = CreateFile(m_FilePath.data(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (m_File == INVALID_HANDLE_VALUE) {
+		_tprintf(_T("CreateFile failed with error: %lu\n"), GetLastError());
 		return false;
 	}
 
-	m_FileName = m_FilePath.substr(m_FilePath.find_last_of('/') + 1);
-	m_FileSuffix = m_FileName.substr(m_FileName.find_last_of('.') + 1);
-	m_FileSize = GetFileSize(*m_File);
+	// 获取文件大小
+	this->m_FileSize = GetFileSize(m_File, NULL);
+	if (m_FileSize == INVALID_FILE_SIZE) {
+		_tprintf(_T("GetFileSize failed with error: %lu\n"), GetLastError());
+		CloseHandle(m_File);
+		return false;
+	}
+
+	// 创建文件映射对象
+	this->m_MapFile = CreateFileMapping(m_File, NULL, PAGE_READONLY, 0, 0, NULL);
+	if (m_MapFile == NULL) {
+		_tprintf(_T("CreateFileMapping failed with error: %lu\n"), GetLastError());
+		CloseHandle(m_File);
+		return false;
+	}
+
+	// 将文件映射到进程的虚拟地址空间
+	this->FILESTART = (char*)MapViewOfFile(m_MapFile, FILE_MAP_READ, 0, 0, 0);
+	if (this->FILESTART == NULL) {
+		_tprintf(_T("MapViewOfFile failed with error: %lu\n"), GetLastError());
+		CloseHandle(m_MapFile);
+		CloseHandle(m_File);
+		return false;
+	}
+	this->IS = this->FILESTART;
+	this->FILEEND = this->FILESTART + this->m_FileSize;
 	return true;
+
 }
 
 bool FileReader::Close()
 {
-	if (m_File && m_File->is_open()) {
-		m_File->close();
-		m_File.reset();
-	}
+	//fclose(file_);
+	//free(this->FILESTART);
+	//return true;
+	UnmapViewOfFile(this->IS);
+	CloseHandle(this->m_MapFile);
+	CloseHandle(this->m_File);
 	return true;
 }
 
-bool FileReader::ReadToBuffer()
-{
-	if (!m_File || !m_File->is_open()) {
-		return false;
-	}
-
-	if (m_FileSize == 0) {
-		return false;
-	}
-
-	m_Buffer->Resize(this->m_FileSize);
-	m_File->read(m_Buffer->RawPointer(), m_FileSize);
-
-	return m_File->gcount() == static_cast<std::streamsize>(m_FileSize);
-}
 
 bool FileReader::CreateDataObject()
 {
-	// ͳ�Ƹ�����Ԫ�ص�����
+
 	int numFaces = m_Data.GetNumberOfFaces();
 	int numVolumes = m_Data.GetNumberOfVolumes();
 
-	// ������������ж�
 	if (numFaces && numVolumes) {
 		VolumeMesh::Pointer mesh = VolumeMesh::New();
 		mesh->SetPoints(m_Data.GetPoints());
+		mesh->SetFaces(m_Data.GetFaces());
 		mesh->SetVolumes(m_Data.GetVolumes());
 		mesh->SetAttributeSet(m_Data.GetData());
 		m_Output = mesh;
 	}
 
-	// �������������ж�
 	else if (numFaces) {
 		SurfaceMesh::Pointer mesh = SurfaceMesh::New();
 		mesh->SetPoints(m_Data.GetPoints());
@@ -127,7 +149,6 @@ bool FileReader::CreateDataObject()
 		m_Output = mesh;
 	}
 
-	// �����������ж�
 	else if (numVolumes) {
 		VolumeMesh::Pointer mesh = VolumeMesh::New();
 		mesh->SetPoints(m_Data.GetPoints());
@@ -135,8 +156,16 @@ bool FileReader::CreateDataObject()
 		mesh->SetAttributeSet(m_Data.GetData());
 		m_Output = mesh;
 	}
-
-	return true;
+	else if (m_Data.GetPoints()) {
+		PointSet::Pointer mesh = PointSet::New();
+		mesh->SetPoints(m_Data.GetPoints());
+		mesh->SetAttributeSet(m_Data.GetData());
+		m_Output = mesh;
+	}
+	else {
+		m_Output = nullptr;
+	}
+	return m_Output;
 }
 
 //------------------------------------------------------------------------------
@@ -263,7 +292,7 @@ int FileReader::Read(double* result)
 int FileReader::ReadLine(char result[256])
 {
 	const char* lineEnd = strchr(this->IS, '\n');
-	if (!lineEnd) lineEnd = m_Buffer->RawPointer() + m_Buffer->GetNumberOfValues() - 1;
+	if (!lineEnd) lineEnd = this->FILEEND;
 	if (!this->IS || this->IS > lineEnd) {
 		result[0] = '\0';
 		return 0;
@@ -294,7 +323,7 @@ int FileReader::ReadString(char result[256])
 	}
 	size_t slen = 0;
 	if (!op) {
-		op = m_Buffer->RawPointer() + m_Buffer->GetNumberOfValues() - 1;
+		op = this->FILEEND;
 		slen = op - this->IS + 1;
 	}
 	else {
@@ -329,7 +358,7 @@ int FileReader::ReadString(std::string& result)
 	if (!op || op > lineEnd) {
 		op = lineEnd;
 	}
-	if (!op) op = m_Buffer->RawPointer() + m_Buffer->GetNumberOfValues();
+	if (!op) op = this->FILEEND;
 
 	if (this->IS > op) {
 		result[0] = '\0';

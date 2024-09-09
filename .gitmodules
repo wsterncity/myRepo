@@ -1,0 +1,6 @@
+[submodule "ThirdParty/CGNS"]
+	path = ThirdParty/CGNS
+	url = https://github.com/CGNS/CGNS.git
+[submodule "ThirdParty/meshoptimizer-0.21"]
+	path = ThirdParty/meshoptimizer-0.21
+	url = https://github.com/zeux/meshoptimizer.git

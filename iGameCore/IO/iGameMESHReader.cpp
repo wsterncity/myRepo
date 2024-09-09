@@ -4,7 +4,7 @@ IGAME_NAMESPACE_BEGIN
 bool MESHReader::Parsing()
 {
 	auto& left = this->IS;
-	auto right = left + m_Buffer->GetNumberOfValues();
+	auto right = this->FILEEND;
 
 	CellArray::Pointer Lines = m_Data.GetLines();
 	CellArray::Pointer Faces = m_Data.GetFaces();

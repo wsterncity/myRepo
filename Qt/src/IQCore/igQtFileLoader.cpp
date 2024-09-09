@@ -159,7 +159,7 @@ void igQtFileLoader::InitRecentFileActions(std::vector<QString> FilePaths)
 
 void igQtFileLoader::UpdateRecentActionList() {
 	int st = this->recentFileActionList.size() - 1;;
-	int ed = std::max(st - maxFileNr + 1, 0);
+	int ed = max(st - maxFileNr + 1, 0);
 	for (int i = st; i >= ed; i--) {
 		this->recentFileActionList.at(i)->setVisible(true);
 

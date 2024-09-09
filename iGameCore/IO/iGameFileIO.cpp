@@ -1,9 +1,11 @@
 #include "iGameFileIO.h"
 
 #include "VTK/iGameVTKReader.h"
+#include "VTK/iGameVTKWriter.h"
 #include "iGameOFFReader.h"
 #include "iGameMESHReader.h"
-#include "iGameOBJReader.h"
+#include "OBJ/iGameOBJReader.h"
+#include "OBJ/iGameOBJWriter.h"
 //#include "iGameSTLReader.h"
 #include "iGamePLYReader.h"
 #include "iGamePVDReader.h"
@@ -27,7 +29,7 @@ IGenum FileIO::GetFileType(const std::string& file_name)
 	else if (FileSuffix == "obj") {
 		return OBJ;
 	}
-	else if (FileSuffix == "mesh"|| FileSuffix == "MESH") {
+	else if (FileSuffix == "mesh" || FileSuffix == "MESH") {
 		return MESH;
 	}
 	else if (FileSuffix == "off") {
@@ -45,21 +47,21 @@ IGenum FileIO::GetFileType(const std::string& file_name)
 	else if (FileSuffix == "igs" || FileSuffix == "iges" || FileSuffix == "IGS" || FileSuffix == "IGES") {
 		return IGES;
 	}
-    else if(FileSuffix == "pvd"){
-        return PVD;
-    }
-    else if(FileSuffix == "vts"){
-        return VTS;
-    }
-    else if(FileSuffix == "vtu"){
-        return VTU;
-    }
-    else if(FileSuffix == "vtm"){
-        return VTM;
-    }
-    else if(FileSuffix == "e" || FileSuffix == "ex2" || FileSuffix == "EX2"){
-        return EX2;
-    }
+	else if (FileSuffix == "pvd") {
+		return PVD;
+	}
+	else if (FileSuffix == "vts") {
+		return VTS;
+	}
+	else if (FileSuffix == "vtu") {
+		return VTU;
+	}
+	else if (FileSuffix == "vtm") {
+		return VTM;
+	}
+	else if (FileSuffix == "e" || FileSuffix == "ex2" || FileSuffix == "EX2") {
+		return EX2;
+	}
 	else if (FileSuffix == "cgns") {
 		return CGNS;
 	}
@@ -92,137 +94,244 @@ std::string FileIO::GetFileTypeAsString(IGenum type)
 	}
 }
 
-DataObject::Pointer FileIO::ReadFile(const std::string &file_name)
+DataObject::Pointer FileIO::ReadFile(const std::string& file_name)
 {
 	IGenum fileType = GetFileType(file_name);
-    std::string out;
-    out.append("Read file [type: ");
-    out.append(GetFileTypeAsString(fileType));
-    clock_t start, end;
-    DataObject::Pointer resObj = nullptr;
+	std::string out;
+	out.append("Read file [type: ");
+	out.append(GetFileTypeAsString(fileType));
+	clock_t start, end;
+	DataObject::Pointer resObj = nullptr;
 
-    start = clock();
-    switch (fileType)
-    {
-        case NONE:
-        {
-            break;
-        }
-        case VTK:
-        {
-			VTKReader::Pointer reader = VTKReader::New();
-			resObj = reader->ReadFile(file_name);
-            break;
-        }
-        case OBJ:
-        {
-			OBJReader::Pointer reader = OBJReader::New();
-            reader->SetFilePath(file_name);
-            reader->Execute();
-			resObj = reader->GetOutput();
-            break;
-        }
-        case iGame::FileIO::OFF:
-        {
-			OFFReader::Pointer reader = OFFReader::New();
-			reader->SetFilePath(file_name);
-            reader->Execute();
-			resObj = reader->GetOutput();
-			break;
-        }
-        case iGame::FileIO::MESH:
-        {
-			MESHReader::Pointer reader = MESHReader::New();
-			reader->SetFilePath(file_name);
-            reader->Execute();
-			resObj = reader->GetOutput();
-			break;
-        }
-  //      case iGame::FileIO::STL:
-  //      {
-  //          auto app = iGameSTLReader::New();
-  //          resObj = app->ReadFile(file_name);
-  //          delete app;
-  //          break;
-  //      }
-        case iGame::FileIO::PLY:
-        {
-			PLYReader::Pointer reader = PLYReader::New();
-			reader->SetFilePath(file_name);
-            reader->Execute();
-			resObj = reader->GetOutput();
-			break;
-        }
-    #if defined(CGNS_ENABLE)
-        case iGame::FileIO::CGNS:
-		{
-			iGameCGNSReader::Pointer reader = iGameCGNSReader::New();
-			resObj=reader->ReadFile(file_name);
-			break;
-		}
-    #endif
+	start = clock();
+	switch (fileType)
+	{
+	case NONE:
+	{
+		break;
+	}
+	case VTK:
+	{
+		VTKReader::Pointer reader = VTKReader::New();
+		resObj = reader->ReadFile(file_name);
+		break;
+	}
+	case OBJ:
+	{
+		OBJReader::Pointer reader = OBJReader::New();
+		reader->SetFilePath(file_name);
+		reader->Execute();
+		resObj = reader->GetOutput();
+		break;
+	}
+	case iGame::FileIO::OFF:
+	{
+		OFFReader::Pointer reader = OFFReader::New();
+		reader->SetFilePath(file_name);
+		reader->Execute();
+		resObj = reader->GetOutput();
+		break;
+	}
+	case iGame::FileIO::MESH:
+	{
+		MESHReader::Pointer reader = MESHReader::New();
+		reader->SetFilePath(file_name);
+		reader->Execute();
+		resObj = reader->GetOutput();
+		break;
+	}
+	//      case iGame::FileIO::STL:
+	//      {
+	//          auto app = iGameSTLReader::New();
+	//          resObj = app->ReadFile(file_name);
+	//          delete app;
+	//          break;
+	//      }
+	case iGame::FileIO::PLY:
+	{
+		PLYReader::Pointer reader = PLYReader::New();
+		reader->SetFilePath(file_name);
+		reader->Execute();
+		resObj = reader->GetOutput();
+		break;
+	}
+#if defined(CGNS_ENABLE)
+	case iGame::FileIO::CGNS:
+	{
+		iGameCGNSReader::Pointer reader = iGameCGNSReader::New();
+		resObj = reader->ReadFile(file_name);
+		break;
+	}
+#endif
 
-		case iGame::FileIO::INP:
-		{
-			INPReader::Pointer reader = INPReader::New();
-			resObj = reader->ReadFile(file_name);
-			break;
-		}
-  //      case iGame::FileIO::STEP:
-  //      {
+	case iGame::FileIO::INP:
+	{
+		INPReader::Pointer reader = INPReader::New();
+		resObj = reader->ReadFile(file_name);
+		break;
+	}
+	//      case iGame::FileIO::STEP:
+	//      {
 
-  //      }
-  //          break;
-  //      case iGame::FileIO::IGES:
-  //      {
+	//      }
+	//          break;
+	//      case iGame::FileIO::IGES:
+	//      {
 
-  //      }
-  //          break;
-        case iGame::FileIO::VTS:
-        {
-            iGameVTSReader::Pointer reader = iGameVTSReader::New();
-            reader->SetFilePath(file_name);
-            reader->Execute();
-            resObj = reader->GetOutput();
-            break;
-        }
-        case iGame::FileIO::VTU:
-        {
-			iGameVTUReader::Pointer reader = iGameVTUReader::New();
-			reader->SetFilePath(file_name);
-            reader->Execute();
-			resObj = reader->GetOutput();
-			break;
-        }
+	//      }
+	//          break;
+	case iGame::FileIO::VTS:
+	{
+		iGameVTSReader::Pointer reader = iGameVTSReader::New();
+		reader->SetFilePath(file_name);
+		reader->Execute();
+		resObj = reader->GetOutput();
+		break;
+	}
+	case iGame::FileIO::VTU:
+	{
+		iGameVTUReader::Pointer reader = iGameVTUReader::New();
+		reader->SetFilePath(file_name);
+		reader->Execute();
+		resObj = reader->GetOutput();
+		break;
+	}
 
-        case iGame::FileIO::PVD:
-        {
-			iGamePVDReader::Pointer reader = iGamePVDReader::New();
-			reader->SetFilePath(file_name);
-			reader->Execute();
-			resObj = reader->GetOutput();
-            break;
-        }
-        case iGame::FileIO::VTM:
-        {
-            iGameVTMReader::Pointer reader = iGameVTMReader::New();
-            reader->SetFilePath(file_name);
-            reader->Execute();
-            resObj = reader->GetOutput();
-            break;
-        }
-        default:
-            break;
-    }
+	case iGame::FileIO::PVD:
+	{
+		iGamePVDReader::Pointer reader = iGamePVDReader::New();
+		reader->SetFilePath(file_name);
+		reader->Execute();
+		resObj = reader->GetOutput();
+		break;
+	}
+	case iGame::FileIO::VTM:
+	{
+		iGameVTMReader::Pointer reader = iGameVTMReader::New();
+		reader->SetFilePath(file_name);
+		reader->Execute();
+		resObj = reader->GetOutput();
+		break;
+	}
+	default:
+		break;
+	}
 
-    end = clock();
-    out.append(", success: ");
-    out.append(resObj != nullptr ? "true" : "false");
-    out.append(", time: ");
-    out.append(FormatTime(end - start));
-    out.append("]");
-    //igDebug(out);
+	end = clock();
+	out.append(", success: ");
+	out.append(resObj != nullptr ? "true" : "false");
+	out.append(", time: ");
+	out.append(FormatTime(end - start));
+	out.append("]");
+	//igDebug(out);
 	std::cout << out << std::endl;
-    return resObj;
+	return resObj;
+}
+
+
+bool  FileIO::WriteFile(const std::string& file_name, DataObject::Pointer dataObject)
+{
+	IGenum fileType = GetFileType(file_name);
+	std::string out;
+	out.append("Write file [type: ");
+	out.append(GetFileTypeAsString(fileType));
+	clock_t start, end;
+	bool result = false;
+	start = clock();
+	switch (fileType)
+	{
+	case NONE:
+	{
+		std::cout << "Not support write this type!\n";
+		break;
+	}
+	case VTK:
+	{
+		VTKWriter::Pointer writer = VTKWriter::New();
+		result = writer->WriteToFile(dataObject, file_name);
+		break;
+	}
+	case OBJ:
+	{
+		OBJWriter::Pointer writer = OBJWriter::New();
+		result = writer->WriteToFile(dataObject, file_name);
+		break;
+	}
+	case iGame::FileIO::OFF:
+	{
+
+		break;
+	}
+	case iGame::FileIO::MESH:
+	{
+
+		break;
+	}
+	//      case iGame::FileIO::STL:
+	//      {
+	//          auto app = iGameSTLReader::New();
+	//          resObj = app->ReadFile(file_name);
+	//          delete app;
+	//          break;
+	//      }
+	case iGame::FileIO::PLY:
+	{
+		break;
+	}
+#if defined(CGNS_ENABLE)
+	case iGame::FileIO::CGNS:
+	{
+		break;
+	}
+#endif
+
+	case iGame::FileIO::INP:
+	{
+		break;
+	}
+	//      case iGame::FileIO::STEP:
+	//      {
+
+	//      }
+	//          break;
+	//      case iGame::FileIO::IGES:
+	//      {
+
+	//      }
+	//          break;
+	case iGame::FileIO::VTS:
+	{
+
+		break;
+	}
+	case iGame::FileIO::VTU:
+	{
+
+		break;
+	}
+
+	case iGame::FileIO::PVD:
+	{
+
+		break;
+	}
+	case iGame::FileIO::VTM:
+	{
+
+		break;
+	}
+	default:
+		break;
+	}
+
+	end = clock();
+	out.append(", success: ");
+	out.append(result ? "true" : "false");
+	out.append(", time: ");
+	out.append(FormatTime(end - start));
+	out.append("]");
+	//igDebug(out);
+	std::cout << out << std::endl;
+	return result;
 }
 IGAME_NAMESPACE_END

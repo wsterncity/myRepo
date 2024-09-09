@@ -11,7 +11,7 @@ public:
 	static Pointer New() { return new VTKReader; }
 
 	bool Parsing() override;
-	bool Execute() override;
+	bool CreateDataObject() override;
 	DataObject::Pointer GetOutput() override;
 protected:
 	VTKReader() = default;
