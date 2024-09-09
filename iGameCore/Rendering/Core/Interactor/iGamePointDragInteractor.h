@@ -8,7 +8,7 @@
  */
 #pragma once
 
-#include "iGameInteractor.h"
+#include "iGameBasicInteractor.h"
 #include "iGamePointPicker.h"
 #include "iGamePointSet.h"
 

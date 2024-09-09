@@ -3,7 +3,6 @@ project(OpeniGame LANGUAGES C CXX)
 add_definitions(/D_USE_MATH_DEFINES)
 set(CMAKE_CXX_STANDARD 17)
 
-
 add_executable(${PROJECT_NAME}
         main.cpp
 )
@@ -26,8 +25,6 @@ set(ENABLE_CGNS_MODULE CACHE BOOL FORCE "Enable CGNS ThirdParty Module" OFF)
 add_subdirectory(ThirdParty)
 #导入iGame核心后处理组件
 add_subdirectory(iGameCore)
-#导入渲染器模块
-#add_subdirectory(Rendering)
 #导入Qt模块
 add_subdirectory(Qt)
 

@@ -1,6 +1,0 @@
-[submodule "dlg"]
-	path = subprojects/dlg
-	url = https://github.com/nyorain/dlg.git
-[submodule "ThirdParty/eigen-3.4.0"]
-	path = ThirdParty/eigen-3.4.0
-	url = https://gitlab.com/libeigen/eigen.git

@@ -833,7 +833,7 @@ void igQtMainWindow::changePointSelectionInteractor() {
       ui->action_select_points->setChecked(false);
     }
   } else {
-    rendererWidget->ChangeInteractor(Interactor::New());
+    rendererWidget->ChangeInteractor(BasicInteractor::New());
   }
 }
 
@@ -850,7 +850,7 @@ void igQtMainWindow::changePointsSelectionInteractor() {
       ui->action_select_point->setChecked(false);
     }
   } else {
-    rendererWidget->ChangeInteractor(Interactor::New());
+    rendererWidget->ChangeInteractor(BasicInteractor::New());
   }
 }
 
@@ -866,7 +866,7 @@ void igQtMainWindow::changeFacesSelectionInteractor() {
       ui->action_select_face->setChecked(false);
     }
   } else {
-    rendererWidget->ChangeInteractor(Interactor::New());
+    rendererWidget->ChangeInteractor(BasicInteractor::New());
   }
 }
 

@@ -1,11 +1,13 @@
-#ifndef OPENIGAME_INTERACTOR_H
-#define OPENIGAME_INTERACTOR_H
+//
+// Created by Sumzeek on 9/9/2024.
+//
+
+#ifndef OPENIGAME_BASEINTERACTOR_H
+#define OPENIGAME_BASEINTERACTOR_H
 
 #include "iGameCamera.h"
 #include "iGameObject.h"
 #include "iGameScene.h"
-#include "igm/igm.h"
-#include "igm/transform.h"
 
 IGAME_NAMESPACE_BEGIN
 
@@ -19,7 +21,6 @@ enum MouseButton {
 class Interactor : public Object {
 public:
     I_OBJECT(Interactor);
-    static Pointer New() { return new Interactor; }
 
     void SetScene(Scene::Pointer scene) {
         if (m_Scene != scene) {
@@ -28,33 +29,57 @@ public:
             this->Modified();
         }
     }
+    void Interactor::Initialize() { m_Camera = m_Scene->m_Camera; }
+
+    virtual void ProcessInput() {
+        std::cout << "Processing input in Interactor" << std::endl;
+    }
+
+    virtual void Update() {
+        std::cout << "Updating Interactor" << std::endl;
+    }
 
     virtual void MousePressEvent(int _eventX, int _eventY,
-                                 MouseButton _mouseMode);
-    virtual void MouseMoveEvent(int _eventX, int _eventY);
-    virtual void MouseReleaseEvent(int _eventX, int _eventY);
-    virtual void WheelEvent(double delta);
+                                 MouseButton _mouseMode) {
+        std::cout << "Mouse press event at (" << _eventX
+                  << ", " << _eventY
+                  << ") with button " << static_cast<int>(_mouseMode)
+                  << std::endl;
+    }
+
+    virtual void MouseMoveEvent(int _eventX, int _eventY) {
+        std::cout << "Mouse move event at (" << _eventX
+                  << ", " << _eventY
+                  << ")" << std::endl;
+    }
+
+    virtual void MouseReleaseEvent(int _eventX, int _eventY) {
+        std::cout << "Mouse release event at (" << _eventX
+                  << ", " << _eventY
+                  << ")" << std::endl;
+    }
+
+    virtual void WheelEvent(double delta) {
+        std::cout << "Mouse wheel event with delta "
+                  << delta << std::endl;
+    }
 
 protected:
-    Interactor();
-    ~Interactor() override;
-
-    void Initialize();
-    void ModelRotation();
-    void ViewTranslation();
-    void MapToSphere(igm::vec3& old_v3D, igm::vec3& new_v3D);
-    void UpdateCameraMoveSpeed(const igm::vec4& center);
+    Interactor() {}
+    ~Interactor() override = default;
 
     MouseButton m_MouseMode{};
 
-    Camera::Pointer m_Camera{};
     Scene::Pointer m_Scene{};
+    Camera::Pointer m_Camera{};
 
     igm::vec2 m_OldPoint2D{};
     igm::vec2 m_NewPoint2D{};
 
-    float m_CameraScaleSpeed{0.1f};
+    float m_CameraScaleSpeed{1.0f};
     float m_CameraMoveSpeed{0.01f};
 };
+
 IGAME_NAMESPACE_END
-#endif // OPENIGAME_INTERACTOR_H
+
+#endif //OPENIGAME_BASEINTERACTOR_H

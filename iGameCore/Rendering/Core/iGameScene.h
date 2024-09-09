@@ -196,6 +196,7 @@ protected:
     GLTexture2d m_DepthPyramid;
 
     friend class Interactor;
+    friend class BasicInteractor;
 };
 
 IGAME_NAMESPACE_END

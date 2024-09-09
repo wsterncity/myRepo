@@ -6,8 +6,8 @@
  * @class   iGameQtGLFWWindow
  * @brief   iGameQtGLFWWindow's brief
  */
+#include "Core/Interactor/iGameBasicInteractor.h"
 #include "iGameSceneManager.h"
-#include "Core/Interactor/iGameInteractor.h"
 
 #include <IQWidgets/igQtRenderWidget.h>
 #include <qdebug.h>
@@ -50,7 +50,7 @@ void igQtRenderWidget::initializeGL()
     m_Scene->SetUpdateFunctor(&igQtRenderWidget::update, this);
     m_Scene->SetMakeCurrentFunctor(&igQtRenderWidget::makeCurrent, this);
     m_Scene->SetDoneCurrentFunctor(&igQtRenderWidget::doneCurrent, this);
-    m_Interactor = Interactor::New();
+    m_Interactor = BasicInteractor::New();
     m_Interactor->SetScene(m_Scene);
 }
 
