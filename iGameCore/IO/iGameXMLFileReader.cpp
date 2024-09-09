@@ -76,13 +76,11 @@ bool iGameXMLFileReader::Open() {
 
 bool iGameXMLFileReader::CreateDataObject() {
 
-	// 统计各类型元素的数量
 	int numFaces = m_Data.GetNumberOfFaces();
 	int numVolumes = m_Data.GetNumberOfVolumes();
 	int numPoints = m_Data.GetNumberOfPoints();
 	int numLines = m_Data.GetNumberOfLines();
 
-	// 混合网格类型判断
 	if (numFaces && numVolumes) {
 		VolumeMesh::Pointer mesh = VolumeMesh::New();
 		mesh->SetPoints(m_Data.GetPoints());
@@ -91,7 +89,6 @@ bool iGameXMLFileReader::CreateDataObject() {
 		m_Output = mesh;
 	}
 
-	// 表面网格类型判断
 	else if (numFaces) {
 		SurfaceMesh::Pointer mesh = SurfaceMesh::New();
 		mesh->SetPoints(m_Data.GetPoints());
@@ -100,7 +97,6 @@ bool iGameXMLFileReader::CreateDataObject() {
 		m_Output = mesh;
 	}
 
-	// 体网格类型判断
 	else if (numVolumes) {
 		VolumeMesh::Pointer mesh = VolumeMesh::New();
 		mesh->SetPoints(m_Data.GetPoints());
@@ -109,14 +105,13 @@ bool iGameXMLFileReader::CreateDataObject() {
 		m_Output = mesh;
 	}
 
-	//  单独点集判断
 	else if (numPoints) {
 		PointSet::Pointer pointSet = PointSet::New();
 		pointSet->SetPoints(m_Data.GetPoints());
 		pointSet->SetAttributeSet(m_Data.GetData());
 		m_Output = pointSet;
 	}
-	//  单独边集判断
+
 	else if (numLines) {
 
 	}

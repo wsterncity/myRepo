@@ -1,7 +1,7 @@
 #include "iGameQuadSubdivision.h"
 IGAME_NAMESPACE_BEGIN
 
-double Bernstein(int i, int n, double t) {
+inline double Bernstein(int i, int n, double t) {
 	double binomial_coeff = 1.0;
 	for (int j = 0; j < i; ++j) {
 		binomial_coeff *= (n - j);
@@ -10,7 +10,7 @@ double Bernstein(int i, int n, double t) {
 	return binomial_coeff * pow(t, i) * pow(1 - t, n - i);
 }
 
-double BSplineBasisFunction(int i, int p, double t, const std::vector<double>& knots) {
+inline double BSplineBasisFunction(int i, int p, double t, const std::vector<double>& knots) {
 	if (p == 0) {
 		return (knots[i] <= t && t < knots[i + 1]) ? 1.0 : 0.0;
 	}
@@ -26,7 +26,7 @@ double BSplineBasisFunction(int i, int p, double t, const std::vector<double>& k
 }
 
 // Generate points on a Bezier surface
-std::vector<std::vector<Point>>GenerateBezierSurface(Point ControlPts[4][4], int resolution) {
+inline std::vector<std::vector<Point>>GenerateBezierSurface(Point ControlPts[4][4], int resolution) {
 	std::vector<std::vector<Point>> bezierSurface(resolution, std::vector<Point>(resolution));
 
 	// Define node vectors (uniform node vector example)
@@ -55,6 +55,7 @@ std::vector<std::vector<Point>>GenerateBezierSurface(Point ControlPts[4][4], int
 
 	return bezierSurface;
 }
+
 bool QuadSubdivision::Execute()
 {
 	this->mesh = DynamicCast<SurfaceMesh>(this->mesh);
@@ -286,7 +287,7 @@ bool QuadSubdivision::Execute()
 	res->SetFaces(SubdivisionCells);
 	res->SetPoints(ControlPoints);
 	this->SetOutput(res);
-
+	return true;
 }
 
 

@@ -27,6 +27,7 @@ bool VTKWriter::GenerateBuffers()
 	WriteCellsTypeToBuffer(m_Buffers[3]);
 	WritePointsAttributesToBuffer(m_Buffers[4]);
 	WriteCellsAttributesToBuffer(m_Buffers[5]);
+	return true;
 }
 const void VTKWriter::WriteHeaderToBuffer(CharArray::Pointer& buffer)
 {

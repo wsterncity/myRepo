@@ -1,3 +1,4 @@
+
 #include <iGameSceneManager.h>
 #include "Sources/iGameLineTypePointsSource.h"
 #include <Plugin/qtpropertybrowser/qtpropertymanager.h>
@@ -48,7 +49,7 @@ void igQtModelDialogWidget::UpdateCurrentModel(Model::Pointer model) {
     QtVariantPropertyManager* varManager = new QtVariantPropertyManager(propertyTreeWidget);
     QtVariantEditorFactory* editFactory = new QtVariantEditorFactory(propertyTreeWidget);
     propertyTreeWidget->setFactoryForManager(varManager, editFactory);
-    QtProperty* properties_groupItem = varManager->addProperty(QtVariantPropertyManager::groupTypeId(), QString("ÊôÐÔ"));
+    QtProperty* properties_groupItem = varManager->addProperty(QtVariantPropertyManager::groupTypeId(), QString("propertys"));
     auto metadata = model->GetDataObject()->GetMetadata();
     for(auto& [propName, propValue] : metadata->entries()){
         QtVariantProperty* item = nullptr;

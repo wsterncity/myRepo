@@ -23,7 +23,7 @@ bool OBJWriter::GenerateBuffers()
 	m_Buffers.resize(2, nullptr);
 	WritePointsToBuffer(m_Buffers[0]);
 	WriteFacesToBuffer(m_Buffers[1]);
-
+	return true;
 }
 const void OBJWriter::WritePointsToBuffer(CharArray::Pointer& buffer)
 {
