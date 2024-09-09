@@ -846,7 +846,7 @@ void igQtMainWindow::changePointSelectionInteractor() {
 		}
 	}
 	else {
-		rendererWidget->ChangeInteractor(Interactor::New());
+		rendererWidget->ChangeInteractor(BasicInteractor::New());
 	}
 }
 
@@ -864,7 +864,7 @@ void igQtMainWindow::changePointsSelectionInteractor() {
 		}
 	}
 	else {
-		rendererWidget->ChangeInteractor(Interactor::New());
+		rendererWidget->ChangeInteractor(BasicInteractor::New());
 	}
 }
 
@@ -881,7 +881,7 @@ void igQtMainWindow::changeFacesSelectionInteractor() {
 		}
 	}
 	else {
-		rendererWidget->ChangeInteractor(Interactor::New());
+		rendererWidget->ChangeInteractor(BasicInteractor::New());
 	}
 }
 
