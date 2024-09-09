@@ -4,7 +4,7 @@ add_subdirectory(freetype-2.13.3)
 add_subdirectory(eigen-3.4.0)
 add_subdirectory(meshoptimizer-0.21)
 
-# CGNS����
+# CGNS
 # Configure the compilation definition according to the value of MODULE_FLAG
 
 if (ENABLE_CGNS_MODULE)
@@ -25,7 +25,7 @@ if (ENABLE_CGNS_MODULE)
 
     set(CGNS_BUILD_SHARED OFF)
     set(CGNS_ENABLE_HDF5 OFF)
-    set(CGNS_ENABLE_PARALLEL OFF)  # �������Ҫ����֧�ֿ��Թر�
+    set(CGNS_ENABLE_PARALLEL OFF) 
     #set(CGNS_HDF5_DIR ${HDF5_ROOT})
     add_subdirectory(CGNS)
 endif ()

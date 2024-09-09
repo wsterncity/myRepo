@@ -13,26 +13,24 @@ igQtPropertyTreeWidget::igQtPropertyTreeWidget(QWidget* parent) : QTreeWidget(pa
 
     this->setStyleSheet(
         "QTreeWidget {"
-        "    border: 1px solid black;" // 为整个 tree widget 设置边框
-        "    border-collapse: collapse;" // 避免边框重叠
+        "    border: 1px solid black;" 
+        "    border-collapse: collapse;" 
         "}"
         "QTreeWidget::item {"
-        "    border-bottom: 1px solid black;" // 为每个 item 设置底部边框
+        "    border-bottom: 1px solid black;" 
         "}"
         "QHeaderView::section {"
-        "    border: 1px solid black;" // 为表头设置边框
+        "    border: 1px solid black;" 
         "}"
     );
 }
 
-// 添加属性分类
 QTreeWidgetItem* igQtPropertyTreeWidget::addCategory(const QString& name) {
     QTreeWidgetItem* category = new QTreeWidgetItem(this);
     category->setText(0, name);
     return category;
 }
 
-// 添加属性项 (字符串类型)
 void igQtPropertyTreeWidget::addTextProperty(QTreeWidgetItem* category, const QString& name, const QString& defaultValue) {
     //PropertyTreeWidgetItem* propertyItem = new PropertyTreeWidgetItem(category);
     //propertyItem->setNameText(name);
@@ -55,7 +53,6 @@ void igQtPropertyTreeWidget::addTextProperty(QTreeWidgetItem* category, const QS
     
 }
 
-// 添加属性项 (整数类型)
 void igQtPropertyTreeWidget::addIntegerProperty(QTreeWidgetItem* category, const QString& name, int defaultValue) {
     //PropertyTreeWidgetItem* propertyItem = new PropertyTreeWidgetItem(category);
     //propertyItem->setNameText(name);
@@ -65,7 +62,6 @@ void igQtPropertyTreeWidget::addIntegerProperty(QTreeWidgetItem* category, const
     //propertyItem->setValueText(QString::number(defaultValue));
 }
 
-// 添加属性项 (枚举类型)
 void igQtPropertyTreeWidget::addEnumProperty(QTreeWidgetItem* category, const QString& name, const QStringList& options, const QString& defaultValue) {
     //PropertyTreeWidgetItem* propertyItem = new PropertyTreeWidgetItem(category);
     //propertyItem->setNameText(name);

@@ -47,34 +47,16 @@ public:
 		return face;
 	}
 
-	/**
-	 * 单元的顶点个数。
-	 */
 	static constexpr int NumberOfPoints = 13;
 
-	/**
-	 * 单元的边个数。
-	 */
 	static constexpr int NumberOfEdges = 8;
 
-	/**
-	 * 单元的面个数。
-	 */
 	static constexpr int NumberOfFaces = 5;
 
-	/**
-	 * 单元面最大的顶点个数。
-	 */
 	static constexpr int MaxFaceSize = 8;
 
-	/**
-	 * 单元顶点最大的度。
-	 */
 	static constexpr int MaxValence = 4;
 
-	/***************** 所有Max + 1的数组最后一位数字表示个数 *****************/
-
-	// 边的顶点序号
 	static constexpr int edges[NumberOfEdges][3] = {
 	  { 0, 1, 5 },
 	  { 1, 2, 6 },
@@ -86,7 +68,6 @@ public:
 	  { 3, 4, 12 },
 	};
 
-	// 面的顶点序号
 	static constexpr int faces[NumberOfFaces][MaxFaceSize + 1] = {
 	  { 0, 3, 2, 1, 8, 7, 6, 5, 8 },
 	  { 0, 1, 4, 5, 10, 9, -1, -1, 6},
@@ -95,7 +76,6 @@ public:
 	  { 3, 0, 4, 8, 9, 12, -1, -1, 6},
 	};
 
-	// 面的边序号
 	static constexpr int faceEdges[NumberOfFaces][MaxFaceSize / 2 + 1] = {
 	  { 3, 2, 1, 0, 4},
 	  { 0, 5, 4, -1, 3},
@@ -104,7 +84,6 @@ public:
 	  { 3, 4, 7, -1, 3},
 	};
 
-	// 边的邻接面序号
 	static constexpr int edgeToNeighborFaces[NumberOfEdges][2] = {
 	  { 0, 1 },
 	  { 0, 2 },
@@ -116,7 +95,6 @@ public:
 	  { 3, 4 },
 	};
 
-	// 面的邻接面序号
 	static constexpr int faceToNeighborFaces[NumberOfFaces][MaxFaceSize / 2 + 1] = {
 	  { 4, 3, 2, 1,  4 },
 	  { 0, 2, 4, -1, 3 },
@@ -125,7 +103,6 @@ public:
 	  { 0, 1, 3, -1, 3 },
 	};
 
-	// 顶点的邻接边序号
 	static constexpr int pointToNeighborEdges[NumberOfPoints][MaxValence + 1] = {
 	  { 0, 4, 3, -1, 3 },
 	  { 0, 1, 5, -1, 3 },
@@ -134,7 +111,6 @@ public:
 	  { 4, 5, 6, 7 , 4 },
 	};
 
-	// 顶点的邻接面序号
 	static constexpr int pointToNeighborFaces[NumberOfPoints][MaxValence + 1] = {
 	  { 1, 4, 0, -1, 3 },
 	  { 0, 2, 1, -1, 3 },
@@ -143,7 +119,6 @@ public:
 	  { 1, 2, 3, 4 , 4 },
 	};
 
-	// 顶点的一邻域顶点序号
 	static constexpr int pointToOneRingPoints[NumberOfPoints][MaxValence + 1] = {
 	  { 1, 4, 3, -1, 3 },
 	  { 0, 2, 4, -1, 3 },

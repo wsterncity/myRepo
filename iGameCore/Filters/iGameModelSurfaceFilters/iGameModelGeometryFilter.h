@@ -64,8 +64,8 @@ public:
 
 protected:
     iGameModelGeometryFilter();
-    //通常在文件里会有标注表面信息，如果有则不需要这边运算，
-    //只需要把attribute的信息copy一份给表面就可以
+    // Usually, there is surface information in the file, if there is, there is 
+    // no need to do this operation, just copy the attribute information to the surface
     SurfaceMesh::Pointer excFaces;
     DataObject::Pointer input;
     SurfaceMesh::Pointer output;
