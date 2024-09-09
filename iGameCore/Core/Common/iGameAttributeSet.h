@@ -89,7 +89,7 @@ public:
     // Get all cell attributes, not thread safe
     ElementArray<Attribute>::Pointer GetAllCellAttributes();
     void AllocateSizeWithCopy(AttributeSet* ps,IGsize numCells) {
-        auto& allarray = ps->GetAllAttributes();
+        auto allarray = ps->GetAllAttributes();
         this->m_Buffer->Resize(allarray->Size());
         for (int i = 0; i < allarray->Size(); i++) {
             auto& array = ps->GetAttribute(i);
@@ -112,6 +112,8 @@ protected:
 
     ElementArray<Attribute>::Pointer m_Buffer{};
     ElementArray<Attribute>::Pointer tmpBuffer{};
+
+    Attribute NONE{ AttributeSet::Attribute::None() };
 };
 IGAME_NAMESPACE_END
 #endif

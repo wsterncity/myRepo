@@ -118,11 +118,11 @@ public:
         lineEdit = new PropertyLineEdit(this);
 
         QVBoxLayout* layout = new QVBoxLayout(this);
-        layout->setContentsMargins(0, 0, 0, 0);  // 移除布局的外边距
+        layout->setContentsMargins(0, 0, 0, 0);  // Remove layout margins
         layout->addWidget(textLabel);
         layout->addWidget(lineEdit);
 
-        lineEdit->hide(); // 初始状态下隐藏lineEdit
+        lineEdit->hide(); 
         textLabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
         lineEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
@@ -177,20 +177,17 @@ public:
     CustomDelegate(QObject* parent = nullptr) : QStyledItemDelegate(parent) {}
 
     void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override {
-        // 默认绘制
+
         QStyledItemDelegate::paint(painter, option, index);
 
-        // 计算项的矩形
         QRect rect = option.rect;
 
-        // 去掉缩进部分的边框
-        int indent = 20; // 假设缩进为 20 像素
+        int indent = 20; 
         QRect contentRect = rect.adjusted(indent, 0, 0, 0);
 
-        // 绘制边框（去掉缩进部分的边框）
         painter->save();
         painter->setPen(QPen(Qt::black));
-        painter->drawRect(contentRect.adjusted(0, 0, -1, -1)); // 绘制内容区域边框
+        painter->drawRect(contentRect.adjusted(0, 0, -1, -1)); 
         painter->restore();
     }
 };
@@ -202,16 +199,11 @@ class IG_QT_MODULE_EXPORT igQtPropertyTreeWidget : public QTreeWidget {
 public:
     igQtPropertyTreeWidget(QWidget* parent = nullptr);
 
-    // 添加属性分类
+
     QTreeWidgetItem* addCategory(const QString& name);
 
-    // 添加属性项 (字符串类型)
     void addTextProperty(QTreeWidgetItem* category, const QString& name, const QString& defaultValue = "");
-
-    // 添加属性项 (整数类型)
     void addIntegerProperty(QTreeWidgetItem* category, const QString& name, int defaultValue = 0);
-
-    // 添加属性项 (枚举类型)
     void addEnumProperty(QTreeWidgetItem* category, const QString& name, const QStringList& options, const QString& defaultValue = "");
 
     void onItemClicked(QTreeWidgetItem* item, int column) {

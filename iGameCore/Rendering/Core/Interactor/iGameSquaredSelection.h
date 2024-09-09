@@ -1,7 +1,7 @@
 #ifndef OPENIGAME_SQUARED_SELECTION_INTERACTOR_H
 #define OPENIGAME_SQUARED_SELECTION_INTERACTOR_H
 
-#include "iGameInteractor.h"
+#include "iGameBasicInteractor.h"
 #include "iGamePointPicker.h"
 #include "iGamePointSet.h"
 

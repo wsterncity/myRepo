@@ -1,7 +1,7 @@
 #ifndef OPENIGAME_FACE_PICKED_INTERACTOR_H
 #define OPENIGAME_FACE_PICKED_INTERACTOR_H
 
-#include "iGameInteractor.h"
+#include "iGameBasicInteractor.h"
 #include "iGameSurfaceMesh.h"
 
 IGAME_NAMESPACE_BEGIN

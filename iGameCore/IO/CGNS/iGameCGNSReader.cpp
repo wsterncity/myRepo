@@ -410,7 +410,8 @@ void iGameCGNSReader::ReadUnstructuredCellConnectivities(int index_file, int ind
 						}
 						Faces->AddCellIds(vhs, cellVcnt);
 					}
-					elements.swap(std::vector<cgsize_t>());
+					std::vector<cgsize_t> temp;
+					elements.swap(temp);
 				}
 				else if (type == NFACE_n) {
 					cgsize_t elementDataSize;
@@ -431,7 +432,8 @@ void iGameCGNSReader::ReadUnstructuredCellConnectivities(int index_file, int ind
 						}
 						Volumes->AddCellIds(fhs, cellFcnt);
 					}
-					elements.swap(std::vector<cgsize_t>());
+					std::vector<cgsize_t> temp;
+					elements.swap(temp);
 				}
 			}
 			this->m_VolumeMesh_2->InitVolumesWithPolyhedron(Faces, Volumes);
@@ -456,7 +458,8 @@ void iGameCGNSReader::ReadUnstructuredCellConnectivities(int index_file, int ind
 				std::vector<cgsize_t> elements(elementDataSize);
 				cg_poly_elements_read(index_file, index_base, index_zone, index_section, elements.data(), NULL, NULL);
 				this->ChangeMixElementToMyCell(elements, num_elements);
-				elements.swap(std::vector<cgsize_t>());
+				std::vector<cgsize_t> temp;
+				elements.swap(temp);
 			}
 			else {
 				igIndex vhs[64];
@@ -512,7 +515,8 @@ void iGameCGNSReader::ReadUnstructuredCellConnectivities(int index_file, int ind
 						m_UnstructuredMesh->AddCell(vhs, cellVcnt, IG_QUAD);
 					}
 				}
-				elements.swap(std::vector<cgsize_t>());
+				std::vector<cgsize_t> temp;
+				elements.swap(temp);
 			}
 		}
 	}

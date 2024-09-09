@@ -108,12 +108,22 @@ AttributeSet::Attribute& AttributeSet::GetAttribute(const IGsize index, IGenum t
 			count++;
 		}
 	}
-	return AttributeSet::Attribute::None();
+	return NONE;
 }
 
 const AttributeSet::Attribute& AttributeSet::GetAttribute(const IGsize index, IGenum type) const
 {
-	return GetAttribute(index, type);
+	int count = 0;
+	for (int i = 0; i < m_Buffer->GetNumberOfElements(); i++) {
+		auto& attrb = m_Buffer->GetElement(i);
+		if (!attrb.isDeleted && attrb.pointer && attrb.type == type) {
+			if (count == index) {
+				return attrb;
+			}
+			count++;
+		}
+	}
+	return NONE;
 }
 
 AttributeSet::Attribute& AttributeSet::GetAttribute(const std::string& name, IGenum type)
@@ -124,12 +134,18 @@ AttributeSet::Attribute& AttributeSet::GetAttribute(const std::string& name, IGe
 			return attrb;
 		}
 	}
-	return AttributeSet::Attribute::None();
+	return NONE;
 }
 
 const AttributeSet::Attribute& AttributeSet::GetAttribute(const std::string& name, IGenum type) const
 {
-	return GetAttribute(name, type);
+	for (int i = 0; i < m_Buffer->GetNumberOfElements(); i++) {
+		auto& attrb = m_Buffer->GetElement(i);
+		if (!attrb.isNone() && attrb.type == type && attrb.pointer->GetName() == name) {
+			return attrb;
+		}
+	}
+	return NONE;
 }
 
 ArrayObject* AttributeSet::GetArrayPointer(IGenum type, IGenum attachmentType,

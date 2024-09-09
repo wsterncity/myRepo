@@ -26,7 +26,7 @@ bool iGame::iGamePVDReader::Parsing() {
     while (elem) {
 
         existAttribute = elem->Attribute("timestep");
-        //  判断是否有timeStep元素, 没有则默认TimeStep为0
+        //  Check if there is a timeStep element; if not, TimeStep is set to 0
         float t = 0.f;
         if (existAttribute)
         {
