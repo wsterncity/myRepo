@@ -4,9 +4,3 @@
 [submodule "ThirdParty/meshoptimizer-0.21"]
 	path = ThirdParty/meshoptimizer-0.21
 	url = https://github.com/zeux/meshoptimizer.git
-[submodule "ThirdParty/freetype-2.13.3"]
-	path = ThirdParty/freetype-2.13.3
-	url = https://gitlab.freedesktop.org/freetype/freetype.gitmo
-[submodule "ThirdParty/eigen-3.4.0"]
-	path = ThirdParty/eigen-3.4.0
-	url = https://gitlab.com/libeigen/eigen.git
