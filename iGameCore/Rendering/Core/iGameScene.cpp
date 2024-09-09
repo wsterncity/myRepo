@@ -662,7 +662,7 @@ void Scene::DrawModels() {
         obj->Draw(this);
     }
 #elif IGAME_OPENGL_VERSION_460
-    bool debug = false;
+    bool debug = true;
     if (debug) {
         //std::cout << "-------:Draw:-------" << std::endl;
         RefreshDrawCullDataBuffer();

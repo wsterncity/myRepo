@@ -30,7 +30,7 @@ endif()
 #
 
 file(GLOB_RECURSE IGAME_CORE_FILE CONFIGURE_DEPENDS ./*.h ./*.cpp)
-add_library(${MODULE_NAME} STATIC ${IGAME_CORE_FILE}  "IO/OBJ/igameOBJWriter.h")
+add_library(${MODULE_NAME} STATIC ${IGAME_CORE_FILE})
 
 target_include_directories(${MODULE_NAME} PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/Core/CellModel
@@ -66,7 +66,7 @@ ENDIF ()
 target_compile_definitions(${MODULE_NAME} PRIVATE ASSEST_DIR="${CMAKE_CURRENT_SOURCE_DIR}/Rendering/Assests")
 
 IF (WIN32)
-    target_compile_definitions(${MODULE_NAME} PUBLIC IGAME_OPENGL_VERSION_460)
+    target_compile_definitions(${MODULE_NAME} PUBLIC IGAME_OPENGL_VERSION_330)
 ELSEIF (APPLE)
     target_compile_definitions(${MODULE_NAME} PUBLIC IGAME_OPENGL_VERSION_330)
 ELSEIF (UNIX)
