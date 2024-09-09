@@ -29,7 +29,7 @@ public:
             this->Modified();
         }
     }
-    void Interactor::Initialize() { m_Camera = m_Scene->m_Camera; }
+    void Initialize() { m_Camera = m_Scene->m_Camera; }
 
     virtual void ProcessInput() {
         std::cout << "Processing input in Interactor" << std::endl;

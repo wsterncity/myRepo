@@ -10,7 +10,8 @@ FileWriter::FileWriter()
 }
 FileWriter::~FileWriter()
 {
-	m_Buffers.swap(std::vector<CharArray::Pointer>());
+	std::vector<CharArray::Pointer> temp;
+	m_Buffers.swap(temp);
 }
 bool FileWriter::WriteToFile()
 {

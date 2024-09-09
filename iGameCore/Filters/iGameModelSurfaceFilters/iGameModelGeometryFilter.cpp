@@ -1116,7 +1116,8 @@ int iGameModelGeometryFilter::ExecuteWithVolumeMesh(
 
 	igDebug("Extracted " << output->GetNumberOfPoints() << " points,"
 		<< output->GetNumberOfFaces() << " faces.");
-	f2c.swap(std::vector<igIndex>());
+	std::vector<igIndex> temp;
+	f2c.swap(temp);
 	delete extract;
 	clock_t time2 = clock();
 	igDebug("Extracted surface cost " << time2 - time1 << "ms.");
@@ -1291,7 +1292,8 @@ int iGameModelGeometryFilter::ExecuteWithUnstructuredGrid(
 
 	igDebug("Extracted " << output->GetNumberOfPoints() << " points,"
 		<< output->GetNumberOfFaces() << " faces.");
-	f2c.swap(std::vector<igIndex>());
+	std::vector<igIndex> temp;
+	f2c.swap(temp);
 	delete extract;
 	clock_t time2 = clock();
 	igDebug("Extracted surface cost " << time2 - time1 << "ms.");
@@ -1328,7 +1330,8 @@ struct ExtractSG : public ExtractCellBoundaries {
 		this->Initialize();
 	}
 	~ExtractSG() {
-		f2c.swap(std::vector<igIndex>());
+		std::vector<igIndex> temp;
+		f2c.swap(temp);
 	}
 	// Initialize thread data
 	void Initialize() override {

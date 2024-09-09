@@ -89,7 +89,7 @@ public:
     // Get all cell attributes
     ElementArray<Attribute>::Pointer GetAllCellAttributes();
     void AllocateSizeWithCopy(AttributeSet* ps,IGsize numCells) {
-        auto& allarray = ps->GetAllAttributes();
+        auto allarray = ps->GetAllAttributes();
         this->m_Buffer->Resize(allarray->Size());
         for (int i = 0; i < allarray->Size(); i++) {
             auto& array = ps->GetAttribute(i);

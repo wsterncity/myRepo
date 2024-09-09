@@ -17,7 +17,8 @@ public:
 
     // Free all memory and initialize the array
     void Initialize() {
-        this->VectorType::swap(std::vector<TValue>());
+        std::vector<TValue> temp;
+        this->VectorType::swap(temp);
     }
 
     // Reallocate memory, and the old data is preserved. The array
@@ -159,7 +160,7 @@ public:
         m_Element.clear();
         TValue* data = this->RawPointer(_Pos);
         for (int i = 0; i < m_ElementSize; ++i) {
-            _Element.push_back(data[i]);
+            m_Element.push_back(data[i]);
         }
         return m_Element;
     }

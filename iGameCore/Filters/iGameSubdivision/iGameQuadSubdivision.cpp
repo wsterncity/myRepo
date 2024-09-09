@@ -269,7 +269,7 @@ bool QuadSubdivision::Execute()
 
 
 		int n = 17;
-		auto& tmp = GenerateBezierSurface(ControlPts, n);
+		auto tmp = GenerateBezierSurface(ControlPts, n);
 		for (j = 0; j < n; j++) {
 			for (i = 0; i < n; i++) {
 				ControlPoints->AddPoint(tmp[j][i]);
