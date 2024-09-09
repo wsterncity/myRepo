@@ -8,35 +8,22 @@
  */
 #pragma once
 
-#include "iGamePointDragInteractor.h"
 #include "iGameFilter.h"
+#include "iGamePointDragInteractor.h"
 
 IGAME_NAMESPACE_BEGIN
-class LineSourceInteractor : public PointDragInteractor{
+class LineSourceInteractor : public PointDragInteractor {
 public:
     I_OBJECT(LineSourceInteractor)
+    static Pointer New() { return new LineSourceInteractor; }
 
-    static Pointer New(){ return new LineSourceInteractor;}
+    void MouseMoveEvent(int posX, int posY) override;
 
-    void SetFilter(Filter::Pointer filter){
-        m_Filter = filter;
-    }
-
-
-    void MouseMoveEvent(int posX, int posY) override {
-        PointDragInteractor::MouseMoveEvent(posX, posY);
-        if(m_Model != nullptr){
-            m_Model->GetPointPainter()->Clear();
-            for(int i = 0; i < m_PointSet->GetNumberOfPoints(); i ++)
-                m_Model->GetPointPainter()->DrawPoint(m_PointSet->GetPoint(i));
-        }
-        if(~Selected_Point_Index && m_Filter != nullptr) m_Filter->Execute();
-    }
+    void SetFilter(Filter::Pointer filter);
 
 protected:
-
-    LineSourceInteractor(){}
-
+    LineSourceInteractor() = default;
+    ~LineSourceInteractor() override = default;
 
     Filter::Pointer m_Filter{nullptr};
 };

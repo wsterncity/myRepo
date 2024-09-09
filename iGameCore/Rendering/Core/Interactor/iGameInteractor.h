@@ -8,6 +8,7 @@
 #include "iGameCamera.h"
 #include "iGameObject.h"
 #include "iGameScene.h"
+#include <format>
 
 IGAME_NAMESPACE_BEGIN
 
@@ -32,40 +33,36 @@ public:
     void Initialize() { m_Camera = m_Scene->m_Camera; }
 
     virtual void ProcessInput() {
-        std::cout << "Processing input in Interactor" << std::endl;
+        std::cout << "Processing input in Interactor." << std::endl;
     }
 
-    virtual void Update() {
-        std::cout << "Updating Interactor" << std::endl;
-    }
+    virtual void Update() { std::cout << "Updating Interactor." << std::endl; }
 
-    virtual void MousePressEvent(int _eventX, int _eventY,
+
+    virtual void MousePressEvent(int eventX, int eventY,
                                  MouseButton _mouseMode) {
-        std::cout << "Mouse press event at (" << _eventX
-                  << ", " << _eventY
-                  << ") with button " << static_cast<int>(_mouseMode)
-                  << std::endl;
+        std::cout << std::format(
+                "Mouse press event at ({}, {}) with button {}\n", eventX,
+                eventY, static_cast<int>(_mouseMode));
     }
 
-    virtual void MouseMoveEvent(int _eventX, int _eventY) {
-        std::cout << "Mouse move event at (" << _eventX
-                  << ", " << _eventY
-                  << ")" << std::endl;
+    virtual void MouseMoveEvent(int eventX, int eventY) {
+        std::cout << std::format("Mouse move event at ({}, {})\n", eventX,
+                                 eventY);
     }
 
-    virtual void MouseReleaseEvent(int _eventX, int _eventY) {
-        std::cout << "Mouse release event at (" << _eventX
-                  << ", " << _eventY
-                  << ")" << std::endl;
+    virtual void MouseReleaseEvent(int eventX, int eventY) {
+        std::cout << std::format("Mouse release event at ({}, {})\n", eventX,
+                                 eventY);
     }
 
     virtual void WheelEvent(double delta) {
-        std::cout << "Mouse wheel event with delta "
-                  << delta << std::endl;
+        std::cout << std::format("Mouse wheel event with delta {}\n", delta);
     }
 
+
 protected:
-    Interactor() {}
+    Interactor() = default;
     ~Interactor() override = default;
 
     MouseButton m_MouseMode{};
@@ -75,9 +72,6 @@ protected:
 
     igm::vec2 m_OldPoint2D{};
     igm::vec2 m_NewPoint2D{};
-
-    float m_CameraScaleSpeed{1.0f};
-    float m_CameraMoveSpeed{0.01f};
 };
 
 IGAME_NAMESPACE_END

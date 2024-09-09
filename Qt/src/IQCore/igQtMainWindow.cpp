@@ -5,6 +5,7 @@
 #include "Interactor/iGameLineSourceInteractor.h"
 #include "Interactor/iGamePointPickedInteractor.h"
 #include "Interactor/iGamePointsSelection.h"
+#include "Interactor/iGameBasicInteractor.h"
 #include <IQCore/igQtFileLoader.h>
 #include <IQCore/igQtMainWindow.h>
 #include <IQWidgets/igQtModelDrawWidget.h>
