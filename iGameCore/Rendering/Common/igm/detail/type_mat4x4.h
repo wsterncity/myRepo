@@ -209,7 +209,6 @@ public:
     * @param v The vec<4, T> object to multiply.
     * @return Resultant vec<4, T> object after matrix-vector multiplication.
     */
-    template<typename T>
     vec<4, T> operator*(const vec<4, T>& v) const {
         return vec<4, T>(value[0][0] * v[0] + value[1][0] * v[1] +
                                  value[2][0] * v[2] + value[3][0] * v[3],
