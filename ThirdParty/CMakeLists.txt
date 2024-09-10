@@ -22,7 +22,6 @@ if (ENABLE_CGNS_MODULE)
     #            endif()
     #        endif()
     #    endif()
-
     set(CGNS_BUILD_SHARED OFF)
     set(CGNS_ENABLE_HDF5 OFF)
     set(CGNS_ENABLE_PARALLEL OFF) 
