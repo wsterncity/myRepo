@@ -29,6 +29,9 @@ public:
 	// Save the buffer data to a file using Linux-specific methods.
 	bool SaveBufferDataToFileWithLinux();
 
+	// Save the buffer data to a file using Mac-specific methods.
+	bool SaveBufferDataToFileWithMac();
+
 	// Set the file path where the file will be saved.
 	void SetFilePath(const std::string& filePath);
 

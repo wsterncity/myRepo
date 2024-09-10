@@ -1,5 +1,13 @@
 set(MODULE_NAME iGameCore_module)
 
+if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    add_definitions(-DPLATFORM_WINDOWS)
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    add_definitions(-DPLATFORM_LINUX)
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+    add_definitions(-DPLATFORM_MAC)
+endif()
+
 ## 手动设置 HDF5 库和头文件的路径
 #set(HDF5_ROOT "C:/Program Files/HDF_Group/HDF5/1.14.3")
 #set(HDF5_INCLUDE_DIR "${HDF5_ROOT}/include")
