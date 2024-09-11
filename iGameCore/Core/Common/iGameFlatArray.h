@@ -64,7 +64,7 @@ public:
 
     // Add a element to array back. Return the index of element
     template<int dimension_t>
-    IGsize AddElement(Vector<TValue, dimension_t>&& _Element) 
+    IGsize AddElement(Vector<TValue, dimension_t>&& _Element)
     {
         assert(dimension_t >= m_ElementSize);
         IGsize index = this->GetNumberOfElements();
@@ -153,7 +153,7 @@ public:
             _Element.push_back(data[i]);
         }
     }
-    
+
     // Get a element by index _Pos. This function is thread-unsafe.
     const std::vector<TValue>& GetElement(const IGsize _Pos) {
         assert(0 <= _Pos && _Pos < this->GetNumberOfElements());
@@ -242,7 +242,7 @@ public:
         std::vector<TValue> vec;
         vec.reserve(_Capacity);
         vec.assign(_DataBuffer, _DataBuffer + _Size);
-        
+
         this->VectorType::swap(vec);
 		m_ElementSize = _ElementSize;
 		return true;

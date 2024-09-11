@@ -22,8 +22,8 @@ public:
 	};
 	~iGameModelGeometryFilter();
 	bool Execute() override;
-	bool Execute(DataObject*);
-	bool Execute(DataObject*, SurfaceMesh*);
+	bool Execute(DataObject::Pointer);
+	bool Execute(DataObject::Pointer, SurfaceMesh::Pointer&);
 	/**
 	 * Specify a (xmin,xmax, ymin,ymax, zmin,zmax) bounding box to clip data.
 	 */
@@ -43,23 +43,23 @@ public:
 	 * algorithm without using it as a filter (i.e., no pipeline updates).
 	 * Also some internal methods with additional options.
 	 */
-	int ExecuteWithSurfaceMesh(DataObject::Pointer input, SurfaceMesh::Pointer output,
+	int ExecuteWithSurfaceMesh(DataObject::Pointer input, SurfaceMesh::Pointer& output,
 		SurfaceMesh::Pointer exc);
-	virtual int ExecuteWithSurfaceMesh(DataObject::Pointer, SurfaceMesh::Pointer);
+	virtual int ExecuteWithSurfaceMesh(DataObject::Pointer, SurfaceMesh::Pointer&);
 
-	int ExecuteWithVolumeMesh(DataObject::Pointer input, SurfaceMesh::Pointer output,
+	int ExecuteWithVolumeMesh(DataObject::Pointer input, SurfaceMesh::Pointer& output,
 		SurfaceMesh::Pointer exc);
 	virtual int ExecuteWithVolumeMesh(DataObject::Pointer input,
-		SurfaceMesh::Pointer output);
-	int ExecuteWithUnstructuredGrid(DataObject::Pointer input, SurfaceMesh::Pointer output,
+		SurfaceMesh::Pointer& output);
+	int ExecuteWithUnstructuredGrid(DataObject::Pointer input, SurfaceMesh::Pointer& output,
 		SurfaceMesh::Pointer exc);
 	virtual int ExecuteWithUnstructuredGrid(DataObject::Pointer input,
-		SurfaceMesh::Pointer output);
+		SurfaceMesh::Pointer& output);
 
-	int ExecuteWithStructuredGrid(DataObject::Pointer input, SurfaceMesh::Pointer output,
+	int ExecuteWithStructuredGrid(DataObject::Pointer input, SurfaceMesh::Pointer& output,
 		SurfaceMesh::Pointer exc, bool* extractFace = nullptr);
 	virtual int ExecuteWithStructuredGrid(DataObject::Pointer input,
-		SurfaceMesh::Pointer output,
+		SurfaceMesh::Pointer& output,
 		bool* extractFace = nullptr);
 
 	///@}

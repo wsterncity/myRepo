@@ -53,7 +53,6 @@ bool VTKReader::Parsing() {
 			igError("Cannot read dataset type: " << line);
 			return false;
 		}
-
 	}
 	else if (!strncmp(line, "point_data", 10)) {
 		igDebug("No geometry defined in data file!");

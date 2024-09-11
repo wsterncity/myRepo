@@ -1,7 +1,17 @@
 #include "iGameFileWriter.h"
-#include<windows.h>
-#include<stdio.h>
+
+#ifdef PLATFORM_WINDOWS
+#include <windows.h>
+#include <stdio.h>
 #include <tchar.h>
+#elif defined(PLATFORM_LINUX) || defined(PLATFORM_MAC)
+#include <fcntl.h>    
+#include <sys/mman.h> 
+#include <unistd.h>   
+#include <sys/types.h>
+#include <sys/stat.h>
+#endif
+
 IGAME_NAMESPACE_BEGIN
 
 FileWriter::FileWriter()
@@ -31,7 +41,15 @@ bool FileWriter::WriteToFile(DataObject::Pointer dataObject, std::string filePat
 
 bool FileWriter::SaveBufferDataToFile()
 {
+
+#ifdef PLATFORM_WINDOWS
 	return SaveBufferDataToFileWithWindows();
+#elif defined(PLATFORM_LINUX)
+	return SaveBufferDataToFileWithLinux();
+#elif defined(PLATFORM_MAC)
+
+
+#endif
 }
 bool FileWriter::SaveBufferDataToFileWithWindows()
 {
@@ -89,9 +107,111 @@ bool FileWriter::SaveBufferDataToFileWithWindows()
 
 bool FileWriter::SaveBufferDataToFileWithLinux()
 {
-	//用mmap就行，原理和上面的一样，实在不行用fwrite
+#ifdef PLATFORM_LINUX
+
+	// 打开文件
+	int fd = open(this->m_FilePath.c_str(), O_RDWR | O_CREAT, 0666);
+	if (fd == -1) {
+		perror("open failed");
+		return false;
+	}
+
+	// 计算文件大小
+	m_FileSize = 0;
+	for (int i = 0; i < m_Buffers.size(); i++) {
+		if (m_Buffers[i]) {
+			m_FileSize += m_Buffers[i]->GetNumberOfValues();
+		}
+	}
+
+	// 调整文件大小
+	if (ftruncate(fd, m_FileSize) == -1) {
+		perror("ftruncate failed");
+		close(fd);
+		return false;
+	}
+
+	// 使用mmap将文件映射到内存
+	void* map = mmap(NULL, m_FileSize, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+	if (map == MAP_FAILED) {
+		perror("mmap failed");
+		close(fd);
+		return false;
+	}
+
+	// 将缓冲区数据写入文件
+	size_t offset = 0;
+	for (int i = 0; i < m_Buffers.size(); i++) {
+		if (m_Buffers[i] && m_Buffers[i]->RawPointer()) {
+			memcpy((char*)map + offset, m_Buffers[i]->RawPointer(), m_Buffers[i]->GetNumberOfValues());
+			offset += m_Buffers[i]->GetNumberOfValues();
+		}
+	}
+
+	// 清除映射并关闭文件
+	if (munmap(map, m_FileSize) == -1) {
+		perror("munmap failed");
+	}
+	close(fd);
+
+	std::cout << "Write buffer to file with mmap (Linux) successful.\n";
+
+#endif
 	return true;
 }
+bool FileWriter::SaveBufferDataToFileWithMac()
+{
+#ifdef PLATFORM_MAC
+	// 使用mmap在macOS实现文件映射
+	int fd = open(this->m_FilePath.c_str(), O_RDWR | O_CREAT, 0666);
+	if (fd == -1) {
+		perror("open failed");
+		return false;
+	}
+
+	// 计算文件大小
+	m_FileSize = 0;
+	for (int i = 0; i < m_Buffers.size(); i++) {
+		if (m_Buffers[i]) {
+			m_FileSize += m_Buffers[i]->GetNumberOfValues();
+		}
+	}
+
+	// 调整文件大小
+	if (ftruncate(fd, m_FileSize) == -1) {
+		perror("ftruncate failed");
+		close(fd);
+		return false;
+	}
+
+	// 使用mmap将文件映射到内存
+	void* map = mmap(NULL, m_FileSize, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+	if (map == MAP_FAILED) {
+		perror("mmap failed");
+		close(fd);
+		return false;
+	}
+
+	// 写入缓冲区数据到文件
+	size_t offset = 0;
+	for (int i = 0; i < m_Buffers.size(); i++) {
+		if (m_Buffers[i] && m_Buffers[i]->RawPointer()) {
+			memcpy((char*)map + offset, m_Buffers[i]->RawPointer(), m_Buffers[i]->GetNumberOfValues());
+			offset += m_Buffers[i]->GetNumberOfValues();
+		}
+	}
+
+	// 清除映射并关闭文件
+	if (munmap(map, m_FileSize) == -1) {
+		perror("munmap failed");
+	}
+	close(fd);
+
+	std::cout << "Write buffer to file with mmap (macOS) successful.\n";
+#endif
+	return true;
+}
+
 void FileWriter::SetFilePath(const std::string& filePath)
 {
 	this->m_FilePath = filePath;
