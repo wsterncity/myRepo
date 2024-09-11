@@ -75,13 +75,9 @@ igQtMainWindow::igQtMainWindow(QWidget* parent)
 	connect(ui->action_drag_point, &QAction::triggered, this, [&](bool checked){
 		if (checked) {
 			auto interactor = PointDragInteractor::New();
-			interactor->SetPointSet(DynamicCast<PointSet>(SceneManager::Instance()
-																  ->GetCurrentScene()
-																  ->GetCurrentModel()
-																  ->GetDataObject()));
+			interactor->SetPointSet(DynamicCast<PointSet>(SceneManager::Instance()->GetCurrentScene()->GetCurrentModel()->GetDataObject()));
 			rendererWidget->ChangeInteractor(interactor);
-		}
-		else {
+		} else {
 			rendererWidget->ChangeInteractor(BasicInteractor::New());
 		}
 	});
