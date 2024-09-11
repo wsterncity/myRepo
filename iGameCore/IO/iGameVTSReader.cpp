@@ -11,7 +11,12 @@
 #include "iGameFileReader.h"
 #include "iGameBase64Util.h"
 
-#include "tinyxml2.h"
+#include <tinyxml2.h>
+#undef max
+#undef min
+
+
+
 IGAME_NAMESPACE_BEGIN
 bool iGame::iGameVTSReader::Parsing() {
     tinyxml2::XMLElement* elem;

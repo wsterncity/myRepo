@@ -9,11 +9,13 @@
 
 #include "iGameFileReader.h"
 #include "iGameVTUReader.h"
-
-#include "VTK/iGameVTKAbstractReader.h"
 #include "iGameBase64Util.h"
+#include "VTK/iGameVTKAbstractReader.h"
 
 #include <tinyxml2.h>
+
+#undef max
+#undef min
 
 IGAME_NAMESPACE_BEGIN
 bool iGame::iGameVTUReader::Parsing() {
@@ -184,8 +186,8 @@ bool iGame::iGameVTUReader::Parsing() {
 				float value;
 				for (int i = 0; i < array->GetNumberOfElements(); i++) {
 					value = array->GetValue(i);
-					scalar_range_max = max(scalar_range_max, value);
-					scalar_range_min = min(scalar_range_min, value);
+					scalar_range_max = std::max(scalar_range_max, value);
+					scalar_range_min = std::min(scalar_range_min, value);
 				}
 				m_Data.GetData()->AddScalar(IG_POINT, array, { scalar_range_min, scalar_range_max });
 			}
@@ -300,29 +302,27 @@ bool iGame::iGameVTUReader::Parsing() {
 	}
 	if (CellTypes)
 	{
-		this->m_DataObjectType = IG_UNSTRUCTURED_MESH;
-		VTKAbstractReader::TransferVtkCellToiGameCell(m_UnstructuredMesh, CellOffsets, CellConnects, CellTypes);
+		VTKAbstractReader::TransferVtkCellToiGameCell(m_Output, CellOffsets, CellConnects, CellTypes);
 	}
-
-
+    m_Output->GetBoundingBox();
 	return true;
 }
 bool iGameVTUReader::CreateDataObject()
 {
 
-	switch (m_DataObjectType)
+	switch (m_Output->GetDataObjectType())
 	{
-	case IG_NONE:
-		m_Output = nullptr;
-		return false;
-	case IG_UNSTRUCTURED_MESH:
-		m_UnstructuredMesh->SetPoints(m_Data.GetPoints());
-		m_UnstructuredMesh->SetAttributeSet(m_Data.Data);
-		m_Output = m_UnstructuredMesh;
-		return true;
-	default:
-		m_Output = nullptr;
-		return false;
+        case IG_UNSTRUCTURED_MESH:
+        {
+            DynamicCast<UnstructuredMesh>(m_Output)->SetPoints(m_Data.GetPoints());
+            DynamicCast<UnstructuredMesh>(m_Output)->SetAttributeSet(m_Data.Data);
+            return true;
+        }
+        case IG_SURFACE_MESH:{
+            DynamicCast<SurfaceMesh>(m_Output)->SetPoints(m_Data.GetPoints());
+            DynamicCast<SurfaceMesh>(m_Output)->SetAttributeSet(m_Data.Data);
+            return false;
+        }
 	}
 }
 

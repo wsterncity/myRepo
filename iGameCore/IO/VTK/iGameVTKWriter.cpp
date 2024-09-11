@@ -28,6 +28,7 @@ bool VTKWriter::GenerateBuffers()
 	default:
 		return false;
 	}
+    return true;
 }
 const void VTKWriter::WriteHeaderToBuffer(CharArray::Pointer& buffer)
 {

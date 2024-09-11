@@ -12,9 +12,13 @@
 #include "iGameVTSReader.h"
 #include "iGameVTUReader.h"
 #include "iGameDataObject.h"
+
 #include "iGameStringArray.h"
 
 #include <tinyxml2.h>
+#include <algorithm>
+#undef max
+#undef min
 
 bool iGame::iGamePVDReader::Parsing() {
     std::string fileDir = this->m_FilePath.substr(0, this->m_FilePath.find_last_of('/') + 1);
@@ -103,17 +107,16 @@ bool iGame::iGamePVDReader::Parsing() {
                 range_min = FLT_MAX;
                 if(scalar_exist_0){
                     const auto& ScalarDataRange = m_data_object->GetAttributeSet()->GetAttribute(k).dataRange;
-                    range_min = min(range_min, ScalarDataRange.first );
-                    range_max = max(range_max, ScalarDataRange.second);
+                    range_min = std::min(range_min, ScalarDataRange.first );
+                    range_max = std::max(range_max, ScalarDataRange.second);
                 }
 
                 if(scalar_exist_1){
                     for(auto it = m_data_object->SubDataObjectIteratorBegin(); it != m_data_object->SubDataObjectIteratorEnd(); ++ it){
                         const auto& ScalarDataRange = it->second->GetAttributeSet()->GetAttribute(k).dataRange;
-                        range_min = min(range_min, ScalarDataRange.first );
-                        range_max =max(range_max, ScalarDataRange.second);
+                        range_min = std::min(range_min, ScalarDataRange.first );
+                        range_max = std::max(range_max, ScalarDataRange.second);
                     }
-//                    std::cout << "range " << range_min << ' ' << range_max << '\n';
                     for(auto it = m_data_object->SubDataObjectIteratorBegin(); it != m_data_object->SubDataObjectIteratorEnd(); ++ it){
                         auto& ScalarDataRange = it->second->GetAttributeSet()->GetAttribute(k).dataRange;
                         ScalarDataRange.first  = range_min;
@@ -124,7 +127,6 @@ bool iGame::iGamePVDReader::Parsing() {
             }
         }
 
-//        m_data_object->SetScalarRange({0, 0.12});
     }
 
     return true;

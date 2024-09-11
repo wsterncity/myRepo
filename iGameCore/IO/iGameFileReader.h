@@ -2,14 +2,16 @@
 #define iGameFileReader_h
 
 #include "iGameFilter.h"
-#include "iGameThreadPool.h"
+//#include "iGameThreadPool.h"
 #include "iGameSurfaceMesh.h"
 #include "iGameDataCollection.h"
 #include "iGameFlatArray.h"
 #include <algorithm>
-#include<windows.h>
-#include<stdio.h>
+#include <cstdio>
 #include <tchar.h>
+#include <cfloat>
+
+#include <windows.h>
 IGAME_NAMESPACE_BEGIN
 
 

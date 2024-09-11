@@ -1381,11 +1381,9 @@ const void VTKAbstractReader::TransferVtkCellToiGameCell(ArrayObject::Pointer Ce
 	this->UpdateReadProgress();
 }
 
-void VTKAbstractReader::TransferVtkCellToiGameCell(UnstructuredMesh::Pointer& mesh, ArrayObject::Pointer CellsID, ArrayObject::Pointer CellsConnect, ArrayObject::Pointer VtkCellsType)
+void VTKAbstractReader::TransferVtkCellToiGameCell(DataObject::Pointer& _mesh, ArrayObject::Pointer CellsID, ArrayObject::Pointer CellsConnect, ArrayObject::Pointer VtkCellsType)
 {
-	if (mesh == nullptr) {
-		mesh = UnstructuredMesh::New();
-	}
+    UnstructuredMesh::Pointer  mesh = UnstructuredMesh::New();
 	int CellNum = VtkCellsType->GetNumberOfElements();
 	int index = 0;
 	int size = 0;
@@ -1503,6 +1501,7 @@ void VTKAbstractReader::TransferVtkCellToiGameCell(UnstructuredMesh::Pointer& me
 			break;
 		}
 	}
+    _mesh = mesh;
 }
 
 

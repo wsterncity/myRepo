@@ -6,7 +6,6 @@
 #pragma once
 
 #include "iGameXMLFileReader.h"
-#include "iGameUnstructuredMesh.h"
 
 IGAME_NAMESPACE_BEGIN
 class iGameVTUReader : public iGameXMLFileReader {
@@ -23,8 +22,7 @@ protected:
 
 	iGameVTUReader() = default;
 	~iGameVTUReader() = default;
-	UnstructuredMesh::Pointer m_UnstructuredMesh{ nullptr };
-	igIndex m_DataObjectType = IG_NONE;
+//	igIndex m_DataObjectType = IG_NONE;
 };
 
 IGAME_NAMESPACE_END
