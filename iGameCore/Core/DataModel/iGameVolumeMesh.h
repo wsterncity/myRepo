@@ -13,6 +13,8 @@ class VolumeMesh : public SurfaceMesh {
 public:
     I_OBJECT(VolumeMesh);
     static Pointer New() { return new VolumeMesh; }
+    using ReturnContainer = FlexArray<igIndex, 128>;
+
     IGenum GetDataObjectType() const { return IG_VOLUME_MESH; }
     // Get the number of all volumes
     IGsize GetNumberOfVolumes() const noexcept;
@@ -45,20 +47,37 @@ public:
 
     int GetNumberOfLinks(const IGsize id, Type type);
     // Get all neighboring volumes of a point. Return the size of indices.
-    int GetPointToNeighborVolumes(const IGsize ptId, igIndex* volumeIds);
+    int GetPointToNeighborVolumes(const IGsize ptId, igIndex* volumeIds);// Unsafe: Stake overflow
+    bool GetPointToNeighborVolumes(const IGsize ptId, const igIndex*& volumeIds, int& size);// Safe
+    bool GetPointToNeighborVolumes(const IGsize ptId, IdArray::Pointer volumeIds);// Safe
+    bool GetPointToNeighborVolumes(const IGsize ptId, ReturnContainer& volumeIds);// Safe
+
     // Get all neighboring volumes of a edge. Return the size of indices.
-    int GetEdgeToNeighborVolumes(const IGsize edgeId, igIndex* volumeIds);
+    int GetEdgeToNeighborVolumes(const IGsize edgeId, igIndex* volumeIds);// Unsafe: Stake overflow
+    bool GetEdgeToNeighborVolumes(const IGsize edgeId, const igIndex*& volumeIds, int& size);// Safe
+    bool GetEdgeToNeighborVolumes(const IGsize edgeId, IdArray::Pointer volumeIds);// Safe
+    bool GetEdgeToNeighborVolumes(const IGsize edgeId, ReturnContainer& volumeIds);// Safe
+
     // Get all neighboring volumes of a face. Return the size of indices.
-    int GetFaceToNeighborVolumes(const IGsize faceId, igIndex* volumeIds);
+    int GetFaceToNeighborVolumes(const IGsize faceId, igIndex* volumeIds);// Unsafe: Stake overflow
+    bool GetFaceToNeighborVolumes(const IGsize faceId, const igIndex*& volumeIds, int& size);// Safe
+    bool GetFaceToNeighborVolumes(const IGsize faceId, IdArray::Pointer volumeIds);// Safe
+    bool GetFaceToNeighborVolumes(const IGsize faceId, ReturnContainer& volumeIds);// Safe
+
     // Get all neighboring volumes of a volume (Shared point). Return the size of indices.
-    int GetVolumeToNeighborVolumesWithPoint(const IGsize volumeId,
-                                            igIndex* volumeIds);
+    int GetVolumeToNeighborVolumesWithPoint(const IGsize volumeId, igIndex* volumeIds);// Unsafe: Stake overflow
+    bool GetVolumeToNeighborVolumesWithPoint(const IGsize volumeId, IdArray::Pointer volumeIds);// Safe
+    bool GetVolumeToNeighborVolumesWithPoint(const IGsize volumeId, ReturnContainer& volumeIds);// Safe
+
     // Get all neighboring volumes of a volume (Shared edge). Return the size of indices.
-    int GetVolumeToNeighborVolumesWithEdge(const IGsize volumeId,
-                                           igIndex* volumeIds);
+    int GetVolumeToNeighborVolumesWithEdge(const IGsize volumeId, igIndex* volumeIds);// Unsafe: Stake overflow
+    bool GetVolumeToNeighborVolumesWithEdge(const IGsize volumeId, IdArray::Pointer volumeIds);// Safe
+    bool GetVolumeToNeighborVolumesWithEdge(const IGsize volumeId, ReturnContainer& volumeIds);// Safe
+
     // Get all neighboring volumes of a volume (Shared face). Return the size of indices.
-    int GetVolumeToNeighborVolumesWithFace(const IGsize volumeId,
-                                           igIndex* volumeIds);
+    int GetVolumeToNeighborVolumesWithFace(const IGsize volumeId, igIndex* volumeIds);// Unsafe: Stake overflow
+    bool GetVolumeToNeighborVolumesWithFace(const IGsize volumeId, IdArray::Pointer volumeIds);// Safe
+    bool GetVolumeToNeighborVolumesWithFace(const IGsize volumeId, ReturnContainer& volumeIds);// Safe
 
     // Get volume index according to sequence. If don't, return index -1
     igIndex GetVolumeIdFormPointIds(igIndex* ids, int size);
@@ -71,6 +90,7 @@ public:
     // Garbage collection to free memory that has been removed.
     // This function must be called if the topology changes.
     void GarbageCollection() override;
+    void GarbageCollection(bool delete_isolated_element);
 
     // Whether volume is deleted or not
     bool IsVolumeDeleted(const IGsize volumeId);
@@ -81,6 +101,10 @@ public:
     IGsize AddEdge(const IGsize ptId1, const IGsize ptId2) override;
     IGsize AddFace(igIndex* ptIds, int size) override;
     IGsize AddVolume(igIndex* volumeIds, int size);
+
+    bool ReplaceEdgeReference(const IGsize edgeId, igIndex ptId1, igIndex ptId2);
+    bool ReplaceFaceReference(const IGsize faceId, igIndex* ptIds, int npts, igIndex* edgeIds);
+    bool ReplaceVolumeReference(const IGsize volumeId, igIndex* ptIds, int npts, igIndex* edgeIds, int nedges, igIndex* faceIds, int nfaces);
 
     // Delete element, necessarily called after RequestEditStatus()
     void DeletePoint(const IGsize ptId) override;
@@ -123,12 +147,13 @@ public:
         return Types.get();
     }
     igIndex GetCellDimension(igIndex CellTyp) { return 3; };
+    SurfaceMesh::Pointer GetDrawMesh() { return m_DrawMesh; }
 
-    bool IsOnBoundaryPoint(const IGsize ptId);
-    bool IsOnBoundaryEdge(const IGsize edgeId);
-    bool IsOnBoundaryFace(const IGsize faceId);
-    bool IsOnBoundaryVolume(const IGsize volumeId);
-    bool IsCornerPoint(const IGsize ptId);
+    bool IsBoundaryPoint(const IGsize ptId) override;
+    bool IsBoundaryEdge(const IGsize edgeId) override;
+    bool IsBoundaryFace(const IGsize faceId) override;
+    bool IsBoundaryVolume(const IGsize volumeId);
+    bool IsCornerPoint(const IGsize ptId) override;
 
     void ReplacePointReference(const IGsize fromPtId, const IGsize toPtId) {
         assert(fromPtId < GetNumberOfPoints() && "ptId too large");
@@ -293,7 +318,7 @@ private:
 
     ArrayObject::Pointer m_ViewAttribute{};
     int m_ViewDemension{};
-    SurfaceMesh::Pointer m_DrawMesh{ nullptr };
+    SurfaceMesh::Pointer m_DrawMesh{};
 };
 IGAME_NAMESPACE_END
 #endif
