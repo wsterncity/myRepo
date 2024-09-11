@@ -10,13 +10,7 @@
 #include <IQCore/igQtFileLoader.h>
 #include <IQCore/igQtMainWindow.h>
 #include <IQWidgets/igQtModelDrawWidget.h>
-#include <VolumeMeshAlgorithm/iGameTetraDecimation.h>
 #include <iGameDataSource.h>
-#include <iGameFilterPoints.h>
-#include <iGameModelSurfaceFilters/iGameModelGeometryFilter.h>
-#include <iGameSubdivision/iGameHexhedronSubdivision.h>
-#include <iGameSubdivision/iGameQuadSubdivision.h>
-#include <iGameSurfaceMeshFilterTest.h>
 #include <iGameUnstructuredMesh.h>
 #include <iGameVolumeMeshFilterTest.h>
 #include "VTK/igameVTKWriter.h"
@@ -29,7 +23,7 @@
 #include <IQWidgets/ColorManager/igQtColorManagerWidget.h>
 #include <IQWidgets/igQtTensorWidget.h>
 #include <Sources/iGameLineTypePointsSource.h>
-
+#include "iGameFilterIncludes.h"
 igQtMainWindow::igQtMainWindow(QWidget* parent)
 	: QMainWindow(parent), ui(new Ui::MainWindow) {
 	ui->setupUi(this);
@@ -73,15 +67,16 @@ igQtMainWindow::igQtMainWindow(QWidget* parent)
 		&igQtMainWindow::changeFaceSelectionInteractor);
 	connect(ui->action_select_faces, &QAction::triggered, this,
 		&igQtMainWindow::changeFacesSelectionInteractor);
-	connect(ui->action_drag_point, &QAction::triggered, this, [&](bool checked){
+	connect(ui->action_drag_point, &QAction::triggered, this, [&](bool checked) {
 		if (checked) {
 			auto interactor = PointDragInteractor::New();
 			interactor->SetPointSet(DynamicCast<PointSet>(SceneManager::Instance()->GetCurrentScene()->GetCurrentModel()->GetDataObject()));
 			rendererWidget->ChangeInteractor(interactor);
-		} else {
+		}
+		else {
 			rendererWidget->ChangeInteractor(BasicInteractor::New());
 		}
-	});
+		});
 
 }
 void igQtMainWindow::initToolbarComponent() {
@@ -485,6 +480,47 @@ void igQtMainWindow::initAllFilters() {
 
 		});
 
+	auto action_tensorview = ui->menu_help->addAction("tensorview");
+	connect(action_tensorview, &QAction::triggered, this, [&](bool checked) {
+		auto Tensorview = iGameTensorWidgetBase::New();
+		auto mesh = DynamicCast<UnstructuredMesh>(SceneManager::Instance()->GetCurrentScene()->GetCurrentModel()->GetDataObject());
+
+		Tensorview->SetPoints(mesh->GetPoints());
+		Tensorview->SetTensorAttributes(mesh->GetAttributeSet()->GetAttribute(4).pointer);
+		Tensorview->ShowTensorField();
+		auto painter = SceneManager::Instance()->GetCurrentScene()->GetCurrentModel()->GetFacePainter();
+		auto connect = Tensorview->GetDrawGlyphPointOrders()->RawPointer();
+		auto points = Tensorview->GetDrawGlyphPoints();
+
+		//for (int i = 0; i < points->GetNumberOfPoints(); i++) {
+		//	auto p = points->GetPoint(i);
+		//	std::cout << p[0] << " " << p[1] << " " << p[2] << '\n';
+		//}
+		long long fcnt = Tensorview->GetDrawGlyphPointOrders()->GetNumberOfValues() / 3;
+		for (long long i = 0; i < fcnt; i++) {
+			painter->DrawTriangle(
+				points->GetPoint(connect[i * 3]),
+				points->GetPoint(connect[i * 3 + 1]),
+				points->GetPoint(connect[i * 3 + 2])
+			);
+		}
+		return;
+		SurfaceMesh::Pointer res = SurfaceMesh::New();
+		res->SetPoints(points);
+		std::cout << points->GetNumberOfPoints() << '\n';
+		CellArray::Pointer faces = CellArray::New();
+		res->SetFaces(faces);
+		for (long long i = 0; i < fcnt; i++) {
+			faces->AddCellId3(
+				connect[i * 3],
+				connect[i * 3 + 1],
+				connect[i * 3 + 2]);
+		}
+		//for (long long i = 0; i < fcnt; i++) {
+		//std::cout<<connect[i * 3]<<' '<<connect[i * 3 + 1]<<' '<<connect[i * 3 + 2]<<'\n';
+		//}
+		modelTreeWidget->addDataObjectToModelTree(res, ItemSource::File);
+		});
 	auto action_loadtest = ui->menu_help->addAction("loadtest");
 	connect(action_loadtest, &QAction::triggered, this, [&](bool checked) {
 		std::string filePath = "F:\\OpeniGame\\Model\\Common\\Tri_Rocket_1.vtk";
