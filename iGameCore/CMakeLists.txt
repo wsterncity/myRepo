@@ -8,30 +8,9 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     add_definitions(-DPLATFORM_MAC)
 endif()
 
-## 手动设置 HDF5 库和头文件的路径
-#set(HDF5_ROOT "C:/Program Files/HDF_Group/HDF5/1.14.3")
-#set(HDF5_INCLUDE_DIR "${HDF5_ROOT}/include")
-#set(HDF5_LIBRARY_DIR "${HDF5_ROOT}/lib")
-#set(HDF5_LIBRARIES "${HDF5_LIBRARY_DIR}/hdf5.lib")
-#
-## 设置包含目录
-#include_directories("C:/Program Files (x86)/cgns/include")
-#
-## 添加静态库
-#add_library(cgns STATIC IMPORTED)
-#set_target_properties(cgns PROPERTIES IMPORTED_LOCATION "C:/Program Files (x86)/cgns/lib/cgns.lib")
-#
-## 添加 HDF5 库
-#add_library(hdf5 SHARED IMPORTED)
-#set_target_properties(hdf5 PROPERTIES
-#    IMPORTED_LOCATION "${HDF5_ROOT}/bin/hdf5.dll"  # 指向 DLL 文件
-#    IMPORTED_IMPLIB "${HDF5_LIBRARIES}"            # 指向导入库
-#)
-#
 
 file(GLOB_RECURSE IGAME_CORE_FILE CONFIGURE_DEPENDS ./*.h ./*.cpp)
-add_library(${MODULE_NAME} STATIC ${IGAME_CORE_FILE}
-        Core/Common/iGameAttribute.h)
+add_library(${MODULE_NAME} STATIC ${IGAME_CORE_FILE})
 
 target_include_directories(${MODULE_NAME} PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/Core/CellModel
@@ -56,8 +35,6 @@ target_link_libraries(${MODULE_NAME} PUBLIC
         meshoptimizer
         tinyXML2
 
-        #        hdf5
-        #        cgns
 )
 
 if (ENABLE_CGNS_MODULE)

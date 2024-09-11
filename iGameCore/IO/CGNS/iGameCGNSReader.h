@@ -5,7 +5,7 @@
 #include <iGameFilter.h>
 #include <string>
 #include <iGameMacro.h>
-#include <iGameVolumeMesh_2.h>
+#include <iGameVolumeMesh.h>
 #include <iGameStructuredMesh.h>
 #include <iGameUnStructuredMesh.h>
 #include <cgns_io.h>
@@ -39,7 +39,7 @@ public:
 		case IG_UNSTRUCTURED_MESH:
 			return m_UnstructuredMesh;
 		case IG_VOLUME_MESH:
-			return m_VolumeMesh_2;
+			return m_VolumeMesh;
 		case IG_MULTIBLOCK_MESH:
 			return m_ParentObject;
 		default:
@@ -51,7 +51,7 @@ private:
 	Points::Pointer m_Points{ nullptr };
 	StructuredMesh::Pointer m_StructuredMesh{ nullptr };
 	UnstructuredMesh::Pointer m_UnstructuredMesh{ nullptr };
-	VolumeMesh_2::Pointer m_VolumeMesh_2{ nullptr };
+	VolumeMesh::Pointer m_VolumeMesh{ nullptr };
 	AttributeSet::Pointer m_AttributeSet{ nullptr };
 	DataObject::Pointer m_ParentObject{ nullptr };
 	igIndex m_DataObjectType = IG_NONE;

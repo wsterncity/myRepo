@@ -8,6 +8,7 @@ add_subdirectory(meshoptimizer-0.21)
 # Configure the compilation definition according to the value of MODULE_FLAG
 
 if (ENABLE_CGNS_MODULE)
+
     #    find_package(Git QUIET)
     #    if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/../.git")
     #        # Update submodules as needed
@@ -25,6 +26,5 @@ if (ENABLE_CGNS_MODULE)
     set(CGNS_BUILD_SHARED OFF)
     set(CGNS_ENABLE_HDF5 OFF)
     set(CGNS_ENABLE_PARALLEL OFF) 
-    #set(CGNS_HDF5_DIR ${HDF5_ROOT})
     add_subdirectory(CGNS)
 endif ()
