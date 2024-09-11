@@ -72,6 +72,20 @@ igQtMainWindow::igQtMainWindow(QWidget* parent)
 		&igQtMainWindow::changeFaceSelectionInteractor);
 	connect(ui->action_select_faces, &QAction::triggered, this,
 		&igQtMainWindow::changeFacesSelectionInteractor);
+	connect(ui->action_drag_point, &QAction::triggered, this, [&](bool checked){
+		if (checked) {
+			auto interactor = PointDragInteractor::New();
+			interactor->SetPointSet(DynamicCast<PointSet>(SceneManager::Instance()
+																  ->GetCurrentScene()
+																  ->GetCurrentModel()
+																  ->GetDataObject()));
+			rendererWidget->ChangeInteractor(interactor);
+		}
+		else {
+			rendererWidget->ChangeInteractor(BasicInteractor::New());
+		}
+	});
+
 }
 void igQtMainWindow::initToolbarComponent() {
 	// viewStyleCombox = new QComboBox(this);

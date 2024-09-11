@@ -30,7 +30,8 @@ endif()
 #
 
 file(GLOB_RECURSE IGAME_CORE_FILE CONFIGURE_DEPENDS ./*.h ./*.cpp)
-add_library(${MODULE_NAME} STATIC ${IGAME_CORE_FILE})
+add_library(${MODULE_NAME} STATIC ${IGAME_CORE_FILE}
+        Core/Common/iGameAttribute.h)
 
 target_include_directories(${MODULE_NAME} PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/Core/CellModel

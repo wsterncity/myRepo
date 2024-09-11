@@ -694,17 +694,17 @@ void SurfaceMesh::Draw(Scene *scene) {
     glLineWidth(m_LineWidth);
 
     // TODO: A better way to render wireframes
-    auto boundingBoxDiag = this->GetBoundingBox().diag();
-    auto scaleFactor =
-        1e-5 / std::pow(10, std::floor(std::log10(boundingBoxDiag)));
-    glad_glDepthRange(scaleFactor, 1);
-    glad_glDepthFunc(GL_GEQUAL);
+//    auto boundingBoxDiag = this->GetBoundingBox().diag();
+//    auto scaleFactor =
+//        1e-5 / std::pow(10, std::floor(std::log10(boundingBoxDiag)));
+//    glad_glDepthRange(scaleFactor, 1);
+//    glad_glDepthFunc(GL_GEQUAL);
 
     glad_glDrawElements(GL_LINES, m_LineIndices->GetNumberOfIds(),
                         GL_UNSIGNED_INT, 0);
 
-    glad_glDepthFunc(GL_GREATER);
-    glad_glDepthRange(0, 1);
+//    glad_glDepthFunc(GL_GREATER);
+//    glad_glDepthRange(0, 1);
 
     m_LineVAO.release();
   }
@@ -1057,11 +1057,16 @@ void SurfaceMesh::SetAttributeWithPointData(
     m_ColorWithCell = false;
     ScalarsToColors::Pointer mapper = ScalarsToColors::New();
 
-    if (i == -1) {
+    if (range.first != range.second) {
+      mapper->SetRange(range.first, range.second * 2);
+    }
+    else if (i == -1) {
       mapper->InitRange(attr);
-    } else {
+    }
+    else {
       mapper->InitRange(attr, i);
     }
+
 
     m_Colors = mapper->MapScalars(attr, i);
     if (m_Colors == nullptr) {

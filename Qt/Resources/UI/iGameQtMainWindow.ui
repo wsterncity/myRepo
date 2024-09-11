@@ -63,7 +63,7 @@ border:2px solid #EEF1F7
      <x>0</x>
      <y>0</y>
      <width>1200</width>
-     <height>24</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menua">
@@ -354,6 +354,7 @@ border:2px solid #EEF1F7
    <addaction name="action_select_points"/>
    <addaction name="action_select_face"/>
    <addaction name="action_select_faces"/>
+   <addaction name="action_drag_point"/>
   </widget>
   <widget class="QToolBar" name="toolBar_4">
    <property name="windowTitle">
@@ -472,8 +473,8 @@ border:2px solid #EEF1F7
   <widget class="QDockWidget" name="dockWidget_Animation">
    <property name="minimumSize">
     <size>
-     <width>49</width>
-     <height>33</height>
+     <width>58</width>
+     <height>35</height>
     </size>
    </property>
    <property name="allowedAreas">
@@ -1283,6 +1284,22 @@ border:2px solid #EEF1F7
    </property>
    <property name="toolTip">
     <string>select face</string>
+   </property>
+  </action>
+  <action name="action_drag_point">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset>
+     <normalon>:/Ticon/Icons/select/DragPoint.svg</normalon>
+    </iconset>
+   </property>
+   <property name="text">
+    <string>Drag point</string>
+   </property>
+   <property name="toolTip">
+    <string>Drag point</string>
    </property>
   </action>
  </widget>

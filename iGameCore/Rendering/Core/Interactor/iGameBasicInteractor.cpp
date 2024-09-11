@@ -57,7 +57,7 @@ void BasicInteractor::WheelEvent(double delta) {
     m_Camera->moveZ(moveSize);
 
     UpdateCameraMoveSpeed(m_Scene->m_ModelsBoundingSphere);
-};
+}
 
 void BasicInteractor::ModelRotation() {
     igm::vec3 oldPoint3D, newPoint3D;

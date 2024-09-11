@@ -20,6 +20,8 @@ public:
     static Pointer New() { return new PointDragInteractor; }
 
     void MouseReleaseEvent(int _eventX, int _eventY) override;
+    void MousePressEvent(int eventX, int eventY, MouseButton _mouseMode) override;
+
     void MouseMoveEvent(int posX, int posY) override;
 
     virtual void SetPointSet(PointSet::Pointer ps,

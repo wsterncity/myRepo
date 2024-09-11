@@ -18,15 +18,14 @@ void PointDragInteractor::MouseReleaseEvent(int _eventX, int _eventY) {
     m_MouseMode = NoButton;
     Interactor::MouseReleaseEvent(_eventX, _eventY);
 }
-
 void PointDragInteractor::MouseMoveEvent(int posX, int posY) {
     igm::vec2 pos = {float(posX), (float) posY};
 
-    // ��Ļ����
+    // Screen coordinates
     auto width = (float) m_Camera->GetViewPort().x;
     auto height = (float) m_Camera->GetViewPort().y;
 
-    // ����Ļ����תΪNDC����[-1,1]
+    // Convert screen coordinates to NDC coordinates [-1,1]
     float x = 2.0f * pos.x / width - 1.0f;
     float y = 1.0f - (2.0f * pos.y / height);
 
@@ -34,21 +33,22 @@ void PointDragInteractor::MouseMoveEvent(int posX, int posY) {
     if (mvp.determinant() == 0) return;
     auto mvp_invert = mvp.invert();
     if (m_MouseMode == NoButton) {
-        // NDC����תΪ�ü�����
+        // Convert NDC coordinates to clipping coordinates
         igm::vec4 point(x, y, 1, 1);
         igm::vec4 pointEnd(x, y, 0.001, 1);
 
-        // �ü�����תΪ��������
+        // Clip coordinates to world coordinates
         igm::vec4 tpoint = mvp_invert * point;
         igm::vec4 tpointEnd = mvp_invert * pointEnd;
 
-        // 3ά����������
+        // 3 dimensional world coordinates
         igm::vec3 point1(tpoint / tpoint.w);
         igm::vec3 point2(tpointEnd / tpointEnd.w);
         igm::vec3 dir = (point1 - point2).normalized();
         Selected_Point_Index = pointPicker->PickClosetPointWithLine(
                 Vector3d(point1.x, point1.y, point1.z),
                 Vector3d(dir.x, dir.y, dir.z));
+
         if (~Selected_Point_Index) {
             auto tp = m_PointSet->GetPoint(Selected_Point_Index);
             igm::vec4 p{tp[0], tp[1], tp[2], 1.f};
@@ -58,7 +58,7 @@ void PointDragInteractor::MouseMoveEvent(int posX, int posY) {
         return;
     } else if (m_MouseMode == LeftButton) {
         if (Selected_Point_Index == -1) {
-            Interactor::MouseMoveEvent(posX, posY);
+//            BasicInteractor::MouseMoveEvent(posX, posY);
             return;
         }
 
@@ -70,9 +70,13 @@ void PointDragInteractor::MouseMoveEvent(int posX, int posY) {
                                       newPoint_WorldCoord.y,
                                       newPoint_WorldCoord.z});
         m_PointSet->Modified();
-    } else {
-        Interactor::MouseMoveEvent(posX, posY);
-    }
+    } /*else {
+        BasicInteractor::MouseMoveEvent(posX, posY);
+    }*/
+}
+
+void PointDragInteractor::MousePressEvent(int eventX, int eventY, MouseButton _mouseMode) {
+    m_MouseMode = _mouseMode;
 }
 
 IGAME_NAMESPACE_END
