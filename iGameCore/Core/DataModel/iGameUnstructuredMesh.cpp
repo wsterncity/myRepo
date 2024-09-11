@@ -173,6 +173,51 @@ VolumeMesh::Pointer UnstructuredMesh::ExtractVolumeMesh()
 	mesh->SetVolumes(volumes);
 	return mesh;
 }
+
+bool UnstructuredMesh::GenerateFromVolumeMesh(VolumeMesh::Pointer mesh)
+{
+	if (!mesh)return false;
+	int volumeNum = mesh->GetNumberOfVolumes();
+	auto Volumes = mesh->GetVolumes();
+	UnsignedIntArray::Pointer CellTypes = UnsignedIntArray::New();
+	CellTypes->Reserve(volumeNum);
+	igIndex vcnt = 0;
+	igIndex vhs[IGAME_CELL_MAX_SIZE];
+	for (igIndex i = 0; i < volumeNum; i++) {
+		vcnt = Volumes->GetCellIds(i, vhs);
+		switch (vcnt)
+		{
+		case 4:
+			CellTypes->AddValue(IG_TETRA);
+			break;
+		case 5:
+			CellTypes->AddValue(IG_PYRAMID);
+			break;
+		case 6:
+			CellTypes->AddValue(IG_PRISM);
+			break;
+		case 8:
+			CellTypes->AddValue(IG_HEXAHEDRON);
+			break;
+		default:
+			igError("Not support this volume with " << vcnt << "'s verts.");
+			return false;
+		}
+	}
+	this->SetPoints(mesh->GetPoints());
+	this->SetCells(mesh->GetCells(), CellTypes);
+	this->SetAttributeSet(mesh->GetAttributeSet());
+	return true;
+}
+
+
+bool UnstructuredMesh::TransferVolumeMeshToUnstructuredMesh(VolumeMesh::Pointer input, UnstructuredMesh::Pointer& output)
+{
+	if (!output) {
+		output = UnstructuredMesh::New();
+	}
+	return output->GenerateFromVolumeMesh(input);
+}
 Cell* UnstructuredMesh::GetTypedCell(const IGsize cellId) {
 	Cell* cell = nullptr;
 	switch (GetCellType(cellId)) {

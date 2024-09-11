@@ -1,5 +1,13 @@
 set(MODULE_NAME iGameCore_module)
 
+if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    add_definitions(-DPLATFORM_WINDOWS)
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    add_definitions(-DPLATFORM_LINUX)
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+    add_definitions(-DPLATFORM_MAC)
+endif()
+
 ## 手动设置 HDF5 库和头文件的路径
 #set(HDF5_ROOT "C:/Program Files/HDF_Group/HDF5/1.14.3")
 #set(HDF5_INCLUDE_DIR "${HDF5_ROOT}/include")
@@ -22,7 +30,7 @@ set(MODULE_NAME iGameCore_module)
 #
 
 file(GLOB_RECURSE IGAME_CORE_FILE CONFIGURE_DEPENDS ./*.h ./*.cpp)
-add_library(${MODULE_NAME} STATIC ${IGAME_CORE_FILE}  "IO/OBJ/igameOBJWriter.h")
+add_library(${MODULE_NAME} STATIC ${IGAME_CORE_FILE})
 
 target_include_directories(${MODULE_NAME} PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/Core/CellModel

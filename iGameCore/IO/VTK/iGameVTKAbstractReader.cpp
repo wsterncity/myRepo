@@ -1194,8 +1194,8 @@ bool VTKAbstractReader::ReadStructuredGrid()
 			this->ProcessMetaData();
 		}
 		else {
-			igDebug("Unrecognized keyword: " << line);
-			return false;
+			//igDebug("Unrecognized keyword: " << line);
+			//return false;
 		}
 	}
 	if (m_StructuredMesh->GetPoints() == nullptr || m_StructuredMesh->GetPoints()->GetNumberOfPoints() == 0) {
@@ -1217,10 +1217,6 @@ bool VTKAbstractReader::ReadStructuredGrid()
 			p[2] += aspectRatio[2];
 		}
 		m_StructuredMesh->SetPoints(points);
-		//for (int i = 0; i < npts; i++) {
-		//	p = points->GetPoint(i);
-		//	std::cout << p[0] << ' ' << p[1] << ' ' << p[2] << '\n';
-		//}
 	}
 	m_StructuredMesh->GenStructuredCellConnectivities();
 	return true;
@@ -1385,11 +1381,9 @@ const void VTKAbstractReader::TransferVtkCellToiGameCell(ArrayObject::Pointer Ce
 	this->UpdateReadProgress();
 }
 
-void VTKAbstractReader::TransferVtkCellToiGameCell(UnstructuredMesh::Pointer& mesh, ArrayObject::Pointer CellsID, ArrayObject::Pointer CellsConnect, ArrayObject::Pointer VtkCellsType)
+void VTKAbstractReader::TransferVtkCellToiGameCell(DataObject::Pointer& _mesh, ArrayObject::Pointer CellsID, ArrayObject::Pointer CellsConnect, ArrayObject::Pointer VtkCellsType)
 {
-	if (mesh == nullptr) {
-		mesh = UnstructuredMesh::New();
-	}
+    UnstructuredMesh::Pointer  mesh = UnstructuredMesh::New();
 	int CellNum = VtkCellsType->GetNumberOfElements();
 	int index = 0;
 	int size = 0;
@@ -1507,6 +1501,7 @@ void VTKAbstractReader::TransferVtkCellToiGameCell(UnstructuredMesh::Pointer& me
 			break;
 		}
 	}
+    _mesh = mesh;
 }
 
 

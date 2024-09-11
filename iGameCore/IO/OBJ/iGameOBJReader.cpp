@@ -23,7 +23,7 @@ bool OBJReader::Parsing()
 
 	double progress_1 = 0.0;
 	double progress_2 = 0.0;
-	ThreadPool::Pointer tp = ThreadPool::Instance();
+//	ThreadPool::Pointer tp = ThreadPool::Instance();
 	Points::Pointer points = m_Data.GetPoints();
 
 	while (v_begin < v_end) {

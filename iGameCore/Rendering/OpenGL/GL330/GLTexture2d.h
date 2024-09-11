@@ -62,19 +62,23 @@ public:
         GLenum format;
         GLenum type;
 
-        // 根据 internal_format 选择适当的 format 和 type
+        // Select the appropriate format and type based on internal_format
         switch (internal_format) {
             case GL_R8:
                 format = GL_RED;
                 type = GL_UNSIGNED_BYTE;
                 break;
-            case GL_R32F:
-                format = GL_RED;
-                type = GL_FLOAT;
-                break;
             case GL_RGB8:
                 format = GL_RGB;
                 type = GL_UNSIGNED_BYTE;
+                break;
+            case GL_RGBA8:
+                format = GL_RGBA;
+                type = GL_UNSIGNED_BYTE;
+                break;
+            case GL_R32F:
+                format = GL_RED;
+                type = GL_FLOAT;
                 break;
             case GL_DEPTH_COMPONENT32F:
                 format = GL_DEPTH_COMPONENT;
@@ -87,7 +91,6 @@ public:
                                          "was not enumrated.");
         }
 
-        // 分配存储空间
         for (unsigned int level = 0; level < mip_levels; ++level) {
             glTexImage2D(GL_TEXTURE_2D, level, internal_format, width >> level,
                          height >> level, 0, format, type, nullptr);

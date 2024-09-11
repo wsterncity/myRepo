@@ -40,9 +40,7 @@ const void OBJWriter::WritePointsToBuffer(CharArray::Pointer& buffer)
 		for (int j = 0; j < 3; j++) {
 			buffer->AddValue(' ');
 			data = std::to_string(p[j]);
-			for (int k = 0; k < data.size(); k++) {
-				buffer->AddValue(data[k]);
-			}
+			AddStringToBuffer(data, buffer);
 		}
 		buffer->AddValue('\n');
 	}
@@ -61,9 +59,7 @@ const void OBJWriter::WriteFacesToBuffer(CharArray::Pointer& buffer)
 		for (int j = 0; j < fn; j++) {
 			buffer->AddValue(' ');
 			std::string data = std::to_string(vhs[j] + 1);
-			for (int k = 0; k < data.size(); k++) {
-				buffer->AddValue(data[k]);
-			}
+			AddStringToBuffer(data, buffer);
 		}
 		buffer->AddValue('\n');
 	}

@@ -19,7 +19,7 @@ void igQtAnimationTreeWidget_interpolate::updateInterpolateSequence(int num) {
     std::vector<std::pair<int, float>> interpolate_sequence;
     int start_keyframe_idx = 0;
     auto it = timeSequence.begin() + 1;
-    while(startTime > *it)
+    while(it != timeSequence.end() && startTime > *it)
     {
         it ++;
         start_keyframe_idx ++;
@@ -57,8 +57,10 @@ void igQtAnimationTreeWidget_interpolate::initAnimationTreeWidget(std::vector<fl
     timeSequence = timeSeq;
     startTime = *timeSeq.begin();
     endTime = *(timeSeq.end() - 1);
-    updateInterpolateSequence(static_cast<int>(timeSeq.size()));
-    updateData();
+    if(timeSeq.size() > 1){
+        updateInterpolateSequence(static_cast<int>(timeSeq.size()));
+        updateData();
+    }
 }
 
 void igQtAnimationTreeWidget_interpolate::updateData() {

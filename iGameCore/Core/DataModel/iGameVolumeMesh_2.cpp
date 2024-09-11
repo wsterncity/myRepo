@@ -804,17 +804,17 @@ void VolumeMesh_2::Draw(Scene* scene)
 		glLineWidth(m_LineWidth);
 
 		// TODO: A better way to render wireframes
-		auto boundingBoxDiag = this->GetBoundingBox().diag();
-		auto scaleFactor =
-			1e-6 / std::pow(10, std::floor(std::log10(boundingBoxDiag)));
-		glad_glDepthRange(scaleFactor, 1);
-		glad_glDepthFunc(GL_GEQUAL);
+//		auto boundingBoxDiag = this->GetBoundingBox().diag();
+//		auto scaleFactor =
+//			1e-6 / std::pow(10, std::floor(std::log10(boundingBoxDiag)));
+//		glad_glDepthRange(scaleFactor, 1);
+//		glad_glDepthFunc(GL_GEQUAL);
 
 		glad_glDrawElements(GL_LINES, m_LineIndices->GetNumberOfIds(),
 			GL_UNSIGNED_INT, 0);
 
-		glad_glDepthFunc(GL_GREATER);
-		glad_glDepthRange(0, 1);
+//		glad_glDepthFunc(GL_GREATER);
+//		glad_glDepthRange(0, 1);
 
 		m_LineVAO.release();
 	}
@@ -981,7 +981,7 @@ void VolumeMesh_2::ViewCloudPicture(Scene* scene, int index, int demension) {
 	auto& attr = this->GetAttributeSet()->GetAttribute(index);
 	if (!attr.isDeleted) {
 		if (attr.attachmentType == IG_POINT)
-			this->SetAttributeWithPointData(attr.pointer, demension);
+			this->SetAttributeWithPointData(attr.pointer, demension, attr.dataRange);
 		else if (attr.attachmentType == IG_CELL)
 			this->SetAttributeWithCellData(attr.pointer, demension);
 	}

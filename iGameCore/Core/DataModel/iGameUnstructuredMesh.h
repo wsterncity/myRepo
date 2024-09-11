@@ -54,7 +54,7 @@ public:
 	Cell* GetCell(const IGsize cellId);
 	//Get DataObject Type
 	IGenum GetDataObjectType() const { return IG_UNSTRUCTURED_MESH; }
-	
+
 	//Transfer to other mesh, if could not transfer , it will return nullptr;
 	SurfaceMesh::Pointer TransferToSurfaceMesh();
 	VolumeMesh::Pointer TransferToVolumeMesh();
@@ -62,6 +62,9 @@ public:
 	//a new mesh if it has other mesh's cell.
 	SurfaceMesh::Pointer ExtractSurfaceMesh();
 	VolumeMesh::Pointer ExtractVolumeMesh();
+	//Generate from VolumeMesh
+	bool GenerateFromVolumeMesh(VolumeMesh::Pointer volumeMesh);
+	static bool TransferVolumeMeshToUnstructuredMesh(VolumeMesh::Pointer volumeMesh, UnstructuredMesh::Pointer&);
 
 	SurfaceMesh::Pointer GetDrawMesh() { return m_DrawMesh; }
 

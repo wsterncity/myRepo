@@ -1,5 +1,4 @@
 #include "iGameMeshlet.h"
-#include <format>
 
 IGAME_NAMESPACE_BEGIN
 
@@ -103,11 +102,11 @@ void Meshlet::BuildMeshlet(const float* vertex_positions, size_t vertex_count,
     m_FinalDrawCommandBuffer.allocate(
             drawCommands.size() * sizeof(DrawElementsIndirectCommand), nullptr,
             GL_DYNAMIC_DRAW);
-    
-    std::ostringstream out;
-    out << "Build meshlets [count: " << meshlet_count
-        << ", time: " << FormatTime(timer.elapsedMicroseconds()) << "]";
-    std::cout << out.str() << std::endl;
+
+    std::cout << std::format("Build meshlets [count: {}, time: {}]",
+                             meshlet_count,
+                             FormatTime(timer.elapsedMilliseconds()))
+              << std::endl;
 }
 
 size_t Meshlet::MeshletsCount() { return m_MeshletsCount; };

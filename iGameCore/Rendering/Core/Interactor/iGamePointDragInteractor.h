@@ -8,7 +8,7 @@
  */
 #pragma once
 
-#include "iGameBasicInteractor.h"
+#include "iGameInteractor.h"
 #include "iGamePointPicker.h"
 #include "iGamePointSet.h"
 
@@ -19,79 +19,13 @@ public:
 
     static Pointer New() { return new PointDragInteractor; }
 
+    void MouseReleaseEvent(int _eventX, int _eventY) override;
+    void MousePressEvent(int eventX, int eventY, MouseButton _mouseMode) override;
+
+    void MouseMoveEvent(int posX, int posY) override;
+
     virtual void SetPointSet(PointSet::Pointer ps,
-                             Model::Pointer model = nullptr) {
-        m_PointSet = ps;
-        m_Model = model;
-        pointPicker = PointPicker::New();
-        pointPicker->SetPointSet(m_PointSet);
-    }
-
-    //    void MousePressEvent(int posX, int posY, MouseButton _mouseMode) override {
-    //        m_MouseMode = _mouseMode;
-    //    }
-    //
-    void MouseReleaseEvent(int _eventX, int _eventY) override {
-        m_MouseMode = NoButton;
-        Interactor::MouseReleaseEvent(_eventX, _eventY);
-    }
-
-    void MouseMoveEvent(int posX, int posY) override {
-        igm::vec2 pos = {float(posX), (float) posY};
-
-        // ��Ļ����
-        auto width = (float) m_Camera->GetViewPort().x;
-        auto height = (float) m_Camera->GetViewPort().y;
-
-        // ����Ļ����תΪNDC����[-1,1]
-        float x = 2.0f * pos.x / width - 1.0f;
-        float y = 1.0f - (2.0f * pos.y / height);
-
-        auto mvp =
-                (m_Scene->CameraData().proj_view * m_Scene->ObjectData().model);
-        if (mvp.determinant() == 0) return;
-        auto mvp_invert = mvp.invert();
-        if (m_MouseMode == NoButton) {
-            // NDC����תΪ�ü�����
-            igm::vec4 point(x, y, 1, 1);
-            igm::vec4 pointEnd(x, y, 0.001, 1);
-
-            // �ü�����תΪ��������
-            igm::vec4 tpoint = mvp_invert * point;
-            igm::vec4 tpointEnd = mvp_invert * pointEnd;
-
-            // 3ά����������
-            igm::vec3 point1(tpoint / tpoint.w);
-            igm::vec3 point2(tpointEnd / tpointEnd.w);
-            igm::vec3 dir = (point1 - point2).normalized();
-            Selected_Point_Index = pointPicker->PickClosetPointWithLine(
-                    Vector3d(point1.x, point1.y, point1.z),
-                    Vector3d(dir.x, dir.y, dir.z));
-            if (~Selected_Point_Index) {
-                auto tp = m_PointSet->GetPoint(Selected_Point_Index);
-                igm::vec4 p{tp[0], tp[1], tp[2], 1.f};
-                p = mvp * p;
-                Selected_NDC_Z = p.z / p.w;
-            }
-            return;
-        } else if (m_MouseMode == LeftButton) {
-            if (Selected_Point_Index == -1) {
-                Interactor::MouseMoveEvent(posX, posY);
-                return;
-            }
-
-            igm::vec4 Point_NDC{x, y, Selected_NDC_Z, 1.f};
-            igm::vec4 newPoint_WorldCoord = mvp_invert * Point_NDC;
-            newPoint_WorldCoord /= newPoint_WorldCoord.w;
-            m_PointSet->SetPoint(Selected_Point_Index,
-                                 Vector3f{newPoint_WorldCoord.x,
-                                          newPoint_WorldCoord.y,
-                                          newPoint_WorldCoord.z});
-            m_PointSet->Modified();
-        } else {
-            Interactor::MouseMoveEvent(posX, posY);
-        }
-    }
+                             Model::Pointer model = nullptr);
 
 protected:
     PointDragInteractor() = default;

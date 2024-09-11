@@ -6,209 +6,72 @@
 #include "iGameCellArray.h"
 #include "iGameAttributeSet.h"
 #include "iGameSurfaceMesh.h"
+#include "iGameVolumeMesh.h"
 #include "iGamePointSet.h"
 IGAME_NAMESPACE_BEGIN
-class StructuredMesh : public PointSet {
+class StructuredMesh : public VolumeMesh {
 public:
 	I_OBJECT(StructuredMesh);
+
+	// Factory method to create a new instance of StructuredMesh.
 	static StructuredMesh* New() { return new StructuredMesh; }
+
+	// Return the type of data object as IG_STRUCTURED_MESH.
 	IGenum GetDataObjectType() const { return IG_STRUCTURED_MESH; }
 
-	~StructuredMesh() override;
+	// Get the number of cells in the structured mesh.
+	IGsize GetNumberOfCells();
 
-	Points::Pointer GetPoints() { return this->m_Points; }
-	AttributeSet::Pointer GetPointData() { return this->m_Attributes; }
-	CellArray::Pointer GetFaces() { return this->Quads; }
-	CellArray::Pointer GetQuads() { return this->Quads; }
-	CellArray::Pointer GetCells() { return this->Hexahedrons; }
-	CellArray::Pointer GetHexahedrons() { return this->Hexahedrons; }
+	// Set the dimensions of the mesh.
+	void SetDimensionSize(igIndex s[3]);
 
-	void SetPoints(Points::Pointer o) { this->m_Points = o; }
-	void SetPointData(AttributeSet::Pointer o) { this->m_Attributes = o; }
-
-	unsigned int GetNumberOfPoints() { return this->m_Points == nullptr ? 0 : this->m_Points->GetNumberOfPoints(); }
-	unsigned int GetNumberOfQuads() { return this->Quads == nullptr ? 0 : this->Quads->GetNumberOfCells(); }
-	unsigned int GetNumberOfFaces() { return this->Quads == nullptr ? 0 : this->Quads->GetNumberOfCells(); }
-	unsigned int GetNumberOfHexahedrons() { return this->Hexahedrons == nullptr ? 0 : this->Hexahedrons->GetNumberOfCells(); }
-	unsigned int GetNumberOfCells() {
-		if (size[2] > 1) return GetNumberOfHexahedrons();
-		else return GetNumberOfFaces();
-	}
-
-
-
-	void SetDimensionSize(igIndex s[3]) {
-		std::copy(s, s + 3, this->size);
-		if (size[2] <= 1) {
-			size[2] = 1;
-			this->Dimension = 2;
-		}
-		else this->Dimension = 3;
-	}
+	// Set the extent of the mesh (start and end indices in x, y, and z directions).
 	void SetExtent(igIndex e[6]) { std::copy(e, e + 6, this->size); }
+
+	// Get the dimension sizes of the mesh.
 	igIndex* GetDimensionSize() { return this->size; }
+
+	// Get the extent of the mesh.
 	igIndex* GetExtent() { return this->extent; }
+
+	// Get the dimension of the mesh (typically 3 for 3D).
 	igIndex GetDimension() { return this->Dimension; }
 
-	void AddPoint(Point& p) {
-		if (!this->m_Points)this->m_Points = Points::New();
-		this->m_Points->AddPoint(p);
-	}
-	void BuildFaces() {
-		igIndex i = 0, j = 0, k = 0;
-		igIndex vhs[4] = { 0 };
-		igIndex st = 0;
-		igIndex tmpvhs[4] = {
-	0,1,1 + size[0] * size[1],size[0] * size[1]
-		};
-		this->Quads->Resize(size[2] * (size[1] - 1) * (size[0] - 1) +
-			size[0] * (size[1] - 1) * (size[2] - 1) +
-			size[1] * (size[2] - 1) * (size[0] - 1));
-		// ij面的定义
-		tmpvhs[1] = 1;
-		tmpvhs[2] = 1 + size[0];
-		tmpvhs[3] = size[0];
-		for (k = 0; k < size[2]; ++k) {
-			for (j = 0; j < size[1] - 1; ++j) {
-				st = j * size[0] + k * size[0] * size[1];
-				for (i = 0; i < size[0] - 1; ++i) {
-					for (int it = 0; it < 4; it++) {
-						vhs[it] = st + tmpvhs[it];
-					}
-					st++;
-					Quads->AddCellIds(vhs, 4);
-				}
-			}
-		}
-		// ik方向面的定义
-		tmpvhs[1] = 1;
-		tmpvhs[2] = 1 + size[0] * size[1];
-		tmpvhs[3] = size[0] * size[1];
-		for (j = 0; j < size[1]; j++) {
-			for (k = 0; k < size[2] - 1; k++) {
-				st = j * size[0] + k * size[0] * size[1];
-				for (i = 0; i < size[0] - 1; i++) {
-					for (int it = 0; it < 4; it++) {
-						vhs[it] = st + tmpvhs[it];
-					}
-					st++;
-					Quads->AddCellIds(vhs, 4);
-				}
-			}
-		}
+	// Build the structured faces of the mesh.
+	void BuildStructuredFaces();
 
-		// jk方向面的定义
-		tmpvhs[1] = size[0];
-		tmpvhs[2] = size[0] + size[0] * size[1];
-		tmpvhs[3] = size[0] * size[1];
-		for (i = 0; i < size[0]; i++) {
-			for (k = 0; k < size[2] - 1; k++) {
-				st = i + k * size[0] * size[1];
-				for (j = 0; j < size[1] - 1; j++) {
-					for (int it = 0; it < 4; it++) {
-						vhs[it] = st + tmpvhs[it];
-					}
-					st += size[0];
-					Quads->AddCellIds(vhs, 4);
-				}
-			}
-		}
-	}
-	void GenStructuredCellConnectivities() {
-		if (size[2] <= 1) {
-			size[2] = 1;
-			this->Dimension = 2;
-		}
-		igIndex i = 0, j = 0, k = 0;
-		igIndex vhs[8] = { 0 };
-		igIndex st = 0;
-		this->Quads = CellArray::New();
-		if (this->Dimension == 3) {
-			this->Hexahedrons = CellArray::New();
-			this->Hexahedrons->Resize((size[0] - 1) * (size[1] - 1) * (size[2] - 1));
-			igIndex tmpvhs[8] = {
-				0,1,1 + size[0] * size[1],size[0] * size[1],
-				size[0],1 + size[0],1 + size[0] + size[0] * size[1],size[0] + size[0] * size[1]
-			};
-			for (k = 0; k < size[2] - 1; ++k) {
-				for (j = 0; j < size[1] - 1; ++j) {
-					st = j * size[0] + k * size[0] * size[1];
-					for (i = 0; i < size[0] - 1; ++i) {
-						for (int it = 0; it < 8; it++) {
-							vhs[it] = st + tmpvhs[it];
-						}
-						Hexahedrons->AddCellIds(vhs, 8);
-						st++;
-					}
-				}
-			}
+	// Generate the connectivity information for structured cells.
+	void GenStructuredCellConnectivities();
 
-		}
-		else {
-			this->Quads->Resize((size[0] - 1) * (size[1] - 1));
-			igIndex tmpvhs[4] = { 0,1,size[0] + 1,size[0] };
-			for (j = 0; j < size[1] - 1; ++j) {
-				st = j * size[0];
-				for (i = 0; i < size[0] - 1; ++i) {
-					for (int it = 0; it < 4; it++) {
-						vhs[it] = st + tmpvhs[it];
-					}
-					st++;
-					Quads->AddCellIds(vhs, 4);
-				}
-			}
-		}
-	}
-	igIndex GetStructuredIndex(igIndex i, igIndex j, igIndex k) {
-		return i + j * size[0] + k * size[0] * size[1];
-	}
+	// Get the index of a point given its i, j, k coordinates.
+	igIndex GetPointIndex(igIndex i, igIndex j, igIndex k);
 
-protected:
-	StructuredMesh() {};
-	CellArray::Pointer Quads{ nullptr };
-	CellArray::Pointer Hexahedrons{ nullptr };
+	// Get the index of a volume element (cell) given its i, j, k coordinates.
+	igIndex GetVolumeIndex(igIndex i, igIndex j, igIndex k);
 
-	igIndex Dimension = 3;
-	// ni,nj,nk
-	igIndex size[3] = { 0,0,0 };
-	//ist,ied,jst,jed,kst,ked
-	igIndex extent[6] = { 0,0,0,0,0,0 };
-
-public:
-	void Draw(Scene*) override;
-	void ConvertToDrawableData() override;
-	bool IsDrawable() override { return true; }
+	// Override to view a cloud picture representation of the mesh.
 	void ViewCloudPicture(Scene* scene, int index, int demension = -1) override;
 
-private:
-	GLVertexArray m_PointVAO, m_LineVAO, m_TriangleVAO;
-	GLBuffer m_PositionVBO, m_ColorVBO, m_NormalVBO, m_TextureVBO;
-	GLBuffer m_PointEBO, m_LineEBO, m_TriangleEBO;
+protected:
+	// Default constructor for StructuredMesh.
+	StructuredMesh() = default;
+	// Destructor for StructuredMesh.
+	~StructuredMesh() override;
+	// Dimension of the mesh (typically 3 for 3D).
+	igIndex Dimension = 3;
 
-	GLVertexArray m_CellVAO;
-	GLBuffer m_CellPositionVBO, m_CellColorVBO;
+	// Size of the mesh in each dimension (ni, nj, nk).
+	igIndex size[3] = { 0, 0, 0 };
 
-	FloatArray::Pointer m_Positions{};
-	FloatArray::Pointer m_Colors{};
-	IdArray::Pointer m_PointIndices{};
-	IdArray::Pointer m_LineIndices{};
-	IdArray::Pointer m_TriangleIndices{};
+	// Extent of the mesh (start and end indices in x, y, and z directions).
+	igIndex extent[6] = { 0, 0, 0, 0, 0, 0 };
 
-	bool m_Flag{ false };
-	bool m_UseColor{ false };
-	bool m_ColorWithCell{ false };
-	int m_PointSize{ 8 };
-	int m_LineWidth{ 1 };
-	int m_CellPositionSize{};
-
-	ArrayObject::Pointer m_ViewAttribute{};
-	int m_ViewDemension{};
-	SurfaceMesh::Pointer m_DrawMesh{ nullptr };
+	// Flag indicating whether the structured connectivity has been built.
+	bool m_BuildStructuredConnectivty = false;
 };
 
-inline StructuredMesh::~StructuredMesh()
-{
-}
+
+
 
 
 IGAME_NAMESPACE_END

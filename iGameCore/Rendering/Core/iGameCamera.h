@@ -70,9 +70,16 @@ public:
         return igm::perspectiveRH_ZO(static_cast<float>(igm::radians(fov)),
                                      aspect<float>(), nearPlane);
     };
-    float LinearizeDepth(float depth) {
-        float z = depth * 2.0 - 1.0; // back to NDC
-        return 2.0f * nearPlane / (1 - depth);
+
+    /** Depth Map Visualization:
+    *          -far           -near              near            far
+    *           |--------------|------->eye------->|--------------|
+    *           1              2      INF/-INF     0              1
+    */
+    float LinearizeDepth(float z) {
+        float ndcZ = z * 2.0f - 1.0f; // back to NDC
+        float depth = 2.0f * nearPlane / (1.0f - ndcZ);
+        return depth;
     };
 
     // depth range: 1.0(near plane) -> 0.0(far plane)
@@ -80,14 +87,21 @@ public:
         return igm::perspectiveRH_OZ(static_cast<float>(igm::radians(fov)),
                                      aspect<float>(), nearPlane);
     }
-    float LinearizeDepthReverseZ(float depth) const {
-        return nearPlane / depth;
+
+    /** Depth Map Visualization:
+    *          -far           -near              near            far
+    *           |--------------|------->eye------->|--------------|
+    *           0             -1     -INF/INF      1              0
+    */
+    float LinearizeDepthReverseZ(float z) const {
+        float depth = nearPlane / z;
+        return depth;
     }
 
 protected:
     float fov = 45.0f;
     float nearPlane = 0.01f;
-    //float farPlane = 100.0f;
+    float farPlane = 100.0f;
 
 protected:
     Viewer() = default;

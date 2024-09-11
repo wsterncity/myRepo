@@ -41,6 +41,10 @@ IGAME_NAMESPACE_BEGIN
         PropertyTree* GetPropertys() { return m_Propertys.get(); }
         const BoundingBox &GetBoundingBox() {
             ComputeBoundingBox();
+            if(this->HasSubDataObject()){
+                for(auto it = SubDataObjectIteratorBegin(); it != SubDataObjectIteratorEnd(); ++ it)
+                    m_Bounding.add(it->second->GetBoundingBox());
+            }
             return m_Bounding;
         }
 

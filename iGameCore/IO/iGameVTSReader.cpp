@@ -11,7 +11,12 @@
 #include "iGameFileReader.h"
 #include "iGameBase64Util.h"
 
-#include "tinyxml2.h"
+#include <tinyxml2.h>
+#undef max
+#undef min
+
+
+
 IGAME_NAMESPACE_BEGIN
 bool iGame::iGameVTSReader::Parsing() {
     tinyxml2::XMLElement* elem;
@@ -50,7 +55,6 @@ bool iGame::iGameVTSReader::Parsing() {
 
     //  find Points' position Data
     elem = FindTargetItem(root, "Points")->FirstChildElement("DataArray");
-    attribute = elem->Attribute("format");
     data = elem->GetText();
 
     Points::Pointer Points = m_Data.GetPoints();
@@ -74,7 +78,19 @@ bool iGame::iGameVTSReader::Parsing() {
 //            ReadBase64EncodedPoints(data_p, dataSetPoints);
 //        }
         const char* type = elem->Attribute("type");
-        if(strcmp(attribute, "binary") == 0){
+        attribute = elem->Attribute("format");
+        if(attribute == nullptr || strcmp(attribute, "ascii") == 0){
+            float p[3] = { 0 };
+            token = strtok(data_p, delimiters);
+            while (token != nullptr) {
+                for(float & i : p) {
+                    i = mAtof(token);
+                    token = strtok(nullptr, delimiters);
+                }
+                dataSetPoints->AddPoint(p);
+            }
+
+        } else if(strcmp(attribute, "binary") == 0){
             if(!strncmp(type, "Float", 5)) {
                 //  Float32
                 if (!strncmp(type + 5, "32", 2)) {
@@ -82,17 +98,6 @@ bool iGame::iGameVTSReader::Parsing() {
                 } else /*Float64*/{
                     ReadBase64EncodedPoints<double>(data_p, dataSetPoints);
                 }
-            }
-        } else if(strcmp(attribute, "ascii") == 0){
-            float p[3] = { 0 };
-            token = strtok(data_p, delimiters);
-
-            while (token != nullptr) {
-                for(float & i : p) {
-                    i = mAtof(token);
-                    token = strtok(nullptr, delimiters);
-                }
-                dataSetPoints->AddPoint(p);
             }
         }
     }
@@ -154,6 +159,7 @@ bool iGame::iGameVTSReader::Parsing() {
             }
             if(array != nullptr){
                 array->SetName(scalarName);
+
                 m_Data.GetData()->AddScalar(IG_POINT, array, {range_min, range_max});
             }
 

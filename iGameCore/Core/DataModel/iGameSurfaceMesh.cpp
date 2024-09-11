@@ -884,18 +884,18 @@ void SurfaceMesh::Draw(Scene* scene) {
         m_LineVAO.bind();
         glLineWidth(m_LineWidth);
 
-        // TODO: A better way to render wireframes
-        auto boundingBoxDiag = this->GetBoundingBox().diag();
-        auto scaleFactor =
-            1e-5 / std::pow(10, std::floor(std::log10(boundingBoxDiag)));
-        glad_glDepthRange(scaleFactor, 1);
-        glad_glDepthFunc(GL_GEQUAL);
+    // TODO: A better way to render wireframes
+//    auto boundingBoxDiag = this->GetBoundingBox().diag();
+//    auto scaleFactor =
+//        1e-5 / std::pow(10, std::floor(std::log10(boundingBoxDiag)));
+//    glad_glDepthRange(scaleFactor, 1);
+//    glad_glDepthFunc(GL_GEQUAL);
 
         glad_glDrawElements(GL_LINES, m_LineIndices->GetNumberOfIds(),
             GL_UNSIGNED_INT, 0);
 
-        glad_glDepthFunc(GL_GREATER);
-        glad_glDepthRange(0, 1);
+//    glad_glDepthFunc(GL_GREATER);
+//    glad_glDepthRange(0, 1);
 
         m_LineVAO.release();
     }
@@ -930,25 +930,25 @@ void SurfaceMesh::DrawPhase1(Scene* scene) {
     if (m_UseColor && m_ColorWithCell) {
     }
 
-    if (m_ViewStyle & IG_POINTS) {
-    }
-    if (m_ViewStyle & IG_WIREFRAME) {
-    }
-    if (m_ViewStyle & IG_SURFACE) {
-        scene->GetShader(Scene::PATCH)->use();
-        m_TriangleVAO.bind();
-        unsigned int count = 0;
-        m_Meshlets->VisibleMeshletBuffer().getSubData(0, sizeof(unsigned int),
-            &count);
-        m_Meshlets->FinalDrawCommandBuffer().target(GL_DRAW_INDIRECT_BUFFER);
-        m_Meshlets->FinalDrawCommandBuffer().bind();
-        glMultiDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, nullptr, count,
-            0);
-        std::cout << "Draw phase 1: [render count: " << count;
-        std::cout << ", meshlet count: " << m_Meshlets->MeshletsCount() << "]"
-            << std::endl;
-        m_TriangleVAO.release();
-    }
+  if (m_ViewStyle & IG_POINTS) {
+  }
+  if (m_ViewStyle & IG_WIREFRAME) {
+  }
+  if (m_ViewStyle & IG_SURFACE) {
+    scene->GetShader(Scene::PATCH)->use();
+    m_TriangleVAO.bind();
+    unsigned int count = 0;
+    m_Meshlets->VisibleMeshletBuffer().getSubData(0, sizeof(unsigned int),
+                                                  &count);
+    m_Meshlets->FinalDrawCommandBuffer().target(GL_DRAW_INDIRECT_BUFFER);
+    m_Meshlets->FinalDrawCommandBuffer().bind();
+    glMultiDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, nullptr, count,
+                                0);
+    // std::cout << "Draw phase 1: [render count: " << count;
+    // std::cout << ", meshlet count: " << m_Meshlets->MeshletsCount() << "]"
+    //           << std::endl;
+    m_TriangleVAO.release();
+  }
 #endif
 }
 
@@ -1025,9 +1025,9 @@ void SurfaceMesh::DrawPhase2(Scene* scene) {
         glMultiDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, nullptr, count,
             0);
 
-        std::cout << "Draw phase 2: [render count: " << count;
-        std::cout << ", meshlet count: " << m_Meshlets->MeshletsCount() << "]"
-            << std::endl;
+    // std::cout << "Draw phase 2: [render count: " << count;
+    // std::cout << ", meshlet count: " << m_Meshlets->MeshletsCount() << "]"
+    //           << std::endl;
 
         m_TriangleVAO.release();
     }
@@ -1085,12 +1085,12 @@ void SurfaceMesh::TestOcclusionResults(Scene* scene) {
         }
     }
 
-    unsigned int count = 0;
-    m_Meshlets->VisibleMeshletBuffer().getSubData(0, sizeof(unsigned int),
-        &count);
-    std::cout << "Test Occlusion: [render count: " << count;
-    std::cout << ", meshlet count: " << m_Meshlets->MeshletsCount() << "]"
-        << std::endl;
+  unsigned int count = 0;
+  m_Meshlets->VisibleMeshletBuffer().getSubData(0, sizeof(unsigned int),
+                                                &count);
+  // std::cout << "Test Occlusion: [render count: " << count;
+  // std::cout << ", meshlet count: " << m_Meshlets->MeshletsCount() << "]"
+  //           << std::endl;
 
     // std::vector<DrawElementsIndirectCommand> readBackCommands(
     //         m_Meshlets->MeshletsCount());
@@ -1203,17 +1203,19 @@ void SurfaceMesh::ConvertToDrawableData() {
             GL_FLOAT, GL_FALSE, 0);
         m_TriangleVAO.elementBuffer(m_TriangleEBO);
 
-        bool debug = false;
-        if (debug) {
-            //m_Meshlets->BuildMeshlet(
-            //    m_Positions->RawPointer(), m_Positions->GetNumberOfValues() / 3,
-            //    m_TriangleIndices->RawPointer(), m_TriangleIndices->GetNumberOfIds());
+#ifdef IGAME_OPENGL_VERSION_460
+    bool debug = false;
+    if (debug) {
+      m_Meshlets->BuildMeshlet(
+          m_Positions->RawPointer(), m_Positions->GetNumberOfValues() / 3,
+          m_TriangleIndices->RawPointer(), m_TriangleIndices->GetNumberOfIds());
 
-            //GLAllocateGLBuffer(m_TriangleEBO,
-            //                   m_Meshlets->GetMeshletIndexCount() * sizeof(igIndex),
-            //                   m_Meshlets->GetMeshletIndices());
-        }
+      GLAllocateGLBuffer(m_TriangleEBO,
+                         m_Meshlets->GetMeshletIndexCount() * sizeof(igIndex),
+                         m_Meshlets->GetMeshletIndices());
     }
+#endif
+  }
 }
 
 void SurfaceMesh::ViewCloudPicture(Scene* scene, int index, int demension) {
@@ -1248,17 +1250,21 @@ void SurfaceMesh::SetAttributeWithPointData(
         m_ColorWithCell = false;
         ScalarsToColors::Pointer mapper = ScalarsToColors::New();
 
-        if (i == -1) {
-            mapper->InitRange(attr);
-        }
-        else {
-            mapper->InitRange(attr, i);
-        }
+    if (range.first != range.second) {
+      mapper->SetRange(range.first, range.second * 2);
+    }
+    else if (i == -1) {
+      mapper->InitRange(attr);
+    }
+    else {
+      mapper->InitRange(attr, i);
+    }
 
-        m_Colors = mapper->MapScalars(attr, i);
-        if (m_Colors == nullptr) {
-            return;
-        }
+
+    m_Colors = mapper->MapScalars(attr, i);
+    if (m_Colors == nullptr) {
+      return;
+    }
 
         GLAllocateGLBuffer(m_ColorVBO,
             m_Colors->GetNumberOfValues() * sizeof(float),
