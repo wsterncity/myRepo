@@ -57,7 +57,7 @@ public:
         }
 
         auto radius = m_Scene->m_ModelsBoundingSphere.w;
-        m_CameraScaleSpeed = radius * 0.1;
+        m_CameraScaleSpeed = radius * 0.05;
 
         auto moveSize =
                 static_cast<float>(-wheelMoveDirection * m_CameraScaleSpeed);

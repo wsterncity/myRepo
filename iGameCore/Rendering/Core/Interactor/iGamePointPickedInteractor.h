@@ -54,6 +54,7 @@ public:
         m_Model->GetPointPainter()->Clear();
         if (id != -1) {
             m_Model->GetPointPainter()->DrawPoint(m_Points->GetPoint(id));
+            std::cout << "pick point id: " << id << std::endl;
         }
     }
     void MouseMoveEvent(int posX, int posY) override {}

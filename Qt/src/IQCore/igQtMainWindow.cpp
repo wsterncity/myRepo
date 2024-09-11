@@ -1,6 +1,7 @@
 //
 // Created by m_ky on 2024/4/10.
 //
+#include "Interactor/iGameFacePickedInteractor.h"
 #include "Interactor/iGameFacesSelection.h"
 #include "Interactor/iGameLineSourceInteractor.h"
 #include "Interactor/iGamePointPickedInteractor.h"
@@ -567,10 +568,14 @@ void igQtMainWindow::initAllFilters() {
 	connect(ui->menuTest->addAction("tetraSimplTest"), &QAction::triggered, this,
 		[&](bool checked) {
 			auto td = TetraDecimation::New();
-			auto input =
-				rendererWidget->GetScene()->GetCurrentModel()->GetDataObject();
+			auto obj = rendererWidget->GetScene()->GetCurrentModel()->GetDataObject();
+			auto input = DynamicCast<UnstructuredMesh>(obj)->TransferToVolumeMesh();
+			td->SetModel(rendererWidget->GetScene()->GetCurrentModel());
 			td->SetInput(input);
 			td->Execute();
+			input->SetName(obj->GetName() + "*");
+			modelTreeWidget->addDataObjectToModelTree(input, ItemSource::Algorithm);
+			modelTreeWidget->addDataObjectToModelTree(td->GetOutput(), ItemSource::Algorithm);
 			rendererWidget->update();
 		});
 }
@@ -868,7 +873,41 @@ void igQtMainWindow::changePointsSelectionInteractor() {
 	}
 }
 
-void igQtMainWindow::changeFaceSelectionInteractor() {}
+void igQtMainWindow::changeFaceSelectionInteractor() {
+	if (ui->action_select_face->isChecked()) {
+		auto interactor = FacePickedInteractor::New();
+		auto model = rendererWidget->GetScene()->GetCurrentModel();
+		auto obj = model->GetDataObject();
+		Points::Pointer points;
+		CellArray::Pointer faces;
+
+		if (DynamicCast<VolumeMesh>(obj)) {
+			auto mesh = DynamicCast<VolumeMesh>(obj)->GetDrawMesh();
+			points = mesh->GetPoints();
+			faces = mesh->GetFaces();
+		}
+		else if (DynamicCast<UnstructuredMesh>(obj)) {
+			auto mesh = DynamicCast<UnstructuredMesh>(obj)->GetDrawMesh();
+			points = mesh->GetPoints();
+			faces = mesh->GetFaces();
+		}
+		else if (DynamicCast<SurfaceMesh>(obj)) {
+			auto mesh = DynamicCast<SurfaceMesh>(obj);
+			faces = mesh->GetFaces();
+			points = mesh->GetPoints();
+		}
+
+		interactor->SetFacesAndPainter(points, faces, model->GetFacePainter());
+		rendererWidget->ChangeInteractor(interactor);
+
+		if (ui->action_select_faces->isChecked()) {
+			ui->action_select_faces->setChecked(false);
+		}
+	}
+	else {
+		rendererWidget->ChangeInteractor(BasicInteractor::New());
+	}
+}
 
 void igQtMainWindow::changeFacesSelectionInteractor() {
 	if (ui->action_select_faces->isChecked()) {

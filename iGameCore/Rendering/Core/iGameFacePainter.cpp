@@ -59,7 +59,7 @@ void FacePainter::Draw(Scene* scene) {
     scene->UpdateUniformBuffer();
     scene->UseShader(Scene::PATCH);
     VAO.bind();
-    glad_glDepthRange(0, 0.999999);
+    glad_glDepthRange(0.00001, 1);
     glad_glDrawArrays(GL_TRIANGLES, 0, m_Points->GetNumberOfPoints());
     glad_glDepthRange(0, 1);
     VAO.release();

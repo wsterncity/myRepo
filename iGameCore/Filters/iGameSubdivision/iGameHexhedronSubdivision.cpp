@@ -229,7 +229,7 @@ bool HexhedronSubdivision::Execute()
 			CornerPts[i] = { 0,0,0 };
 			neighborNum = mesh->GetPointToNeighborFaces(i, fhs);
 			for (j = 0; j < neighborNum; j++) {
-				if (mesh->IsBoundryFace(fhs[j])) {
+				if (mesh->IsBoundaryFace(fhs[j])) {
 					count++;
 					auto f = mesh->GetFace(fhs[j]);
 

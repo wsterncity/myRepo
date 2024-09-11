@@ -129,7 +129,7 @@ bool QuadSubdivision::Execute()
 		EdgePts[i].resize(2);
 		fcnt = mesh->GetEdgeToNeighborFaces(i, fhs);
 		// If it's an internal edge
-		if (!mesh->IsBoundryEdge(i)) {
+		if (!mesh->IsBoundaryEdge(i)) {
 			for (j = 0; j < 2; j++) {
 				EdgePts[i][j] = Point{ 0,0,0 };
 				for (k = 0; k < fcnt; k++) {
@@ -159,7 +159,7 @@ bool QuadSubdivision::Execute()
 		auto p = mesh->GetPoint(i);
 		fcnt = mesh->GetPointToNeighborFaces(i, fhs);
 		CornerPts[i] = { 0,0,0 };
-		if (!mesh->IsBoundryPoint(i)) {	
+		if (!mesh->IsBoundaryPoint(i)) {	
 			for (k = 0; k < fcnt; k++) {
 				auto f = mesh->GetFace(fhs[k]);
 				for (igIndex id = 0; id < 4; id++) {
@@ -175,7 +175,7 @@ bool QuadSubdivision::Execute()
 			vcnt = mesh->GetPointToOneRingPoints(i, vhs);
 			for (j = 0; j < vcnt; j++) {
 				auto eh = mesh->GetEdgeIdFormPointIds(i, vhs[j]);
-				if (mesh->IsBoundryEdge(eh)) {
+				if (mesh->IsBoundaryEdge(eh)) {
 					CornerPts[i] += p * 2 + mesh->GetPoint(vhs[j]);
 				}
 			}

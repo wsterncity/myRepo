@@ -2,8 +2,11 @@
 #define iGameTetraDecimation_h
 
 #include "iGameFilter.h"
+#include "iGameModel.h"
 #include "iGameVolumeMesh.h"
+#include "iGameFaceTable.h"
 #include "iGamePriorityQueue.h"
+#include <unordered_map>
 
 IGAME_NAMESPACE_BEGIN
 class TetraDecimation : public Filter {
@@ -11,21 +14,30 @@ public:
 	I_OBJECT(TetraDecimation);
 	static Pointer New() { return new TetraDecimation; }
 
+	void SetModel(Model::Pointer model) {
+		this->model = model;
+	}
+
 	bool Execute() override {
-        UpdateProgress(0);
-        mesh = DynamicCast<VolumeMesh>(GetInput(0));
-        if (mesh == nullptr) { return false; }
-        mesh->RequestEditStatus();
+		UpdateProgress(0);
+		mesh = DynamicCast<VolumeMesh>(GetInput(0));
+		if (mesh == nullptr) { return false; }
+		mesh->RequestEditStatus();
 
-        optimalPos.resize(mesh->GetNumberOfFaces() * 100);
+		std::cout << mesh->GetNumberOfPoints() << std::endl;
+		std::cout << mesh->GetNumberOfEdges() << std::endl;
+		std::cout << mesh->GetNumberOfFaces() << std::endl;
+		std::cout << mesh->GetNumberOfVolumes() << std::endl << std::endl;
 
-        for (int i = 0; i < mesh->GetNumberOfFaces(); i++)
-        {
-            this->InsertFaceToHeap(i);
-        }
+		optimalPos.resize(mesh->GetNumberOfFaces() * 10);
 
+		for (int i = 0; i < mesh->GetNumberOfFaces(); i++)
+		{
+			this->InsertFaceToHeap(i);
+		}
+		
 		int needEliminatedNum = mesh->GetNumberOfFaces() / 2;
-		for (int totalEliminated = 0; totalEliminated < 10; totalEliminated++)
+		for (int totalEliminated = 0; totalEliminated < 1000; totalEliminated++)
 		{
 			heap->update();
 			if (heap->empty()) {
@@ -38,135 +50,457 @@ public:
 			igIndex f[3];
 			mesh->GetFacePointIds(faceId, f);
 
-			//if (!mesh->IsCollapsableFace(faceId)) continue;
+			if (!IsCollapsableFace(faceId)) continue;
 
-			igIndex ids[64]{}, faceIds[64]{};
+			igIndex faceIds[256]{};
 			for (int i = 0; i < 3; i++) {
-				int size = mesh->GetPointToNeighborFaces(f[i], ids);
+				int size = mesh->GetPointToNeighborFaces(f[i], faceIds);
 				for (int j = 0; j < size; j++) {
-					heap->remove(ids[j]);
+					heap->remove(faceIds[j]);
 				}
 			}
 
-			//for (int i = 0; i < size; i++) {
-			//	igIndex nei_f[3];
-			//	mesh->GetFacePointIds(ids[i], nei_f);
-			//	int count = 0;
-			//	for (int m = 0; m < 3; m++) {
-			//		for (int n = 0; n < 3; n++) {
-			//			if (f[m] == nei_f[n]) {
-			//				count++;
-			//				break;
-			//			}
-			//		}
-			//	}
-			//	if (count == 1) {
-			//		faceIds[k++] = ids[i];
-			//		heap->remove(ids[i]);
-			//		this->InsertFaceToHeap(ids[i]);
-			//	}
-			//	else {
-			//		heap->remove(ids[i]);
-			//	}
-			//}
-
 			this->CollapseFace(faceId);
-			
+
 			int newId = mesh->GetNumberOfPoints() - 1;
-			int size = mesh->GetPointToNeighborFaces(newId, ids);
+			//std::cout << mesh->IsBoundaryPoint(f[0]) << std::endl;
+			int size = mesh->GetPointToNeighborFaces(newId, faceIds);
 			for (int i = 0; i < size; i++) {
-				this->InsertFaceToHeap(ids[i]);
+				this->InsertFaceToHeap(faceIds[i], true);
 			}
 		}
-		std::cout << mesh->GetNumberOfPoints() << std::endl;
-		std::cout << mesh->GetNumberOfEdges() << std::endl;
-		std::cout << mesh->GetNumberOfFaces() << std::endl;
-		std::cout << mesh->GetNumberOfVolumes() << std::endl << std::endl;
-		mesh->GarbageCollection();
+
+		mesh->GarbageCollection(true);
 		std::cout << mesh->GetNumberOfPoints() << std::endl;
 		std::cout << mesh->GetNumberOfEdges() << std::endl;
 		std::cout << mesh->GetNumberOfFaces() << std::endl;
 		std::cout << mesh->GetNumberOfVolumes() << std::endl;
-        
-        UpdateProgress(1);
-        SetOutput(0, mesh);
-        return true;
-    }
+
+		SurfaceMesh::Pointer out = SurfaceMesh::New();
+		out->SetPoints(mesh->GetPoints());
+		CellArray::Pointer faces = CellArray::New();
+		mesh->RequestEditStatus();
+		for (int i = 0; i < mesh->GetNumberOfFaces(); i++) {
+			//igIndex eids[3]{};
+			//mesh->GetFaceEdgeIds(i, eids);
+			//bool f = true;
+			//for (int j = 0; j < 3; j++) {
+			//	if (!mesh->IsBoundaryEdge(eids[j])) {
+			//		f = false;
+			//		break;
+			//	}
+			//}
+			//if (f) {
+			//	igIndex face[3]{};
+			//	int size = mesh->GetFacePointIds(i, face);
+			//	faces->AddCellIds(face, 3);
+			//}
+			if (mesh->IsBoundaryFace(i)) {
+				igIndex face[3]{};
+				int size = mesh->GetFacePointIds(i, face);
+				faces->AddCellIds(face, 3);
+			}
+		}
+		out->SetFaces(faces);
+		out->SetName(mesh->GetName() + "*");
+		SetOutput(0, out);
+
+		UpdateProgress(1);
+		return true;
+	}
 
 protected:
-    TetraDecimation()
+	TetraDecimation()
 	{
 		SetNumberOfInputs(1);
+		SetNumberOfOutputs(1);
 		heap = PriorityQueue::New();
+		ids = IdArray::New();
+		faceIds = IdArray::New();
+		origPri = DoubleArray::New();
 	}
 	~TetraDecimation() override = default;
 
-	void CollapseFace(igIndex faceId) {
-		igIndex f[3], ids[64]{};
-		std::set<igIndex> st;
-		std::vector<Vector<igIndex, 4>> vec;
+	double SignedDistanceToPlane(const Point& p, const Point& planePoint, const Vector3f& normal) {
+		Vector3f diff = p - planePoint;
+		return DotProduct(diff, normal);
+	}
+
+	bool CheckFlip(const Point& p1, const Point& p2, const Point& pA, const Point& pB, const Point& pC) {
+		Vector3f v1 = pB - pA;
+		Vector3f v2 = pC - pA;
+		Vector3f normal = CrossProduct(v1, v2);
+
+		// 计算有符号距离
+		double d1 = SignedDistanceToPlane(p1, pA, normal);
+		double d2 = SignedDistanceToPlane(p2, pA, normal);
+
+		// 检测翻转：符号不同则发生翻转
+		return (d1 * d2 < 0);
+	}
+
+	bool IsCollapsableFace(igIndex faceId) {
+		igIndex f[3], ids[256];
 		mesh->GetFacePointIds(faceId, f);
-		int newId = mesh->GetNumberOfPoints();
+		Point newPoint = optimalPos[faceId];
+
+		std::map<igIndex, int> volumeIds;
 		for (int i = 0; i < 3; i++) {
 			int size = mesh->GetPointToNeighborVolumes(f[i], ids);
 			for (int j = 0; j < size; j++) {
-				st.insert(ids[j]);
+				igIndex volume[4]{};
+				mesh->GetVolumePointIds(ids[j], volume);
+				int count = 0, a;
+				for (int u = 0; u < 4; u++) {
+					for (int v = 0; v < 3; v++) {
+						if (f[v] == volume[u]) {
+							count++;
+							a = u;
+							break;
+						}
+					}
+				}
+				if (count == 1) {
+					volumeIds.insert(std::make_pair(ids[j], a));
+				}
 			}
 		}
-		for (auto id : st) {
-			int size = mesh->GetVolumePointIds(id, ids);
+
+		ElementArray<Point>::Pointer vec = ElementArray<Point>::New();
+		for (auto& id : volumeIds){
+			igIndex volume[4]{};
+			mesh->GetVolumePointIds(id.first, volume);
+			Point m;
+			vec->Reset();
+			for (int i = 0; i < 4; i++) {
+				if (i == id.second) {
+					m = mesh->GetPoint(volume[i]);
+				}
+				else {
+					vec->AddElement(mesh->GetPoint(volume[i]));
+				}
+			}
+			if (CheckFlip(m, newPoint, vec->GetElement(0), vec->GetElement(1), vec->GetElement(2))) {
+				return false;
+			}
+		}
+
+		//FaceTable::Pointer volumes = FaceTable::New();
+		//for (auto id : volumeIds) {
+		//	igIndex volume[4]{};
+		//	mesh->GetVolumePointIds(id, volume);
+		//	Vector<igIndex, 4> tempv(volume);
+		//	int count = 0;
+		//	for (int i = 0; i < 4; i++) {
+		//		for (int j = 0; j < 3; j++) {
+		//			if (f[j] == volume[i]) {
+		//				tempv[i] = f[0];
+		//				count++;
+		//				break;
+		//			}
+		//		}
+		//	}
+		//	if (count == 1) {
+		//		if (volumes->IsFace(tempv.pointer(), 4) != -1) {
+		//			return false;
+		//		}
+		//		else {
+		//			volumes->InsertFace(tempv.pointer(), 4);
+		//		}
+		//	}
+		//}
+
+		return true;
+	}
+
+	void CollapseFace(igIndex faceId) {
+		igIndex f[3], ids[256]{};
+		std::vector<Vector<igIndex, 4>> vec;
+		mesh->GetFacePointIds(faceId, f);
+
+		Point v0 = mesh->GetPoint(f[0]);
+		Point v1 = mesh->GetPoint(f[1]);
+		Point v2 = mesh->GetPoint(f[2]);
+
+		mesh->SetPoint(f[0], (v0 + v1 + v2) / 3);
+		
+		//if (faceId == 45809) {
+		//	std::cout << faceId << std::endl;
+		//	std::set<igIndex> edgeIds;
+		//	for (int i = 0; i < 3; i++) {
+		//		int size = mesh->GetPointToNeighborEdges(f[i], ids);
+		//		for (int j = 0; j < size; j++) {
+		//			edgeIds.insert(ids[j]);
+		//		}
+		//	}
+		//	for (auto id : edgeIds) {
+		//		mesh->DeleteEdge(id);
+		//	}
+		//	return;
+		//}
+
+		std::set<igIndex> edgeIds;
+		std::set<igIndex> faceIds;
+		std::set<igIndex> volumeIds;
+		for (int i = 0; i < 3; i++) {
+			int size = mesh->GetPointToNeighborEdges(f[i], ids);
+			for (int j = 0; j < size; j++) {
+				edgeIds.insert(ids[j]);
+			}
+			size = mesh->GetPointToNeighborFaces(f[i], ids);
+			for (int j = 0; j < size; j++) {
+				faceIds.insert(ids[j]);
+			}
+			size = mesh->GetPointToNeighborVolumes(f[i], ids);
+			for (int j = 0; j < size; j++) {
+				volumeIds.insert(ids[j]);
+			}
+		}
+
+		EdgeTable::Pointer edges = EdgeTable::New();
+		std::vector<int> edgeMap;
+		for (auto id : edgeIds) {
+			igIndex e[2]{};
+			mesh->GetEdgePointIds(id, e);
+			Vector<igIndex, 2> tempe(e);
 			int count = 0;
-			Vector<igIndex, 4> temp{ ids[0], ids[1], ids[2], ids[3] };
-			for (int i = 0; i < 3; i++) {
-				for (int j = 0; j < 4; j++) {
-					if (f[i] == ids[j]) {
+			for (int i = 0; i < 2; i++) {
+				for (int j = 0; j < 3; j++) {
+					if (f[j] == e[i]) {
+						tempe[i] = f[0];
 						count++;
-						temp[j] = newId;
 						break;
 					}
 				}
 			}
 			if (count == 1) {
-				vec.push_back(temp);
+				if (edges->IsEdge(tempe[0], tempe[1]) == -1) {
+					edges->InsertEdge(tempe[0], tempe[1]);
+					edgeMap.push_back(id);
+				}
 			}
 		}
 
+		FaceTable::Pointer faces = FaceTable::New();
+		std::vector<int> faceMap;
+		for (auto id : faceIds) {
+			igIndex face[3]{};
+			mesh->GetFacePointIds(id, face);
+			Vector<igIndex, 3> tempf(face);
+			int count = 0;
+			
+
+			for (int i = 0; i < 3; i++) {
+				for (int j = 0; j < 3; j++) {
+					if (f[j] == face[i]) {
+						tempf[i] = f[0];
+						count++;
+						break;
+					}
+				}
+			}
+			if (count == 1) {
+				if (faces->IsFace(tempf.pointer(), 3) == -1) {
+					faces->InsertFace(tempf.pointer(), 3);
+					faceMap.push_back(id);
+				}
+			}
+		}
+
+		FaceTable::Pointer volumes = FaceTable::New();
+		std::vector<int> volMap;
+		std::set<int> unable;
+		for (auto id : volumeIds) {
+			igIndex volume[4]{};
+			mesh->GetVolumePointIds(id, volume);
+			Vector<igIndex, 4> tempv(volume);
+			int count = 0;
+			for (int i = 0; i < 4; i++) {
+				for (int j = 0; j < 3; j++) {
+					if (f[j] == volume[i]) {
+						tempv[i] = f[0];
+						count++;
+						break;
+					}
+				}
+			}
+			if (count == 1) {
+				int idx{};
+				if ((idx = volumes->IsFace(tempv.pointer(), 4)) == -1) {
+					volumes->InsertFace(tempv.pointer(), 4);
+					volMap.push_back(id);
+					vec.push_back(tempv);
+				}
+				else {
+					unable.insert(idx);
+					//igIndex fids[4]{}, t[2]{};
+					//mesh->GetVolumeFaceIds(id, fids);
+					//for (int i = 0; i < 4; i++) {				
+					//	int size = mesh->GetFaceToNeighborVolumes(fids[i], t);
+					//	if (size == 2 && ((t[0] == id && t[1] == idx) || (t[1] == id && t[0] == idx))) {
+					//		mesh->DeleteFace(fids[i]);
+					//		break;
+					//	}
+					//}
+				}
+			}
+		}
+
+		for (auto id : edgeIds) {
+			mesh->DeleteEdge(id);
+		}
+
+		auto edges_ = edges->GetOutput();
+		for (int i = 0; i < edges_->GetNumberOfCells(); i++) {
+			igIndex e[2]{};
+			edges_->GetCellIds(i, e);
+			mesh->ReplaceEdgeReference(edgeMap[i], e[0], e[1]);
+		}
+
+		auto faces_ = faces->GetOutput();
+		for (int i = 0; i < faces_->GetNumberOfCells(); i++) {
+			igIndex face[3]{};
+			faces_->GetCellIds(i, face);
+			igIndex edgeIds[3]{};
+			mesh->GetFaceEdgeIds(faceMap[i], edgeIds);
+			for (int j = 0; j < 3; j++) {
+				int idx;
+				if ((idx = edges->IsEdge(face[j], face[(j + 1) % 3])) != -1) {
+					edgeIds[j] = edgeMap[idx];
+				}
+				else {
+					edgeIds[j] = mesh->GetEdgeIdFormPointIds(face[j], face[(j + 1) % 3]);
+				}
+			}
+			mesh->ReplaceFaceReference(faceMap[i], face, 3, edgeIds);
+		}
+
+		auto volumes_ = volumes->GetOutput();
+		for (int i = 0; i < volumes_->GetNumberOfCells(); i++) {
+			if (unable.count(i) > 0) continue;
+			igIndex v[4]{};
+			volumes_->GetCellIds(i, v);
+			igIndex edgeIds[6]{};
+			igIndex faceIds[4]{};
+			const igIndex* index;
+			mesh->GetVolumeEdgeIds(volMap[i], edgeIds);
+			mesh->GetVolumeFaceIds(volMap[i], faceIds);
+			for (int j = 0; j < 6; j++) {
+				Tetra::EdgePointIds(j, index);
+				int idx;
+				if ((idx = edges->IsEdge(v[index[0]], v[index[1]])) != -1) {
+					edgeIds[j] = edgeMap[idx];
+				}
+				//else {
+				//	edgeIds[j] = mesh->GetEdgeIdFormPointIds(v[index[0]], v[index[1]]);
+				//}
+			}
+			for (int j = 0; j < 4; j++) {
+				Tetra::FacePointIds(j, index);
+				int idx;
+				igIndex face[3]{ v[index[0]],v[index[1]] ,v[index[2]] };
+				if ((idx = faces->IsFace(face, 3)) != -1) {
+					faceIds[j] = faceMap[idx];
+				}
+				//else {
+				//	faceIds[j] = mesh->GetFaceIdFormPointIds(face, 3);
+				//}
+			}
+			mesh->ReplaceVolumeReference(volMap[i], v, 4, edgeIds, 6, faceIds, 4);
+		}
+ 	}
+
+	void CollapseFace2(igIndex faceId) {
+		igIndex f[3], ids[256]{};
+		std::vector<Vector<igIndex, 4>> vec;
+		mesh->GetFacePointIds(faceId, f);
+
+		int newId = mesh->AddPoint(optimalPos[faceId]);
+	
+		std::set<igIndex> volumeIds;
+		for (int i = 0; i < 3; i++) {
+			int size = mesh->GetPointToNeighborVolumes(f[i], ids);
+			for (int j = 0; j < size; j++) {
+				volumeIds.insert(ids[j]);
+			}
+		}
+
+		FaceTable::Pointer volumes = FaceTable::New();
+		std::set<int> unable;
+		for (auto id : volumeIds) {
+			igIndex volume[4]{};
+			mesh->GetVolumePointIds(id, volume);
+			Vector<igIndex, 4> tempv(volume);
+			int count = 0;
+			for (int i = 0; i < 4; i++) {
+				for (int j = 0; j < 3; j++) {
+					if (f[j] == volume[i]) {
+						tempv[i] = newId;
+						count++;
+						break;
+					}
+				}
+			}
+			if (count == 1) {
+				int idx{};
+				if ((idx = volumes->IsFace(tempv.pointer(), 4)) == -1) {
+					volumes->InsertFace(tempv.pointer(), 4);
+					vec.push_back(tempv);
+				}
+				else {
+					unable.insert(idx);
+				}
+			}
+		}
 
 		mesh->DeletePoint(f[0]);
 		mesh->DeletePoint(f[1]);
 		mesh->DeletePoint(f[2]);
-		
-		mesh->AddPoint(optimalPos[faceId]);
+
+		std::vector<igIndex> ve;
 		for (int i = 0; i < vec.size(); i++) {
-			mesh->AddVolume(vec[i].pointer(), 4);
+			//if (unable.count(i) > 0) continue;
+			ve.push_back(mesh->AddVolume(vec[i].pointer(), 4));
 		}
 	}
 
-    void InsertFaceToHeap(igIndex faceId)
-    {
-        int type = EvaluateFace(faceId);
+	bool InsertFaceToHeap(igIndex faceId, bool f = false)
+	{
 
-        double priority = 0.0;
-        if (type == 0) {
-            priority = ComputePriority(faceId);
-        }
+		int type = EvaluateFace(faceId);
+		//static int count = 0;
+		//if (f) {
+		//	
+		//	//if (type == 0) {
+		//	//	count++;
+		//	//	std::cout << count << std::endl;
+		//	//}
+		//	std::cout << type << std::endl;
+		//}
 
-        if (priority != 0.0) {
-            heap->push(-priority, faceId);
-        }
-    }
+		double priority = 0.0;
+		if (type == 0) { // 内部三角形
+			priority = ComputePriority(faceId);
+		}
 
-    int EvaluateFace(igIndex faceId)
-    {
-        int type = 0;
-        igIndex f[3];
-        mesh->GetFacePointIds(faceId, f);
-        type += mesh->IsOnBoundaryPoint(f[0]) ? 1 : 0;
-        type += mesh->IsOnBoundaryPoint(f[1]) ? 1 : 0;
-        type += mesh->IsOnBoundaryPoint(f[2]) ? 1 : 0;
+		if (priority != 0.0) {
+			heap->push(-priority, faceId);
+			return true;
+		}
+		return false;
+	}
 
-        return type;
-    }
+	int EvaluateFace(igIndex faceId)
+	{
+		int type = 0;
+		igIndex f[3];
+		mesh->GetFacePointIds(faceId, f);
+		type += mesh->IsBoundaryPoint(f[0]) ? 1 : 0;
+		type += mesh->IsBoundaryPoint(f[1]) ? 1 : 0;
+		type += mesh->IsBoundaryPoint(f[2]) ? 1 : 0;
+
+		return type;
+	}
 
 	double ComputePriority(igIndex faceId)
 	{
@@ -176,12 +510,12 @@ protected:
 		Point v1 = mesh->GetPoint(f[1]);
 		Point v2 = mesh->GetPoint(f[2]);
 
-		igIndex ids[128]{}, faceIds[128]{};
-		int k = 0;
-		int size = mesh->GetFaceToOneRingFaces(faceId, ids);
-		for (int i = 0; i < size; i++) {
+		ids->Reset();
+		faceIds->Reset();
+		mesh->GetFaceToOneRingFaces(faceId, ids);
+		for (int i = 0; i < ids->Size(); i++) {
 			igIndex nei_f[3];
-			mesh->GetFacePointIds(ids[i], nei_f);
+			mesh->GetFacePointIds(ids->GetId(i), nei_f);
 			int count = 0;
 			for (int m = 0; m < 3; m++) {
 				for (int n = 0; n < 3; n++) {
@@ -192,13 +526,13 @@ protected:
 				}
 			}
 			if (count == 1) {
-				faceIds[k++] = ids[i];
+				faceIds->AddId(ids->GetId(i));
 			}
 		}
 
-		double origPri[128]{};
-		for (int i = 0; i < k; i++) {
-			origPri[i] = this->GetTriFormFactor(ids[i]);
+		origPri->Reset();
+		for (int i = 0; i < faceIds->Size(); i++) {
+			origPri->AddValue(this->GetTriFormFactor(faceIds->GetId(i)));
 		}
 
 		Point newPos = (v0 + v1 + v2) / 3;
@@ -209,8 +543,8 @@ protected:
 		mesh->SetPoint(f[2], newPos);
 
 		double priority = 0.0;
-		for (int i = 0; i < k; i++) {
-			priority = std::max(priority, std::abs(origPri[i] - this->GetTriFormFactor(ids[i])));
+		for (int i = 0; i < faceIds->Size(); i++) {
+			priority = std::max(priority, std::abs(origPri->GetValue(i) - this->GetTriFormFactor(faceIds->GetId(i))));
 		}
 
 		mesh->SetPoint(f[0], v0);
@@ -241,50 +575,12 @@ protected:
 		return 4 * (q - a) * (q - b) * (q - c) / (a * b * c);
 	}
 
-	double QualityFace(igIndex faceId)
-	{
-		auto f = mesh->GetFace(faceId);
-		Point v0 = f->GetPoint(0);
-		Point v1 = f->GetPoint(1);
-		Point v2 = f->GetPoint(2);
-
-		Vector3f d10 = v1 - v0;
-		Vector3f d20 = v2 - v0;
-		Vector3f d12 = v1 - v2;
-
-		Vector3f normal = CrossProduct(d10, d20);
-
-		double a = normal.norm();
-		if (a == 0) return 0;
-		double b = std::max(d10.squaredNorm(), std::max(d20.squaredNorm(), d12.squaredNorm()));
-		if (b == 0) return 0;
-		return a / b;
-	}
-
-	Vector3d Normal(igIndex faceId)
-	{
-		auto f = mesh->GetFace(faceId);
-		Point v0 = f->GetPoint(0);
-		Point v1 = f->GetPoint(1);
-		Point v2 = f->GetPoint(2);
-
-		Vector3f d10 = v1 - v0;
-		Vector3f d20 = v2 - v0;
-
-		Vector3d normal = CrossProduct(d10, d20);
-		return normal;
-	}
-
-	igIndex GetEdgeFromVert(igIndex vertId, igIndex faceId) {
-		auto f = mesh->GetFace(faceId);
-		int i = 0;
-		
-		return f->GetCellSize();
-	}
-
-    VolumeMesh::Pointer mesh;
+	Model::Pointer model;
+	VolumeMesh::Pointer mesh;
 	PriorityQueue::Pointer heap;
-    std::vector<Vector3d> optimalPos;
+	std::vector<Vector3d> optimalPos;
+	IdArray::Pointer ids, faceIds;
+	DoubleArray::Pointer origPri;
 };
 IGAME_NAMESPACE_END
 #endif

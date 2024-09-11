@@ -62,6 +62,9 @@ public:
 	//a new mesh if it has other mesh's cell.
 	SurfaceMesh::Pointer ExtractSurfaceMesh();
 	VolumeMesh::Pointer ExtractVolumeMesh();
+
+	SurfaceMesh::Pointer GetDrawMesh() { return m_DrawMesh; }
+
 protected:
 	UnstructuredMesh();
 	~UnstructuredMesh() override = default;

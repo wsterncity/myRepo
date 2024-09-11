@@ -95,7 +95,7 @@ public:
     }
     IGsize AddElement(const std::vector<TValue>& _Element)
     {
-        assert(_Element.size() >= ElementSize);
+        assert(_Element.size() >= m_ElementSize);
         IGsize index = this->GetNumberOfElements();
         if (index * m_ElementSize >= this->GetCapacity())
         {
@@ -186,7 +186,7 @@ public:
     }
     void SetElement(const IGsize _Pos, const std::vector<TValue>& _Element) {
         assert(0 <= _Pos && _Pos < this->GetNumberOfElements());
-        assert(_Element.size() >= ElementSize);
+        assert(_Element.size() >= m_ElementSize);
         TValue* data = this->RawPointer(_Pos);
         for (int i = 0; i < m_ElementSize; ++i) {
             data[i] = _Element[i];
