@@ -209,6 +209,7 @@ void igQtMainWindow::initAllComponents()
 igQtMainWindow::~igQtMainWindow() {
 }
 
+
 void igQtMainWindow::initAllFilters() {
 	connect(ui->action_test_01, &QAction::triggered, this, [&](bool checked) {
 		PointSet::Pointer points = PointSet::New();
@@ -502,9 +503,9 @@ void igQtMainWindow::initAllDockWidgetConnectWithAction()
 	//connect(ui->action_Tensor, &QAction::triggered, this, [&](bool checked) {
 	//	ui->dockWidget_TensorField->show();
 	//	});
-	//connect(ui->action_FlowField, &QAction::triggered, this, [&](bool checked) {
-	//	ui->dockWidget_FlowField->show();
-	//	});
+	connect(ui->action_FlowField, &QAction::triggered, this, [&](bool checked) {
+		ui->dockWidget_FlowField->show();
+		});
 	//connect(ui->action_SearchInfo, &QAction::triggered, this, [&](bool checked) {
 	//	ui->dockWidget_SearchInfo->show();
 	//	});
@@ -520,6 +521,7 @@ void igQtMainWindow::initAllMySignalConnections()
 	//connect(rendererWidget, &igQtModelDrawWidget::insertToModelListView, ui->modelTreeView, &igQtModelListView::InsertModel);
 
 	connect(fileLoader, &igQtFileLoader::NewModel, modelTreeWidget, &igQtModelDialogWidget::addDataObjectToModelTree);
+	connect(ui->widget_FlowField, &igQtStreamTracerWidget::NewModel, modelTreeWidget, &igQtModelDialogWidget::addDataObjectToModelTree);
 	connect(fileLoader, &igQtFileLoader::FinishReading, this, &igQtMainWindow::updateRecentFilePaths);
 	//connect(fileLoader, &igQtFileLoader::FinishReading, this, &igQtMainWindow::updateViewStyleAndCloudPicture);
 	//connect(fileLoader, &igQtFileLoader::FinishReading, this, &igQtMainWindow::updateCurrentSceneWidget);
@@ -564,6 +566,8 @@ void igQtMainWindow::initAllMySignalConnections()
 //		rendererWidget->doneCurrent();
 //	});
 
+	//connect(ui->widget_FlowField, &igQtStreamTracerWidget::sendstreams, rendererWidget, &igQtModelDrawWidget::DrawStreamline);
+	//connect(ui->widget_FlowField, &igQtStreamTracerWidget::updatestreams, rendererWidget, &igQtModelDrawWidget::UpdateStreamline);
 	//connect(ui->widget_FlowField, &igQtStreamTracerWidget::sendstreams, rendererWidget, &igQtModelDrawWidget::DrawStreamline);
 	//connect(ui->widget_FlowField, &igQtStreamTracerWidget::updatestreams, rendererWidget, &igQtModelDrawWidget::UpdateStreamline);
 

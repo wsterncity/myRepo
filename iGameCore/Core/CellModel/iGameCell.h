@@ -19,7 +19,7 @@ public:
     virtual int GetNumberOfPoints() { return this->PointIds->GetNumberOfIds(); }
     virtual int GetNumberOfEdges() = 0;
     virtual int GetNumberOfFaces() = 0;
-
+    // fanhui di i ge dian de position he id
     igIndex GetPointId(const int id) { return this->PointIds->GetId(id); }
     Point& GetPoint(const int id) { return this->Points->GetPoint(id); }
     const Point& GetPoint(const int id) const {

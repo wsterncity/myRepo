@@ -53,7 +53,7 @@ IGenum UnstructuredMesh::GetCellType(const IGsize cellId) const {
 
 UnstructuredMesh::UnstructuredMesh() 
 {
-    m_ViewStyle = IG_SURFACE;
+    m_ViewStyle = IG_SURFACE | IG_WIREFRAME;
     m_Cells = CellArray::New();
     m_Types = UnsignedIntArray::New();
 }
@@ -195,9 +195,10 @@ void UnstructuredMesh::ConvertToDrawableData() {
     m_TriangleIndices->SetElementSize(3);
 
 
-    igIndex ids[128]{};
+    const igIndex *ids{};
     for (int id = 0; id < GetNumberOfCells(); id++) {
         int size = GetCellPointIds(id, ids);
+        //std::cout << "id: " << id << std::endl;
         IGenum type = GetCellType(id);
         switch (type) {
             case IG_VERTEX:
@@ -241,6 +242,7 @@ void UnstructuredMesh::ConvertToDrawableData() {
             default:
                 break;
         }
+        int a = 0;
     }
 
     GLAllocateGLBuffer(m_PositionVBO,

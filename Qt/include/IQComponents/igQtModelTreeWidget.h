@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iGameModel.h>
+#include <iGameSceneManager.h>
 
 #include <IQCore/igQtExportModule.h>
 
@@ -302,6 +303,7 @@ protected:
                 call = false;
             }
             else if(currentItem() != item){ // Check operation
+                iGame::SceneManager::Instance()->GetCurrentScene()->SetCurrentModel(item->getModel());
                 emit(ChangeCurrentModel(item->getModel()));
                 setItemSelected(item, true);
                 item->getModel()->ViewCloudPicture(-1);
