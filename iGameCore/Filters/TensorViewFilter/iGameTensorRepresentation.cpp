@@ -118,8 +118,6 @@ void iGameTensorRepresentation::UpdateDrawDataFromTensor()
 		break;
 	case CUBOID:
 		break;
-	default:
-		break;
 	}
 }
 /**

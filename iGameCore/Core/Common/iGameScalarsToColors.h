@@ -10,7 +10,7 @@ class ScalarsToColors : public ColorMap {
 public:
 	I_OBJECT(ScalarsToColors);
 	static Pointer New() { return new ScalarsToColors; }
-	
+
 	/*Get the range of scaled data*/
 	virtual float* GetRange();
 	virtual void InitRange(ArrayObject::Pointer input) {
@@ -34,6 +34,7 @@ public:
 	/*Map the value to rgb,return the float array,means the rgb data with range 0.0-1.0
 	  note the value is not scaled,so you need give the shift and scale to scale the value*/
 	virtual const float* MapValueToRGB(float v, float& shift, float& scale);
+	virtual void MapValueToRGB(float v, float* rgb, float& shift, float& scale);
 	/*Compute the shift and scale*/
 	void ComputeShiftScale(float& shift, float& scale);
 	/*Get Color with the value, shift and scale*/
