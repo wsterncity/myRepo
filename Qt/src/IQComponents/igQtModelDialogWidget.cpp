@@ -23,65 +23,66 @@ igQtModelDialogWidget::igQtModelDialogWidget(QWidget* parent)
     //splitter->setChildrenCollapsible(false);
 
 	modelTreeWidget = ui->modelTreeWidget;
-    propertyTreeWidget = ui->propertyTreeWidget;
+    //propertyTreeWidget = ui->propertyTreeWidget;
 
     modelTreeWidget->setColumnCount(2);
     modelTreeWidget->header()->hide();
     modelTreeWidget->setColumnWidth(0, 150);
 
-    propertyTreeWidget = ui->propertyTreeWidget;
-    propertyTreeWidget->setHeaderVisible(false);
-    propertyManager = new QtVariantPropertyManager(propertyTreeWidget);
-    editFactory = new QtVariantEditorFactory(propertyTreeWidget);
-    propertyTreeWidget->setFactoryForManager(propertyManager, editFactory);
+    //propertyTreeWidget = ui->propertyTreeWidget;
+    //propertyTreeWidget->setHeaderVisible(false);
+    //propertyManager = new QtVariantPropertyManager(propertyTreeWidget);
+    //editFactory = new QtVariantEditorFactory(propertyTreeWidget);
+    //propertyTreeWidget->setFactoryForManager(propertyManager, editFactory);
 
-
-    connect(modelTreeWidget, &igQtModelTreeWidget::ChangeCurrentModel, this, &igQtModelDialogWidget::UpdateCurrentModel);
+	ui->ModelInformationWidget->hide();
+	connect(modelTreeWidget, &igQtModelTreeWidget::ChangeCurrentModel, this, &igQtModelDialogWidget::UpdateCurrentModel);
+	connect(modelTreeWidget, &igQtModelTreeWidget::ChangeCurrentModel, this, &igQtModelDialogWidget::updateCurrentModelInfo);
 
 
 }
 
 void igQtModelDialogWidget::UpdateCurrentModel(Model::Pointer model) {
-    propertyTreeWidget->clear();
-    currentModel = model.get();
-//        model->GetDataObject()->
-//        model->GetDataObject()->GetMetadata();
-    QtVariantPropertyManager* varManager = new QtVariantPropertyManager(propertyTreeWidget);
-    QtVariantEditorFactory* editFactory = new QtVariantEditorFactory(propertyTreeWidget);
-    propertyTreeWidget->setFactoryForManager(varManager, editFactory);
-    QtProperty* properties_groupItem = varManager->addProperty(QtVariantPropertyManager::groupTypeId(), QString("propertys"));
-    auto metadata = model->GetDataObject()->GetMetadata();
-    for(auto& [propName, propValue] : metadata->entries()){
-        QtVariantProperty* item = nullptr;
-        std::visit([&](auto && arg){
-            using T = std::decay_t<decltype(arg)>;
-            if constexpr (std::is_same_v<T, int>) {
-
-                item = varManager->addProperty(QVariant::Int, QString(propName.c_str()));
-                item->setValue(std::get<int32_t>(propValue));
-            } else if constexpr (std::is_same_v<T, uint32_t>){
-                item = varManager->addProperty(QVariant::UInt, QString(propName.c_str()));
-                item->setValue(std::get<uint32_t>(propValue));
-            }
-
-        }, propValue);
-
-        if(item != nullptr){
-            properties_groupItem->addSubProperty(item);
-        }
-    }
-    connect(varManager, &QtVariantPropertyManager::valueChanged, this, [&](QtProperty * _t1, const QVariant & _t2){
-        auto f = currentModel->GetModelFilter();
-        auto filter = reinterpret_cast<LineTypePointsSource*>(f);
-        filter->SetResolution(_t2.toInt());
-        filter->Execute();
-    });
-    propertyTreeWidget->addProperty(properties_groupItem);
-
-    objectGroup = propertyManager->addProperty(QtVariantPropertyManager::groupTypeId(), QStringLiteral("Object propertys"));
-    propertyTreeWidget->addProperty(objectGroup);
-    
-	ui->pushButton;
+//    propertyTreeWidget->clear();
+//    currentModel = model.get();
+////        model->GetDataObject()->
+////        model->GetDataObject()->GetMetadata();
+//    QtVariantPropertyManager* varManager = new QtVariantPropertyManager(propertyTreeWidget);
+//    QtVariantEditorFactory* editFactory = new QtVariantEditorFactory(propertyTreeWidget);
+//    propertyTreeWidget->setFactoryForManager(varManager, editFactory);
+//    QtProperty* properties_groupItem = varManager->addProperty(QtVariantPropertyManager::groupTypeId(), QString("propertys"));
+//    auto metadata = model->GetDataObject()->GetMetadata();
+//    for(auto& [propName, propValue] : metadata->entries()){
+//        QtVariantProperty* item = nullptr;
+//        std::visit([&](auto && arg){
+//            using T = std::decay_t<decltype(arg)>;
+//            if constexpr (std::is_same_v<T, int>) {
+//
+//                item = varManager->addProperty(QVariant::Int, QString(propName.c_str()));
+//                item->setValue(std::get<int32_t>(propValue));
+//            } else if constexpr (std::is_same_v<T, uint32_t>){
+//                item = varManager->addProperty(QVariant::UInt, QString(propName.c_str()));
+//                item->setValue(std::get<uint32_t>(propValue));
+//            }
+//
+//        }, propValue);
+//
+//        if(item != nullptr){
+//            properties_groupItem->addSubProperty(item);
+//        }
+//    }
+//    connect(varManager, &QtVariantPropertyManager::valueChanged, this, [&](QtProperty * _t1, const QVariant & _t2){
+//        auto f = currentModel->GetModelFilter();
+//        auto filter = reinterpret_cast<LineTypePointsSource*>(f);
+//        filter->SetResolution(_t2.toInt());
+//        filter->Execute();
+//    });
+//    propertyTreeWidget->addProperty(properties_groupItem);
+//
+//    objectGroup = propertyManager->addProperty(QtVariantPropertyManager::groupTypeId(), QStringLiteral("Object propertys"));
+//    propertyTreeWidget->addProperty(objectGroup);
+//    
+//	ui->pushButton;
 }
 
 int igQtModelDialogWidget::addDataObjectToModelTree(DataObject::Pointer obj, ItemSource source) {
@@ -108,7 +109,7 @@ int igQtModelDialogWidget::addDataObjectToModelTree(DataObject::Pointer obj, Ite
 
 	modelTreeWidget->addTopLevelItem(item);
 	modelTreeWidget->setCurrentItem(item);
-
+	updateCurrentModelInfo();
 	//propertyTreeWidget->removeProperty(objectGroup);
 	//objectGroup = propertyManager->addProperty(QtVariantPropertyManager::groupTypeId(), QStringLiteral("Object propertys"));
 	//propertyTreeWidget->addProperty(objectGroup);
@@ -141,4 +142,9 @@ int igQtModelDialogWidget::addModelToModelTree(Model::Pointer model) {
 	modelTreeWidget->addTopLevelItem(item);
 	modelTreeWidget->setCurrentItem(item);
 	return id;
+}
+int igQtModelDialogWidget::updateCurrentModelInfo()
+{
+	ui->ModelInformationWidget->updateInformationFrame();
+	return 1;
 }

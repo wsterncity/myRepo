@@ -3,13 +3,13 @@
 
 #include <utility>
 
-#include "iGameObject.h"
 #include "iGameDataObject.h"
-#include "iGamePoints.h"
-#include "iGamePointPainter.h"
-#include "iGameLinePainter.h"
-#include "iGameFilter.h"
 #include "iGameFacePainter.h"
+#include "iGameFilter.h"
+#include "iGameLinePainter.h"
+#include "iGameObject.h"
+#include "iGamePointPainter.h"
+#include "iGamePoints.h"
 
 IGAME_NAMESPACE_BEGIN
 class Scene;
@@ -22,12 +22,14 @@ public:
 
     DataObject::Pointer GetDataObject() { return m_DataObject; }
     bool GetVisibility() { return m_DataObject->GetVisibility(); }
-    PointPainter* GetPointPainter() { return m_PickedPointPainter.get();}
+    PointPainter* GetPointPainter() { return m_PickedPointPainter.get(); }
     LinePainter* GetLinePainter() { return m_PickedLinePainter.get(); }
-    Filter* GetModelFilter(){ return m_Filter; }
-    void SetModelFilter(Filter* _filter){ m_Filter = _filter; }
+    Filter* GetModelFilter() { return m_Filter; }
+    void SetModelFilter(Filter* _filter) { m_Filter = _filter; }
     FacePainter* GetFacePainter() { return m_PickedFacePainter.get(); }
-    void SetDataObject(DataObject::Pointer dataObject){m_DataObject = dataObject;}
+    void SetDataObject(DataObject::Pointer dataObject) {
+        m_DataObject = dataObject;
+    }
 
     void Show();
     void Hide();
@@ -42,15 +44,14 @@ public:
     void ViewCloudPicture(int index, int dimension = -1) {
         m_DataObject->ViewCloudPicture(m_Scene, index, dimension);
     }
+    void SetFilePath(std::string filePath) { m_FilePath = filePath; }
+    std::string GetFilePath() { return this->m_FilePath; }
 
 protected:
     Model();
     ~Model() override = default;
 
-    enum ViewSwitch{
-        BoundingBox = 0,
-        PickedItem
-    };
+    enum ViewSwitch { BoundingBox = 0, PickedItem };
 
     void SwitchOn(ViewSwitch type) { m_Switch |= (1ull << type); }
     void SwitchOff(ViewSwitch type) { m_Switch &= ~(1ull << type); }
@@ -58,6 +59,7 @@ protected:
 
     Filter* m_Filter{nullptr};
     DataObject::Pointer m_DataObject{};
+    std::string m_FilePath;
     Scene* m_Scene{nullptr};
     PointPainter::Pointer m_PickedPointPainter{};
     LinePainter::Pointer m_PickedLinePainter{};

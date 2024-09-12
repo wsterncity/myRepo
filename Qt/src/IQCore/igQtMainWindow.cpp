@@ -23,6 +23,7 @@
 #include <IQWidgets/ColorManager/igQtColorManagerWidget.h>
 #include <IQWidgets/igQtTensorWidget.h>
 #include <Sources/iGameLineTypePointsSource.h>
+#include <IQWidgets/igQtModelInformationWidget.h>
 #include "iGameFilterIncludes.h"
 igQtMainWindow::igQtMainWindow(QWidget* parent)
 	: QMainWindow(parent), ui(new Ui::MainWindow) {
@@ -42,7 +43,6 @@ igQtMainWindow::igQtMainWindow(QWidget* parent)
 	ui->dockWidget_EditMode->hide();
 	ui->dockWidget_Animation->hide();
 	ui->dockWidget_ModelList->hide();
-	ui->dockWidget_ModelList->setWidget(ui->modelTreeView);
 	// Setup default GUI layout.
 	this->setTabPosition(Qt::LeftDockWidgetArea, QTabWidget::North);
 	this->setTabPosition(Qt::RightDockWidgetArea, QTabWidget::North);
@@ -472,7 +472,7 @@ void igQtMainWindow::initAllFilters() {
 
 		   //modelTreeWidget->addDataObjectToModelTree(ControlPoints, ItemSource::File);
 		auto obj = rendererWidget->GetScene()->GetCurrentModel()->GetDataObject();
-		std::cout << obj->GetRealMemorySize() << "KB\n";
+		std::cout << obj->GetName() << "KB\n";
 		//MyTestFilter::Pointer aaa = MyTestFilter::New();
 		//aaa->SetMesh(obj);
 		//aaa->Execute();
