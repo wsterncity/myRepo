@@ -324,8 +324,8 @@ void ScalarsToColors::MapVectorsThroughTable(ArrayObject::Pointer input, FloatAr
 	}
 	break;
 	}
-	clock_t time2 = clock();
-	std::cout << "map cost " << time2 - time1 << "ms\n";
+	//clock_t time2 = clock();
+	//std::cout << "map cost " << time2 - time1 << "ms\n";
 }
 
 IGAME_NAMESPACE_END

@@ -25,7 +25,6 @@ bool PLYReader::Parsing()
 			spacePos = lineEnd;
 		}
 		std::string  name(left, spacePos);
-		// 更新指针位置
 		left = lineEnd + 1;
 		//std::cout << name << std::endl;
 		if (name == "element") {
@@ -71,7 +70,7 @@ const char* PLYReader::ReadPoints(const char* left, int VertexNum)
 			continue;
 		}
 		for (int j = 0; j < 3; j++) {
-			left = mAtof(left, p[j]) + 1;
+			left = mAtof(left, p[j]) ;
 		}
 		lineEnd = strchr(left, '\n');
 		left = lineEnd + 1;

@@ -13,7 +13,7 @@
 #include <iGameDataSource.h>
 #include <iGameUnstructuredMesh.h>
 #include <iGameVolumeMeshFilterTest.h>
-#include "VTK/igameVTKWriter.h"
+#include "OFF/iGameOFFWriter.h"
 #include "iGameFileIO.h"
 #include <IQComponents/igQtFilterDialogDockWidget.h>
 #include <IQComponents/igQtModelDialogWidget.h>
@@ -470,13 +470,10 @@ void igQtMainWindow::initAllFilters() {
 		   //ControlPoints->SetName("ControlPoints");
 
 		   //modelTreeWidget->addDataObjectToModelTree(ControlPoints, ItemSource::File);
-		VolumeMesh::Pointer mesh = DynamicCast<VolumeMesh>(
-			rendererWidget->GetScene()->GetCurrentModel()->GetDataObject());
-		mesh->RequestEditStatus();
-		for (int i = 0; i < 100; i++) {
-			mesh->DeleteVolume(i);
-		}
-		mesh->GarbageCollection();
+		auto obj = rendererWidget->GetScene()->GetCurrentModel()->GetDataObject();
+		MyTestFilter::Pointer aaa = MyTestFilter::New();
+		aaa->SetMesh(obj);
+		aaa->Execute();
 
 		});
 
@@ -523,8 +520,8 @@ void igQtMainWindow::initAllFilters() {
 		});
 	auto action_loadtest = ui->menu_help->addAction("loadtest");
 	connect(action_loadtest, &QAction::triggered, this, [&](bool checked) {
-		std::string filePath = "F:\\OpeniGame\\Model\\Common\\Tri_Rocket_1.vtk";
-		auto writer = VTKWriter::New();
+		std::string filePath = "F:\\OpeniGame\\Model\\Common\\Tri_Rocket_1.off";
+		auto writer = OFFWriter::New();
 		auto mesh = SceneManager::Instance()->GetCurrentScene()->GetCurrentModel()->GetDataObject();
 		writer->WriteToFile(mesh, filePath);
 
@@ -637,6 +634,9 @@ void igQtMainWindow::initAllFilters() {
 			modelTreeWidget->addDataObjectToModelTree(td->GetOutput(), ItemSource::Algorithm);
 			rendererWidget->update();
 		});
+
+
+
 }
 
 void igQtMainWindow::initAllDockWidgetConnectWithAction() {

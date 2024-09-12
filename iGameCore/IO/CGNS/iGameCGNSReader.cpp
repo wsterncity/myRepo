@@ -17,7 +17,7 @@ void CollectNodeIDs(double parent_id, double node_id, int depth, std::vector<dou
 	node_ids.push_back(node_id);
 	// Get the label of the current node (optional, for debugging)
 	cgio_get_label(parent_id, node_id, label);
-	std::cout << std::string(depth * 2, ' ') << node_id << " " << "Node Label: " << label << std::endl;
+	//std::cout << std::string(depth * 2, ' ') << node_id << " " << "Node Label: " << label << std::endl;
 	// Get the number of children of the current node
 	cgio_number_children(parent_id, node_id, &numChildren);
 	if (numChildren > 0) {
