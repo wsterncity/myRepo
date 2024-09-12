@@ -46,7 +46,8 @@ public:
   void MakeEditStatusOn();
   // Unable data edit state
   void MakeEditStatusOff();
-
+  //Get real size of DataObject
+  IGsize GetRealMemorySize() override ;
 protected:
   PointSet();
   ~PointSet() override = default;

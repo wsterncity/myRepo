@@ -52,6 +52,8 @@ public:
 	// Override to view a cloud picture representation of the mesh.
 	void ViewCloudPicture(Scene* scene, int index, int demension = -1) override;
 
+	//Get real size of DataObject
+	IGsize GetRealMemorySize() override;
 protected:
 	// Default constructor for StructuredMesh.
 	StructuredMesh() = default;

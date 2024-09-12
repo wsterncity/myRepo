@@ -145,6 +145,8 @@ public:
     virtual bool IsBoundaryPoint(const IGsize ptId);
     virtual bool IsCornerPoint(const IGsize ptId);
 
+    //Get real size of DataObject
+    IGsize GetRealMemorySize() override;
 protected:
     SurfaceMesh();
     ~SurfaceMesh() override = default;

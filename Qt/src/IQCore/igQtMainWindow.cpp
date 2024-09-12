@@ -472,20 +472,24 @@ void igQtMainWindow::initAllFilters() {
 
 		   //modelTreeWidget->addDataObjectToModelTree(ControlPoints, ItemSource::File);
 		auto obj = rendererWidget->GetScene()->GetCurrentModel()->GetDataObject();
-		MyTestFilter::Pointer aaa = MyTestFilter::New();
-		aaa->SetMesh(obj);
-		aaa->Execute();
+		std::cout << obj->GetRealMemorySize() << "KB\n";
+		//MyTestFilter::Pointer aaa = MyTestFilter::New();
+		//aaa->SetMesh(obj);
+		//aaa->Execute();
 
 		});
 
 	auto action_tensorview = ui->menu_help->addAction("tensorview");
 	connect(action_tensorview, &QAction::triggered, this, [&](bool checked) {
+		clock_t time1 = clock();
 		auto Tensorview = iGameTensorWidgetBase::New();
 		auto mesh = DynamicCast<UnstructuredMesh>(SceneManager::Instance()->GetCurrentScene()->GetCurrentModel()->GetDataObject());
 
 		Tensorview->SetPoints(mesh->GetPoints());
 		Tensorview->SetTensorAttributes(mesh->GetAttributeSet()->GetAttribute(4).pointer);
 		Tensorview->ShowTensorField();
+		clock_t time2 = clock();
+		std::cout << "compute cost " << time2 - time1 << "ms\n";
 		auto painter = SceneManager::Instance()->GetCurrentScene()->GetCurrentModel()->GetFacePainter();
 		auto connect = Tensorview->GetDrawGlyphPointOrders()->RawPointer();
 		auto points = Tensorview->GetDrawGlyphPoints();
@@ -518,6 +522,8 @@ void igQtMainWindow::initAllFilters() {
 		//std::cout<<connect[i * 3]<<' '<<connect[i * 3 + 1]<<' '<<connect[i * 3 + 2]<<'\n';
 		//}
 		modelTreeWidget->addDataObjectToModelTree(res, ItemSource::File);
+		clock_t time3 = clock();
+		std::cout << "draw cost " << time3 - time2 << "ms\n";
 		});
 	auto action_loadtest = ui->menu_help->addAction("loadtest");
 	connect(action_loadtest, &QAction::triggered, this, [&](bool checked) {
