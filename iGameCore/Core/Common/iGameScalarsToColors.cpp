@@ -1,4 +1,5 @@
 ﻿#include "iGameScalarsToColors.h"
+#include  "iGameThreadPool.h"
 #include <time.h>
 
 IGAME_NAMESPACE_BEGIN
@@ -107,7 +108,10 @@ const float* ScalarsToColors::MapValueToRGB(float v, float& shift, float& scale)
 	return this->RGB;
 }
 
-
+void ScalarsToColors::MapValueToRGB(float v, float* rgb, float& shift, float& scale)
+{
+	this->GetColor(v, rgb, shift, scale);
+}
 //------------------------------------------------------------------------------
 
 void ScalarsToColors::InitRange(ArrayObject::Pointer input, int component, int size)
@@ -197,7 +201,7 @@ FloatArray::Pointer ScalarsToColors::MapScalars(
 	int numberOfComponents = scalars->GetElementSize();
 	FloatArray::Pointer newColors = FloatArray::New();
 	newColors->SetElementSize(outputFormat);
-	newColors->Reserve(scalars->GetNumberOfElements());
+	newColors->Resize(scalars->GetNumberOfElements());
 	if (component < 0 && numberOfComponents>1) {
 		this->SetVectorModeToMagnitude();
 		this->MapVectorsThroughTable(scalars, newColors, outputFormat);
@@ -219,6 +223,7 @@ FloatArray::Pointer ScalarsToColors::MapScalars(
 void ScalarsToColors::MapVectorsThroughTable(ArrayObject::Pointer input, FloatArray::Pointer output,
 	int outputFormat, int vectorComponent, int vectorSize)
 {
+	clock_t time1 = clock();
 	int inComponents = input->GetElementSize();
 	int vectorMode = this->GetVectorMode();
 	if (vectorMode == COMPONENT) {
@@ -266,15 +271,19 @@ void ScalarsToColors::MapVectorsThroughTable(ArrayObject::Pointer input, FloatAr
 		int index = vectorComponent;
 		float shift, scale;
 		ComputeShiftScale(shift, scale);
-		float data[16];
-		for (int i = 0; i < input->GetNumberOfElements(); i++)
-		{
-			input->GetElement(i, data);
-			const float* rgb = MapValueToRGB(data[index], shift, scale);
-			//const unsigned char* rgb = MapValue(data[index], shift, scale);
-			//std::array<unsigned char, 3>tmp = { rgb[0], rgb[1], rgb[2] };
-			output->AddElement3(rgb[0], rgb[1], rgb[2]);
-		}
+		auto func = [&](igIndex start, igIndex end) -> void {
+			float data[16];
+			float rgb[3];
+			for (int i = start; i < end; i++)
+			{
+				input->GetElement(i, data);
+				MapValueToRGB(data[index], rgb, shift, scale);
+				//const unsigned char* rgb = MapValue(data[index], shift, scale);
+				//std::array<unsigned char, 3>tmp = { rgb[0], rgb[1], rgb[2] };
+				output->SetElement(i, rgb);
+			}
+		};
+		ThreadPool::parallelFor(0, input->GetNumberOfElements(), func);
 	}
 	break;
 	case ScalarsToColors::MAGNITUDE:
@@ -282,33 +291,41 @@ void ScalarsToColors::MapVectorsThroughTable(ArrayObject::Pointer input, FloatAr
 		int index = vectorComponent;
 		float shift, scale;
 		ComputeShiftScale(shift, scale);
-		float data[16];
-		ArrayObject::Pointer tmp;
-		for (int i = 0; i < input->GetNumberOfElements(); i++) {
-			input->GetElement(i, data);
-			float value = 0.0;
-			for (int j = index; j < index + vectorSize; j++) {
-				value += data[j] * data[j];
+		auto func = [&](igIndex start, igIndex end) -> void {
+			float data[16];
+			float rgb[3];
+			for (int i = start; i < end; i++) {
+				input->GetElement(i, data);
+				float value = 0.0;
+				for (int j = index; j < index + vectorSize; j++) {
+					value += data[j] * data[j];
+				}
+				value = sqrt(value);
+				MapValueToRGB(value, rgb, shift, scale);
+				output->SetElement(i, rgb);
 			}
-			value = sqrt(value);
-			const float* rgb = MapValueToRGB(value, shift, scale);
-			output->AddElement3(rgb[0], rgb[1], rgb[2]);
-		}
+		};
+		ThreadPool::parallelFor(0, input->GetNumberOfElements(), func);
+
 	}
 	break;
 	case ScalarsToColors::RGBCOLORS:
 	{
 		if (inComponents < 3)return;
-		float data[16];
-		std::array<unsigned char, 3> rgb;
-		for (int i = 0; i < input->GetNumberOfElements(); i++)
-		{
-			input->GetElement(i, data);
-			output->AddElement3(data[0], data[1], data[2]);
-		}
+		//std::array<unsigned char, 3> rgb;
+		auto func = [&](igIndex start, igIndex end) -> void {
+			float data[16];
+			for (int i = start; i < end; i++) {
+				input->GetElement(i, data);
+				output->SetElement(i, data);
+			}
+		};
+		ThreadPool::parallelFor(0, input->GetNumberOfElements(), func);
 	}
 	break;
 	}
+	clock_t time2 = clock();
+	std::cout << "map cost " << time2 - time1 << "ms\n";
 }
 
 IGAME_NAMESPACE_END

@@ -41,7 +41,30 @@ public:
 		cv_lock_.notify_one();
 		return ret;
 	}
-	// static parallelFor 函数，numThreads 默认值为 12
+	//// static parallelFor 函数，numThreads 默认值为 12
+	//template <typename Func>
+	//static void parallelFor(int start, int end, Func&& process, int numThreads = 12) {
+	//	int range = end - start;
+	//	int chunkSize = range / numThreads;
+	//	if (range < numThreads) {
+	//		numThreads = range;
+	//		chunkSize = 1;
+	//	}
+	//	std::vector<std::future<void>> futures;
+	//	for (int i = 0; i < numThreads; ++i) {
+	//		int chunkStart = start + i * chunkSize;
+	//		int chunkEnd = (i == numThreads - 1) ? end : chunkStart + chunkSize;
+	//		if (chunkStart == chunkEnd)continue;
+	//		// 使用线程池提交任务
+	//		futures.emplace_back(ThreadPool::Instance()->Commit([=]() {
+	//			process(chunkStart, chunkEnd);
+	//			}));
+	//	}
+	//	// 等待所有任务完成
+	//	for (auto& future : futures) {
+	//		future.get();
+	//	}
+	//}
 	template <typename Func>
 	static void parallelFor(int start, int end, Func&& process, int numThreads = 12) {
 		int range = end - start;
@@ -50,21 +73,21 @@ public:
 			numThreads = range;
 			chunkSize = 1;
 		}
-		std::vector<std::future<void>> futures;
-
+		std::vector<std::thread> threads;
 		for (int i = 0; i < numThreads; ++i) {
 			int chunkStart = start + i * chunkSize;
 			int chunkEnd = (i == numThreads - 1) ? end : chunkStart + chunkSize;
-			if (chunkStart == chunkEnd)continue;
-			// 使用线程池提交任务
-			futures.emplace_back(ThreadPool::Instance()->Commit([=]() {
+			if (chunkStart == chunkEnd) continue;
+			// 创建线程执行任务
+			threads.emplace_back([=]() {
 				process(chunkStart, chunkEnd);
-				}));
+				});
 		}
-
-		// 等待所有任务完成
-		for (auto& future : futures) {
-			future.get();
+		// 等待所有线程完成
+		for (auto& thread : threads) {
+			if (thread.joinable()) {
+				thread.join();
+			}
 		}
 	}
 	int IdleThreadCount() {
@@ -72,7 +95,7 @@ public:
 	}
 
 private:
-	ThreadPool(unsigned int num = 8/*std::thread::hardware_concurrency()*/)
+	ThreadPool(unsigned int num = std::thread::hardware_concurrency())
 		: stop_(false)
 	{
 		if (num <= 1)

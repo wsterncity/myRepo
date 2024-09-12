@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>331</width>
-    <height>277</height>
+    <height>267</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -66,12 +66,12 @@
      </item>
     </layout>
    </item>
-   <item row="2" column="0">
-    <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,1,0">
+   <item row="4" column="0">
+    <layout class="QHBoxLayout" name="horizontalLayout_5" stretch="1,1,0">
      <item>
-      <widget class="QLabel" name="label_3">
+      <widget class="QLabel" name="label_8">
        <property name="text">
-        <string>种子点数量</string>
+        <string>流线终止速度</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
@@ -79,16 +79,66 @@
       </widget>
      </item>
      <item>
-      <widget class="QLineEdit" name="numOfSeedLineEdit">
-       <property name="inputMask">
-        <string/>
+      <widget class="QLineEdit" name="terminalSpeed"/>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_9">
+       <property name="text">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; color:#f0f0f0;&quot;&gt;11111&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item row="3" column="0">
+    <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="1,1,0">
+     <item>
+      <widget class="QLabel" name="label_4">
+       <property name="layoutDirection">
+        <enum>Qt::LeftToRight</enum>
+       </property>
+       <property name="text">
+        <string>流线最大长度</string>
+       </property>
+       <property name="textFormat">
+        <enum>Qt::AutoText</enum>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QLabel" name="label_5">
+      <widget class="QLineEdit" name="lengthOfStreamLine"/>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_7">
        <property name="text">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; color:#f0f0f0;&quot;&gt;11111&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item row="5" column="0">
+    <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="1,1,0">
+     <item>
+      <widget class="QLabel" name="label_6">
+       <property name="text">
+        <string>流线迭代步长</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="lengthOfStep"/>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_12">
+       <property name="text">
+        <string>     </string>
        </property>
       </widget>
      </item>
@@ -137,12 +187,12 @@
      </item>
     </layout>
    </item>
-   <item row="5" column="0">
-    <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="1,1,0">
+   <item row="2" column="0">
+    <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,1,0">
      <item>
-      <widget class="QLabel" name="label_6">
+      <widget class="QLabel" name="label_3">
        <property name="text">
-        <string>流线迭代步长</string>
+        <string>种子点数量</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
@@ -150,7 +200,35 @@
       </widget>
      </item>
      <item>
-      <widget class="QLineEdit" name="lengthOfStep"/>
+      <widget class="QLineEdit" name="numOfSeedLineEdit">
+       <property name="inputMask">
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_5">
+       <property name="text">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; color:#f0f0f0;&quot;&gt;11111&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item row="6" column="0">
+    <layout class="QHBoxLayout" name="horizontalLayout_7" stretch="1,1,0">
+     <item>
+      <widget class="QLabel" name="label_11">
+       <property name="text">
+        <string>最大迭代次数</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="maxSteps"/>
      </item>
      <item>
       <widget class="QPushButton" name="generate_streamline_btn">
@@ -163,60 +241,6 @@
        <property name="icon">
         <iconset resource="../iGameQtMainWindow.qrc">
          <normaloff>:/Ticon/Icons/check.png</normaloff>:/Ticon/Icons/check.png</iconset>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item row="3" column="0">
-    <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="1,1,0">
-     <item>
-      <widget class="QLabel" name="label_4">
-       <property name="layoutDirection">
-        <enum>Qt::LeftToRight</enum>
-       </property>
-       <property name="text">
-        <string>流线最大长度</string>
-       </property>
-       <property name="textFormat">
-        <enum>Qt::AutoText</enum>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignCenter</set>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLineEdit" name="lengthOfStreamLine"/>
-     </item>
-     <item>
-      <widget class="QLabel" name="label_7">
-       <property name="text">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; color:#f0f0f0;&quot;&gt;11111&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item row="4" column="0">
-    <layout class="QHBoxLayout" name="horizontalLayout_5" stretch="1,1,0">
-     <item>
-      <widget class="QLabel" name="label_8">
-       <property name="text">
-        <string>流线终止速度</string>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignCenter</set>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLineEdit" name="terminalSpeed"/>
-     </item>
-     <item>
-      <widget class="QLabel" name="label_9">
-       <property name="text">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; color:#f0f0f0;&quot;&gt;11111&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
       </widget>
      </item>
