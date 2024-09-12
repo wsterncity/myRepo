@@ -80,9 +80,9 @@ const AttributeSet::Attribute& AttributeSet::GetVector(const std::string& name) 
 }
 
 IGsize AttributeSet::AddAttribute(IGenum type, IGenum attachmentType,
-	ArrayObject::Pointer attr) {
+	ArrayObject::Pointer attr, std::pair<float, float> dataRange) {
 	if (!attr) { return -1; }
-	m_Buffer->AddElement(Attribute{ attr, type, attachmentType, false });
+	m_Buffer->AddElement(Attribute{ attr, type, attachmentType, false , dataRange});
 	return m_Buffer->GetNumberOfElements() - 1;
 }
 
