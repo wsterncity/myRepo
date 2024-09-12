@@ -176,6 +176,13 @@ public:
         if (magnitude == 0) { return; }
         for (int i = 0; i < dimension; ++i) { (*this)[i] /= magnitude; }
     }
+    inline Self scale(const Self& o) const {
+        Self ret;
+        for (int i = 0; i < dimension; ++i) {
+            ret[i] = (*this)[i] * o[i];
+        }
+        return ret;
+    }
     inline ScalarT dot(const Self& o) const {
         ScalarT ret = 0.0;
         for (int i = 0; i < dimension; ++i) { ret += (*this)[i] * o[i]; }

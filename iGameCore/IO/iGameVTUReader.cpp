@@ -324,6 +324,7 @@ bool iGameVTUReader::CreateDataObject()
             return false;
         }
 	}
+	return false;
 }
 
 IGAME_NAMESPACE_END

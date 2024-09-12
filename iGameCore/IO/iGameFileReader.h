@@ -175,7 +175,7 @@ inline double mAtof(const char* p)
 	{
 		p++; int i; double v = 0;
 		for (i = 0; i < 20; i++) { if (p[i] != '0') break; } double k = morn_atof_k[i]; p = p + i;
-		for (i = 0; (p[i] >= '0') && (p[i] <= '9'); i++) { v = v + morn_atof[min(i, 16)][p[i] - '0']; } p = p + i;
+		for (i = 0; (p[i] >= '0') && (p[i] <= '9'); i++) { v = v + morn_atof[std::min(i, 16)][p[i] - '0']; } p = p + i;
 		d = v * k + d;
 	}
 	if ((*p == 'e') || (*p == 'E'))
@@ -203,7 +203,7 @@ inline const char* mAtof(const char* p, float& val)
 	{
 		p++; int i; double v = 0;
 		for (i = 0; i < 20; i++) { if (p[i] != '0') break; } double k = morn_atof_k[i]; p = p + i;
-		for (i = 0; (p[i] >= '0') && (p[i] <= '9'); i++) { v = v + morn_atof[min(i, 16)][p[i] - '0']; } p = p + i;
+		for (i = 0; (p[i] >= '0') && (p[i] <= '9'); i++) { v = v + morn_atof[std::min(i, 16)][p[i] - '0']; } p = p + i;
 		d = v * k + d;
 	}
 	if ((*p == 'e') || (*p == 'E'))
@@ -231,7 +231,7 @@ inline const char* mAtof(const char* p, double& val)
 	{
 		p++; int i; double v = 0;
 		for (i = 0; i < 20; i++) { if (p[i] != '0') break; } double k = morn_atof_k[i]; p = p + i;
-		for (i = 0; (p[i] >= '0') && (p[i] <= '9'); i++) { v = v + morn_atof[min(i, 16)][p[i] - '0']; } p = p + i;
+		for (i = 0; (p[i] >= '0') && (p[i] <= '9'); i++) { v = v + morn_atof[std::min(i, 16)][p[i] - '0']; } p = p + i;
 		d = v * k + d;
 	}
 	if ((*p == 'e') || (*p == 'E'))

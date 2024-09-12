@@ -23,7 +23,7 @@ add_executable(${PROJECT_NAME}
 # 1. use git command1(git submodule init) and command2(git submodule update) to clone remote Submodule which are defined in .gitmodules file
 # 2. Set OFF to On.
 #option(ENABLE_CGNS_MODULE "Enable CGNS ThirdParty Module" OFF)
-set(ENABLE_CGNS_MODULE OFF CACHE BOOL "Enable CGNS ThirdParty Module" FORCE)
+set(ENABLE_CGNS_MODULE ON CACHE BOOL "Enable CGNS ThirdParty Module" FORCE)
 
 #--------------------------------------------------------------------
 # Add subdirectories

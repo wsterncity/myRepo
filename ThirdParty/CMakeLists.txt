@@ -8,6 +8,7 @@ add_subdirectory(meshoptimizer-0.21)
 # Configure the compilation definition according to the value of MODULE_FLAG
 
 if (ENABLE_CGNS_MODULE)
+
     #    find_package(Git QUIET)
     #    if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/../.git")
     #        # Update submodules as needed
@@ -22,10 +23,10 @@ if (ENABLE_CGNS_MODULE)
     #            endif()
     #        endif()
     #    endif()
-    set(CGNS_BUILD_SHARED OFF)
-    set(CGNS_ENABLE_HDF5 ON)
-    set(CGNS_ENABLE_PARALLEL OFF)
+
+    # if you want to set cgns static build , please configure in CGNS directory's CMakeLists.txt
+    # Set CGNS_BUILD_SHARED to "OFF" which is on line 112 of the CMakeLists.txt
+    #    set(CGNS_ENABLE_HDF5 OFF)
     set(HDF5_DIR "D:/dev/HDF5/1.13.0/share/cmake")
-    #set(CGNS_HDF5_DIR ${HDF5_ROOT})
     add_subdirectory(CGNS)
 endif ()

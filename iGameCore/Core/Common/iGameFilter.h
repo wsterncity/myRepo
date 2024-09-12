@@ -5,6 +5,7 @@
 #include "iGameDataObject.h"
 #include "iGameProgressObserver.h"
 
+#define NOMINMAX
 IGAME_NAMESPACE_BEGIN
 class Filter : public Object {
 public:
