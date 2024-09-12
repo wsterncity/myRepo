@@ -1,32 +1,8 @@
-# Linux平台的GNU编译器
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-    message(STATUS "Compiler is GCC")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpermissive -O2 -pthread")
-    #设置QT的目录
-    set(QT_CMAKE_PATH "/home/mky/Qt/6.5.3/gcc_64/lib/cmake")
-    set(CMAKE_PREFIX_PATH "/home/mky/Qt/6.5.3/gcc_64/lib/cmake")
-    # # Windows的MSVC编译器
-elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-    message(STATUS "Compiler is MSVC")
-    #设置QT的目录
-    # set(QT_CMAKE_PATH "D:/Software/Qt/Qt5.14.20/5.14.2/msvc2017_64/lib/cmake")
-    # set(CMAKE_PREFIX_PATH "D:/Software/Qt/Qt5.14.20/5.14.2/msvc2017_64/lib/cmake")
-    # set(QT_CMAKE_PATH "D:/Software/Qt/5.14.2/msvc2017_64/lib/cmake")
-    # set(CMAKE_PREFIX_PATH "D:/Software/Qt/5.14.2/msvc2017_64/lib/cmake")
-     set(QT_CMAKE_PATH "D:/Qt/5.14.2/msvc2017_64/lib/cmake")
-     set(CMAKE_PREFIX_PATH "D:/Qt/5.14.2/msvc2017_64/lib/cmake")
-    # set(CMAKE_PREFIX_PATH "E:/Software/Visualsoft/Qt/Qt5.14.2/5.14.2/msvc2017_64/lib/cmake")
-    # set(QT_CMAKE_PATH "D:/dev/Qt5.5.3/6.5.3/msvc2019_64/lib/cmake")
-    # set(CMAKE_PREFIX_PATH "D:/dev/Qt5.5.3/6.5.3/msvc2019_64/lib/cmake")
-    #以UTF-8格式进行编译
-    add_compile_options("$<$<C_COMPILER_ID:MSVC>:/utf-8>")
-    add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
-elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
-    message(STATUS "Compiler is AppleClang")
-    #设置QT的目录
-    set(QT_CMAKE_PATH "...Your Qt Path/buildir/outDir/lib/cmake")
-    set(CMAKE_PREFIX_PATH "...Your Qt Path/buildir/outDir/lib/cmake")
-endif ()
+# if complied in Linux,   set Qt5_DIR to e.g.(/usr/lib/Qt/5.14.2/gcc_64/lib/cmake/Qt5)
+# if complied in Windows, set Qt5_DIR to e.g.(D:/Qt/5.14.2/msvc2017_64/lib/cmake/Qt5)
+set(Qt5_DIR "D:/Software/Qt/5.14.2/msvc2017_64/lib/cmake/Qt5")
+#set(Qt5_DIR "F:/Qt/Qt5.14.2/5.14.2/msvc2017_64/lib/cmake/Qt5")
+#set(Qt5_DIR "E:/Software/Visualsoft/Qt/Qt5.14.2/5.14.2/msvc2017_64/lib/cmake/Qt5")
 
 set(MODULE_NAME Qt_module)
 

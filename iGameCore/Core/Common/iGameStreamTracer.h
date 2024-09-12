@@ -101,27 +101,27 @@ private:
 	* @param[in] v3  Input a vertex that makes up the tetrahedron
 	* @param[out] dis Output the weight calculated based on the distance from the point to the surface
 	*/
-	std::vector<float> iGameStreamTracer::ComputeWeightsForPolygonMesh( igIndex* PointIds,Vector3f coord,igIndex* FaceIds,int MaxPolygonSize,int size,int fsize);
+	std::vector<float> ComputeWeightsForPolygonMesh( igIndex* PointIds,Vector3f coord,igIndex* FaceIds,int MaxPolygonSize,int size,int fsize);
 	bool isInside(Vector3f coord, Vector3f v0, Vector3f v1, Vector3f v2, Vector3f v3, std::vector<float>& dis);
 	/**
 * @brief Computes the values of 8 interpolation functions at given local coordinates.
 * @param[in] pcoords  Local coordinates within a cell
 * @param[out] sf The value of the interpolation function
 */
-	void iGameStreamTracer::InterpolationFunctions(const double pcoords[3], double sf[8]);
+	void InterpolationFunctions(const double pcoords[3], double sf[8]);
 	/**
 * @brief Compute the derivatives of these eight interpolating functions in the r, s, and t directions.
 * @param[in] pcoords  Local coordinates within a cell
 * @param[out] derivs The derivative of the interpolation function at each node in the r, s and t directions, a total of 8 nodes, 3 derivatives in each direction
 */
-	void iGameStreamTracer::InterpolationDerivs(const double pcoords[3], double derivs[24]);
+	void InterpolationDerivs(const double pcoords[3], double derivs[24]);
 	/**
 * @brief Calculate the distance from the point to the line
 * @param[in] point  Input coord data
 * @param[in] lineP1  Input a vertex that makes up the line
 * @param[in] lineP2  Input a vertex that makes up the line
 */
-	float iGameStreamTracer::distance2Line(Vector3f point, Vector3f lineP1, Vector3f lineP2);
+	float distance2Line(Vector3f point, Vector3f lineP1, Vector3f lineP2);
 	/**
 * @brief Calculate the distance from the point to the face
 * @param[in] coord  Input coord data
@@ -137,7 +137,7 @@ private:
 * @param[in] c2  Input A column that forms a determinant
 * @param[in] c3  Input A column that forms a determinant
 */
-	double iGameStreamTracer::Determinant3x3(const double c1[3], const double c2[3], const double c3[3]);
+	double Determinant3x3(const double c1[3], const double c2[3], const double c3[3]);
 	/**
 * @brief Determine if the point is in the tetrahedron
 * @param[in] coord  Input coord data
