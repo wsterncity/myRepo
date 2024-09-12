@@ -27,6 +27,6 @@ if (ENABLE_CGNS_MODULE)
     # if you want to set cgns static build , please configure in CGNS directory's CMakeLists.txt
     # Set CGNS_BUILD_SHARED to "OFF" which is on line 112 of the CMakeLists.txt
     #    set(CGNS_ENABLE_HDF5 OFF)
-    #set(HDF5_DIR "C:/Program Files/HDF_Group/HDF5/1.14.3/cmake")
+    set(HDF5_DIR "D:/dev/HDF5/1.13.0/share/cmake")
     add_subdirectory(CGNS)
 endif ()
