@@ -405,8 +405,8 @@ void UnstructuredMesh::ConvertToDrawableData() {
 	m_TriangleIndices->SetElementSize(3);
 
 
-	igIndex ids[IGAME_CELL_MAX_SIZE]{};
-	for (int id = 0; id < GetNumberOfCells(); id++) {
+    igIndex ids[128]{};
+    for (int id = 0; id < GetNumberOfCells(); id++) {
 		int size = GetCellPointIds(id, ids);
 		IGenum type = GetCellType(id);
 		switch (type) {

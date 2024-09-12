@@ -61,7 +61,7 @@ public:
     // @param type: The type of attribute
     // @param attachmentType: Which element is attached to, such as point,cell
     // @param attr: The pointer of attribute array
-    IGsize AddAttribute(IGenum type, IGenum attachmentType, ArrayObject::Pointer attr);
+    IGsize AddAttribute(IGenum type, IGenum attachmentType, ArrayObject::Pointer attr, std::pair<float, float> dataRange = {0.f, 0.f});
 
     // Get a attribute by index
     Attribute& GetAttribute(const IGsize index);

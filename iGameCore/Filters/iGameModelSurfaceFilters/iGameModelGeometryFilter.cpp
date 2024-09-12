@@ -1548,7 +1548,7 @@ void iGameModelGeometryFilter::CompositeCellAttribute(std::vector<igIndex>& F2C,
 			CellAttributes.emplace_back(inAllDataArray->GetAttribute(i));
 		}
 		else {
-			outAllDataArray->AddAttribute(inAllDataArray->GetAttribute(i).type, inAllDataArray->GetAttribute(i).attachmentType, inAllDataArray->GetAttribute(i).pointer);
+			outAllDataArray->AddAttribute(inAllDataArray->GetAttribute(i).type, inAllDataArray->GetAttribute(i).attachmentType, inAllDataArray->GetAttribute(i).pointer, inAllDataArray->GetAttribute(i).dataRange);
 		}
 	}
 	igIndex AttributeSize = CellAttributes.size();

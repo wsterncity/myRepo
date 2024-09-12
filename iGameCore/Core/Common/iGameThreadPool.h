@@ -95,7 +95,7 @@ public:
 	}
 
 private:
-	ThreadPool(unsigned int num = 8/*std::thread::hardware_concurrency()*/)
+	ThreadPool(unsigned int num = std::thread::hardware_concurrency())
 		: stop_(false)
 	{
 		if (num <= 1)

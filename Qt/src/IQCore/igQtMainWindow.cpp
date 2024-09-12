@@ -256,6 +256,7 @@ void igQtMainWindow::initAllComponents() {
 }
 igQtMainWindow::~igQtMainWindow() {}
 
+
 void igQtMainWindow::initAllFilters() {
 	connect(ui->action_test_01, &QAction::triggered, this, [&](bool checked) {
 		PointSet::Pointer points = PointSet::New();
@@ -657,11 +658,11 @@ void igQtMainWindow::initAllDockWidgetConnectWithAction() {
 	// connect(ui->action_Tensor, &QAction::triggered, this, [&](bool checked) {
 	//	ui->dockWidget_TensorField->show();
 	//	});
-	// connect(ui->action_FlowField, &QAction::triggered, this, [&](bool checked)
-	// { 	ui->dockWidget_FlowField->show();
-	//	});
-	// connect(ui->action_SearchInfo, &QAction::triggered, this, [&](bool checked)
-	// { 	ui->dockWidget_SearchInfo->show();
+	connect(ui->action_FlowField, &QAction::triggered, this, [&](bool checked) {
+		ui->dockWidget_FlowField->show();
+		});
+	//connect(ui->action_SearchInfo, &QAction::triggered, this, [&](bool checked) {
+	//	ui->dockWidget_SearchInfo->show();
 	//	});
 	// connect(ui->action_EditMode, &QAction::triggered, this, [&](bool checked) {
 	//	ui->dockWidget_EditMode->show();
@@ -684,7 +685,7 @@ void igQtMainWindow::initAllMySignalConnections() {
 	// &igQtMainWindow::updateCurrentSceneWidget);
 	connect(fileLoader, &igQtFileLoader::FinishReading, ui->widget_Animation,
 		&igQtAnimationWidget::initAnimationComponents);
-
+	connect(ui->widget_FlowField, &igQtStreamTracerWidget::NewModel, modelTreeWidget, &igQtModelDialogWidget::addDataObjectToModelTree);
 	// connect(fileLoader, &igQtFileLoader::FinishReading, ui->widget_ScalarField,
 	// &igQtScalarViewWidget::getScalarsName); connect(fileLoader,
 	// &igQtFileLoader::FinishReading, ui->widget_TensorField, [&]() {
