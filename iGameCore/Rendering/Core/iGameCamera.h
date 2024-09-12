@@ -35,8 +35,9 @@ public:
         m_DevicePixelRatio = devicePixelRatio;
     };
 
-    igm::uvec2 GetViewPort() { return m_Size * m_DevicePixelRatio; };
+    igm::uvec2 GetViewPort() { return m_Size; };
     int GetDevicePixelRatio() { return m_DevicePixelRatio; };
+    igm::uvec2 GetScaledViewPort() { return m_Size * m_DevicePixelRatio; }
 
     template<typename FloatT>
     FloatT aspect() const {
@@ -59,25 +60,48 @@ public:
     static Pointer New() { return new Viewer; }
 
 public:
-    void SetNearPlane(float near) { nearPlane = near; };
+    void SetNearPlane(float _near) { nearPlane = _near; };
     //void SetFarPlane(float far) { farPlane = far; };
     float GetNearPlane() { return nearPlane; };
     //float GetFarPlane() { return farPlane; };
 
+    // depth range: 0.0(near plane) -> 1.0(far plane)
     igm::mat4 GetProjectionMatrix() {
         return igm::perspectiveRH_ZO(static_cast<float>(igm::radians(fov)),
                                      aspect<float>(), nearPlane);
     };
 
+    /** Depth Map Visualization:
+    *          -far           -near              near            far
+    *           |--------------|------->eye------->|--------------|
+    *           1              2      INF/-INF     0              1
+    */
+    float LinearizeDepth(float z) {
+        float ndcZ = z * 2.0f - 1.0f; // back to NDC
+        float depth = 2.0f * nearPlane / (1.0f - ndcZ);
+        return depth;
+    };
+
+    // depth range: 1.0(near plane) -> 0.0(far plane)
     igm::mat4 GetProjectionMatrixReversedZ() {
         return igm::perspectiveRH_OZ(static_cast<float>(igm::radians(fov)),
                                      aspect<float>(), nearPlane);
     }
 
+    /** Depth Map Visualization:
+    *          -far           -near              near            far
+    *           |--------------|------->eye------->|--------------|
+    *           0             -1     -INF/INF      1              0
+    */
+    float LinearizeDepthReverseZ(float z) const {
+        float depth = nearPlane / z;
+        return depth;
+    }
+
 protected:
     float fov = 45.0f;
     float nearPlane = 0.01f;
-    //float farPlane = 100.0f;
+    float farPlane = 100.0f;
 
 protected:
     Viewer() = default;
@@ -124,6 +148,8 @@ public:
     igm::vec3 GetCameraPos() const { return m_Position; }
 
     igm::vec3 GetCameraUp() const { return m_Up; }
+
+    igm::vec3 GetCameraFront() const { return m_Front; }
 
     igm::mat4 GetViewMatrix() {
         return igm::lookAt(m_Position, m_Position + m_Front, m_Up);

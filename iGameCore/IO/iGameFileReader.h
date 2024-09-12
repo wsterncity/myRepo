@@ -2,23 +2,19 @@
 #define iGameFileReader_h
 
 #include "iGameFilter.h"
-#include "iGameThreadPool.h"
+//#include "iGameThreadPool.h"
 #include "iGameSurfaceMesh.h"
 #include "iGameDataCollection.h"
 #include "iGameFlatArray.h"
 #include <algorithm>
+#include <cstdio>
+#include <tchar.h>
+#include <cfloat>
 
+#include <windows.h>
 IGAME_NAMESPACE_BEGIN
 
-#define IGAME_ASCII 1
-#define IGAME_BINARY 2
 
-inline size_t GetFileSize(std::ifstream& file) {
-	file.seekg(0, std::ios::end);
-	size_t size = file.tellg();
-	file.seekg(0, std::ios::beg);
-	return size;
-}
 
 class FileReader : public Filter {
 public:
@@ -26,20 +22,15 @@ public:
 	// static Pointer New() { return new FileReader; }
 
 	bool Open();
-	bool ReadToBuffer();
 	virtual bool Parsing() = 0;
-	bool CreateDataObject();
+	virtual bool CreateDataObject();
 	bool Close();
 
 	bool Execute() override;
 
 	void SetFilePath(const std::string& filePath);
 
-	DataObject::Pointer ReadFile(const std::string& filePath) {
-		SetFilePath(filePath);
-		Execute();
-		return this->GetOutput();
-	}
+	DataObject::Pointer ReadFile(const std::string& filePath);
 	/**
 	 * Internal function to read in a value.  Returns zero if there was an
 	 * error.
@@ -62,70 +53,30 @@ public:
 	int ReadString(std::string& str);
 	char* LowerCase(char* str, const size_t len = 256);
 	ArrayObject::Pointer ReadArray(const char* dataType, int numTuples, int numComp);
+	void SkipNullData();
+	void UpdateReadProgress();
+	int DecodeString(char* resname, const char* name);
 
-	void UpdateReadProgress() {
-		if (!this->IS)return;
-		double progress = 1.0 * (this->IS - m_Buffer->RawPointer()) / m_Buffer->GetNumberOfValues();
-		this->UpdateProgress(progress);
-	}
-
-	int DecodeString(char* resname, const char* name)
-	{
-		if (!resname || !name)
-		{
-			return 0;
-		}
-		std::ostringstream str;
-		size_t cc = 0;
-		unsigned int ch;
-		size_t len = strlen(name);
-		size_t reslen = 0;
-		char buffer[10] = "0x";
-		while (name[cc])
-		{
-			if (name[cc] == '%')
-			{
-				if (cc <= (len - 3))
-				{
-					buffer[2] = name[cc + 1];
-					buffer[3] = name[cc + 2];
-					buffer[4] = 0;
-					sscanf(buffer, "%x", &ch);
-					str << static_cast<char>(ch);
-					cc += 2;
-					reslen++;
-				}
-			}
-			else
-			{
-				str << name[cc];
-				reslen++;
-			}
-			cc++;
-		}
-		strncpy(resname, str.str().c_str(), reslen + 1);
-		resname[reslen] = 0;
-		return static_cast<int>(reslen);
-	}
 
 protected:
-    FileReader();
+	FileReader();
 	~FileReader() override = default;
 
 	CellArray::Pointer m_CellArray;
 	DataCollection m_Data;
-	CharArray::Pointer m_Buffer;
 
 	DataObject::Pointer m_Output;
 
 	std::string m_FilePath;
 	std::string m_FileName;
 	std::string m_FileSuffix;
+	FILE* file_;
 	size_t m_FileSize;
-	std::unique_ptr<std::ifstream> m_File{};
-
+	HANDLE m_File;
+	HANDLE m_MapFile;
 	const char* IS;
-
+	char* FILESTART;
+	char* FILEEND;
 	IGenum m_FileType{ IGAME_ASCII };
 };
 

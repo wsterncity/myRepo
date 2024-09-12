@@ -9,29 +9,9 @@ INPReader::~INPReader()
 {
 
 }
-bool INPReader::Execute()
-{
-	if (!Open())
-	{
-		std::cerr << "Open failure\n";
-		return false;
-	}
-	if (!ReadToBuffer())
-	{
-		std::cerr << "Read to buffer failure\n";
-		return false;
-	}
-	this->IS = m_Buffer->RawPointer();
-	if (!Parsing())
-	{
-		std::cerr << "Parsing failure\n";
-		return false;
-	}
-	if (!Close())
-	{
-		std::cerr << "Close failure\n";
-		return false;
-	}
+bool INPReader::CreateDataObject() {
+	if (!this->GetOutput())return false;
+	m_Output = this->GetOutput();
 	return true;
 }
 bool INPReader::Parsing()

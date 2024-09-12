@@ -275,8 +275,6 @@ class IG_QT_MODULE_EXPORT igQtModelTreeWidget : public QTreeWidget {
 
 public:
     igQtModelTreeWidget(QWidget* parent = nullptr) : QTreeWidget(parent) {
-        connect(this, &QTreeWidget::itemClicked, this, [&](QTreeWidgetItem* item){
-        });
 
     }
 
@@ -303,8 +301,8 @@ protected:
                 call = false;
             }
             else if(currentItem() != item){ // Check operation
+                emit ChangeCurrentModel(item->getModel());
                 iGame::SceneManager::Instance()->GetCurrentScene()->SetCurrentModel(item->getModel());
-                emit(ChangeCurrentModel(item->getModel()));
                 setItemSelected(item, true);
                 item->getModel()->ViewCloudPicture(-1);
             }

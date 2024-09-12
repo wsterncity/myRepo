@@ -17,7 +17,8 @@ public:
 
     // Free all memory and initialize the array
     void Initialize() {
-        this->VectorType::swap(std::vector<TValue>());
+        std::vector<TValue> temp;
+        this->VectorType::swap(temp);
     }
 
     // Reallocate memory, and the old data is preserved. The array
@@ -63,7 +64,7 @@ public:
 
     // Add a element to array back. Return the index of element
     template<int dimension_t>
-    IGsize AddElement(Vector<TValue, dimension_t>&& _Element) 
+    IGsize AddElement(Vector<TValue, dimension_t>&& _Element)
     {
         assert(dimension_t >= m_ElementSize);
         IGsize index = this->GetNumberOfElements();
@@ -94,7 +95,7 @@ public:
     }
     IGsize AddElement(const std::vector<TValue>& _Element)
     {
-        assert(_Element.size() >= ElementSize);
+        assert(_Element.size() >= m_ElementSize);
         IGsize index = this->GetNumberOfElements();
         if (index * m_ElementSize >= this->GetCapacity())
         {
@@ -152,14 +153,14 @@ public:
             _Element.push_back(data[i]);
         }
     }
-    
+
     // Get a element by index _Pos. This function is thread-unsafe.
     const std::vector<TValue>& GetElement(const IGsize _Pos) {
         assert(0 <= _Pos && _Pos < this->GetNumberOfElements());
         m_Element.clear();
         TValue* data = this->RawPointer(_Pos);
         for (int i = 0; i < m_ElementSize; ++i) {
-            _Element.push_back(data[i]);
+            m_Element.push_back(data[i]);
         }
         return m_Element;
     }
@@ -185,7 +186,7 @@ public:
     }
     void SetElement(const IGsize _Pos, const std::vector<TValue>& _Element) {
         assert(0 <= _Pos && _Pos < this->GetNumberOfElements());
-        assert(_Element.size() >= ElementSize);
+        assert(_Element.size() >= m_ElementSize);
         TValue* data = this->RawPointer(_Pos);
         for (int i = 0; i < m_ElementSize; ++i) {
             data[i] = _Element[i];
@@ -241,7 +242,7 @@ public:
         std::vector<TValue> vec;
         vec.reserve(_Capacity);
         vec.assign(_DataBuffer, _DataBuffer + _Size);
-        
+
         this->VectorType::swap(vec);
 		m_ElementSize = _ElementSize;
 		return true;

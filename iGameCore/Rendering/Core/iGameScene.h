@@ -96,6 +96,16 @@ public:
     void Resize(int width, int height, int pixelRatio);
     void Update();
 
+    void lookAtPositiveX();
+    void lookAtNegativeX();
+    void lookAtPositiveY();
+    void lookAtNegativeY();
+    void lookAtPositiveZ();
+    void lookAtNegativeZ();
+    void lookAtIsometric();
+    void rotateNinetyClockwise();
+    void rotateNinetyCounterClockwise();
+
     template<typename Functor, typename... Args>
     void SetUpdateFunctor(Functor&& functor, Args&&... args) {
         m_UpdateFunctor = std::bind(functor, args...);
@@ -169,7 +179,8 @@ protected:
     GLBuffer m_CameraDataBlock, m_ObjectDataBlock, m_UBOBlock;
     std::map<IGenum, std::unique_ptr<GLShaderProgram>> m_ShaderPrograms;
 
-    GLVertexArray m_EmptyVAO; // used to draw full-screen triangle
+    // used to draw full-screen triangle
+    GLVertexArray m_EmptyVAO;
 
     GLint samples = 1;
     GLFramebuffer m_FramebufferMultisampled;
@@ -185,7 +196,8 @@ protected:
     GLTexture2d m_DepthPyramid;
 
     friend class Interactor;
+    friend class BasicInteractor;
 };
 
 IGAME_NAMESPACE_END
-#endif // OPENIGAME_SCENCE_H
+#endif // OPENIGAME_SCENC

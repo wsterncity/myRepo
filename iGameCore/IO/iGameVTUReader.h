@@ -8,19 +8,21 @@
 #include "iGameXMLFileReader.h"
 
 IGAME_NAMESPACE_BEGIN
-class iGameVTUReader : public iGameXMLFileReader{
+class iGameVTUReader : public iGameXMLFileReader {
 
 public:
-    I_OBJECT(iGameVTUReader);
+	I_OBJECT(iGameVTUReader);
 
-    static Pointer New(){return new iGameVTUReader;}
+	static Pointer New() { return new iGameVTUReader; }
 
-    bool Parsing() override;
+	bool Parsing() override;
+	bool CreateDataObject() override;
 
 protected:
 
-    iGameVTUReader() = default;
-    ~iGameVTUReader() = default;
+	iGameVTUReader() = default;
+	~iGameVTUReader() = default;
+//	igIndex m_DataObjectType = IG_NONE;
 };
 
 IGAME_NAMESPACE_END

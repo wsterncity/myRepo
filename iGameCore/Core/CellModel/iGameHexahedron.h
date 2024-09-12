@@ -10,61 +10,61 @@ public:
 	static Pointer New() { return new Hexahedron; }
 
 	IGenum GetCellType() const noexcept override { return IG_HEXAHEDRON; }
-    int GetCellSize() const noexcept override { return 8; }
-    int GetNumberOfEdges() override { return 12; }
-    int GetNumberOfFaces() override { return 6; }
+	int GetCellSize() const noexcept override { return 8; }
+	int GetNumberOfEdges() override { return 12; }
+	int GetNumberOfFaces() override { return 6; }
 
-    Cell* GetEdge(const int edgeId) override {
-        const int* verts = edges[edgeId];
+	Cell* GetEdge(const int edgeId) override {
+		const int* verts = edges[edgeId];
 
-        m_Line->PointIds->SetId(0, this->PointIds->GetId(verts[0]));
-        m_Line->PointIds->SetId(1, this->PointIds->GetId(verts[1]));
+		m_Line->PointIds->SetId(0, this->PointIds->GetId(verts[0]));
+		m_Line->PointIds->SetId(1, this->PointIds->GetId(verts[1]));
 
-        m_Line->Points->SetPoint(0, this->Points->GetPoint(verts[0]));
-        m_Line->Points->SetPoint(1, this->Points->GetPoint(verts[1]));
+		m_Line->Points->SetPoint(0, this->Points->GetPoint(verts[0]));
+		m_Line->Points->SetPoint(1, this->Points->GetPoint(verts[1]));
 
-        return m_Line.get();
-    }
-    Cell* GetFace(const int faceId) override {
-        const int* verts = faces[faceId];
+		return m_Line.get();
+	}
+	Cell* GetFace(const int faceId) override {
+		const int* verts = faces[faceId];
 		const int* edges = faceEdges[faceId];
-        for (int i = 0; i < 4; ++i) {
-            m_Quad->PointIds->SetId(i, PointIds->GetId(verts[i]));
-            m_Quad->Points->SetPoint(i, Points->GetPoint(verts[i]));
+		for (int i = 0; i < 4; ++i) {
+			m_Quad->PointIds->SetId(i, PointIds->GetId(verts[i]));
+			m_Quad->Points->SetPoint(i, Points->GetPoint(verts[i]));
 			m_Quad->EdgeIds->SetId(i, EdgeIds->GetId(edges[i]));
-        }
+		}
 
-        return m_Quad.get();
-    }
+		return m_Quad.get();
+	}
 
 	/**
-	 * 单元的顶点个数。
+	 * The number of points of the cell
 	 */
 	static constexpr int NumberOfPoints = 8;
 
 	/**
-	 * 单元的边个数。
+	 * The number of edges of the cell.
 	 */
 	static constexpr int NumberOfEdges = 12;
 
 	/**
-	 * 单元的面个数。
+	 * The number of faces of the cell.
 	 */
 	static constexpr int NumberOfFaces = 6;
 
 	/**
-	 * 单元面最大的顶点个数。
+	 * The largest number of points of the element face.
 	 */
 	static constexpr int MaxFaceSize = 4;
 
 	/**
-	 * 单元顶点最大的度。
+	 * The maximum degree of a cell point.
 	 */
 	static constexpr int MaxValence = 3;
 
-	/***************** 所有Max + 1的数组最后一位数字表示个数 *****************/
+	/***************** The last digit of the array for all Max + 1 indicates the number *****************/
 
-	// 边的顶点序号
+	// pointIds of a edge
 	static constexpr int edges[NumberOfEdges][2] = {
 	  { 0, 1 },
 	  { 1, 2 },
@@ -76,11 +76,11 @@ public:
 	  { 4, 7 },
 	  { 0, 4 },
 	  { 1, 5 },
-	  { 3, 7 },
 	  { 2, 6 },
+	  { 3, 7 },
 	};
 
-	// 面的顶点序号
+	// pointIds of a face
 	static constexpr int faces[NumberOfFaces][MaxFaceSize + 1] = {
 	  { 0, 4, 7, 3, 4 },
 	  { 1, 2, 6, 5, 4 },
@@ -90,17 +90,17 @@ public:
 	  { 4, 5, 6, 7, 4 },
 	};
 
-	// 面的边序号
+	// edgeIds of a face
 	static constexpr int faceEdges[NumberOfFaces][MaxFaceSize + 1] = {
-	  { 0, 4, 7, 3, 4 },//还没改
-	  { 1, 2, 6, 5, 4 },
-	  { 0, 1, 5, 4, 4 },
-	  { 3, 7, 6, 2, 4 },
-	  { 0, 3, 2, 1, 4 },
+	  { 8, 7, 11, 3, 4 },
+	  { 1, 10, 5, 9, 4 },
+	  { 0, 9, 4, 8, 4 },
+	  { 11, 6, 10, 2, 4 },
+	  { 3, 2, 1, 0, 4 },
 	  { 4, 5, 6, 7, 4 },
 	};
 
-	// 边的邻接面序号
+	// The adjacent face number of the edge
 	static constexpr int edgeToNeighborFaces[NumberOfEdges][2] = {
 	  { 2, 4 },
 	  { 1, 4 },
@@ -112,11 +112,11 @@ public:
 	  { 0, 5 },
 	  { 0, 2 },
 	  { 1, 2 },
-	  { 0, 3 },
 	  { 1, 3 },
+	  { 0, 3 },
 	};
 
-	// 面的邻接面序号
+	// Face adjacent face index number
 	static constexpr int faceToNeighborFaces[NumberOfFaces][MaxFaceSize + 1] = {
 		{ 4, 2, 5, 3, 4 },
 		{ 4, 3, 5, 2, 4 },
@@ -126,19 +126,19 @@ public:
 		{ 2, 1, 0, 3, 4 },
 	};
 
-	// 顶点的邻接边序号
+	// The sequence number of the adjacent edges of the vertex
 	static constexpr int pointToNeighborEdges[NumberOfPoints][MaxValence + 1] = {
 		{ 0, 8,  3,  3 },
 		{ 0, 1,  9,  3 },
-		{ 1, 2,  11, 3 },
-		{ 2, 3,  10, 3 },
+		{ 1, 2,  10, 3 },
+		{ 2, 3,  11, 3 },
 		{ 7, 8,  4,  3 },
 		{ 4, 9,  5,  3 },
-		{ 5, 11, 6,  3 },
-		{ 6, 10, 7,  3 },
+		{ 5, 10, 6,  3 },
+		{ 6, 11, 7,  3 },
 	};
 
-	// 顶点的邻接面序号
+	// The sequence number of the adjacent face of the vertex
 	static constexpr int pointToNeighborFaces[NumberOfPoints][MaxValence + 1] = {
 		{ 2, 0, 4, 3 },
 		{ 4, 1, 2, 3 },
@@ -150,7 +150,7 @@ public:
 		{ 3, 0, 5, 3 },
 	};
 
-	// 顶点的一邻域顶点序号
+	// PointIds of a neighborhood of a point
 	static constexpr int pointToOneRingPoints[NumberOfPoints][MaxValence + 1] = {
 		{ 1, 4, 3, 3 },
 		{ 0, 2, 5, 3 },
@@ -164,9 +164,9 @@ public:
 
 	int GetEdgePointIds(const int edgeId, const igIndex*& pts) override {
 		pts = edges[edgeId];
-        return 2;
+		return 2;
 	}
-    int GetFacePointIds(const int faceId, const igIndex*& pts) override {
+	int GetFacePointIds(const int faceId, const igIndex*& pts) override {
 		pts = faces[faceId];
 		return faces[faceId][MaxFaceSize];
 	}
@@ -174,9 +174,9 @@ public:
 		edgeIds = faceEdges[faceId];
 		return faceEdges[faceId][MaxFaceSize];
 	}
-    int GetEdgeToNeighborFaces(const int edgeId, const igIndex*& pts) override {
+	int GetEdgeToNeighborFaces(const int edgeId, const igIndex*& pts) override {
 		pts = edgeToNeighborFaces[edgeId];
-        return 2;
+		return 2;
 	}
 	int GetFaceToNeighborFaces(const int faceId, const igIndex*& faceIds) override {
 		faceIds = faceToNeighborFaces[faceId];
@@ -208,12 +208,12 @@ private:
 		}
 
 		m_Line = Line::New();
-        m_Quad = Quad::New();
+		m_Quad = Quad::New();
 	}
 	~Hexahedron() override = default;
 
 	Line::Pointer m_Line;
-    Quad::Pointer m_Quad;
+	Quad::Pointer m_Quad;
 };
 
 

@@ -36,7 +36,7 @@ public:
 		}
 		else
 		{
-			// 插入排序，根据priority从高到低排序
+			// Insert sort, from highest to lowest priority
 			Observer* prev = nullptr;
 			Observer* pos = this->Start;
 			while (pos->Priority >= elem->Priority && pos->Next)

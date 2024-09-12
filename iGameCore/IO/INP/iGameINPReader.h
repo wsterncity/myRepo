@@ -14,9 +14,11 @@ public:
 	~INPReader();
 
 	bool Parsing() override;
+	bool CreateDataObject() override;
+	
 	bool ChangeTypeToMytype(char* Type, int& vcnt, int& MyType);
 	DataObject::Pointer GetOutput() override;
-	bool Execute() override;
+
 protected:
 	INPReader();
 private:

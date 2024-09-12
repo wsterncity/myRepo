@@ -45,18 +45,18 @@ enum {
 
 // FlatArrayType
 enum {
-    IG_FLAT_ARRAY = 0,
-    IG_FloatArray,
-    IG_DoubleArray,
-    IG_IntArray,
-    IG_INTARRAY,
-    IG_UnsignedIntArray,
-    IG_CharArray,
-    IG_UnsignedCharArray,
-    IG_ShortArray,
-    IG_UnsignedShortArray,
-    IG_LongLongArray,
-    IG_UnsignedLongLongArray,
+	IG_FLAT_ARRAY = 0,
+	IG_FloatArray,
+	IG_DoubleArray,
+	IG_IntArray,
+	IG_INTARRAY,
+	IG_UnsignedIntArray,
+	IG_CharArray,
+	IG_UnsignedCharArray,
+	IG_ShortArray,
+	IG_UnsignedShortArray,
+	IG_LongLongArray,
+	IG_UnsignedLongLongArray,
 
 };
 
@@ -85,6 +85,15 @@ enum {
 	IG_POINT = 0,
 	IG_CELL,
 };
+
+//FileType
+enum {
+	IGAME_NONE=0,
+	IGAME_ASCII = 1,
+	IGAME_BINARY = 2
+};
+
+
 
 inline constexpr int IG_VOID = 0;
 inline constexpr int IG_CHAR = 1;

@@ -12,9 +12,13 @@
 #include "iGameVTSReader.h"
 #include "iGameVTUReader.h"
 #include "iGameDataObject.h"
+
 #include "iGameStringArray.h"
 
 #include <tinyxml2.h>
+#include <algorithm>
+#undef max
+#undef min
 
 bool iGame::iGamePVDReader::Parsing() {
     std::string fileDir = this->m_FilePath.substr(0, this->m_FilePath.find_last_of('/') + 1);
@@ -26,7 +30,7 @@ bool iGame::iGamePVDReader::Parsing() {
     while (elem) {
 
         existAttribute = elem->Attribute("timestep");
-        //  判断是否有timeStep元素, 没有则默认TimeStep为0
+        //  Check if there is a timeStep element; if not, TimeStep is set to 0
         float t = 0.f;
         if (existAttribute)
         {
@@ -113,7 +117,6 @@ bool iGame::iGamePVDReader::Parsing() {
                         range_min = std::min(range_min, ScalarDataRange.first );
                         range_max = std::max(range_max, ScalarDataRange.second);
                     }
-//                    std::cout << "range " << range_min << ' ' << range_max << '\n';
                     for(auto it = m_data_object->SubDataObjectIteratorBegin(); it != m_data_object->SubDataObjectIteratorEnd(); ++ it){
                         auto& ScalarDataRange = it->second->GetAttributeSet()->GetAttribute(k).dataRange;
                         ScalarDataRange.first  = range_min;
@@ -124,7 +127,6 @@ bool iGame::iGamePVDReader::Parsing() {
             }
         }
 
-//        m_data_object->SetScalarRange({0, 0.12});
     }
 
     return true;

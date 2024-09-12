@@ -4,7 +4,7 @@
 #include "iGameObject.h"
 
 IGAME_NAMESPACE_BEGIN
-class Marker : public Object{
+class Marker : public Object {
 public:
 	I_OBJECT(Marker);
 
@@ -25,11 +25,11 @@ public:
 	}
 
 protected:
-	Marker(int bitsPerUnit) : m_BitsPerUnit(bitsPerUnit){}
+	Marker(int bitsPerUnit) : m_BitsPerUnit(bitsPerUnit) {}
 	~Marker() override {}
 
-	int m_BitsPerUnit{1};
-	IGsize m_UnitCount{0};
+	int m_BitsPerUnit{ 1 };
+	IGsize m_UnitCount{ 0 };
 	std::vector<uint8_t> m_Buffer;
 };
 
@@ -49,6 +49,11 @@ public:
 	void MarkDeleted(const IGsize idx) noexcept {
 		m_Buffer[idx / 8] |= (1 << (idx % 8));
 		// m_Buffer[idx / 8] &= ~(1 << (idx % 8));
+	}
+
+	// cancel delete
+	void Undo(const IGsize idx) noexcept {
+		m_Buffer[idx / 8] &= ~(1 << (idx % 8));
 	}
 
 	bool IsDeleted(const IGsize idx) const noexcept {

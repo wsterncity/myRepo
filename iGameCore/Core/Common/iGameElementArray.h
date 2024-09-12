@@ -18,7 +18,8 @@ public:
 
     // Free all memory and initialize the array
     void Initialize() {
-        this->VectorType::swap(std::vector<TElement>());
+        std::vector<TElement> temp;
+        this->VectorType::swap(temp);
     }
 
     // Reallocate memory, and the old memory is preserved. The array

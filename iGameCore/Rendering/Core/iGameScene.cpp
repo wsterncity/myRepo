@@ -10,7 +10,6 @@ Scene::Scene() {
     m_ModelRotate = igm::mat4{};
     m_ModelMatrix = igm::mat4{};
     m_BackgroundColor = {0.5f, 0.5f, 0.5f};
-    //    m_BackgroundColor = {1.f, 1.f, 1.f};
 
     InitOpenGL();
     InitFont();
@@ -377,10 +376,11 @@ void Scene::InitAxes() {
 }
 
 void Scene::ResizeFrameBuffer() {
-    uint32_t width = m_Camera->GetViewPort().x;
-    uint32_t height = m_Camera->GetViewPort().y;
+    auto viewport = m_Camera->GetScaledViewPort();
+    uint32_t width = viewport.x;
+    uint32_t height = viewport.y;
 
-    // multisample framebuffer
+    // resize multisample framebuffer
     {
         samples = 4;
         //glGetIntegerv(GL_MAX_SAMPLES, &samples);
@@ -414,10 +414,10 @@ void Scene::ResizeFrameBuffer() {
                       << std::endl;
     }
 
-    // resolve framebuffer(form multisamples to single sample)
+    // resize resolve framebuffer(form multisamples to single sample)
     {
-        auto width = m_Camera->GetViewPort().x;
-        auto height = m_Camera->GetViewPort().y;
+        auto width = m_Camera->GetScaledViewPort().x;
+        auto height = m_Camera->GetScaledViewPort().y;
         int mipLevels =
                 static_cast<int>(std::ceil(std::log2(std::max(width, height))));
 
@@ -439,13 +439,15 @@ void Scene::ResizeFrameBuffer() {
         GLTexture2d depthTexture;
         depthTexture.create();
         depthTexture.bind();
-        depthTexture.storage(1, GL_DEPTH_COMPONENT32F, width, height);
+        depthTexture.storage(1, GL_R32F, width, height);
+        depthTexture.parameteri(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        depthTexture.parameteri(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         depthTexture.parameteri(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         depthTexture.parameteri(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        fbo.texture(GL_DEPTH_ATTACHMENT, depthTexture, 0);
+        fbo.texture(GL_COLOR_ATTACHMENT1, depthTexture, 0);
 
-        GLenum buffers[] = {GL_COLOR_ATTACHMENT0};
-        fbo.drawBuffers(1, buffers);
+        GLenum buffers[] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1};
+        fbo.drawBuffers(2, buffers);
 
         fbo.release();
 
@@ -462,8 +464,8 @@ void Scene::ResizeFrameBuffer() {
 }
 void Scene::ResizeDepthPyramid() {
 #ifdef IGAME_OPENGL_VERSION_460
-    uint32_t width = m_Camera->GetViewPort().x;
-    uint32_t height = m_Camera->GetViewPort().y;
+    auto width = m_Camera->GetScaledViewPort().x;
+    auto height = m_Camera->GetScaledViewPort().y;
 
     static auto previousPow2 = [](uint32_t v) {
         uint32_t r = 1;
@@ -485,7 +487,6 @@ void Scene::ResizeDepthPyramid() {
     m_DepthPyramidLevels =
             compDepthMipLevels(m_DepthPyramidWidth, m_DepthPyramidHeight);
 
-
     GLTexture2d texture;
     texture.create();
     texture.bind();
@@ -503,11 +504,11 @@ void Scene::ResizeDepthPyramid() {
 
 void Scene::Draw() {
     // save default framebuffer, because it is not 0 in Qt
-    GLint defaultFramebuffer = 0;
+    GLint defaultFramebuffer = GL_NONE;
     glGetIntegerv(GL_FRAMEBUFFER_BINDING, &defaultFramebuffer);
 
-    auto width = m_Camera->GetViewPort().x;
-    auto height = m_Camera->GetViewPort().y;
+    auto width = m_Camera->GetScaledViewPort().x;
+    auto height = m_Camera->GetScaledViewPort().y;
 
     // render to multisample framebuffer
     {
@@ -533,11 +534,8 @@ void Scene::Draw() {
     {
         m_FramebufferResolved.bind();
         glViewport(0, 0, width, height);
-        glClearDepth(0.0f);
-        glClear(GL_DEPTH_BUFFER_BIT);
-
-        glEnable(GL_DEPTH_TEST);
-        glDepthFunc(GL_ALWAYS);
+        glClear(GL_COLOR_BUFFER_BIT);
+        glDisable(GL_DEPTH_TEST);
 
         auto shader = GetShader(Scene::ATTACHMENTRESOLVE);
         shader->use();
@@ -552,7 +550,6 @@ void Scene::Draw() {
         glDrawArrays(GL_TRIANGLES, 0, 3);
         m_EmptyVAO.release();
 
-        glDisable(GL_DEPTH_TEST);
         m_FramebufferResolved.release();
     }
 
@@ -656,7 +653,8 @@ void Scene::DrawFrame() {
 }
 
 void Scene::DrawModels() {
-    glViewport(0, 0, m_Camera->GetViewPort().x, m_Camera->GetViewPort().y);
+    auto viewport = m_Camera->GetScaledViewPort();
+    glViewport(0, 0, viewport.x, viewport.y);
 
 #ifdef IGAME_OPENGL_VERSION_330
     for (auto& [id, obj]: m_Models) {
@@ -726,31 +724,39 @@ void Scene::UpdateUniformBuffer() {
 }
 
 void Scene::DrawAxes() {
-    //glClear(GL_DEPTH_BUFFER_BIT);
-    glViewport(0, 0, 200, 200);
+    glClear(GL_DEPTH_BUFFER_BIT);
 
-    //draw Axes
+    uint32_t width = m_Camera->GetScaledViewPort().x;
+    uint32_t height = m_Camera->GetScaledViewPort().y;
+    float scale = static_cast<float>(std::max(width, height)) / 10.0f;
+    igm::vec4 viewport = igm::vec4{0, 0, scale, scale};
+    glViewport(viewport.x, viewport.y, viewport.z, viewport.w);
+
     auto axesShader = this->GetShader(Scene::AXES);
-    GLUniform modelLocation = axesShader->getUniformLocation("model");
-
     axesShader->use();
+
+    GLUniform modelLocation = axesShader->getUniformLocation("model");
     axesShader->setUniform(modelLocation, m_ModelRotate);
 
-    m_Axes->DrawAxes();
+    GLUniform isFontLocation = axesShader->getUniformLocation("isDrawFont");
+
+    // draw Axes
+    {
+        axesShader->setUniform(isFontLocation, false);
+        m_Axes->DrawAxes();
+    }
 
     // draw Axes Font
-    auto fontShader = this->GetShader(Scene::FONT);
-    GLUniform projLocation = fontShader->getUniformLocation("proj");
-    auto mvp = Axes::ProjMatrix() * Axes::ViewMatrix() * m_ModelRotate;
+    {
+        axesShader->setUniform(isFontLocation, true);
+        GLUniform textureUniform =
+                axesShader->getUniformLocation("fontTexture");
+        GLUniform colorUniform = axesShader->getUniformLocation("textColor");
 
-    fontShader->use();
-    fontShader->setUniform(projLocation, mvp);
-
-    m_Axes->Update(mvp, {0, 0, 200, 200});
-
-    GLUniform textureUniform = fontShader->getUniformLocation("fontTexture");
-    GLUniform colorUniform = fontShader->getUniformLocation("textColor");
-    m_Axes->DrawXYZ(fontShader, textureUniform, colorUniform);
+        m_Axes->Update(Axes::ProjMatrix() * Axes::ViewMatrix() * m_ModelRotate,
+                       {viewport.x, viewport.y, viewport.z, viewport.w});
+        m_Axes->DrawXYZ(axesShader, textureUniform, colorUniform);
+    }
 }
 
 void Scene::RefreshDrawCullDataBuffer() {
@@ -776,6 +782,102 @@ void Scene::RefreshDrawCullDataBuffer() {
 
     m_DrawCullData.subData(0, sizeof(DrawCullData), &cullData);
 }
+
+void Scene::lookAtPositiveX() {
+    auto radians = static_cast<float>(igm::radians(90.0f));
+    auto matrix =
+            igm::rotate(igm::mat4{}, -radians, igm::vec3{1.0f, 0.0f, 0.0f}) *
+            igm::rotate(igm::mat4{}, radians, igm::vec3{0.0f, 0.0f, 1.0f});
+
+    m_ModelMatrix = matrix * m_ModelRotate.invert() * m_ModelMatrix;
+    m_ModelRotate = matrix;
+    ResetCenter();
+};
+void Scene::lookAtNegativeX() {
+    auto radians = static_cast<float>(igm::radians(90.0f));
+    auto matrix =
+            igm::rotate(igm::mat4{}, -radians, igm::vec3{0.0f, 0.0f, 1.0f}) *
+            igm::rotate(igm::mat4{}, -radians, igm::vec3{0.0f, 1.0f, 0.0f});
+
+    m_ModelMatrix = matrix * m_ModelRotate.invert() * m_ModelMatrix;
+    m_ModelRotate = matrix;
+    ResetCenter();
+};
+void Scene::lookAtPositiveY() {
+    auto radians = static_cast<float>(igm::radians(90.0f));
+    auto matrix =
+            igm::rotate(igm::mat4{}, -radians, igm::vec3{1.0f, 0.0f, 0.0f});
+
+    m_ModelMatrix = matrix * m_ModelRotate.invert() * m_ModelMatrix;
+    m_ModelRotate = matrix;
+    ResetCenter();
+};
+void Scene::lookAtNegativeY() {
+    auto radians = static_cast<float>(igm::radians(90.0f));
+    auto matrix =
+            igm::rotate(igm::mat4{}, radians, igm::vec3{1.0f, 0.0f, 0.0f}) *
+            igm::rotate(igm::mat4{}, 2 * radians, igm::vec3{0.0f, 1.0f, 0.0f});
+
+    m_ModelMatrix = matrix * m_ModelRotate.invert() * m_ModelMatrix;
+    m_ModelRotate = matrix;
+    ResetCenter();
+};
+void Scene::lookAtPositiveZ() {
+    auto radians = static_cast<float>(igm::radians(90.0f));
+    auto matrix =
+            igm::rotate(igm::mat4{}, 2 * radians, igm::vec3{0.0f, 1.0f, 0.0f});
+
+    m_ModelMatrix = matrix * m_ModelRotate.invert() * m_ModelMatrix;
+    m_ModelRotate = matrix;
+    ResetCenter();
+};
+void Scene::lookAtNegativeZ() {
+    auto matrix = igm::mat4{};
+
+    m_ModelMatrix = matrix * m_ModelRotate.invert() * m_ModelMatrix;
+    m_ModelRotate = matrix;
+    ResetCenter();
+};
+void Scene::lookAtIsometric() {
+    auto radians = static_cast<float>(igm::radians(45.0f));
+    auto matrix =
+            igm::rotate(igm::mat4{}, radians, igm::vec3{1.0f, 0.0f, 0.0f}) *
+            igm::rotate(igm::mat4{}, -radians, igm::vec3{0.0f, 1.0f, 0.0f});
+
+    m_ModelMatrix = matrix * m_ModelRotate.invert() * m_ModelMatrix;
+    m_ModelRotate = matrix;
+    ResetCenter();
+};
+void Scene::rotateNinetyClockwise() {
+    auto rotateMatrix = igm::mat4{};
+    auto radians = static_cast<float>(igm::radians(90.0f));
+    rotateMatrix =
+            igm::rotate(igm::mat4{}, -radians, igm::vec3{0.0f, 0.0f, 1.0f});
+
+    igm::vec4 center = igm::vec4{m_ModelsBoundingSphere.xyz(), 1.0f};
+    igm::vec3 centerInWorld = (m_ModelMatrix * center).xyz();
+    igm::mat4 translateToOrigin = igm::translate(igm::mat4{}, -centerInWorld);
+    igm::mat4 translateBack = igm::translate(igm::mat4{}, centerInWorld);
+    igm::mat4 rotate = translateBack * rotateMatrix * translateToOrigin;
+
+    m_ModelMatrix = rotate * (m_ModelMatrix);
+    m_ModelRotate = rotateMatrix * (m_ModelRotate);
+};
+void Scene::rotateNinetyCounterClockwise() {
+    auto rotateMatrix = igm::mat4{};
+    auto radians = static_cast<float>(igm::radians(90.0f));
+    rotateMatrix =
+            igm::rotate(igm::mat4{}, radians, igm::vec3{0.0f, 0.0f, 1.0f});
+
+    igm::vec4 center = igm::vec4{m_ModelsBoundingSphere.xyz(), 1.0f};
+    igm::vec3 centerInWorld = (m_ModelMatrix * center).xyz();
+    igm::mat4 translateToOrigin = igm::translate(igm::mat4{}, -centerInWorld);
+    igm::mat4 translateBack = igm::translate(igm::mat4{}, centerInWorld);
+    igm::mat4 rotate = translateBack * rotateMatrix * translateToOrigin;
+
+    m_ModelMatrix = rotate * (m_ModelMatrix);
+    m_ModelRotate = rotateMatrix * (m_ModelRotate);
+};
 
 void Scene::UpdateModelsBoundingSphere() {
     // update all models bounding sphere

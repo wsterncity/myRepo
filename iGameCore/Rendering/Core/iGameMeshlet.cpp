@@ -1,5 +1,4 @@
 #include "iGameMeshlet.h"
-#include <format>
 
 IGAME_NAMESPACE_BEGIN
 
@@ -14,8 +13,8 @@ void Meshlet::CreateBuffer() {
 
 void Meshlet::BuildMeshlet(const float* vertex_positions, size_t vertex_count,
                            const int* indices, size_t index_count) {
-    clock_t start, end;
-    start = clock();
+    Timer timer;
+    timer.reset();
 
     // Preprocessing: Vertex Cache Optimization
     std::vector<int> optimized_indices(index_count);
@@ -104,15 +103,10 @@ void Meshlet::BuildMeshlet(const float* vertex_positions, size_t vertex_count,
             drawCommands.size() * sizeof(DrawElementsIndirectCommand), nullptr,
             GL_DYNAMIC_DRAW);
 
-    end = clock();
-
-    std::string out;
-    out.append("Build meshlets [count: ");
-    out.append(std::to_string(meshlet_count));
-    out.append(", time: ");
-    out.append(FormatTime(end - start));
-    out.append("]");
-    std::cout << out << std::endl;
+    std::cout << std::format("Build meshlets [count: {}, time: {}]",
+                             meshlet_count,
+                             FormatTime(timer.elapsedMilliseconds()))
+              << std::endl;
 }
 
 size_t Meshlet::MeshletsCount() { return m_MeshletsCount; };

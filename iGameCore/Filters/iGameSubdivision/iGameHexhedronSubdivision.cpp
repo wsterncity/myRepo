@@ -1,7 +1,7 @@
 #include "iGameHexhedronSubdivision.h"
 IGAME_NAMESPACE_BEGIN
-// 计算 Bernstein 多项式的值
-double Bernstein(int i, int n, double t) {
+// Calculate the value of the Bernstein polynomial
+inline double Bernstein(int i, int n, double t) {
 	double binomial_coeff = 1.0;
 	for (int j = 0; j < i; ++j) {
 		binomial_coeff *= (n - j);
@@ -10,8 +10,8 @@ double Bernstein(int i, int n, double t) {
 	return binomial_coeff * pow(t, i) * pow(1 - t, n - i);
 }
 
-// 生成 Bezier 曲面上的点
-std::vector<std::vector<std::vector<Point>>> GenerateBezierSurface(Point ControlPts[4][4][4], int resolution) {
+// Generate points on the Bezier surface
+inline std::vector<std::vector<std::vector<Point>>> GenerateBezierSurface(Point ControlPts[4][4][4], int resolution) {
 	std::vector<std::vector<std::vector<Point>>> bezierSurface(resolution,
 		std::vector<std::vector<Point>>(resolution, std::vector<Point>(resolution)));
 
@@ -24,7 +24,7 @@ std::vector<std::vector<std::vector<Point>>> GenerateBezierSurface(Point Control
 				double w_t = static_cast<double>(w) / (resolution - 1);
 				Point p = { 0, 0, 0 }; // Assuming Point has a default constructor
 
-				// 双重循环计算每个控制点的权重
+				// Double loop to calculate the weight of each control point
 				for (int i = 0; i < 4; ++i) {
 					for (int j = 0; j < 4; ++j) {
 						for (int k = 0; k < 4; ++k) {
@@ -66,17 +66,17 @@ bool HexhedronSubdivision::Execute()
 	igIndex vcnt = 0;
 	igIndex vhs[IGAME_CELL_MAX_SIZE];
 	std::cout << "Cell Num: " << CellNum << "\nPoint Num: " << PointNum << '\n';
-	//对于一个六面体，有一个体，六个面，十二条边，八个点，共有1*8+6*4+12*2+8*1=64
-	//内点
+	// For a hexahedron, there is one volume, six faces, twelve edges, and eight points, with a total of 1*8+6*4+12*2+8*1=64
+		// Internal points
 	std::vector<std::vector<Point>>inPts(CellNum);
-	//面点
+	// Face points
 	std::vector<std::vector<Point>>FacePts(FaceNum);
-	//边点
+	// Edge points
 	std::vector<std::vector<Point>>EdgePts(EdgeNum);
-	//角点
+	// Corner points
 	std::vector<Point>CornerPts(PointNum);
 
-	//计算内点
+	// Calculate internal points
 	for (i = 0; i < CellNum; i++) {
 		vcnt = Cells->GetCellIds(i, vhs);
 		assert(vcnt == 8);
@@ -84,7 +84,7 @@ bool HexhedronSubdivision::Execute()
 		for (j = 0; j < vcnt; j++) {
 			p[j] = mesh->GetPoint(vhs[j]);
 		}
-		//每个体有八个内点
+		// Each volume has eight internal points
 		inPts[i].resize(8);
 		for (j = 0; j < vcnt; j++) {
 			if (j < 4) {
@@ -99,13 +99,13 @@ bool HexhedronSubdivision::Execute()
 		}
 
 	}
-	//计算面点
+	// Calculate face points
 	igIndex cellIds[16];
 	igIndex neighborNum = 0;
 	for (i = 0; i < FaceNum; i++) {
 		vcnt = Faces->GetCellIds(i, vhs);
 		assert(vcnt == 4);
-		//每个面有四个内点
+		// Each face has four internal points
 		FacePts[i].resize(4);
 		neighborNum = mesh->GetFaceToNeighborVolumes(i, cellIds);
 		if (1) {
@@ -155,11 +155,11 @@ bool HexhedronSubdivision::Execute()
 	//		std::cout << '\n';
 	//	}
 	//}
-	//计算边点
+	// Calculate edge points
 	for (i = 0; i < EdgeNum; i++) {
 		vcnt = Edges->GetCellIds(i, vhs);
 		assert(vcnt == 2);
-		//每个边都有两个内点
+		// Each edge has two internal points
 		EdgePts[i].resize(2);
 		igIndex cellIds_1[64];
 		std::set<igIndex>tmp;
@@ -175,7 +175,7 @@ bool HexhedronSubdivision::Execute()
 			else tmp.insert(cellIds_1[j]);
 		}
 		neighborNum = index;
-		//如果是内部边
+		// If it's an internal edge
 		if (1) {
 			for (j = 0; j < 2; j++) {
 				EdgePts[i][j] = Point{ 0,0,0 };
@@ -193,7 +193,7 @@ bool HexhedronSubdivision::Execute()
 			}
 
 		}
-		//如果是Boundry
+		// If it's a boundary edge
 		else {
 			Point p[2];
 			for (j = 0; j < vcnt; j++) {
@@ -203,11 +203,11 @@ bool HexhedronSubdivision::Execute()
 			EdgePts[i][1] = (p[1] * 2 + p[0]) / 3;
 		}
 	}
-	//计算角点
+	// Calculate corner points
 	for (i = 0; i < PointNum; i++) {
 		auto p = mesh->GetPoint(i);
-		//每个顶点一个角点
-		//如果是内部点
+		// Each vertex has one corner point
+		// If it's an internal point
 		if (1) {
 			neighborNum = mesh->GetPointToNeighborVolumes(i, cellIds);
 			CornerPts[i] = { 0,0,0 };
@@ -229,7 +229,7 @@ bool HexhedronSubdivision::Execute()
 			CornerPts[i] = { 0,0,0 };
 			neighborNum = mesh->GetPointToNeighborFaces(i, fhs);
 			for (j = 0; j < neighborNum; j++) {
-				if (mesh->IsBoundryFace(fhs[j])) {
+				if (mesh->IsBoundaryFace(fhs[j])) {
 					count++;
 					auto f = mesh->GetFace(fhs[j]);
 
@@ -295,10 +295,10 @@ bool HexhedronSubdivision::Execute()
 
 
 
-	//生成细分体
+	// Generate subdivided volumes
 	igIndex cellID = 0;
 	for (cellID = 0; cellID < CellNum; cellID++) {
-		//每个体有六十四个控制点
+		// Each volume has sixty-four control points
 		Point ControlPts[4][4][4];
 		vcnt = Cells->GetCellIds(cellID, vhs);
 		for (k = 0; k < 4; k++) {
@@ -320,8 +320,6 @@ bool HexhedronSubdivision::Execute()
 		ControlPts[3][3][0] = CornerPts[vhs[7]];
 
 
-
-		//k边
 		for (i = 0; i < 4; i++) {
 			auto EdgeID = mesh->GetEdgeIdFormPointIds(vhs[i], vhs[i + 4]);
 			auto edge = mesh->GetEdge(EdgeID);
@@ -352,7 +350,7 @@ bool HexhedronSubdivision::Execute()
 				std::swap(ControlPts[1][j][k], ControlPts[2][j][k]);
 			}
 		}
-		//i边
+
 		igIndex edgeIndexs[4][4] = { {0,1,0,0},{3,2,0,3},{4,5,3,0},{7,6,3,3} };
 		for (i = 0; i < 4; i++) {
 			auto EdgeID = mesh->GetEdgeIdFormPointIds(vhs[edgeIndexs[i][0]],
@@ -366,7 +364,7 @@ bool HexhedronSubdivision::Execute()
 				std::swap(ControlPts[j][k][1], ControlPts[j][k][2]);
 			}
 		}
-		//j边
+
 		igIndex edgeIndexs_2[4][4] = { {0,3,0,0},{1,2,0,3}, {4,7,3,0},{5,6,3,3} };
 		for (i = 0; i < 4; i++) {
 			auto EdgeID = mesh->GetEdgeIdFormPointIds(vhs[edgeIndexs_2[i][0]],
@@ -382,7 +380,6 @@ bool HexhedronSubdivision::Execute()
 		}
 
 
-		//面
 		igIndex faceindexs[6][5] = { {0,1,2,3,0},{4,5,6,7,3},
 			{0,1,5,4,0},{3,2,6,7,3},{0,3,7,4,0},{1,2,6,5,3} };
 		for (i = 0; i < 6; i++) {
@@ -423,7 +420,7 @@ bool HexhedronSubdivision::Execute()
 		}
 
 
-		//内点
+		// interior point
 		std::array<std::array<int, 3>, 8> interior_map = { {
 			{1, 1, 1}, {1, 1, 2},  {1, 2, 2},{1, 2, 1},
 			{2, 1, 1}, {2, 1, 2},  {2, 2, 2}, {2, 2, 1}
@@ -480,7 +477,7 @@ bool HexhedronSubdivision::Execute()
 	res->SetVolumes(SubdivisionCells);
 	res->SetPoints(ControlPoints);
 	this->SetOutput(res);
-
+	return true;
 }
 
 

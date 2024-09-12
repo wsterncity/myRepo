@@ -44,33 +44,33 @@ public:
     }
 
 	/**
-	 * 单元的顶点个数。
+	 * The number of points of the cell
 	 */
 	static constexpr int NumberOfPoints = 6;
 
 	/**
-	 * 单元的边个数。
+	 * The number of edges of the cell.
 	 */
 	static constexpr int NumberOfEdges = 9;
 
 	/**
-	 * 单元的面个数。
+	 * The number of faces of the cell.
 	 */
 	static constexpr int NumberOfFaces = 5;
 
 	/**
-	 * 单元面最大的顶点个数。
+	 * The largest number of points of the element face.
 	 */
 	static constexpr int MaxFaceSize = 4;
 
 	/**
-	 * 单元顶点最大的度。
+	 * The maximum degree of a cell point.
 	 */
 	static constexpr int MaxValence = 3;
 
-	/***************** 所有Maximum + 1的数组最后一位数字表示个数 *****************/
+	/***************** The last digit of the array for all Max + 1 indicates the number *****************/
 
-	// 边的顶点序号
+	// pointIds of a edge
 	static constexpr int edges[NumberOfEdges][2] = {
 	  { 0, 1 },
 	  { 1, 2 },
@@ -83,7 +83,7 @@ public:
 	  { 2, 5 },
 	};
 
-	// 面的顶点序号
+	// pointIds of a face
 	static constexpr int faces[NumberOfFaces][MaxFaceSize + 1] = {
 	  { 0, 1, 2, -1, 3 },
 	  { 3, 5, 4, -1, 3 },
@@ -92,20 +92,20 @@ public:
 	  { 2, 5, 3, 0,  4 },
 	};
 
-	// 面的边序号
+	// edgeIds of a face
 	static constexpr int faceEdges[NumberOfFaces][MaxFaceSize + 1] = {
-	  { 0, 4, 7, 3, 4 },//还没改
-	  { 1, 2, 6, 5, 4 },
-	  { 0, 1, 5, 4, 4 },
-	  { 3, 7, 6, 2, 4 },
-	  { 0, 3, 2, 1, 4 },
+	  { 0, 1, 2, -1, 3},
+	  { 5, 4, 3, -1, 3 },
+	  { 6, 3, 7, 0, 4 },
+	  { 7, 4, 8, 1, 4 },
+	  { 8, 5, 6, 2, 4 },
 	};
 
-	// 边的邻接面序号
+	// The adjacent face number of the edge
 	static constexpr int edgeToNeighborFaces[NumberOfEdges][2] = {
 	  { 0, 2 },
 	  { 0, 3 },
-	  { 0, 3 },
+	  { 0, 4 },
 	  { 1, 2 },
 	  { 1, 3 },
 	  { 1, 4 },
@@ -114,7 +114,7 @@ public:
 	  { 3, 4 },
 	};
 
-	// 面的邻接面序号
+	// Face adjacent face index number
 	static constexpr int faceToNeighborFaces[NumberOfFaces][MaxFaceSize + 1] = {
 	  { 4, 3, 2, -1, 3 },
 	  { 2, 3, 4, -1, 3 },
@@ -123,7 +123,7 @@ public:
 	  { 0, 2, 1, 3 , 4 },
 	};
 
-	// 顶点的邻接边序号
+	// The sequence number of the adjacent edges of the vertex
 	static constexpr int pointToNeighborEdges[NumberOfPoints][MaxValence + 1] = {
 	  { 0, 6, 2, 3 },
 	  { 0, 1, 7, 3 },
@@ -133,7 +133,7 @@ public:
 	  { 4, 8, 5, 3 },
 	};
 
-	// 顶点的邻接面序号
+	// The sequence number of the adjacent face of the vertex
 	static constexpr int pointToNeighborFaces[NumberOfPoints][MaxValence + 1] = {
 	  { 2, 4, 0, 3 },
 	  { 0, 3, 2, 3 },
@@ -143,7 +143,7 @@ public:
 	  { 3, 4, 1, 3 },
 	};
 
-	// 顶点的一邻域顶点序号
+	// PointIds of a neighborhood of a point
 	static constexpr int pointToOneRingPoints[NumberOfPoints][MaxValence + 1] = {
 	  { 1, 3, 2, 3 },
 	  { 0, 2, 4, 3 },

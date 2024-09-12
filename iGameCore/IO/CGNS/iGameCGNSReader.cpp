@@ -267,7 +267,7 @@ DataObject::Pointer iGameCGNSReader::ReadFile(std::string fileName) {
 							this->m_UnstructuredMesh->SetAttributeSet(this->m_AttributeSet);
 						}
 						if (this->m_DataObjectType == IG_VOLUME_MESH) {
-							this->m_VolumeMesh_2->SetAttributeSet(this->m_AttributeSet);
+							this->m_VolumeMesh->SetAttributeSet(this->m_AttributeSet);
 						}
 					}
 					//if (this->PolyDataSet != nullptr) {
@@ -285,7 +285,7 @@ DataObject::Pointer iGameCGNSReader::ReadFile(std::string fileName) {
 					this->m_Points = nullptr;
 					this->m_StructuredMesh = nullptr;
 					this->m_UnstructuredMesh = nullptr;
-					this->m_VolumeMesh_2 = nullptr;
+					this->m_VolumeMesh = nullptr;
 					this->m_AttributeSet = nullptr;
 					this->m_DataObjectType = IG_MULTIBLOCK_MESH;
 				}
@@ -378,10 +378,10 @@ void iGameCGNSReader::ReadUnstructuredCellConnectivities(int index_file, int ind
 			igError("read Polyhedrons error");
 		}
 		else {
-			if (m_VolumeMesh_2 == nullptr) {
-				m_VolumeMesh_2 = VolumeMesh_2::New();
+			if (m_VolumeMesh == nullptr) {
+				m_VolumeMesh = VolumeMesh::New();
 			}
-			m_VolumeMesh_2->SetPoints(m_Points);
+			m_VolumeMesh->SetPoints(m_Points);
 			this->m_DataObjectType = IG_VOLUME_MESH;
 			CellArray::Pointer Faces = CellArray::New();
 			CellArray::Pointer Volumes = CellArray::New();
@@ -392,7 +392,7 @@ void iGameCGNSReader::ReadUnstructuredCellConnectivities(int index_file, int ind
 				int nbndry, parent_flag;
 				cg_section_read(index_file, index_base, index_zone, index_section, sectionname, &type, &start, &end, &nbndry, &parent_flag);
 				cgsize_t num_elements = end - start + 1;
-				//m_VolumeMesh_2->AddSection(start - 1, end - 1, sectionname, BoundryNames.count(sectionname));
+				//m_VolumeMesh->AddSection(start - 1, end - 1, sectionname, BoundryNames.count(sectionname));
 				if (type == NGON_n) {
 					cgsize_t elementDataSize;
 					cg_ElementDataSize(index_file, index_base, index_zone, index_section, &elementDataSize);
@@ -410,14 +410,14 @@ void iGameCGNSReader::ReadUnstructuredCellConnectivities(int index_file, int ind
 						}
 						Faces->AddCellIds(vhs, cellVcnt);
 					}
-					elements.swap(std::vector<cgsize_t>());
+					std::vector<cgsize_t> temp;
+					elements.swap(temp);
 				}
 				else if (type == NFACE_n) {
 					cgsize_t elementDataSize;
 					cg_ElementDataSize(index_file, index_base, index_zone, index_section, &elementDataSize);
 					std::vector<cgsize_t> elements;
 					elements.resize(elementDataSize);
-					std::cout << elementDataSize << '\n';
 					auto elementsData = elements.data();
 					cg_poly_elements_read(index_file, index_base, index_zone, index_section, elementsData, NULL, NULL);
 					cgsize_t cellFcnt = 0;
@@ -431,10 +431,11 @@ void iGameCGNSReader::ReadUnstructuredCellConnectivities(int index_file, int ind
 						}
 						Volumes->AddCellIds(fhs, cellFcnt);
 					}
-					elements.swap(std::vector<cgsize_t>());
+					std::vector<cgsize_t> temp;
+					elements.swap(temp);
 				}
 			}
-			this->m_VolumeMesh_2->InitVolumesWithPolyhedron(Faces, Volumes);
+			this->m_VolumeMesh->InitVolumesWithPolyhedron(Faces, Volumes);
 		}
 	}
 	else {
@@ -456,7 +457,8 @@ void iGameCGNSReader::ReadUnstructuredCellConnectivities(int index_file, int ind
 				std::vector<cgsize_t> elements(elementDataSize);
 				cg_poly_elements_read(index_file, index_base, index_zone, index_section, elements.data(), NULL, NULL);
 				this->ChangeMixElementToMyCell(elements, num_elements);
-				elements.swap(std::vector<cgsize_t>());
+				std::vector<cgsize_t> temp;
+				elements.swap(temp);
 			}
 			else {
 				igIndex vhs[64];
@@ -512,7 +514,8 @@ void iGameCGNSReader::ReadUnstructuredCellConnectivities(int index_file, int ind
 						m_UnstructuredMesh->AddCell(vhs, cellVcnt, IG_QUAD);
 					}
 				}
-				elements.swap(std::vector<cgsize_t>());
+				std::vector<cgsize_t> temp;
+				elements.swap(temp);
 			}
 		}
 	}

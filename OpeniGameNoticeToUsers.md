@@ -546,7 +546,23 @@ Mac系统最高只支持``OpenGL4.1``，因此必须设置为``OpenGL3.3``，还
 format.setVersion(4, 6); //Mac set to format.setVersion(4, 1);
 ```
 
-### About
+## 相关问题
+
+### 子模块导入后构建失败
+
+有些外部库会添加卸载指令，如果重名后就会导致冲突。
+
+```cmake
+add_custom_target(uninstall
+        COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/EigenUninstall.cmake)
+``` 
+
+目前有两个外部库添加卸载指令，任意选择其一注释相关代码即可（在各自根目录的``CmakeLists.txt``中）：
+
+1. CGNS：72-73行
+2. Eigen：648-649行o
+
+## About
 
 由于Openigame还在不断的完善，因此在使用过程中可能会遇到些许问题，所有遇到的bug都可以给我们提issue，如果有解决办法就更好了。如果有具体需求，可以自行实现，然后告诉我们，我们把他移植到正式版本中，如果该需求会很适用，也可以告知我们我们在后续事先并添加。
 
