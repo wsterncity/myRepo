@@ -95,7 +95,14 @@ void igQtModelInformationWidget::updateInformationFrame() {
 	default:
 		break;
 	}
-	frameLayout->addWidget(createPropertyLabel("Memory", QString::number(obj->GetRealMemorySize())));
+	IGsize memorySize = obj->GetRealMemorySize();
+	QString dw[5] = { "B","KB","MB","GB","TB" };
+	igIndex index = 0;
+	while (memorySize > 1024 && index < 4) {
+		memorySize /= 1024;
+		index++;
+	}
+	frameLayout->addWidget(createPropertyLabel("Memory", QString::number(memorySize) + dw[index]));
 	std::string str;
 	float min, max;
 	iGame::BoundingBox bound = obj->GetBoundingBox();
@@ -104,7 +111,7 @@ void igQtModelInformationWidget::updateInformationFrame() {
 		max = bound.max[i];
 
 		std::stringstream stream;
-		stream << std::fixed << std::setprecision(2); 
+		stream << std::fixed << std::setprecision(2);
 		if (i == 0) {
 			stream << "Bounds " << std::setw(8) << min << " to "
 				<< std::setw(8) << max
@@ -115,7 +122,7 @@ void igQtModelInformationWidget::updateInformationFrame() {
 				<< std::setw(8) << max
 				<< " delta: " << std::setw(8) << (max - min);
 		}
-		str = stream.str(); 
+		str = stream.str();
 		QLabel* label = new QLabel(QString::fromStdString(str));
 		frameLayout->addWidget(label);
 	}
