@@ -145,5 +145,6 @@ int igQtModelDialogWidget::addModelToModelTree(Model::Pointer model) {
 int igQtModelDialogWidget::updateCurrentModelInfo()
 {
 	ui->ModelInformationWidget->updateInformationFrame();
+	Q_EMIT CurrendModelChanged();
 	return 1;
 }

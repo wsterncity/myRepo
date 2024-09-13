@@ -23,7 +23,8 @@ public:
 
 	void ShowTensorField();
 
-	void UpdateGlyphDrawData();
+	void UpdateGlyphDrawPositionData();
+	void UpdateGlyphDrawIndexData();
 	void UpdateGlyphDrawColor();
 	void UpdateGlyphScale(double s);
 
@@ -36,6 +37,9 @@ public:
 	UnsignedIntArray::Pointer GetDrawGlyphPointOrders() { return this->m_DrawGlyphPointOrders; }
 
 	FloatArray::Pointer GetDrawGlyphColors() { return this->m_DrawGlyphColors; }
+	void SetGlyphType(iGameTensorRepresentation::DrawType drawType) {
+		this->m_TensorManager->SetDrawType(drawType);
+	}
 protected:
 	iGameTensorWidgetBase();
 private:

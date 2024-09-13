@@ -676,9 +676,11 @@ void igQtMainWindow::initAllDockWidgetConnectWithAction() {
 	// connect(ui->action_Vector, &QAction::triggered, this, [&](bool checked) {
 	//	ui->dockWidget_VectorField->show();
 	//	});
-	// connect(ui->action_Tensor, &QAction::triggered, this, [&](bool checked) {
-	//	ui->dockWidget_TensorField->show();
-	//	});
+	connect(ui->action_Tensor, &QAction::triggered, this, [&](bool checked) {
+		ui->dockWidget_TensorField->show();
+		ui->widget_TensorField->UpdateScalarsNameList();
+		ui->widget_TensorField->UpdateTensorsNameList();
+		});
 	connect(ui->action_FlowField, &QAction::triggered, this, [&](bool checked) {
 		ui->dockWidget_FlowField->show();
 		});
@@ -812,6 +814,17 @@ void igQtMainWindow::initAllMySignalConnections() {
 	// this, [&](iGameFloatArray* points) {
 	//	this->rendererWidget->DrawSelectedPoint(points);
 	//	});
+	// 
+	connect(ui->widget_TensorField, &igQtTensorWidget::DrawTensorGlyphs,
+		this, [&](iGame::DataObject::Pointer res) {
+			modelTreeWidget->addDataObjectToModelTree(res, ItemSource::Algorithm);
+		});
+	connect(ui->widget_TensorField, &igQtTensorWidget::UpdateTensorGlyphs,
+		this, [&](iGame::DataObject::Pointer res) {
+			res->Modified();
+			rendererWidget->update();
+			//modelTreeWidget->addDataObjectToModelTree(res, ItemSource::Algorithm);
+		});
 	// connect(ui->widget_TensorField, &igQtTensorWidget::DrawEllipsoidGlyph,
 	// this, [&]() { 	this->rendererWidget->DrawEllipsoidGlyph();
 	//	});

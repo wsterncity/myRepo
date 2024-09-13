@@ -24,25 +24,21 @@ void iGameTensorWidgetBase::SetTensorAttributes(ArrayObject::Pointer attributes)
 }
 void iGameTensorWidgetBase::ShowTensorField()
 {
-	UpdateGlyphDrawData();
+	UpdateGlyphDrawPositionData();
+	UpdateGlyphDrawIndexData();
 	UpdateGlyphDrawColor();
 }
-
-void iGameTensorWidgetBase::UpdateGlyphDrawData()
+void iGameTensorWidgetBase::UpdateGlyphDrawPositionData()
 {
-	clock_t time1 = clock();
 	int PointNum = this->m_Points ? this->m_Points->GetNumberOfPoints() : 0;
 	Point p;
 	if (PointNum == 0 || !this->m_TensorAttributes ||
 		this->m_TensorAttributes->GetNumberOfValues() != (9 * PointNum)) {
 		return;
 	}
-	auto GlyphPointIndexOrders = m_TensorManager->GetEllipsoidDrawPointIndexOrders();
 	int GlyphPointNum = m_TensorManager->GetNumberOfDrawPoints();
 	m_DrawGlyphPoints->Resize(PointNum * GlyphPointNum);
-	m_DrawGlyphPointOrders->Resize(PointNum * GlyphPointIndexOrders->GetNumberOfValues());
 	auto GlyphPoints = m_DrawGlyphPoints->RawPointer();
-	auto GlyphPointOrders = m_DrawGlyphPointOrders->RawPointer();
 	double t[9];
 	for (int i = 0; i < PointNum; i++) {
 		p = this->m_Points->GetPoint(i);
@@ -51,13 +47,28 @@ void iGameTensorWidgetBase::UpdateGlyphDrawData()
 			t[j] = this->m_TensorAttributes->GetValue(9 * i + j);
 		}
 		m_TensorManager->SetTensor(t);
-		auto EllipsoidDrawPoints = m_TensorManager->GetEllipsoidDrawPoints()->RawPointer();
+		auto DrawPoints = m_TensorManager->GetDrawPoints()->RawPointer();
 		IGsize st = i * 3 * GlyphPointNum;
-		std::copy(EllipsoidDrawPoints,
-			EllipsoidDrawPoints + 3 * GlyphPointNum,
+		std::copy(DrawPoints,
+			DrawPoints + 3 * GlyphPointNum,
 			GlyphPoints + st);
 
-		st = i * GlyphPointIndexOrders->GetNumberOfValues();
+	}
+}
+void iGameTensorWidgetBase::UpdateGlyphDrawIndexData()
+{
+	int PointNum = this->m_Points ? this->m_Points->GetNumberOfPoints() : 0;
+	Point p;
+	if (PointNum == 0 || !this->m_TensorAttributes ||
+		this->m_TensorAttributes->GetNumberOfValues() != (9 * PointNum)) {
+		return;
+	}
+	auto GlyphPointIndexOrders = m_TensorManager->GetDrawPointIndexOrders();
+	int GlyphPointNum = m_TensorManager->GetNumberOfDrawPoints();
+	m_DrawGlyphPointOrders->Resize(PointNum * GlyphPointIndexOrders->GetNumberOfValues());
+	double t[9];
+	for (int i = 0; i < PointNum; i++) {
+		IGsize st = i * GlyphPointIndexOrders->GetNumberOfValues();
 		IGsize offset = i * GlyphPointNum;
 		for (int j = 0; j < GlyphPointIndexOrders->GetNumberOfValues(); j++) {
 			//这里不太好用copy，不能保证两个类型相同
@@ -65,11 +76,10 @@ void iGameTensorWidgetBase::UpdateGlyphDrawData()
 			//m_DrawGlyphPointOrders->AddValue(st + GlyphPointIndexOrders->GetValue(j));
 		}
 	}
-	clock_t time2 = clock();
-	std::cout << time2 - time1 << "ms\n";
 }
 void iGameTensorWidgetBase::UpdateGlyphDrawColor()
 {
+	m_DrawGlyphColors = nullptr;
 	int PointNum = this->m_Points ? this->m_Points->GetNumberOfPoints() : 0;
 	if (PointNum == 0 || this->m_PositionColors == nullptr ||
 		this->m_PositionColors->GetNumberOfElements() != PointNum) {
@@ -77,14 +87,17 @@ void iGameTensorWidgetBase::UpdateGlyphDrawColor()
 	}
 	int GlyphPointNum = m_TensorManager->GetNumberOfDrawPoints();
 	float rgb[16] = { .0 };
+	m_DrawGlyphColors = FloatArray::New();
+	m_DrawGlyphColors->SetElementSize(3);
 	m_DrawGlyphColors->Resize(PointNum * GlyphPointNum);
 	auto GlyphColors = m_DrawGlyphColors->RawPointer();
 	IGsize offset = 0;
 	for (int i = 0; i < PointNum; i++) {
 		m_PositionColors->GetElement(i, rgb);
+		//std::cout << rgb[0] << ' ' << rgb[1] << ' ' << rgb[2] << '\n';
 		for (int j = 0; j < GlyphPointNum; j++) {
+			std::copy(rgb, rgb + 3, GlyphColors + offset);
 			offset += 3;
-			std::copy(GlyphColors + offset, GlyphColors + offset + 3, rgb);
 			//m_DrawGlyphColors->AddValue(rgb[0]);
 			//m_DrawGlyphColors->AddValue(rgb[1]);
 			//m_DrawGlyphColors->AddValue(rgb[2]);
@@ -94,12 +107,14 @@ void iGameTensorWidgetBase::UpdateGlyphDrawColor()
 }
 void iGameTensorWidgetBase::UpdateGlyphScale(double s)
 {
-
+	this->m_TensorManager->SetScale(s);
+	UpdateGlyphDrawPositionData();
 }
 
 void iGameTensorWidgetBase::SetPositionColors(FloatArray::Pointer colors)
 {
 	this->m_PositionColors = colors;
+	UpdateGlyphDrawColor();
 }
 
 void iGameTensorWidgetBase::GenerateVectorField()
@@ -113,6 +128,7 @@ void iGameTensorWidgetBase::GenerateVectorField()
 	DoubleArray::Pointer vectorData = DoubleArray::New();
 	vectorData->SetElementSize(3);
 	vectorData->SetName(this->m_TensorAttributes->GetName() + "_PrimaryFeature");
+	vectorData->Resize(PointNum);
 	double t[9];
 	for (int i = 0; i < PointNum; i++) {
 		for (int j = 0; j < 9; j++) {
@@ -123,7 +139,7 @@ void iGameTensorWidgetBase::GenerateVectorField()
 		vectorData->SetElement(i, vector);
 	}
 }
-void iGameTensorWidgetBase::Draw(Scene* scene) 
+void iGameTensorWidgetBase::Draw(Scene* scene)
 {
 	if (!m_Visibility) { return; }
 	// Update uniform buffer
@@ -168,14 +184,8 @@ void iGameTensorWidgetBase::Draw(Scene* scene)
 			M_TriangleIndices->GetNumberOfValues(),
 			GL_UNSIGNED_INT, 0);
 		m_TriangleVAO.release();
-
-		//m_VertexVAO.bind();
-		//glPointSize(m_PointSize);
-		//glad_glDrawElements(GL_POINTS, M_VertexIndices->GetNumberOfValues(),
-		//	GL_UNSIGNED_INT, 0);
-		//m_PointVAO.release();
-
 	}
+
 }
 
 void iGameTensorWidgetBase::ConvertToDrawableData()
@@ -206,7 +216,7 @@ void iGameTensorWidgetBase::ConvertToDrawableData()
 	m_Positions = m_DrawGlyphPoints->ConvertToArray();
 	m_Positions->Modified();
 	M_TriangleIndices = m_DrawGlyphPointOrders;
-
+	m_Colors = m_DrawGlyphColors;
 
 
 	GLAllocateGLBuffer(m_PositionVBO,
@@ -247,6 +257,25 @@ void iGameTensorWidgetBase::ConvertToDrawableData()
 	GLSetVertexAttrib(m_TriangleVAO, GL_LOCATION_IDX_0, GL_VBO_IDX_0, 3,
 		GL_FLOAT, GL_FALSE, 0);
 	m_TriangleVAO.elementBuffer(m_TriangleEBO);
+	m_UseColor = false;
+	if (m_Colors != nullptr) {
+		m_UseColor = true;
+		GLAllocateGLBuffer(m_ColorVBO,
+			m_Colors->GetNumberOfValues() * sizeof(float),
+			m_Colors->RawPointer());
+
+		m_PointVAO.vertexBuffer(GL_VBO_IDX_1, m_ColorVBO, 0, 3 * sizeof(float));
+		GLSetVertexAttrib(m_PointVAO, GL_LOCATION_IDX_1, GL_VBO_IDX_1, 3, GL_FLOAT,
+			GL_FALSE, 0);
+
+		//m_LineVAO.vertexBuffer(GL_VBO_IDX_1, m_ColorVBO, 0, 3 * sizeof(float));
+		//GLSetVertexAttrib(m_LineVAO, GL_LOCATION_IDX_1, GL_VBO_IDX_1, 3, GL_FLOAT,
+		//	GL_FALSE, 0);
+
+		m_TriangleVAO.vertexBuffer(GL_VBO_IDX_1, m_ColorVBO, 0, 3 * sizeof(float));
+		GLSetVertexAttrib(m_TriangleVAO, GL_LOCATION_IDX_1, GL_VBO_IDX_1, 3,
+			GL_FLOAT, GL_FALSE, 0);
+	}
 
 }
 IGAME_NAMESPACE_END
