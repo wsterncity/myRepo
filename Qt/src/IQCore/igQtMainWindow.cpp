@@ -464,8 +464,10 @@ void igQtMainWindow::initAllFilters() {
 		auto mesh = DynamicCast<UnstructuredMesh>(SceneManager::Instance()->GetCurrentScene()->GetCurrentModel()->GetDataObject());
 
 		Tensorview->SetPoints(mesh->GetPoints());
-		Tensorview->SetTensorAttributes(mesh->GetAttributeSet()->GetAttribute(4).pointer);
+		Tensorview->SetTensorAttributes(mesh->GetAttributeSet()->GetAttribute(2).pointer);
 		Tensorview->ShowTensorField();
+		modelTreeWidget->addDataObjectToModelTree(Tensorview, ItemSource::File);
+		return;
 		clock_t time2 = clock();
 		std::cout << "compute cost " << time2 - time1 << "ms\n";
 		auto painter = SceneManager::Instance()->GetCurrentScene()->GetCurrentModel()->GetFacePainter();
@@ -510,7 +512,7 @@ void igQtMainWindow::initAllFilters() {
 		auto writer = VTKWriter::New();
 		auto mesh = SceneManager::Instance()->GetCurrentScene()->GetCurrentModel()->GetDataObject();
 		writer->WriteToFile(mesh, filePath);
-		clock_t time_2= clock();
+		clock_t time_2 = clock();
 		std::cout << time_2 - time_1 << "ms\n";
 		return;
 
@@ -619,7 +621,7 @@ void igQtMainWindow::initAllFilters() {
 			if (DynamicCast<UnstructuredMesh>(obj)) {
 				input = DynamicCast<UnstructuredMesh>(obj)->TransferToVolumeMesh();
 			}
-			else if(DynamicCast<VolumeMesh>(obj)){
+			else if (DynamicCast<VolumeMesh>(obj)) {
 				input = DynamicCast<VolumeMesh>(obj);
 			}
 

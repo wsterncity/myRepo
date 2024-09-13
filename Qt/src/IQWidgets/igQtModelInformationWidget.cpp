@@ -32,8 +32,8 @@ void igQtModelInformationWidget::updateInformationFrame() {
 	this->show();
 	auto obj = currentModel->GetDataObject();
 	// File Properties
-	auto filePath = obj->GetPropertys()->GetProperty("FilePath")->Get<std::string>();
-	//auto filePath = currentModel->GetFilePath();
+	//auto filePath = obj->GetPropertys()->GetProperty("FilePath")->Get<std::string>();
+	std::string  filePath = "";
 	size_t lastSlashPos = filePath.find_last_of("/\\");
 	QString directory;
 	QString fileName;
