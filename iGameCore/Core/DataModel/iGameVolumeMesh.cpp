@@ -1247,6 +1247,15 @@ VolumeMesh::VolumeMesh()
 	m_ViewStyle = IG_SURFACE;
 };
 
+IGsize VolumeMesh::GetRealMemorySize()
+{
+	IGsize res = this->SurfaceMesh::GetRealMemorySize();
+	if (m_Volumes)res += m_Volumes->GetRealMemorySize();
+	if (m_VolumeEdges)res += m_VolumeEdges->GetRealMemorySize();
+	if (m_VolumeFaces)res += m_VolumeFaces->GetRealMemorySize();
+	if (m_VolumeDeleteMarker)res += m_VolumeDeleteMarker->GetRealMemorySize();
+	return res + sizeof(IsPolyhedronType);
+}
 void VolumeMesh::RequestFaceStatus()
 {
 	if (m_Faces == nullptr ||
@@ -1463,24 +1472,44 @@ void VolumeMesh::ConvertToDrawableData()
 
 	IdArray::Pointer triangleIndices = IdArray::New();
 	IdArray::Pointer edgeIndices = IdArray::New();
-	for (int i = 0; i < this->GetNumberOfVolumes(); i++) {
-		Volume* volume = this->GetVolume(i);
-		const igIndex* face;
-		for (int j = 0; j < volume->GetNumberOfFaces(); j++) {
-			int size = volume->GetFacePointIds(j, face);
-			for (int k = 2; k < size; k++) {
-				triangleIndices->AddId(volume->PointIds->GetId(face[0]));
-				triangleIndices->AddId(volume->PointIds->GetId(face[k - 1]));
-				triangleIndices->AddId(volume->PointIds->GetId(face[k]));
+	if (!this->IsPolyhedronType)
+	{
+		for (int i = 0; i < this->GetNumberOfVolumes(); i++) {
+			Volume* volume = this->GetVolume(i);
+			const igIndex* face;
+			for (int j = 0; j < volume->GetNumberOfFaces(); j++) {
+				int size = volume->GetFacePointIds(j, face);
+				for (int k = 2; k < size; k++) {
+					triangleIndices->AddId(volume->PointIds->GetId(face[0]));
+					triangleIndices->AddId(volume->PointIds->GetId(face[k - 1]));
+					triangleIndices->AddId(volume->PointIds->GetId(face[k]));
+				}
+			}
+			const igIndex* edge;
+			for (int j = 0; j < volume->GetNumberOfEdges(); j++) {
+				int size = volume->GetEdgePointIds(j, edge);
+				edgeIndices->AddId(volume->PointIds->GetId(edge[0]));
+				edgeIndices->AddId(volume->PointIds->GetId(edge[1]));
 			}
 		}
-		const igIndex* edge;
-		for (int j = 0; j < volume->GetNumberOfEdges(); j++) {
-			int size = volume->GetEdgePointIds(j, edge);
-			edgeIndices->AddId(volume->PointIds->GetId(edge[0]));
-			edgeIndices->AddId(volume->PointIds->GetId(edge[1]));
+	}
+	else {
+		igIndex fcnt = 0;
+		igIndex fhs[IGAME_CELL_MAX_SIZE];
+		igIndex face[IGAME_CELL_MAX_SIZE];
+		for (int i = 0; i < this->GetNumberOfVolumes(); i++) {
+			fcnt = this->m_VolumeFaces->GetCellIds(i, fhs);
+			for (int j = 0; j < fcnt; j++) {
+				int size = this->m_Faces->GetCellIds(fhs[j], face);
+				for (int k = 2; k < size; k++) {
+					triangleIndices->AddId(face[0]);
+					triangleIndices->AddId(face[k - 1]);
+					triangleIndices->AddId(face[k]);
+				}
+			}
 		}
 	}
+
 	m_TriangleIndices = triangleIndices;
 	m_LineIndices = edgeIndices;
 

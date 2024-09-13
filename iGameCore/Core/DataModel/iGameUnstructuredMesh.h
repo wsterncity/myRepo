@@ -68,6 +68,8 @@ public:
 
 	SurfaceMesh::Pointer GetDrawMesh() { return m_DrawMesh; }
 
+	//Get real size of DataObject
+	IGsize GetRealMemorySize() override;
 protected:
 	UnstructuredMesh();
 	~UnstructuredMesh() override = default;

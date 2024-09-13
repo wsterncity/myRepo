@@ -72,14 +72,6 @@ Face* SurfaceMesh::GetFace(const IGsize faceId) {
         face->Points->AddPoint(this->GetPoint(cell[i]));
     }
 
-    if (InEditStatus()) {
-        face->Reset();
-        ncells = m_FaceEdges->GetCellIds(faceId, cell);
-        for (int i = 0; i < ncells; i++) {
-            face->EdgeIds->AddId(cell[i]);
-        }
-    }
-
     return face;
 }
 
@@ -839,6 +831,15 @@ void SurfaceMesh::ReplacePointReference(const IGsize fromPtId,
 
 SurfaceMesh::SurfaceMesh() { m_ViewStyle = IG_SURFACE; };
 
+IGsize SurfaceMesh::GetRealMemorySize()
+{
+    IGsize res = this->PointSet::GetRealMemorySize();
+    if (m_Faces)res += m_Faces->GetRealMemorySize();
+    if (m_Edges)res += m_Edges->GetRealMemorySize();
+    if (m_EdgeDeleteMarker)res += m_EdgeDeleteMarker->GetRealMemorySize();
+    if (m_FaceDeleteMarker)res += m_FaceDeleteMarker->GetRealMemorySize();
+    return res + sizeof(IGsize);
+}
 void SurfaceMesh::Draw(Scene* scene) {
     if (!m_Visibility) {
         return;

@@ -221,6 +221,43 @@ public:
         }
     }
 
+
+    void InitPolyhedronVertices() {
+        this->m_Volumes = CellArray::New();
+        igIndex CellNum = this->m_VolumeFaces->GetNumberOfCells();
+        igIndex i = 0, j = 0, k = 0;
+        igIndex fhs[IGAME_CELL_MAX_SIZE] = { 0 };
+        igIndex vhs[IGAME_CELL_MAX_SIZE] = { 0 };
+        igIndex fvhs[IGAME_CELL_MAX_SIZE] = { 0 };
+        igIndex fcnt = 0, vcnt = 0, fvcnt = 0;
+        for (i = 0; i < CellNum; i++) {
+            vcnt = 0;
+            std::set<igIndex>vset;
+            fcnt = this->m_VolumeFaces->GetCellIds(i, fhs);
+            for (j = 0; j < fcnt; j++) {
+                fvcnt = this->m_Faces->GetCellIds(fhs[j], fvhs);
+                for (k = 0; k < fvcnt; k++) {
+                    vset.insert(fvhs[k]);
+                }
+            }
+            for (auto it : vset) {
+                vhs[vcnt++] = it;
+            }
+            this->m_Volumes->AddCellIds(vhs, vcnt);
+        }
+    }
+    void InitVolumesWithPolyhedron(CellArray::Pointer faces, CellArray::Pointer VolumeFaces)
+    {
+        m_VolumeFaces = VolumeFaces;
+        m_Faces = faces;
+        InitPolyhedronVertices();
+        this->IsPolyhedronType = true;
+    }
+    bool GetIsPolyhedronType() {
+        return this->IsPolyhedronType;
+    }
+    //Get real size of DataObject
+    IGsize GetRealMemorySize() override;
 protected:
     VolumeMesh();
     ~VolumeMesh() override = default;
@@ -238,7 +275,7 @@ protected:
 
     CellArray::Pointer m_VolumeFaces{};     // The face set of volumes
     CellLinks::Pointer m_VolumeFaceLinks{}; // The adjacent volumes of faces
-
+    bool IsPolyhedronType = false;
 private:
     Tetra::Pointer
             m_Tetra{}; // Used for the returned 'Tetra' object, which is Thread-Unsafe

@@ -136,4 +136,9 @@ void StructuredMesh::ViewCloudPicture(Scene* scene, int index, int demension)
 	//Structured meshes come in special forms such as IJ planes
 	return this->VolumeMesh::ViewCloudPicture(scene, index, demension);
 }
+IGsize StructuredMesh::GetRealMemorySize()
+{
+	IGsize res = this->VolumeMesh::GetRealMemorySize();
+	return res + sizeof(Dimension) + sizeof(extent) + sizeof(size);
+}
 IGAME_NAMESPACE_END

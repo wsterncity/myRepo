@@ -16,15 +16,15 @@ public:
 		return this->PointIds->GetNumberOfIds();
 	}
 
-	virtual int GetNumberOfPoints() { return this->PointIds->GetNumberOfIds(); }
-	virtual int GetNumberOfEdges() = 0;
-	virtual int GetNumberOfFaces() = 0;
-
-	igIndex GetPointId(const int id) { return this->PointIds->GetId(id); }
-	Point& GetPoint(const int id) { return this->Points->GetPoint(id); }
-	const Point& GetPoint(const int id) const {
-		return this->Points->GetPoint(id);
-	}
+    virtual int GetNumberOfPoints() { return this->PointIds->GetNumberOfIds(); }
+    virtual int GetNumberOfEdges() = 0;
+    virtual int GetNumberOfFaces() = 0;
+	// return   position and id of the i th point in cell
+    igIndex GetPointId(const int id) { return this->PointIds->GetId(id); }
+    Point& GetPoint(const int id) { return this->Points->GetPoint(id); }
+    const Point& GetPoint(const int id) const {
+        return this->Points->GetPoint(id);
+    }
 
 	virtual Cell* GetEdge(const int edgeId) = 0;
 	virtual Cell* GetFace(const int faceId) = 0;

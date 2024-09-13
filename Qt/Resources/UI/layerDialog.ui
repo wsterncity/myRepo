@@ -14,7 +14,7 @@
    <string>Layer Dialog</string>
   </property>
   <widget class="QWidget" name="dockWidgetContents">
-   <layout class="QVBoxLayout" name="verticalLayout" stretch="5,0,3">
+   <layout class="QVBoxLayout" name="verticalLayout" stretch="5,0,0">
     <item>
      <widget class="igQtModelTreeWidget" name="modelTreeWidget">
       <property name="minimumSize">
@@ -60,22 +60,22 @@
      </layout>
     </item>
     <item>
-     <widget class="QtTreePropertyBrowser" name="propertyTreeWidget" native="true"/>
+     <widget class="igQtModelInformationWidget" name="ModelInformationWidget" native="true"/>
     </item>
    </layout>
   </widget>
  </widget>
  <customwidgets>
   <customwidget>
+   <class>igQtModelInformationWidget</class>
+   <extends>QWidget</extends>
+   <header>IQWidgets/igQtModelInformationWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
    <class>igQtModelTreeWidget</class>
    <extends>QTreeWidget</extends>
    <header location="global">IQComponents/igQtmodelTreeWidget.h</header>
-  </customwidget>
-  <customwidget>
-   <class>QtTreePropertyBrowser</class>
-   <extends>QWidget</extends>
-   <header location="global">Plugin/qtpropertybrowser/qttreepropertybrowser.h</header>
-   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>

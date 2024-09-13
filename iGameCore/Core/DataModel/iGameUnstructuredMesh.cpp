@@ -218,6 +218,14 @@ bool UnstructuredMesh::TransferVolumeMeshToUnstructuredMesh(VolumeMesh::Pointer 
 	}
 	return output->GenerateFromVolumeMesh(input);
 }
+
+IGsize UnstructuredMesh::GetRealMemorySize()
+{
+	IGsize res = this->PointSet::GetRealMemorySize();
+	if (m_Cells)res += m_Cells->GetRealMemorySize();
+	if (m_Types)res += m_Types->GetRealMemorySize();
+	return res + sizeof(IGsize);
+}
 Cell* UnstructuredMesh::GetTypedCell(const IGsize cellId) {
 	Cell* cell = nullptr;
 	switch (GetCellType(cellId)) {
@@ -405,7 +413,7 @@ void UnstructuredMesh::ConvertToDrawableData() {
 	m_TriangleIndices->SetElementSize(3);
 
 
-	igIndex ids[IGAME_CELL_MAX_SIZE]{};
+	igIndex ids[128]{};
 	for (int id = 0; id < GetNumberOfCells(); id++) {
 		int size = GetCellPointIds(id, ids);
 		IGenum type = GetCellType(id);

@@ -2,12 +2,15 @@
 
 #include "VTK/iGameVTKReader.h"
 #include "VTK/iGameVTKWriter.h"
-#include "iGameOFFReader.h"
-#include "iGameMESHReader.h"
+#include "OFF/iGameOFFReader.h"
+#include "OFF/iGameOFFWriter.h"
+#include "MESH/iGameMESHReader.h"
+#include "MESH/iGameMESHWriter.h"
 #include "OBJ/iGameOBJReader.h"
 #include "OBJ/iGameOBJWriter.h"
 //#include "iGameSTLReader.h"
-#include "iGamePLYReader.h"
+#include "PLY/iGamePLYReader.h"
+#include "PLY/iGamePLYWriter.h"
 #include "iGamePVDReader.h"
 #include "iGameVTSReader.h"
 #include "iGameVTUReader.h"
@@ -150,9 +153,7 @@ DataObject::Pointer FileIO::ReadFile(const std::string& file_name)
 	case iGame::FileIO::PLY:
 	{
 		PLYReader::Pointer reader = PLYReader::New();
-		reader->SetFilePath(file_name);
-		reader->Execute();
-		resObj = reader->GetOutput();
+		resObj = reader->ReadFile(file_name);
 		break;
 	}
 #if defined(CGNS_ENABLE)
@@ -264,7 +265,8 @@ bool  FileIO::WriteFile(const std::string& file_name, DataObject::Pointer dataOb
 	}
 	case iGame::FileIO::MESH:
 	{
-
+		MESHWriter::Pointer writer = MESHWriter::New();
+		result = writer->WriteToFile(dataObject, file_name);
 		break;
 	}
 	//      case iGame::FileIO::STL:
@@ -276,6 +278,8 @@ bool  FileIO::WriteFile(const std::string& file_name, DataObject::Pointer dataOb
 	//      }
 	case iGame::FileIO::PLY:
 	{
+		PLYWriter::Pointer writer = PLYWriter::New();
+		result = writer->WriteToFile(dataObject, file_name);
 		break;
 	}
 #if defined(CGNS_ENABLE)

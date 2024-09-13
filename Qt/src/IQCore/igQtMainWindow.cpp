@@ -7,16 +7,10 @@
 #include <IQCore/igQtFileLoader.h>
 #include <IQCore/igQtMainWindow.h>
 #include <IQWidgets/igQtModelDrawWidget.h>
-#include <VolumeMeshAlgorithm/iGameTetraDecimation.h>
 #include <iGameDataSource.h>
-#include <iGameFilterPoints.h>
-#include <iGameModelSurfaceFilters/iGameModelGeometryFilter.h>
-#include <iGameSubdivision/iGameHexhedronSubdivision.h>
-#include <iGameSubdivision/iGameQuadSubdivision.h>
-#include <iGameSurfaceMeshFilterTest.h>
 #include <iGameUnstructuredMesh.h>
 #include <iGameVolumeMeshFilterTest.h>
-#include "VTK/igameVTKWriter.h"
+#include "VTK/iGameVTKWriter.h"
 #include "iGameFileIO.h"
 #include <IQComponents/igQtFilterDialogDockWidget.h>
 #include <IQComponents/igQtModelDialogWidget.h>
@@ -26,7 +20,8 @@
 #include <IQWidgets/ColorManager/igQtColorManagerWidget.h>
 #include <IQWidgets/igQtTensorWidget.h>
 #include <Sources/iGameLineTypePointsSource.h>
-
+#include <IQWidgets/igQtModelInformationWidget.h>
+#include "iGameFilterIncludes.h"
 igQtMainWindow::igQtMainWindow(QWidget* parent)
 	: QMainWindow(parent), ui(new Ui::MainWindow) {
 	ui->setupUi(this);
@@ -45,7 +40,6 @@ igQtMainWindow::igQtMainWindow(QWidget* parent)
 	ui->dockWidget_EditMode->hide();
 	ui->dockWidget_Animation->hide();
 	ui->dockWidget_ModelList->hide();
-	ui->dockWidget_ModelList->setWidget(ui->modelTreeView);
 	// Setup default GUI layout.
 	this->setTabPosition(Qt::LeftDockWidgetArea, QTabWidget::North);
 	this->setTabPosition(Qt::RightDockWidgetArea, QTabWidget::North);
@@ -239,6 +233,7 @@ void igQtMainWindow::initAllComponents() {
 	initAllDockWidgetConnectWithAction();
 }
 igQtMainWindow::~igQtMainWindow() {}
+
 
 void igQtMainWindow::initAllFilters() {
 	connect(ui->action_test_01, &QAction::triggered, this, [&](bool checked) {
@@ -454,22 +449,71 @@ void igQtMainWindow::initAllFilters() {
 		   //ControlPoints->SetName("ControlPoints");
 
 		   //modelTreeWidget->addDataObjectToModelTree(ControlPoints, ItemSource::File);
-		VolumeMesh::Pointer mesh = DynamicCast<VolumeMesh>(
-			rendererWidget->GetScene()->GetCurrentModel()->GetDataObject());
-		mesh->RequestEditStatus();
-		for (int i = 0; i < 100; i++) {
-			mesh->DeleteVolume(i);
-		}
-		mesh->GarbageCollection();
+		auto obj = rendererWidget->GetScene()->GetCurrentModel()->GetDataObject();
+		std::cout << obj->GetName() << "KB\n";
+		//MyTestFilter::Pointer aaa = MyTestFilter::New();
+		//aaa->SetMesh(obj);
+		//aaa->Execute();
 
 		});
 
+	auto action_tensorview = ui->menu_help->addAction("tensorview");
+	connect(action_tensorview, &QAction::triggered, this, [&](bool checked) {
+		clock_t time1 = clock();
+		auto Tensorview = iGameTensorWidgetBase::New();
+		auto mesh = DynamicCast<UnstructuredMesh>(SceneManager::Instance()->GetCurrentScene()->GetCurrentModel()->GetDataObject());
+
+		Tensorview->SetPoints(mesh->GetPoints());
+		Tensorview->SetTensorAttributes(mesh->GetAttributeSet()->GetAttribute(4).pointer);
+		Tensorview->ShowTensorField();
+		clock_t time2 = clock();
+		std::cout << "compute cost " << time2 - time1 << "ms\n";
+		auto painter = SceneManager::Instance()->GetCurrentScene()->GetCurrentModel()->GetFacePainter();
+		auto connect = Tensorview->GetDrawGlyphPointOrders()->RawPointer();
+		auto points = Tensorview->GetDrawGlyphPoints();
+
+		//for (int i = 0; i < points->GetNumberOfPoints(); i++) {
+		//	auto p = points->GetPoint(i);
+		//	std::cout << p[0] << " " << p[1] << " " << p[2] << '\n';
+		//}
+		long long fcnt = Tensorview->GetDrawGlyphPointOrders()->GetNumberOfValues() / 3;
+		for (long long i = 0; i < fcnt; i++) {
+			painter->DrawTriangle(
+				points->GetPoint(connect[i * 3]),
+				points->GetPoint(connect[i * 3 + 1]),
+				points->GetPoint(connect[i * 3 + 2])
+			);
+		}
+		return;
+		SurfaceMesh::Pointer res = SurfaceMesh::New();
+		res->SetPoints(points);
+		std::cout << points->GetNumberOfPoints() << '\n';
+		CellArray::Pointer faces = CellArray::New();
+		res->SetFaces(faces);
+		for (long long i = 0; i < fcnt; i++) {
+			faces->AddCellId3(
+				connect[i * 3],
+				connect[i * 3 + 1],
+				connect[i * 3 + 2]);
+		}
+		//for (long long i = 0; i < fcnt; i++) {
+		//std::cout<<connect[i * 3]<<' '<<connect[i * 3 + 1]<<' '<<connect[i * 3 + 2]<<'\n';
+		//}
+		modelTreeWidget->addDataObjectToModelTree(res, ItemSource::File);
+		clock_t time3 = clock();
+		std::cout << "draw cost " << time3 - time2 << "ms\n";
+		});
 	auto action_loadtest = ui->menu_help->addAction("loadtest");
 	connect(action_loadtest, &QAction::triggered, this, [&](bool checked) {
-		std::string filePath = "F:\\OpeniGame\\Model\\Common\\Tri_Rocket_1.vtk";
+		std::string filePath = "F:\\OpeniGame\\Model\\Common\\test.vtk";
+		clock_t time_1 = clock();
 		auto writer = VTKWriter::New();
 		auto mesh = SceneManager::Instance()->GetCurrentScene()->GetCurrentModel()->GetDataObject();
 		writer->WriteToFile(mesh, filePath);
+		clock_t time_2= clock();
+		std::cout << time_2 - time_1 << "ms\n";
+		return;
+
 
 		CharArray::Pointer m_Buffer = CharArray::New();
 		size_t m_FileSize;
@@ -633,11 +677,11 @@ void igQtMainWindow::initAllDockWidgetConnectWithAction() {
 	// connect(ui->action_Tensor, &QAction::triggered, this, [&](bool checked) {
 	//	ui->dockWidget_TensorField->show();
 	//	});
-	// connect(ui->action_FlowField, &QAction::triggered, this, [&](bool checked)
-	// { 	ui->dockWidget_FlowField->show();
-	//	});
-	// connect(ui->action_SearchInfo, &QAction::triggered, this, [&](bool checked)
-	// { 	ui->dockWidget_SearchInfo->show();
+	connect(ui->action_FlowField, &QAction::triggered, this, [&](bool checked) {
+		ui->dockWidget_FlowField->show();
+		});
+	//connect(ui->action_SearchInfo, &QAction::triggered, this, [&](bool checked) {
+	//	ui->dockWidget_SearchInfo->show();
 	//	});
 	// connect(ui->action_EditMode, &QAction::triggered, this, [&](bool checked) {
 	//	ui->dockWidget_EditMode->show();
@@ -660,7 +704,7 @@ void igQtMainWindow::initAllMySignalConnections() {
 	// &igQtMainWindow::updateCurrentSceneWidget);
 	connect(fileLoader, &igQtFileLoader::FinishReading, ui->widget_Animation,
 		&igQtAnimationWidget::initAnimationComponents);
-
+	connect(ui->widget_FlowField, &igQtStreamTracerWidget::NewModel, modelTreeWidget, &igQtModelDialogWidget::addDataObjectToModelTree);
 	// connect(fileLoader, &igQtFileLoader::FinishReading, ui->widget_ScalarField,
 	// &igQtScalarViewWidget::getScalarsName); connect(fileLoader,
 	// &igQtFileLoader::FinishReading, ui->widget_TensorField, [&]() {

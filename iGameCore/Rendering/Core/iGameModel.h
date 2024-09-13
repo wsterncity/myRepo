@@ -3,7 +3,6 @@
 
 #include <utility>
 
-#include "iGameObject.h"
 #include "iGameDataObject.h"
 #include "iGamePoints.h"
 #include "iGamePointPainter.h"
@@ -23,7 +22,7 @@ public:
 
     DataObject::Pointer GetDataObject() { return m_DataObject; }
     bool GetVisibility() { return m_DataObject->GetVisibility(); }
-    PointPainter* GetPointPainter() { return m_PickedPointPainter.get();}
+    PointPainter* GetPointPainter() { return m_PickedPointPainter.get(); }
     LinePainter* GetLinePainter() { return m_PickedLinePainter.get(); }
     Filter* GetModelFilter();
     void DeleteModelFilter();
@@ -45,6 +44,8 @@ public:
     void ViewCloudPicture(int index, int dimension = -1) {
         m_DataObject->ViewCloudPicture(m_Scene, index, dimension);
     }
+    void SetFilePath(std::string filePath) { m_FilePath = filePath; }
+    std::string GetFilePath() { return this->m_FilePath; }
 
     Selection* GetSelection();
     void RequestPointSelection(Points* p, Selection* s);
@@ -54,10 +55,7 @@ protected:
     Model();
     ~Model() override = default;
 
-    enum ViewSwitch{
-        BoundingBox = 0,
-        PickedItem
-    };
+    enum ViewSwitch { BoundingBox = 0, PickedItem };
 
     void SwitchOn(ViewSwitch type) { m_Switch |= (1ull << type); }
     void SwitchOff(ViewSwitch type) { m_Switch &= ~(1ull << type); }
@@ -66,6 +64,7 @@ protected:
     Selection::Pointer m_Selection{};
     SmartPointer<Filter> m_Filter{};
     DataObject::Pointer m_DataObject{};
+    std::string m_FilePath;
     Scene* m_Scene{nullptr};
     PointPainter::Pointer m_PickedPointPainter{};
     LinePainter::Pointer m_PickedLinePainter{};
