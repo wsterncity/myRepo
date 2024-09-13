@@ -2,64 +2,69 @@
 // Created by Sumzeek on 9/9/2024.
 //
 
-#include "iGameBasicInteractor.h"
+#include "iGameBasicStyle.h"
+#include "iGameInteractor.h"
 
 IGAME_NAMESPACE_BEGIN
+void BasicStyle::Initialize(Interactor* a) {
+    m_Interactor = a;
+    m_Scene = a->GetScene();
+    m_Camera = a->GetCamera();
+}
 
-void BasicInteractor::MousePressEvent(int eventX, int eventY,
-                                      MouseButton mouseMode) {
-    m_OldPoint2D = {float(eventX), (float) eventY};
-    m_MouseMode = mouseMode;
+void BasicStyle::MousePressEvent(IEvent _event){
+    m_OldPoint2D = _event.pos;
+    m_MouseMode = _event.button;
 };
-
-void BasicInteractor::MouseMoveEvent(int eventX, int eventY) {
-    m_NewPoint2D = {(float) eventX, (float) eventY};
-    if (m_OldPoint2D == m_NewPoint2D) { return; }
+void BasicStyle::MouseMoveEvent(IEvent _event){
+    m_NewPoint2D = _event.pos;
+    //if (m_OldPoint2D == m_NewPoint2D) { return; }
 
     switch (m_MouseMode) {
-        case NoButton:
-            break;
         case LeftButton:
-            ModelRotation();
+            LeftButtonMouseMove();
             break;
         case RightButton:
-            ViewTranslation();
+            RightButtonMouseMove();
             break;
         case MiddleButton:
+            MiddleButtonMouseMove();
             break;
         default:
             break;
     }
     m_OldPoint2D = m_NewPoint2D;
 };
+void BasicStyle::LeftButtonMouseMove() { ModelRotation(); }
 
-void BasicInteractor::MouseReleaseEvent(int eventX, int eventY) {
-    m_MouseMode = NoButton;
-};
+void BasicStyle::RightButtonMouseMove() { ViewTranslation(); }
 
-void BasicInteractor::WheelEvent(double delta) {
+void BasicStyle::MiddleButtonMouseMove() {}
+
+void BasicStyle::MouseReleaseEvent(IEvent _event){ m_MouseMode = NoButton; };
+void BasicStyle::WheelEvent(IEvent _event){
     float wheelMoveDirection = 0.0;
-    if (delta == 0) {
+    if (_event.delta == 0) {
         std::cout << "The wheel movement given to the interactor is 0"
                   << std::endl;
         return;
-    } else if (delta > 0.0) {
+    } else if (_event.delta > 0.0) {
         wheelMoveDirection = 1.0f;
     } else {
         wheelMoveDirection = -1.0f;
     }
 
-    auto radius = m_Scene->m_ModelsBoundingSphere.w;
+    auto radius = m_Scene->ModelsBoundingSphere().w;
     m_CameraScaleSpeed = radius * 0.1f;
 
     auto moveSize =
             static_cast<float>(-wheelMoveDirection * m_CameraScaleSpeed);
     m_Camera->moveZ(moveSize);
 
-    UpdateCameraMoveSpeed(m_Scene->m_ModelsBoundingSphere);
-}
+    UpdateCameraMoveSpeed(m_Scene->ModelsBoundingSphere());
+};
 
-void BasicInteractor::ModelRotation() {
+void BasicStyle::ModelRotation() {
     igm::vec3 oldPoint3D, newPoint3D;
     MapToSphere(oldPoint3D, newPoint3D);
 
@@ -82,8 +87,8 @@ void BasicInteractor::ModelRotation() {
     double phi = 2.0 * asin(t);
     double angle = phi * 180.0 / IGM_PI;
 
-    igm::vec4 center = igm::vec4{m_Scene->m_ModelsBoundingSphere.xyz(), 1.0f};
-    igm::vec3 centerInWorld = (m_Scene->m_ModelMatrix * center).xyz();
+    igm::vec4 center = igm::vec4{m_Scene->ModelsBoundingSphere().xyz(), 1.0f};
+    igm::vec3 centerInWorld = (m_Scene->ModelMatrix() * center).xyz();
 
     igm::mat4 translateToOrigin = igm::translate(igm::mat4{}, -centerInWorld);
     igm::mat4 translateBack = igm::translate(igm::mat4{}, centerInWorld);
@@ -91,25 +96,23 @@ void BasicInteractor::ModelRotation() {
             igm::mat4{}, static_cast<float>(igm::radians(angle)), axis);
 
     igm::mat4 rotate = translateBack * rotateMatrix * translateToOrigin;
-    m_Scene->m_ModelMatrix = rotate * (m_Scene->m_ModelMatrix);
+    m_Scene->ModelMatrix() = rotate * (m_Scene->ModelMatrix());
 
     // updated the rotation matrix of the origin
-    m_Scene->m_ModelRotate = rotateMatrix * (m_Scene->m_ModelRotate);
-};
-
-void BasicInteractor::ViewTranslation() {
+    m_Scene->ModelRotate() = rotateMatrix * (m_Scene->ModelRotate());
+}
+void BasicStyle::ViewTranslation() {
     if (m_Camera) {
         auto offset = m_NewPoint2D - m_OldPoint2D;
-        UpdateCameraMoveSpeed(m_Scene->m_ModelsBoundingSphere);
+        UpdateCameraMoveSpeed(m_Scene->ModelsBoundingSphere());
         m_Camera->moveXY(-offset.x * m_CameraMoveSpeed,
                          offset.y * m_CameraMoveSpeed);
     }
-};
+}
+void BasicStyle::MapToSphere(igm::vec3& old_v3D, igm::vec3& new_v3D) {
+    auto center = igm::vec3(m_Scene->ModelsBoundingSphere());
 
-void BasicInteractor::MapToSphere(igm::vec3& old_v3D, igm::vec3& new_v3D) {
-    auto center = igm::vec3(m_Scene->m_ModelsBoundingSphere);
-
-    igm::mat4 model = m_Scene->m_ModelMatrix;
+    igm::mat4 model = m_Scene->ModelMatrix();
     igm::mat4 view = m_Camera->GetViewMatrix();
     igm::mat4 proj = m_Camera->GetProjectionMatrixReversedZ();
 
@@ -153,14 +156,13 @@ void BasicInteractor::MapToSphere(igm::vec3& old_v3D, igm::vec3& new_v3D) {
     } else {
         new_v3D[2] = 0.5 * rsqr / sqrt(new_x2y2);
     }
-};
-
-void BasicInteractor::UpdateCameraMoveSpeed(const igm::vec4& center) {
+}
+void BasicStyle::UpdateCameraMoveSpeed(const igm::vec4& center) {
     auto viewport = m_Camera->GetViewPort();
     auto viewportF = igm::vec2{static_cast<float>(viewport.x),
                                static_cast<float>(viewport.y)};
 
-    igm::mat4 model = m_Scene->m_ModelMatrix;
+    igm::mat4 model = m_Scene->ModelMatrix();
     igm::mat4 view = m_Camera->GetViewMatrix();
     igm::mat4 proj = m_Camera->GetProjectionMatrixReversedZ();
     auto mvp = proj * view * model;
@@ -222,6 +224,5 @@ void BasicInteractor::UpdateCameraMoveSpeed(const igm::vec4& center) {
     }
 
     m_CameraMoveSpeed = (p - c).length();
-};
-
+}
 IGAME_NAMESPACE_END

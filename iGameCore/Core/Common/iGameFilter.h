@@ -4,6 +4,7 @@
 #include "iGameObject.h"
 #include "iGameDataObject.h"
 #include "iGameProgressObserver.h"
+#include "iGameModel.h"
 
 #define NOMINMAX
 IGAME_NAMESPACE_BEGIN
@@ -45,10 +46,15 @@ public:
 	// Switch to the next task. Progress will be reset.
     void ResetProgress();
 	
+	void SetModel(Model::Pointer model) {
+		m_Model = model;
+	}
+
 protected:
 	Filter();
 	~Filter() override = default;
 
+	Model::Pointer m_Model{};
 	DataObjectArray::Pointer m_Inputs{};  // Input data object array
     DataObjectArray::Pointer m_Outputs{}; // Output data object array
 

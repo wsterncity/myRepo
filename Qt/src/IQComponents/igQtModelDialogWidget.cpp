@@ -81,8 +81,7 @@ void igQtModelDialogWidget::UpdateCurrentModel(Model::Pointer model) {
 //
 //    objectGroup = propertyManager->addProperty(QtVariantPropertyManager::groupTypeId(), QStringLiteral("Object propertys"));
 //    propertyTreeWidget->addProperty(objectGroup);
-//    
-//	ui->pushButton;
+
 }
 
 int igQtModelDialogWidget::addDataObjectToModelTree(DataObject::Pointer obj, ItemSource source) {

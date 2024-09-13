@@ -21,50 +21,7 @@ public:
 		return ins;
 	}
 
-	using Task = std::packaged_task<void()>;
-
-	template <class F, class... Args>
-	auto Commit(F&& f, Args&&... args) ->
-		std::future<decltype(std::forward<F>(f)(std::forward<Args>(args)...))> {
-		using RetType = decltype(std::forward<F>(f)(std::forward<Args>(args)...));
-		if (stop_.load())
-			return std::future<RetType>{};
-
-		auto task = std::make_shared<std::packaged_task<RetType()>>(
-			std::bind(std::forward<F>(f), std::forward<Args>(args)...));
-
-		std::future<RetType> ret = task->get_future();
-		{
-			std::lock_guard<std::mutex> cv_mt(cv_mt_);
-			tasks_.emplace([task] { (*task)(); });
-		}
-		cv_lock_.notify_one();
-		return ret;
-	}
 	//// static parallelFor 函数，numThreads 默认值为 12
-	//template <typename Func>
-	//static void parallelFor(int start, int end, Func&& process, int numThreads = 12) {
-	//	int range = end - start;
-	//	int chunkSize = range / numThreads;
-	//	if (range < numThreads) {
-	//		numThreads = range;
-	//		chunkSize = 1;
-	//	}
-	//	std::vector<std::future<void>> futures;
-	//	for (int i = 0; i < numThreads; ++i) {
-	//		int chunkStart = start + i * chunkSize;
-	//		int chunkEnd = (i == numThreads - 1) ? end : chunkStart + chunkSize;
-	//		if (chunkStart == chunkEnd)continue;
-	//		// 使用线程池提交任务
-	//		futures.emplace_back(ThreadPool::Instance()->Commit([=]() {
-	//			process(chunkStart, chunkEnd);
-	//			}));
-	//	}
-	//	// 等待所有任务完成
-	//	for (auto& future : futures) {
-	//		future.get();
-	//	}
-	//}
 	template <typename Func>
 	static void parallelFor(int start, int end, Func&& process, int numThreads = 12) {
 		int range = end - start;
@@ -73,50 +30,68 @@ public:
 			numThreads = range;
 			chunkSize = 1;
 		}
-		std::vector<std::thread> threads;
+		std::vector<std::future<void>> futures;
 		for (int i = 0; i < numThreads; ++i) {
 			int chunkStart = start + i * chunkSize;
 			int chunkEnd = (i == numThreads - 1) ? end : chunkStart + chunkSize;
-			if (chunkStart == chunkEnd) continue;
-			// 创建线程执行任务
-			threads.emplace_back([=]() {
+			if (chunkStart == chunkEnd)continue;
+			// 使用线程池提交任务
+			futures.emplace_back(ThreadPool::Instance()->Commit([=]() {
 				process(chunkStart, chunkEnd);
-				});
+				}));
 		}
-		// 等待所有线程完成
-		for (auto& thread : threads) {
-			if (thread.joinable()) {
-				thread.join();
-			}
+		// 等待所有任务完成
+		for (auto& future : futures) {
+			future.get();
 		}
 	}
-	template <typename Func>
-	static void parallelFor(int start, int end, int maxThreadSize, Func&& process, int numThreads = 12) {
-		if (numThreads > maxThreadSize)numThreads = maxThreadSize;
-		int range = end - start;
-		int chunkSize = range / numThreads;
-		if (range < numThreads) {
-			numThreads = range;
-			chunkSize = 1;
-		}
-		std::vector<std::thread> threads;
-		for (int i = 0; i < numThreads; ++i) {
-			int chunkStart = start + i * chunkSize;
-			int chunkEnd = (i == numThreads - 1) ? end : chunkStart + chunkSize;
-			if (chunkStart == chunkEnd) continue;
-			// 创建线程执行任务
-			threads.emplace_back([=]() {
-				process(chunkStart, chunkEnd, i);
-				});
-		}
-		// 等待所有线程完成
-		for (auto& thread : threads) {
-			if (thread.joinable()) {
-				thread.join();
-			}
-		}
-	}
-	int IdleThreadCount() {
+    template <typename Func>
+    static void parallelFor(int start, int end, int maxThreadSize, Func&& process, int numThreads = 12) {
+        if (numThreads > maxThreadSize)numThreads = maxThreadSize;
+        int range = end - start;
+        int chunkSize = range / numThreads;
+        if (range < numThreads) {
+            numThreads = range;
+            chunkSize = 1;
+        }
+        std::vector<std::thread> threads;
+        for (int i = 0; i < numThreads; ++i) {
+            int chunkStart = start + i * chunkSize;
+            int chunkEnd = (i == numThreads - 1) ? end : chunkStart + chunkSize;
+            if (chunkStart == chunkEnd) continue;
+            // 创建线程执行任务
+            threads.emplace_back([=]() {
+                process(chunkStart, chunkEnd, i);
+            });
+        }
+        // 等待所有线程完成
+        for (auto& thread : threads) {
+            if (thread.joinable()) {
+                thread.join();
+            }
+        }
+    }
+    using Task = std::packaged_task<void()>;
+
+    template <class F, class... Args>
+    auto Commit(F&& f, Args&&... args) ->
+    std::future<decltype(std::forward<F>(f)(std::forward<Args>(args)...))> {
+        using RetType = decltype(std::forward<F>(f)(std::forward<Args>(args)...));
+        if (stop_.load())
+            return std::future<RetType>{};
+
+        auto task = std::make_shared<std::packaged_task<RetType()>>(
+                std::bind(std::forward<F>(f), std::forward<Args>(args)...));
+
+        std::future<RetType> ret = task->get_future();
+        {
+            std::lock_guard<std::mutex> cv_mt(cv_mt_);
+            tasks_.emplace([task] { (*task)(); });
+        }
+        cv_lock_.notify_one();
+        return ret;
+    }
+    int IdleThreadCount() {
 		return thread_num_;
 	}
 

@@ -38,7 +38,6 @@ bool iGame::iGameVTUReader::Parsing() {
 			is_header_type_uint64 = true;
 		}
 	}
-
 	// get Piece's point and Cell num.
 	int numOfPoints = 0, numOfCells = 0;
 	elem = FindTargetItem(root, "Piece");
@@ -133,7 +132,7 @@ bool iGame::iGameVTUReader::Parsing() {
 				}
 				else if (strcmp(attribute, "ascii") == 0) {
 					FloatArray::Pointer arr = FloatArray::New();
-					float* ps = new float[scalarComponents];
+					auto* ps = new float[scalarComponents];
 					token = strtok(data_p, delimiters);
 					while (token != nullptr) {
 						for (int i = 0; i < scalarComponents; i++) {

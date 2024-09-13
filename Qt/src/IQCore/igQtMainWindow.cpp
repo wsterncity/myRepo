@@ -1,12 +1,9 @@
+#include "IQCore/igQtMainWindow.h"
 //
 // Created by m_ky on 2024/4/10.
 //
-#include "Interactor/iGameFacePickedInteractor.h"
-#include "Interactor/iGameFacesSelection.h"
-#include "Interactor/iGameLineSourceInteractor.h"
-#include "Interactor/iGamePointPickedInteractor.h"
-#include "Interactor/iGamePointsSelection.h"
-#include "Interactor/iGameBasicInteractor.h"
+#include "iGameARAPTest.h"
+#include "Interactor/iGameInteractor.h"
 #include <IQCore/igQtFileLoader.h>
 #include <IQCore/igQtMainWindow.h>
 #include <IQWidgets/igQtModelDrawWidget.h>
@@ -56,27 +53,8 @@ igQtMainWindow::igQtMainWindow(QWidget* parent)
 	initAllComponents();
 	initAllFilters();
 	initAllSources();
+	initAllInteractor();
 	updateRecentFilePaths();
-
-	connect(ui->action_select_point, &QAction::triggered, this,
-		&igQtMainWindow::changePointSelectionInteractor);
-	connect(ui->action_select_points, &QAction::triggered, this,
-		&igQtMainWindow::changePointsSelectionInteractor);
-
-	connect(ui->action_select_face, &QAction::triggered, this,
-		&igQtMainWindow::changeFaceSelectionInteractor);
-	connect(ui->action_select_faces, &QAction::triggered, this,
-		&igQtMainWindow::changeFacesSelectionInteractor);
-	connect(ui->action_drag_point, &QAction::triggered, this, [&](bool checked) {
-		if (checked) {
-			auto interactor = PointDragInteractor::New();
-			interactor->SetPointSet(DynamicCast<PointSet>(SceneManager::Instance()->GetCurrentScene()->GetCurrentModel()->GetDataObject()));
-			rendererWidget->ChangeInteractor(interactor);
-		}
-		else {
-			rendererWidget->ChangeInteractor(BasicInteractor::New());
-		}
-		});
 
 }
 void igQtMainWindow::initToolbarComponent() {
@@ -637,7 +615,14 @@ void igQtMainWindow::initAllFilters() {
 		[&](bool checked) {
 			auto td = TetraDecimation::New();
 			auto obj = rendererWidget->GetScene()->GetCurrentModel()->GetDataObject();
-			auto input = DynamicCast<UnstructuredMesh>(obj)->TransferToVolumeMesh();
+			DataObject::Pointer input;
+			if (DynamicCast<UnstructuredMesh>(obj)) {
+				input = DynamicCast<UnstructuredMesh>(obj)->TransferToVolumeMesh();
+			}
+			else if(DynamicCast<VolumeMesh>(obj)){
+				input = DynamicCast<VolumeMesh>(obj);
+			}
+
 			td->SetModel(rendererWidget->GetScene()->GetCurrentModel());
 			td->SetInput(input);
 			td->Execute();
@@ -647,8 +632,31 @@ void igQtMainWindow::initAllFilters() {
 			rendererWidget->update();
 		});
 
+	connect(ui->menuTest->addAction("initARAP"), &QAction::triggered, this,
+		[&](bool checked) {
+			auto test = ARAPTest::New();
+			auto model = rendererWidget->GetScene()->GetCurrentModel();
+			test->SetModel(model);
+			test->SetInput(model->GetDataObject());
+			model->SetModelFilter(test);
+			test->Initialize();
+			rendererWidget->update();
+		});
 
+	connect(ui->menuTest->addAction("executeARAP"), &QAction::triggered, this,
+		[&](bool checked) {
+			auto model = rendererWidget->GetScene()->GetCurrentModel();
+			ARAPTest* test = dynamic_cast<ARAPTest*>(model->GetModelFilter());
+			test->Begin();
+			rendererWidget->update();
+		});
 
+	connect(ui->menuTest->addAction("cancelARAP"), &QAction::triggered, this,
+		[&](bool checked) {
+			auto model = rendererWidget->GetScene()->GetCurrentModel();
+			model->DeleteModelFilter();
+			rendererWidget->ChangeInteractorStyle(Interactor::BasicStyle);
+		});
 }
 
 void igQtMainWindow::initAllDockWidgetConnectWithAction() {
@@ -826,204 +834,93 @@ void igQtMainWindow::updateColorBarShow() {
 	//	colorBar->hide();
 	// }
 }
-// void igQtMainWindow::ChangeViewStyle()
-//{
-//	int item = viewStyleCombox->currentIndex();
-//	if (item < 0) return;
-//	this->rendererWidget->ChangeViewStyle(item);
-// }
-//
-// void igQtMainWindow::ChangeScalarView()
-//{
-//	int item1 = attributeViewIndexCombox->currentIndex();
-//	int item2 = attributeViewDimCombox->currentIndex();
-//	if (item1 < 0) return;
-//	this->rendererWidget->ChangeScalarView(item1, item2 - 1);
-//
-//	static const char* name[3] = { "x", "y", "z" };
-//	auto* current = rendererWidget->GetScene()->GetCurrentObject();
-//	attributeViewDimCombox->clear();
-//	attributeViewDimCombox->addItem("magnitude");
-//	int index = item1;
-//	if (index == 0) {
-//		attributeViewDimCombox->setCurrentIndex(0);
-//	}
-//	else {
-//		int num = current->GetPropertySet()->GetProperty(index -
-//1).pointer->GetElementSize(); 		for (int i = 0; i < num; i++)
-//		{
-//			attributeViewDimCombox->addItem(name[i]);
-//		}
-//		attributeViewDimCombox->setCurrentIndex(current->GetAttributeDimension()
-//+ 1);
-//	}
-// }
-//
-// void igQtMainWindow::ChangeScalarViewDim()
-//{
-//	int item1 = attributeViewIndexCombox->currentIndex();
-//	int item2 = attributeViewDimCombox->currentIndex();
-//	if (item1 < 0) return;
-//	if (item2 < 0) {
-//		this->rendererWidget->ChangeScalarView(item1, -1);
-//	}
-//	else {
-//		this->rendererWidget->ChangeScalarView(item1, item2 - 1);
-//	}
-// }
-// void igQtMainWindow::updateViewStyleAndCloudPicture()
-//{
-//	auto* current = rendererWidget->GetScene()->GetCurrentObject();
-//	if (current)
-//	{
-//		// Update View Style
-//		IGenum defaultViewStyle = current->GetViewStyle();
-//		viewStyleCombox->setCurrentIndex(defaultViewStyle);
-//
-//		// Update Attribute View Index
-//		attributeViewIndexCombox->clear();
-//		attributeViewIndexCombox->addItem("None        ");
-//
-//		StringArray::Pointer nameArray =
-//			current->GetMetadata()->GetStringArray(ATTRIBUTE_NAME_ARRAY);
-//		if (nameArray != nullptr)
-//		{
-//			for (int i = 0; i < nameArray->Size(); i++)
-//			{
-//				attributeViewIndexCombox->addItem(QString::fromStdString(nameArray->GetElement(i)));
-//			}
-//		}
-//		attributeViewIndexCombox->setCurrentIndex(current->GetAttributeIndex()
-//+ 1);
-//	}
-// }
-//
-// void igQtMainWindow::updateCurrentDataObject()
-//{
-//	updateViewStyleAndCloudPicture();
-//
-// }
-//
-// void igQtMainWindow::updateCurrentSceneWidget() {
-//	this->rendererWidget->update();
-// }
-
-void igQtMainWindow::changePointSelectionInteractor() {
-	if (ui->action_select_point->isChecked()) {
-		auto interactor = PointPickedInteractor::New();
-		interactor->SetPointSet(
-			DynamicCast<PointSet>(
-				rendererWidget->GetScene()->GetCurrentModel()->GetDataObject()),
-			rendererWidget->GetScene()->GetCurrentModel());
-		rendererWidget->ChangeInteractor(interactor);
-
-		if (ui->action_select_points->isChecked()) {
-			ui->action_select_points->setChecked(false);
-		}
-	}
-	else {
-		rendererWidget->ChangeInteractor(BasicInteractor::New());
-	}
-}
-
-void igQtMainWindow::changePointsSelectionInteractor() {
-	if (ui->action_select_points->isChecked()) {
-		auto interactor = PointsSelection::New();
-		interactor->SetPointSet(
-			DynamicCast<PointSet>(
-				rendererWidget->GetScene()->GetCurrentModel()->GetDataObject()),
-			rendererWidget->GetScene()->GetCurrentModel());
-		rendererWidget->ChangeInteractor(interactor);
-
-		if (ui->action_select_point->isChecked()) {
-			ui->action_select_point->setChecked(false);
-		}
-	}
-	else {
-		rendererWidget->ChangeInteractor(BasicInteractor::New());
-	}
-}
-
-void igQtMainWindow::changeFaceSelectionInteractor() {
-	if (ui->action_select_face->isChecked()) {
-		auto interactor = FacePickedInteractor::New();
-		auto model = rendererWidget->GetScene()->GetCurrentModel();
-		auto obj = model->GetDataObject();
-		Points::Pointer points;
-		CellArray::Pointer faces;
-
-		if (DynamicCast<VolumeMesh>(obj)) {
-			auto mesh = DynamicCast<VolumeMesh>(obj)->GetDrawMesh();
-			points = mesh->GetPoints();
-			faces = mesh->GetFaces();
-		}
-		else if (DynamicCast<UnstructuredMesh>(obj)) {
-			auto mesh = DynamicCast<UnstructuredMesh>(obj)->GetDrawMesh();
-			points = mesh->GetPoints();
-			faces = mesh->GetFaces();
-		}
-		else if (DynamicCast<SurfaceMesh>(obj)) {
-			auto mesh = DynamicCast<SurfaceMesh>(obj);
-			faces = mesh->GetFaces();
-			points = mesh->GetPoints();
-		}
-
-		interactor->SetFacesAndPainter(points, faces, model->GetFacePainter());
-		rendererWidget->ChangeInteractor(interactor);
-
-		if (ui->action_select_faces->isChecked()) {
-			ui->action_select_faces->setChecked(false);
-		}
-	}
-	else {
-		rendererWidget->ChangeInteractor(BasicInteractor::New());
-	}
-}
-
-void igQtMainWindow::changeFacesSelectionInteractor() {
-	if (ui->action_select_faces->isChecked()) {
-		auto interactor = FacesSelection::New();
-		interactor->SetModel(rendererWidget->GetScene()->GetCurrentModel());
-		rendererWidget->ChangeInteractor(interactor);
-
-		if (ui->action_select_face->isChecked()) {
-			ui->action_select_face->setChecked(false);
-		}
-	}
-	else {
-		rendererWidget->ChangeInteractor(BasicInteractor::New());
-	}
-}
 
 void igQtMainWindow::initAllSources() {
-	connect(ui->action_LineSource, &QAction::triggered, this, [&]() {
-		UnstructuredMesh::Pointer newLinePointSet = UnstructuredMesh::New();
-		newLinePointSet->SetViewStyle(IG_POINTS);
-		newLinePointSet->AddPoint(Point(0.f, 0.f, 0.f));
-		newLinePointSet->AddPoint(Point(1.f, 1.0f, 1.f));
-		igIndex cell[1] = { 0 };
-		newLinePointSet->AddCell(cell, 1, IG_VERTEX);
-		cell[0] = 1;
-		newLinePointSet->AddCell(cell, 1, IG_VERTEX);
-		auto curScene = SceneManager::Instance()->GetCurrentScene();
+	//connect(ui->action_LineSource, &QAction::triggered, this, [&]() {
+	//	UnstructuredMesh::Pointer newLinePointSet = UnstructuredMesh::New();
+	//	newLinePointSet->SetViewStyle(IG_POINTS);
+	//	newLinePointSet->AddPoint(Point(0.f, 0.f, 0.f));
+	//	newLinePointSet->AddPoint(Point(1.f, 1.0f, 1.f));
+	//	igIndex cell[1] = { 0 };
+	//	newLinePointSet->AddCell(cell, 1, IG_VERTEX);
+	//	cell[0] = 1;
+	//	newLinePointSet->AddCell(cell, 1, IG_VERTEX);
+	//	auto curScene = SceneManager::Instance()->GetCurrentScene();
 
-		LineTypePointsSource::Pointer lineSource = LineTypePointsSource::New();
+	//	LineTypePointsSource::Pointer lineSource = LineTypePointsSource::New();
 
-		lineSource->SetInput(newLinePointSet);
-		lineSource->SetResolution(20);
-		lineSource->GetOutput()->SetName("lineSource");
+	//	lineSource->SetInput(newLinePointSet);
+	//	lineSource->SetResolution(20);
+	//	lineSource->GetOutput()->SetName("lineSource");
 
-		auto model = curScene->CreateModel(lineSource->GetOutput());
-		modelTreeWidget->addModelToModelTree(model);
-		auto interactor = LineSourceInteractor::New();
+	//	auto model = curScene->CreateModel(lineSource->GetOutput());
+	//	modelTreeWidget->addModelToModelTree(model);
+	//	auto interactor = LineSourceInteractor::New();
 
-		//        auto interactor = PointDragInteractor::New();
-		interactor->SetPointSet(DynamicCast<PointSet>(SceneManager::Instance()
-			->GetCurrentScene()
-			->GetCurrentModel()
-			->GetDataObject()));
+	//	//        auto interactor = PointDragInteractor::New();
+	//	interactor->SetPointSet(DynamicCast<PointSet>(SceneManager::Instance()
+	//		->GetCurrentScene()
+	//		->GetCurrentModel()
+	//		->GetDataObject()));
 
-		rendererWidget->ChangeInteractor(interactor);
+	//	rendererWidget->ChangeInteractor(interactor);
+	//	});
+}
+
+void igQtMainWindow::initAllInteractor()
+{
+	connect(ui->action_select_point, &QAction::triggered, this, [&](bool checked) {
+		if (ui->action_select_point->isChecked()) {
+			if (ui->action_select_points->isChecked()) {
+				ui->action_select_points->setChecked(false);
+			}
+			rendererWidget->ChangeInteractorStyle(Interactor::SinglePointSelectionStyle);
+		}
+		else {
+			rendererWidget->ChangeInteractorStyle(Interactor::BasicStyle);
+		}
+		});
+	connect(ui->action_select_points, &QAction::triggered, this, [&](bool checked) {
+		if (ui->action_select_points->isChecked()) {
+			if (ui->action_select_point->isChecked()) {
+				ui->action_select_point->setChecked(false);
+			}
+			rendererWidget->ChangeInteractorStyle(Interactor::MultiPointSelectionStyle);
+		}
+		else {
+			rendererWidget->ChangeInteractorStyle(Interactor::BasicStyle);
+		}
+		});
+
+	connect(ui->action_select_face, &QAction::triggered, this, [&](bool checked) {
+		if (ui->action_select_face->isChecked()) {
+			if (ui->action_select_faces->isChecked()) {
+				ui->action_select_faces->setChecked(false);
+			}
+			rendererWidget->ChangeInteractorStyle(Interactor::SingleFaceSelectionStyle);
+		}
+		else {
+			rendererWidget->ChangeInteractorStyle(Interactor::BasicStyle);
+		}
+		});
+	connect(ui->action_select_faces, &QAction::triggered, this, [&](bool checked) {
+		if (ui->action_select_faces->isChecked()) {
+			if (ui->action_select_face->isChecked()) {
+				ui->action_select_face->setChecked(false);
+			}
+			rendererWidget->ChangeInteractorStyle(Interactor::MultiFaceSelectionStyle);
+		}
+		else {
+			rendererWidget->ChangeInteractorStyle(Interactor::BasicStyle);
+		}
+		});
+	connect(ui->action_drag_point, &QAction::triggered, this, [&](bool checked) {
+		if (ui->action_drag_point->isChecked()) {
+			rendererWidget->ChangeInteractorStyle(Interactor::DragPointStyle);
+		}
+		else {
+			rendererWidget->ChangeInteractorStyle(Interactor::BasicStyle);
+		}
 		});
 }
 

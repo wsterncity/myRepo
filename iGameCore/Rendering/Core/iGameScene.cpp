@@ -1,5 +1,6 @@
 #include "iGameScene.h"
 #include "iGameCommand.h"
+#include "iGameInteractor.h"
 #include <chrono>
 
 IGAME_NAMESPACE_BEGIN
@@ -111,6 +112,10 @@ void Scene::SetCurrentModel(Model* _model) {
         }
     }
 }
+
+void Scene::SetInteractor(Interactor* i) { m_Interactor = i; }
+
+Interactor* Scene::GetInteractor() { return m_Interactor; }
 
 Model* Scene::GetCurrentModel() { return m_CurrentModel; }
 
