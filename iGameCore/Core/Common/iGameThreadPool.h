@@ -21,26 +21,6 @@ public:
 		return ins;
 	}
 
-	using Task = std::packaged_task<void()>;
-
-	template <class F, class... Args>
-	auto Commit(F&& f, Args&&... args) ->
-		std::future<decltype(std::forward<F>(f)(std::forward<Args>(args)...))> {
-		using RetType = decltype(std::forward<F>(f)(std::forward<Args>(args)...));
-		if (stop_.load())
-			return std::future<RetType>{};
-
-		auto task = std::make_shared<std::packaged_task<RetType()>>(
-			std::bind(std::forward<F>(f), std::forward<Args>(args)...));
-
-		std::future<RetType> ret = task->get_future();
-		{
-			std::lock_guard<std::mutex> cv_mt(cv_mt_);
-			tasks_.emplace([task] { (*task)(); });
-		}
-		cv_lock_.notify_one();
-		return ret;
-	}
 	//// static parallelFor 函数，numThreads 默认值为 12
 	//template <typename Func>
 	//static void parallelFor(int start, int end, Func&& process, int numThreads = 12) {
@@ -90,7 +70,27 @@ public:
 			}
 		}
 	}
-	int IdleThreadCount() {
+    using Task = std::packaged_task<void()>;
+
+    template <class F, class... Args>
+    auto Commit(F&& f, Args&&... args) ->
+    std::future<decltype(std::forward<F>(f)(std::forward<Args>(args)...))> {
+        using RetType = decltype(std::forward<F>(f)(std::forward<Args>(args)...));
+        if (stop_.load())
+            return std::future<RetType>{};
+
+        auto task = std::make_shared<std::packaged_task<RetType()>>(
+                std::bind(std::forward<F>(f), std::forward<Args>(args)...));
+
+        std::future<RetType> ret = task->get_future();
+        {
+            std::lock_guard<std::mutex> cv_mt(cv_mt_);
+            tasks_.emplace([task] { (*task)(); });
+        }
+        cv_lock_.notify_one();
+        return ret;
+    }
+    int IdleThreadCount() {
 		return thread_num_;
 	}
 

@@ -14,6 +14,7 @@
 #include "iGameDataObject.h"
 
 #include "iGameStringArray.h"
+#include <iGameThreadPool.h>
 
 #include <tinyxml2.h>
 #include <algorithm>
@@ -57,39 +58,128 @@ bool iGame::iGamePVDReader::Parsing() {
     /* if the pvd data have keyframe. */
     if(!m_Data.GetTimeData()->GetArrays().empty()){
         auto& firstFrame = m_Data.GetTimeData()->GetArrays()[0];
-        DataObject::Pointer  newObj;
+
         m_data_object = DataObject::New();
         m_data_object->SetTimeFrames(m_Data.GetTimeData());
         auto attributeSet = AttributeSet::New();
         m_data_object->SetAttributeSet(attributeSet);
         std::string fileName, fileSuffix;
+
+        int times = 200;
+//        long long cost = 0LL;
+//        for(int ttt =  0; ttt < times ; ttt ++){
+//            auto t2 = std::chrono::steady_clock::now();
+//            DataObject::Pointer  newObj;
+//            for(int i = 0; i < firstFrame.SubFileNames->Size(); i ++){
+//
+//                fileName = firstFrame.SubFileNames->GetElement(i);
+//                const char* pos = strrchr(fileName.data(), '.');
+//                if (pos != nullptr) {
+//                    const char *fileEnd = fileName.data() + fileName.size();
+//                    fileSuffix = std::string(pos + 1, fileEnd);
+//                }
+//                if(fileSuffix == "vts"){
+//                    iGameVTSReader::Pointer rd = iGameVTSReader::New();
+//                    rd->SetFilePath(fileName);
+//                    rd->Execute();
+//                    newObj = rd->GetOutput();
+//                }
+//                else if(fileSuffix == "vtu"){
+//                    iGameVTUReader::Pointer rd = iGameVTUReader::New();
+//                    rd->SetFilePath(fileName);
+//                    rd->Execute();
+//                    newObj = rd->GetOutput();
+//                } else if(fileSuffix == "pvd"){
+//                    iGamePVDReader::Pointer rd = iGamePVDReader::New();
+//                    rd->SetFilePath(fileName);
+//                    rd->Execute();
+//                    newObj = rd->GetOutput();
+//                }
+////            m_data_object->AddSubDataObject(newObj);
+//            }
+//            auto t3 = std::chrono::steady_clock::now();
+//            cost += std::chrono::duration_cast<std::chrono::milliseconds>(t3 - t2).count();
+//        }
+//        std::cout << "test times : " << times << " average Read subFiles cost : "<<  cost / times << " ms\n";
+
+
+//        long long cost = 0LL;
+//        for(int ttt =  0; ttt < times ; ttt ++){
+//            auto t2 = std::chrono::steady_clock::now();
+//            std::vector<std::future<DataObject::Pointer>> readTaskList;
+//            for(int i = 0; i < firstFrame.SubFileNames->Size(); i ++){
+//                readTaskList.emplace_back(ThreadPool::Instance()->Commit([](const std::string& fileName){
+//                    DataObject::Pointer newObj;
+//                    const char* pos = strrchr(fileName.data(), '.');
+//                    std::string fileSuffix;
+//                    const char *fileEnd = fileName.data() + fileName.size();
+//                    fileSuffix = std::string(pos + 1, fileEnd);
+//                    if(fileSuffix == "vts"){
+//                        iGameVTSReader::Pointer rd = iGameVTSReader::New();
+//                        rd->SetFilePath(fileName);
+//                        rd->Execute();
+//                        newObj = rd->GetOutput();
+//                    }
+//                    else if(fileSuffix == "vtu"){
+//                        iGameVTUReader::Pointer rd = iGameVTUReader::New();
+//                        rd->SetFilePath(fileName);
+//                        rd->Execute();
+//                        newObj = rd->GetOutput();
+//                    } else if(fileSuffix == "pvd"){
+//                        iGamePVDReader::Pointer rd = iGamePVDReader::New();
+//                        rd->SetFilePath(fileName);
+//                        rd->Execute();
+//                        newObj = rd->GetOutput();
+//                    }
+//                    return newObj;
+//                }, firstFrame.SubFileNames->GetElement(i)));
+//            }
+//
+//            for(auto& task : readTaskList){
+//                task.get();
+////                m_data_object->AddSubDataObject(task.get());
+//            }
+//            auto t3 = std::chrono::steady_clock::now();
+//            cost += std::chrono::duration_cast<std::chrono::milliseconds>(t3 - t2).count();
+//        }
+//        std::cout << "test times : " << times << " average Read subFiles cost : "<<  cost / times << " ms\n";
+
+        auto t2 = std::chrono::steady_clock::now();
+        std::vector<std::future<DataObject::Pointer>> readTaskList;
         for(int i = 0; i < firstFrame.SubFileNames->Size(); i ++){
-            fileName = firstFrame.SubFileNames->GetElement(i);
-            const char* pos = strrchr(fileName.data(), '.');
-            if (pos != nullptr) {
+            readTaskList.emplace_back(ThreadPool::Instance()->Commit([](const std::string& fileName){
+                DataObject::Pointer newObj;
+                const char* pos = strrchr(fileName.data(), '.');
+                std::string fileSuffix;
                 const char *fileEnd = fileName.data() + fileName.size();
                 fileSuffix = std::string(pos + 1, fileEnd);
-            }
-            if(fileSuffix == "vts"){
-                iGameVTSReader::Pointer rd = iGameVTSReader::New();
-                rd->SetFilePath(fileName);
-                rd->Execute();
-                newObj = rd->GetOutput();
-            }
-            else if(fileSuffix == "vtu"){
-                iGameVTUReader::Pointer rd = iGameVTUReader::New();
-                rd->SetFilePath(fileName);
-                rd->Execute();
-                newObj = rd->GetOutput();
-            } else if(fileSuffix == "pvd"){
-                iGamePVDReader::Pointer rd = iGamePVDReader::New();
-                rd->SetFilePath(fileName);
-                rd->Execute();
-                newObj = rd->GetOutput();
-            }
-            m_data_object->AddSubDataObject(newObj);
+                if(fileSuffix == "vts"){
+                    iGameVTSReader::Pointer rd = iGameVTSReader::New();
+                    rd->SetFilePath(fileName);
+                    rd->Execute();
+                    newObj = rd->GetOutput();
+                }
+                else if(fileSuffix == "vtu"){
+                    iGameVTUReader::Pointer rd = iGameVTUReader::New();
+                    rd->SetFilePath(fileName);
+                    rd->Execute();
+                    newObj = rd->GetOutput();
+                } else if(fileSuffix == "pvd"){
+                    iGamePVDReader::Pointer rd = iGamePVDReader::New();
+                    rd->SetFilePath(fileName);
+                    rd->Execute();
+                    newObj = rd->GetOutput();
+                }
+                return newObj;
+            }, firstFrame.SubFileNames->GetElement(i)));
         }
+        for(auto& task : readTaskList){
+                m_data_object->AddSubDataObject(task.get());
+        }
+        auto t3 = std::chrono::steady_clock::now();
+        std::cout << "test times : " << times  << "Read subFiles cost : "<< std::chrono::duration_cast<std::chrono::milliseconds>(t3 - t2).count() << " ms\n";
 
+//        iGame::ThreadPool::Instance()->Commit()
         /* Reset DataObject's scalar range. */
         auto subScalarPointer = m_data_object->GetAttributeSet()->GetAllAttributes();
         bool scalar_exist_0 = false;
@@ -126,6 +216,9 @@ bool iGame::iGamePVDReader::Parsing() {
                 m_data_object->GetAttributeSet()->AddScalar(IG_POINT, array, {range_min, range_max});
             }
         }
+
+
+
 
     }
 

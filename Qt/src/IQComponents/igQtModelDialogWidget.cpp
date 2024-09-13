@@ -42,46 +42,45 @@ igQtModelDialogWidget::igQtModelDialogWidget(QWidget* parent)
 }
 
 void igQtModelDialogWidget::UpdateCurrentModel(Model::Pointer model) {
-    propertyTreeWidget->clear();
-    currentModel = model.get();
-//        model->GetDataObject()->
-//        model->GetDataObject()->GetMetadata();
-    QtVariantPropertyManager* varManager = new QtVariantPropertyManager(propertyTreeWidget);
-    QtVariantEditorFactory* editFactory = new QtVariantEditorFactory(propertyTreeWidget);
-    propertyTreeWidget->setFactoryForManager(varManager, editFactory);
-    QtProperty* properties_groupItem = varManager->addProperty(QtVariantPropertyManager::groupTypeId(), QString("propertys"));
-    auto metadata = model->GetDataObject()->GetMetadata();
-    for(auto& [propName, propValue] : metadata->entries()){
-        QtVariantProperty* item = nullptr;
-        std::visit([&](auto && arg){
-            using T = std::decay_t<decltype(arg)>;
-            if constexpr (std::is_same_v<T, int>) {
-
-                item = varManager->addProperty(QVariant::Int, QString(propName.c_str()));
-                item->setValue(std::get<int32_t>(propValue));
-            } else if constexpr (std::is_same_v<T, uint32_t>){
-                item = varManager->addProperty(QVariant::UInt, QString(propName.c_str()));
-                item->setValue(std::get<uint32_t>(propValue));
-            }
-
-        }, propValue);
-
-        if(item != nullptr){
-            properties_groupItem->addSubProperty(item);
-        }
-    }
-    connect(varManager, &QtVariantPropertyManager::valueChanged, this, [&](QtProperty * _t1, const QVariant & _t2){
-        auto f = currentModel->GetModelFilter();
-        auto filter = reinterpret_cast<LineTypePointsSource*>(f);
-        filter->SetResolution(_t2.toInt());
-        filter->Execute();
-    });
-    propertyTreeWidget->addProperty(properties_groupItem);
-
-    objectGroup = propertyManager->addProperty(QtVariantPropertyManager::groupTypeId(), QStringLiteral("Object propertys"));
-    propertyTreeWidget->addProperty(objectGroup);
+//    propertyTreeWidget->clear();
+//    currentModel = model.get();
+////        model->GetDataObject()->
+////        model->GetDataObject()->GetMetadata();
+//    QtVariantPropertyManager* varManager = new QtVariantPropertyManager(propertyTreeWidget);
+//    QtVariantEditorFactory* editFactory = new QtVariantEditorFactory(propertyTreeWidget);
+//    propertyTreeWidget->setFactoryForManager(varManager, editFactory);
+//    QtProperty* properties_groupItem = varManager->addProperty(QtVariantPropertyManager::groupTypeId(), QString("propertys"));
+//    auto metadata = model->GetDataObject()->GetMetadata();
+//    for(auto& [propName, propValue] : metadata->entries()){
+//        QtVariantProperty* item = nullptr;
+//        std::visit([&](auto && arg){
+//            using T = std::decay_t<decltype(arg)>;
+//            if constexpr (std::is_same_v<T, int>) {
+//
+//                item = varManager->addProperty(QVariant::Int, QString(propName.c_str()));
+//                item->setValue(std::get<int32_t>(propValue));
+//            } else if constexpr (std::is_same_v<T, uint32_t>){
+//                item = varManager->addProperty(QVariant::UInt, QString(propName.c_str()));
+//                item->setValue(std::get<uint32_t>(propValue));
+//            }
+//
+//        }, propValue);
+//
+//        if(item != nullptr){
+//            properties_groupItem->addSubProperty(item);
+//        }
+//    }
+//    connect(varManager, &QtVariantPropertyManager::valueChanged, this, [&](QtProperty * _t1, const QVariant & _t2){
+//        auto f = currentModel->GetModelFilter();
+//        auto filter = reinterpret_cast<LineTypePointsSource*>(f);
+//        filter->SetResolution(_t2.toInt());
+//        filter->Execute();
+//    });
+//    propertyTreeWidget->addProperty(properties_groupItem);
+//
+//    objectGroup = propertyManager->addProperty(QtVariantPropertyManager::groupTypeId(), QStringLiteral("Object propertys"));
+//    propertyTreeWidget->addProperty(objectGroup);
     
-	ui->pushButton;
 }
 
 int igQtModelDialogWidget::addDataObjectToModelTree(DataObject::Pointer obj, ItemSource source) {
