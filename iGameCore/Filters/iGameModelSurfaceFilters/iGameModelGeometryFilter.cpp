@@ -1,5 +1,5 @@
 #include "iGameModelGeometryFilter.h"
-#include "iGameAtomicMutex.h"
+#include "Mutex/iGameAtomicMutex.h"
 #include "iGameThreadPool.h"
 #include <mutex>
 #include <omp.h>

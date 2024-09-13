@@ -23,20 +23,21 @@ igQtModelDialogWidget::igQtModelDialogWidget(QWidget* parent)
     //splitter->setChildrenCollapsible(false);
 
 	modelTreeWidget = ui->modelTreeWidget;
-    propertyTreeWidget = ui->propertyTreeWidget;
+    //propertyTreeWidget = ui->propertyTreeWidget;
 
     modelTreeWidget->setColumnCount(2);
     modelTreeWidget->header()->hide();
     modelTreeWidget->setColumnWidth(0, 150);
 
-    propertyTreeWidget = ui->propertyTreeWidget;
-    propertyTreeWidget->setHeaderVisible(false);
-    propertyManager = new QtVariantPropertyManager(propertyTreeWidget);
-    editFactory = new QtVariantEditorFactory(propertyTreeWidget);
-    propertyTreeWidget->setFactoryForManager(propertyManager, editFactory);
+    //propertyTreeWidget = ui->propertyTreeWidget;
+    //propertyTreeWidget->setHeaderVisible(false);
+    //propertyManager = new QtVariantPropertyManager(propertyTreeWidget);
+    //editFactory = new QtVariantEditorFactory(propertyTreeWidget);
+    //propertyTreeWidget->setFactoryForManager(propertyManager, editFactory);
 
-
-    connect(modelTreeWidget, &igQtModelTreeWidget::ChangeCurrentModel, this, &igQtModelDialogWidget::UpdateCurrentModel);
+	ui->ModelInformationWidget->hide();
+	connect(modelTreeWidget, &igQtModelTreeWidget::ChangeCurrentModel, this, &igQtModelDialogWidget::UpdateCurrentModel);
+	connect(modelTreeWidget, &igQtModelTreeWidget::ChangeCurrentModel, this, &igQtModelDialogWidget::updateCurrentModelInfo);
 
 
 }
@@ -80,7 +81,7 @@ void igQtModelDialogWidget::UpdateCurrentModel(Model::Pointer model) {
 //
 //    objectGroup = propertyManager->addProperty(QtVariantPropertyManager::groupTypeId(), QStringLiteral("Object propertys"));
 //    propertyTreeWidget->addProperty(objectGroup);
-    
+
 }
 
 int igQtModelDialogWidget::addDataObjectToModelTree(DataObject::Pointer obj, ItemSource source) {
@@ -107,7 +108,7 @@ int igQtModelDialogWidget::addDataObjectToModelTree(DataObject::Pointer obj, Ite
 
 	modelTreeWidget->addTopLevelItem(item);
 	modelTreeWidget->setCurrentItem(item);
-
+	updateCurrentModelInfo();
 	//propertyTreeWidget->removeProperty(objectGroup);
 	//objectGroup = propertyManager->addProperty(QtVariantPropertyManager::groupTypeId(), QStringLiteral("Object propertys"));
 	//propertyTreeWidget->addProperty(objectGroup);
@@ -140,4 +141,9 @@ int igQtModelDialogWidget::addModelToModelTree(Model::Pointer model) {
 	modelTreeWidget->addTopLevelItem(item);
 	modelTreeWidget->setCurrentItem(item);
 	return id;
+}
+int igQtModelDialogWidget::updateCurrentModelInfo()
+{
+	ui->ModelInformationWidget->updateInformationFrame();
+	return 1;
 }

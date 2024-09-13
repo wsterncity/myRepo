@@ -23,7 +23,9 @@ public:
 		m_Buffer.clear();
 		m_UnitCount = 0;
 	}
-
+	IGsize GetRealMemorySize() {
+		return  this->m_Buffer.capacity() * sizeof(uint8_t) + sizeof(m_BitsPerUnit) + sizeof(m_UnitCount);
+	}
 protected:
 	Marker(int bitsPerUnit) : m_BitsPerUnit(bitsPerUnit) {}
 	~Marker() override {}

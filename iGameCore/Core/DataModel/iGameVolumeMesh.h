@@ -256,6 +256,8 @@ public:
     bool GetIsPolyhedronType() {
         return this->IsPolyhedronType;
     }
+    //Get real size of DataObject
+    IGsize GetRealMemorySize() override;
 protected:
     VolumeMesh();
     ~VolumeMesh() override = default;

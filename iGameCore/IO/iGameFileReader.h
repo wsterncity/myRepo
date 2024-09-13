@@ -58,6 +58,7 @@ public:
 	int DecodeString(char* resname, const char* name);
 
 
+
 protected:
 	FileReader();
 	~FileReader() override = default;

@@ -1,4 +1,4 @@
-#include "iGameModelSurfaceFilters/iGameAtomicMutex.h"
+
 #include "iGameModelSurfaceFilters/iGameModelGeometryFilter.h"
 #include "iGameSubdivision/iGameHexhedronSubdivision.h"
 #include "iGameSubdivision/iGameQuadSubdivision.h"

@@ -18,16 +18,16 @@
 #include <qaction.h>
 #include <iostream>
 
-igQtFileLoader::igQtFileLoader(QObject* parent) : QObject(parent) 
+igQtFileLoader::igQtFileLoader(QObject* parent) : QObject(parent)
 {
 	InitRecentFilePaths();
-    m_SceneManager = SceneManager::Instance();
+	m_SceneManager = SceneManager::Instance();
 }
 
 igQtFileLoader::~igQtFileLoader() {
 }
 
-void igQtFileLoader::LoadFile() 
+void igQtFileLoader::LoadFile()
 {
 	std::string filePath = QFileDialog::getOpenFileName(nullptr, "Load file", "", "ALL FIle(*.obj *.off *.stl *.ply *.vtk *.mesh *.pvd *.vts *.vtu *.vtm * cgns);;VTK file(*.vtk);;CGNS file(*.cgns)").toStdString();
 	this->OpenFile(filePath);
@@ -37,7 +37,7 @@ void igQtFileLoader::OpenFile(const std::string& filePath)
 {
 	using namespace iGame;
 	if (filePath.empty() || strrchr(filePath.data(), '.') == nullptr)return;
-	
+
 	auto obj = iGame::FileIO::ReadFile(filePath);
 	if (obj == nullptr) {
 		igDebug("This file read error.");
@@ -45,7 +45,7 @@ void igQtFileLoader::OpenFile(const std::string& filePath)
 	}
 	auto filename = filePath.substr(filePath.find_last_of('/') + 1);
 	obj->SetName(filename.substr(0, filename.find_last_of('.')).c_str());
-
+	obj->GetPropertys()->AddProperty(Variant::String, "FilePath")->SetValue(filePath);
 	//Q_EMIT AddFileToModelList(QString(filePath.substr(filePath.find_last_of('/') + 1).c_str()));
 
 	this->SaveCurrentFileToRecentFile(QString::fromStdString(filePath));

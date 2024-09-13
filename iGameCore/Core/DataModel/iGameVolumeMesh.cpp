@@ -1247,6 +1247,15 @@ VolumeMesh::VolumeMesh()
 	m_ViewStyle = IG_SURFACE;
 };
 
+IGsize VolumeMesh::GetRealMemorySize()
+{
+	IGsize res = this->SurfaceMesh::GetRealMemorySize();
+	if (m_Volumes)res += m_Volumes->GetRealMemorySize();
+	if (m_VolumeEdges)res += m_VolumeEdges->GetRealMemorySize();
+	if (m_VolumeFaces)res += m_VolumeFaces->GetRealMemorySize();
+	if (m_VolumeDeleteMarker)res += m_VolumeDeleteMarker->GetRealMemorySize();
+	return res + sizeof(IsPolyhedronType);
+}
 void VolumeMesh::RequestFaceStatus()
 {
 	if (m_Faces == nullptr ||

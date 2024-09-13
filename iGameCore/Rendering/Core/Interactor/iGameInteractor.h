@@ -2,78 +2,111 @@
 // Created by Sumzeek on 9/9/2024.
 //
 
-#ifndef OPENIGAME_BASEINTERACTOR_H
-#define OPENIGAME_BASEINTERACTOR_H
+#ifndef OPENIGAME_INTERACTOR_H
+#define OPENIGAME_INTERACTOR_H
 
-#include "iGameCamera.h"
-#include "iGameObject.h"
 #include "iGameScene.h"
-#include <format>
+#include "iGameInteractorStyle.h"
+#include "iGameBasicStyle.h"
+#include "iGameSingleSelectionStyle.h"
+#include "iGameMultiSelectionStyle.h"
+#include "iGameSingleDragStyle.h"
 
 IGAME_NAMESPACE_BEGIN
-
-enum MouseButton {
-    NoButton = 0x00000000,
-    LeftButton = 0x00000001,
-    RightButton = 0x00000002,
-    MiddleButton = 0x00000004
-};
-
 class Interactor : public Object {
 public:
     I_OBJECT(Interactor);
+    static Pointer New() { return new Interactor; }
 
-    void SetScene(Scene::Pointer scene) {
-        if (m_Scene != scene) {
+    void Initialize(Scene::Pointer scene) { 
+        if (scene) {
             m_Scene = scene;
-            if (m_Scene != nullptr) { this->Initialize(); }
-            this->Modified();
+            m_Camera = m_Scene->m_Camera; 
+            CreateDefaultStyle();
         }
     }
-    void Initialize() { m_Camera = m_Scene->m_Camera; }
 
-    virtual void ProcessInput() {
-        std::cout << "Processing input in Interactor." << std::endl;
+    void CreateDefaultStyle() { 
+        BasicStyle::Pointer style = BasicStyle::New();
+        style->Initialize(this);
+        m_Internal = style;
     }
 
-    virtual void Update() { std::cout << "Updating Interactor." << std::endl; }
-
-
-    virtual void MousePressEvent(int eventX, int eventY,
-                                 MouseButton _mouseMode) {
-        std::cout << std::format(
-                "Mouse press event at ({}, {}) with button {}\n", eventX,
-                eventY, static_cast<int>(_mouseMode));
+    void FilterEvent(IEvent _event) {
+        if (!m_Internal) {
+            CreateDefaultStyle();
+        }
+        m_Internal->FilterEvent(_event);
     }
 
-    virtual void MouseMoveEvent(int eventX, int eventY) {
-        std::cout << std::format("Mouse move event at ({}, {})\n", eventX,
-                                 eventY);
+    enum Style {
+        BasicStyle = 0, 
+        SinglePointSelectionStyle,
+        SingleFaceSelectionStyle,
+        MultiPointSelectionStyle,
+        MultiFaceSelectionStyle,
+        DragPointStyle,
+    };
+
+    void RequestBasicStyle() {
+        m_Internal = BasicStyle::New();
+        m_Internal->Initialize(this);
     }
 
-    virtual void MouseReleaseEvent(int eventX, int eventY) {
-        std::cout << std::format("Mouse release event at ({}, {})\n", eventX,
-                                 eventY);
+    void RequestDragPointStyle(Selection* s) {
+        if (!s) return;
+        auto act = SingleDragStyle::New();
+        act->SetSelectedType(SelectionStyle::SelectedType::SelectPoint);
+        act->Initialize(this, s);
+        m_Internal = act;
     }
 
-    virtual void WheelEvent(double delta) {
-        std::cout << std::format("Mouse wheel event with delta {}\n", delta);
+    void RequestPointSelectionStyle(Selection* s) {
+        if (!s) return;
+        auto act = SingleSelectionStyle::New();
+        act->SetSelectedType(SelectionStyle::SelectedType::SelectPoint);
+        act->Initialize(this, s);
+        m_Internal = act;
     }
 
+    void RequestFaceSelectionStyle(Selection* s) {
+        if (!s) return;
+        auto act = SingleSelectionStyle::New();
+        act->SetSelectedType(SelectionStyle::SelectedType::SelectCell);
+        act->Initialize(this, s);
+        m_Internal = act;
+    }
+
+    void LoadSelectionStyleRequired(Selection* s) {
+        if (!m_Internal) {
+            return;
+        }
+        SelectionStyle::Pointer act;
+        if ((act = DynamicCast<SelectionStyle>(m_Internal)) = nullptr) {
+            return;
+        }
+        act->Initialize(this, s);
+    }
+
+    float GetWidth() const { return m_Camera->GetViewPort().x; }
+    float GetHeight() const { return m_Camera->GetViewPort().y; }
+    igm::mat4 GetMVP() const {
+        return m_Scene->CameraData().proj_view * m_Scene->ObjectData().model;
+    }
+    Model* GetModel() { return m_Model.get(); }
+    Scene* GetScene() { return m_Scene.get(); }
+    Camera* GetCamera() { return m_Camera.get(); }
 
 protected:
     Interactor() = default;
     ~Interactor() override = default;
 
-    MouseButton m_MouseMode{};
-
+    InteractorStyle::Pointer m_Internal{};
+    Model::Pointer m_Model{};
     Scene::Pointer m_Scene{};
     Camera::Pointer m_Camera{};
-
-    igm::vec2 m_OldPoint2D{};
-    igm::vec2 m_NewPoint2D{};
 };
 
 IGAME_NAMESPACE_END
 
-#endif //OPENIGAME_BASEINTERACTOR_H
+#endif //OPENIGAME_INTERACTOR_H

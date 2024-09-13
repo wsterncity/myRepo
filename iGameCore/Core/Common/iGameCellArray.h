@@ -95,6 +95,18 @@ public:
 		this->m_FixedCellSize = fixedSize;
 	}
 	size_t GetNumberOfCellIds() { return this->m_Buffer ? this->m_Buffer->GetNumberOfIds() : 0; };
+
+	IGsize GetRealMemorySize() {
+		if (!m_Buffer)return 0;
+		IGsize res = m_Buffer->GetRealMemorySize();
+		if (m_UseOffsets) {
+			res += m_Offsets->GetRealMemorySize();
+		}
+		if (m_DeleteMasker) {
+			res += m_DeleteMasker->GetRealMemorySize();
+		}
+		return res + sizeof(m_NumberOfCells) + sizeof(m_FixedCellSize) + sizeof(m_UseOffsets);
+	}
 protected:
 	CellArray();
 	~CellArray() override = default;

@@ -831,6 +831,15 @@ void SurfaceMesh::ReplacePointReference(const IGsize fromPtId,
 
 SurfaceMesh::SurfaceMesh() { m_ViewStyle = IG_SURFACE; };
 
+IGsize SurfaceMesh::GetRealMemorySize()
+{
+    IGsize res = this->PointSet::GetRealMemorySize();
+    if (m_Faces)res += m_Faces->GetRealMemorySize();
+    if (m_Edges)res += m_Edges->GetRealMemorySize();
+    if (m_EdgeDeleteMarker)res += m_EdgeDeleteMarker->GetRealMemorySize();
+    if (m_FaceDeleteMarker)res += m_FaceDeleteMarker->GetRealMemorySize();
+    return res + sizeof(IGsize);
+}
 void SurfaceMesh::Draw(Scene* scene) {
     if (!m_Visibility) {
         return;
@@ -876,18 +885,18 @@ void SurfaceMesh::Draw(Scene* scene) {
         m_LineVAO.bind();
         glLineWidth(m_LineWidth);
 
-    // TODO: A better way to render wireframes
-//    auto boundingBoxDiag = this->GetBoundingBox().diag();
-//    auto scaleFactor =
-//        1e-5 / std::pow(10, std::floor(std::log10(boundingBoxDiag)));
-//    glad_glDepthRange(scaleFactor, 1);
-//    glad_glDepthFunc(GL_GEQUAL);
+        // TODO: A better way to render wireframes
+        auto boundingBoxDiag = this->GetBoundingBox().diag();
+        auto scaleFactor =
+            1e-5 / std::pow(10, std::floor(std::log10(boundingBoxDiag)));
+        glad_glDepthRange(scaleFactor, 1);
+        glad_glDepthFunc(GL_GEQUAL);
 
         glad_glDrawElements(GL_LINES, m_LineIndices->GetNumberOfIds(),
             GL_UNSIGNED_INT, 0);
 
-//    glad_glDepthFunc(GL_GREATER);
-//    glad_glDepthRange(0, 1);
+        glad_glDepthFunc(GL_GREATER);
+        glad_glDepthRange(0, 1);
 
         m_LineVAO.release();
     }

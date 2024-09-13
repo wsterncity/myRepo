@@ -63,7 +63,7 @@ border:2px solid #EEF1F7
      <x>0</x>
      <y>0</y>
      <width>1200</width>
-     <height>25</height>
+     <height>30</height>
     </rect>
    </property>
    <widget class="QMenu" name="menua">
@@ -473,8 +473,8 @@ border:2px solid #EEF1F7
   <widget class="QDockWidget" name="dockWidget_Animation">
    <property name="minimumSize">
     <size>
-     <width>58</width>
-     <height>35</height>
+     <width>98</width>
+     <height>44</height>
     </size>
    </property>
    <property name="allowedAreas">
@@ -581,15 +581,6 @@ border:2px solid #EEF1F7
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-  </widget>
-  <widget class="QDockWidget" name="dockWidget_ModelProperties">
-   <property name="windowTitle">
-    <string>Properties</string>
-   </property>
-   <attribute name="dockWidgetArea">
-    <number>1</number>
-   </attribute>
-   <widget class="QWidget" name="widget_ModelProperties"/>
   </widget>
   <action name="action_SaveMesh">
    <property name="icon">

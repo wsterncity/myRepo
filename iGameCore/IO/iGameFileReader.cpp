@@ -769,4 +769,6 @@ int FileReader::DecodeString(char* resname, const char* name)
 	resname[reslen] = 0;
 	return static_cast<int>(reslen);
 }
+
+
 IGAME_NAMESPACE_END

@@ -17,11 +17,11 @@ public:
 	void Initialize();
 
 	// Reallocate memory, and the old data is preserved. The array
-    // size will not change. '_NewPointsNum' is the number of points.
+	// size will not change. '_NewPointsNum' is the number of points.
 	void Reserve(const IGsize _NewPointsNum);
 
 	// Reallocate memory, and the old data is preserved. The array
-    // size will change. '_NewPointsNum' is the number of points.
+	// size will change. '_NewPointsNum' is the number of points.
 	void Resize(const IGsize _NewPointsNum);
 
 	// Reset the array size, and the old memory will not change.
@@ -43,18 +43,22 @@ public:
 
 	void SetPoint(const IGsize ptId, const Vector3d& p);
 	void SetPoint(const IGsize ptId, const Vector3f& p);
-    void SetPoint(const IGsize ptId, float x, float y, float z);
+	void SetPoint(const IGsize ptId, float x, float y, float z);
 
 	IGsize AddPoint(const Vector3d& p);
 	IGsize AddPoint(const Vector3f& p);
-    IGsize AddPoint(float x, float y, float z);
-    IGsize AddPoint(float p[3]);
+	IGsize AddPoint(float x, float y, float z);
+	IGsize AddPoint(float p[3]);
 	IGsize AddPoint(double p[3]);
 
 	FloatArray::Pointer ConvertToArray();
 
 	float* RawPointer();
 
+	IGsize GetRealMemorySize() {
+		if (!m_Buffer)return 0;
+		return this->m_Buffer->GetRealMemorySize() + sizeof(m_Name) + (m_Name.capacity() + 1) * sizeof(char);
+	}
 protected:
 	Points();
 	~Points() override = default;
