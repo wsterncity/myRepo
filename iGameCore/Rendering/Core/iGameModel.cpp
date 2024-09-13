@@ -1,5 +1,7 @@
 #include "iGameModel.h"
 #include "iGameScene.h"
+#include "iGameFilter.h"
+#include "iGameInteractor.h"
 
 
 IGAME_NAMESPACE_BEGIN
@@ -20,6 +22,31 @@ void Model::Draw(Scene* scene) {
 void Model::Update() {
     if (m_Scene) { m_Scene->Update(); }
 }
+
+Selection* Model::GetSelection() { 
+    if (m_Selection == nullptr) {
+        m_Selection = Selection::New();
+    }
+    return m_Selection.get(); 
+}
+
+void Model::RequestPointSelection(Points* p, Selection* s) {
+    if (m_Scene->GetInteractor() == nullptr) return;
+    s->m_Points = p;
+    s->m_Model = this;
+    m_Scene->GetInteractor()->RequestPointSelectionStyle(s);
+}
+
+void Model::RequestDragPoint(Points* p, Selection* s) {
+    if (m_Scene->GetInteractor() == nullptr) return;
+    s->m_Points = p;
+    s->m_Model = this;
+    m_Scene->GetInteractor()->RequestDragPointStyle(s);
+}
+
+Filter* Model::GetModelFilter() { return m_Filter; }
+void Model::DeleteModelFilter() { m_Filter = nullptr; }
+void Model::SetModelFilter(SmartPointer<Filter> _filter) { m_Filter = _filter; }
 
 void Model::Show() {
     m_DataObject->SetVisibility(true);

@@ -14,6 +14,10 @@ IGAME_NAMESPACE_BEGIN
     add_event(ProgressEvent)     \
     add_event(ChangeSceneEvent)  \
     add_event(ChangeScalarNameEvent)  \
+    add_event(PointPickedEvent)  \
+    add_event(PointsSelectionEvent)  \
+    add_event(FacePickedEvent)  \
+    add_event(FacesSelectionEvent)  \
 
 class Command : public AbstractObject {
 public:

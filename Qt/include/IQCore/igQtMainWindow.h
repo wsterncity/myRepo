@@ -41,6 +41,7 @@ public:
     void initAllMySignalConnections();
     void initAllFilters();
     void initAllSources();
+    void initAllInteractor();
 
 public:
     igQtModelDrawWidget* rendererWidget;
@@ -67,10 +68,10 @@ private slots:
     //void updateCurrentSceneWidget();
 
     void UpdateRenderingWidget();
-    void changePointSelectionInteractor();
-    void changePointsSelectionInteractor();
-    void changeFaceSelectionInteractor();
-    void changeFacesSelectionInteractor();
+    //void changePointSelectionInteractor();
+    //void changePointsSelectionInteractor();
+    //void changeFaceSelectionInteractor();
+    //void changeFacesSelectionInteractor();
 
 private:
     Ui::MainWindow* ui;

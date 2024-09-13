@@ -6,12 +6,15 @@
  * @class   iGameQtGLFWWindow
  * @brief   iGameQtGLFWWindow's brief
  */
-#include "Core/Interactor/iGameBasicInteractor.h"
+#include "iGameInteractor.h"
 #include "iGameSceneManager.h"
 
 #include <IQWidgets/igQtRenderWidget.h>
 #include <qdebug.h>
 #include <QMouseEvent>
+#include <iGamePointSet.h>
+#include <iGameVolumeMesh.h>
+#include <iGameUnstructuredMesh.h>
 
 igQtRenderWidget::igQtRenderWidget(QWidget* parent) : QOpenGLWidget(parent)
 {
@@ -39,7 +42,86 @@ void igQtRenderWidget::AddDataObject(SmartPointer<DataObject> obj) {
 
 void igQtRenderWidget::ChangeInteractor(SmartPointer<Interactor> it) {
     m_Interactor = it;
-    m_Interactor->SetScene(m_Scene);
+    m_Interactor->Initialize(m_Scene);
+    m_Scene->SetInteractor(m_Interactor);
+}
+
+void igQtRenderWidget::ChangeInteractorStyle(IGenum style)
+{
+    
+    switch (style)
+    {
+    case Interactor::BasicStyle:
+        m_Interactor->RequestBasicStyle();
+        break;
+    case Interactor::SinglePointSelectionStyle:
+    {
+        auto* s = m_Scene->GetCurrentModel()->GetSelection();
+        auto ps = DynamicCast<PointSet>(m_Scene->GetCurrentModel()->GetDataObject());
+        if (ps == nullptr) {
+            m_Interactor->RequestBasicStyle();
+            return;
+        }
+        s->SetPoints(ps->GetPoints());
+        s->SetModel(m_Scene->GetCurrentModel());
+        m_Interactor->RequestPointSelectionStyle(s);
+    }
+        break;
+    case Interactor::SingleFaceSelectionStyle:
+    {
+        auto* s = m_Scene->GetCurrentModel()->GetSelection();
+        auto model = m_Scene->GetCurrentModel();
+        auto obj = model->GetDataObject();
+        Points::Pointer points;
+        CellArray::Pointer faces;
+
+        if (DynamicCast<VolumeMesh>(obj)) {
+            auto mesh = DynamicCast<VolumeMesh>(obj)->GetDrawMesh();
+            points = mesh->GetPoints();
+            faces = mesh->GetFaces();
+        }
+        else if (DynamicCast<UnstructuredMesh>(obj)) {
+            auto mesh = DynamicCast<UnstructuredMesh>(obj)->GetDrawMesh();
+            points = mesh->GetPoints();
+            faces = mesh->GetFaces();
+        }
+        else if (DynamicCast<SurfaceMesh>(obj)) {
+            auto mesh = DynamicCast<SurfaceMesh>(obj);
+            faces = mesh->GetFaces();
+            points = mesh->GetPoints();
+        }
+        if (points == nullptr || faces == nullptr) {
+            m_Interactor->RequestBasicStyle();
+            return;
+        }
+        s->SetPoints(points);
+        s->SetCells(faces);
+        s->SetModel(model);
+        m_Interactor->RequestFaceSelectionStyle(s);
+    }
+        break;
+    case Interactor::MultiPointSelectionStyle:
+        //m_Interactor->RequestPointSelectionStyle(m_Scene->GetCurrentModel()->GetSelection());
+        break;
+    case Interactor::MultiFaceSelectionStyle:
+        //m_Interactor->RequestPointSelectionStyle(m_Scene->GetCurrentModel()->GetSelection());
+        break; 
+    case Interactor::DragPointStyle:
+    {
+        auto* s = m_Scene->GetCurrentModel()->GetSelection();
+        auto ps = DynamicCast<PointSet>(m_Scene->GetCurrentModel()->GetDataObject());
+        if (ps == nullptr) {
+            m_Interactor->RequestBasicStyle();
+            return;
+        }
+        s->SetPoints(ps->GetPoints());
+        s->SetModel(m_Scene->GetCurrentModel());
+        m_Interactor->RequestDragPointStyle(s);
+    }
+        break;
+    default:
+        break;
+    }
 }
 
 void igQtRenderWidget::initializeGL()
@@ -50,8 +132,10 @@ void igQtRenderWidget::initializeGL()
     m_Scene->SetUpdateFunctor(&igQtRenderWidget::update, this);
     m_Scene->SetMakeCurrentFunctor(&igQtRenderWidget::makeCurrent, this);
     m_Scene->SetDoneCurrentFunctor(&igQtRenderWidget::doneCurrent, this);
-    m_Interactor = BasicInteractor::New();
-    m_Interactor->SetScene(m_Scene);
+
+    m_Interactor = Interactor::New();
+    m_Interactor->Initialize(m_Scene);
+    m_Scene->SetInteractor(m_Interactor);
 }
 
 void igQtRenderWidget::resizeGL(int w, int h)
@@ -68,53 +152,55 @@ void igQtRenderWidget::paintGL()
 
 void igQtRenderWidget::mousePressEvent(QMouseEvent* event)
 {
-    MouseButton mode{};
+    IEvent _event;
     switch (event->button()) {
     case Qt::NoButton:
-        mode = MouseButton::NoButton;
+        _event.button = MouseButton::NoButton;
         break;
     case Qt::LeftButton:
-        mode = MouseButton::LeftButton;
+        _event.button = MouseButton::LeftButton;
         break;
     case Qt::RightButton:
-        mode = MouseButton::RightButton;
+        _event.button = MouseButton::RightButton;
+        break;
+    case Qt::MiddleButton:
+        _event.button = MouseButton::MiddleButton;
         break;
     default:
         break;
     }
-    m_Interactor->MousePressEvent(event->pos().x(), event->pos().y(), mode);
+    _event.type = IEvent::MousePress;
+    _event.pos.x = event->pos().x();
+    _event.pos.y = event->pos().y();
+    m_Interactor->FilterEvent(_event);
     update();
 }
 
 void igQtRenderWidget::mouseMoveEvent(QMouseEvent* event)
 {
-    m_Interactor->MouseMoveEvent(event->pos().x(), event->pos().y());
+    IEvent _event;
+    _event.type = IEvent::MouseMove;
+    _event.pos.x = event->pos().x();
+    _event.pos.y = event->pos().y();
+    m_Interactor->FilterEvent(_event);
     update();
 }
 
 void igQtRenderWidget::mouseReleaseEvent(QMouseEvent* event)
 {
-    m_Interactor->MouseReleaseEvent(event->pos().x(), event->pos().y());
+    IEvent _event;
+    _event.type = IEvent::MouseRelease;
+    _event.pos.x = event->pos().x();
+    _event.pos.y = event->pos().y();
+    m_Interactor->FilterEvent(_event);
     update();
 }
 
 void igQtRenderWidget::wheelEvent(QWheelEvent* event)
 {
-    m_Interactor->WheelEvent(event->delta());
+    IEvent _event;
+    _event.type = IEvent::Wheel;
+    _event.delta = event->delta();
+    m_Interactor->FilterEvent(_event);
     update();
 }
-
-//void igQtRenderWidget::ChangeViewStyle(int index) {
-//    if (m_Scene->GetCurrentObject()) {
-//    m_Scene->GetCurrentObject()->SetViewStyleOfModel(index);
-//    }
-//    update();
-//}
-//void igQtRenderWidget::ChangeScalarView(int index, int dim) {
-//    makeCurrent();
-//    if (m_Scene->GetCurrentObject()) {
-//    m_Scene->GetCurrentObject()->ViewCloudPictureOfModel(index - 1, dim);
-//    }
-//    doneCurrent();
-//    update();
-//}
