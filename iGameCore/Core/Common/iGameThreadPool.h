@@ -90,6 +90,32 @@ public:
 			}
 		}
 	}
+	template <typename Func>
+	static void parallelFor(int start, int end, int maxThreadSize, Func&& process, int numThreads = 12) {
+		if (numThreads > maxThreadSize)numThreads = maxThreadSize;
+		int range = end - start;
+		int chunkSize = range / numThreads;
+		if (range < numThreads) {
+			numThreads = range;
+			chunkSize = 1;
+		}
+		std::vector<std::thread> threads;
+		for (int i = 0; i < numThreads; ++i) {
+			int chunkStart = start + i * chunkSize;
+			int chunkEnd = (i == numThreads - 1) ? end : chunkStart + chunkSize;
+			if (chunkStart == chunkEnd) continue;
+			// 创建线程执行任务
+			threads.emplace_back([=]() {
+				process(chunkStart, chunkEnd, i);
+				});
+		}
+		// 等待所有线程完成
+		for (auto& thread : threads) {
+			if (thread.joinable()) {
+				thread.join();
+			}
+		}
+	}
 	int IdleThreadCount() {
 		return thread_num_;
 	}

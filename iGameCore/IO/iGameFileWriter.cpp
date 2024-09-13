@@ -22,6 +22,7 @@ FileWriter::~FileWriter()
 {
 	std::vector<CharArray::Pointer> temp;
 	m_Buffers.swap(temp);
+	m_TemporaryBuffers.swap(temp);
 }
 bool FileWriter::WriteToFile()
 {
@@ -47,7 +48,7 @@ bool FileWriter::SaveBufferDataToFile()
 #elif defined(PLATFORM_LINUX)
 	return SaveBufferDataToFileWithLinux();
 #elif defined(PLATFORM_MAC)
-
+	return SaveBufferDataToFileWithMac();
 
 #endif
 }
@@ -55,6 +56,7 @@ bool FileWriter::SaveBufferDataToFileWithWindows()
 {
 	clock_t time_1 = clock();
 	// 打开文件
+
 	HANDLE hFile = CreateFile(this->m_FilePath.data(), GENERIC_READ | GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (hFile == INVALID_HANDLE_VALUE) {
 		_tprintf(_T("CreateFile failed with error: %lu\n"), GetLastError());
@@ -94,7 +96,7 @@ bool FileWriter::SaveBufferDataToFileWithWindows()
 			offset += m_Buffers[i]->GetNumberOfValues();
 		}
 	}
-
+	m_Buffers.clear();
 	// 解除映射
 	UnmapViewOfFile(lpBaseAddress);
 	CloseHandle(hMapFile);
@@ -147,7 +149,7 @@ bool FileWriter::SaveBufferDataToFileWithLinux()
 			offset += m_Buffers[i]->GetNumberOfValues();
 		}
 	}
-
+	m_Buffers.clear();
 	// 清除映射并关闭文件
 	if (munmap(map, m_FileSize) == -1) {
 		perror("munmap failed");
@@ -200,7 +202,7 @@ bool FileWriter::SaveBufferDataToFileWithMac()
 			offset += m_Buffers[i]->GetNumberOfValues();
 		}
 	}
-
+	m_Buffers.clear();
 	// 清除映射并关闭文件
 	if (munmap(map, m_FileSize) == -1) {
 		perror("munmap failed");
@@ -221,12 +223,56 @@ void FileWriter::SetDataObject(DataObject::Pointer dataObject)
 {
 	this->m_DataObject = dataObject;
 }
-void FileWriter::AddStringToBuffer(std::string& data, CharArray::Pointer buffer)
+void FileWriter::AddStringToBuffer(std::string data, CharArray::Pointer buffer)
 {
 	if (!buffer)return;
 	for (int i = 0; i < data.size(); i++) {
 		buffer->AddValue(data[i]);
 	}
 	return;
+}
+
+void FileWriter::TransferBuffer()
+{
+	for (int i = 0; i < m_TemporaryBuffers.size(); i++) {
+		m_Buffers.emplace_back(m_TemporaryBuffers[i]);
+	}
+	m_TemporaryBuffers.clear();
+}
+int FileWriter::EncodeString(char* resname, const char* name)
+{
+	if (!resname || !name)
+	{
+		return 0;
+	}
+
+	std::ostringstream str;
+	size_t cc = 0;
+	size_t reslen = 0;
+	char buffer[4]; // To hold "%xx" format
+
+	while (name[cc])
+	{
+		unsigned char ch = static_cast<unsigned char>(name[cc]);
+
+		// Encode only non-alphanumeric characters (you can adjust this condition as needed)
+		if (!isalnum(ch))
+		{
+			snprintf(buffer, sizeof(buffer), "%%%02X", ch);
+			str << buffer;
+			reslen += 3; // "%xx" is 3 characters
+		}
+		else
+		{
+			str << name[cc];
+			reslen++;
+		}
+		cc++;
+	}
+
+	strncpy(resname, str.str().c_str(), reslen + 1);
+	resname[reslen] = 0;
+
+	return static_cast<int>(reslen);
 }
 IGAME_NAMESPACE_END
