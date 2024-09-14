@@ -1214,7 +1214,10 @@ int iGameModelGeometryFilter::ExecuteWithUnstructuredGrid(
 		}
 	}
 	if (is3D == false) {
-		return ExecuteWithSurfaceMesh(Grid->TransferToSurfaceMesh(), output);
+		auto surfaceMesh = Grid->TransferToSurfaceMesh();
+		if (!ExecuteWithSurfaceMesh(Grid->TransferToSurfaceMesh(), output))
+			output = surfaceMesh;
+		return 1;
 	}
 	igIndex i = 0, j = 0, k = 0;
 	igIndex64 cellId = 0, pointId = 0;

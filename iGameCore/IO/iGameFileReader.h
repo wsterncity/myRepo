@@ -11,7 +11,17 @@
 #include <tchar.h>
 #include <cfloat>
 
+#ifdef PLATFORM_WINDOWS
 #include <windows.h>
+#include <stdio.h>
+#include <tchar.h>
+#elif defined(PLATFORM_LINUX) || defined(PLATFORM_MAC)
+#include <fcntl.h>    
+#include <sys/mman.h> 
+#include <unistd.h>   
+#include <sys/types.h>
+#include <sys/stat.h>
+#endif
 IGAME_NAMESPACE_BEGIN
 
 
@@ -22,6 +32,8 @@ public:
 	// static Pointer New() { return new FileReader; }
 
 	bool Open();
+	bool OpenWithWindowsSystem();
+	bool OpenWithLinuxOrMacSystem();
 	virtual bool Parsing() = 0;
 	virtual bool CreateDataObject();
 	bool Close();
@@ -73,11 +85,16 @@ protected:
 	std::string m_FileSuffix;
 	FILE* file_;
 	size_t m_FileSize;
+#ifdef PLATFORM_WINDOWS
 	HANDLE m_File;
 	HANDLE m_MapFile;
+#elif defined(PLATFORM_LINUX) || defined(PLATFORM_MAC)
+	int m_File;
+#endif
+
 	const char* IS;
-	char* FILESTART;
-	char* FILEEND;
+	char* FILESTART{ nullptr };
+	char* FILEEND{ nullptr };
 	IGenum m_FileType{ IGAME_ASCII };
 };
 

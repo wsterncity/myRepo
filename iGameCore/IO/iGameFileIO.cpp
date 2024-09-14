@@ -260,7 +260,8 @@ bool  FileIO::WriteFile(const std::string& file_name, DataObject::Pointer dataOb
 	}
 	case iGame::FileIO::OFF:
 	{
-
+		OFFWriter::Pointer writer = OFFWriter::New();
+		result = writer->WriteToFile(dataObject, file_name);
 		break;
 	}
 	case iGame::FileIO::MESH:

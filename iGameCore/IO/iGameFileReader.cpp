@@ -79,8 +79,21 @@ bool FileReader::Open()
 
 
 
+#ifdef PLATFORM_WINDOWS
+	return OpenWithWindowsSystem();
+#elif defined(PLATFORM_LINUX)
+	return OpenWithLinuxOrMacSystem();
+#elif defined(PLATFORM_MAC)
+	return OpenWithLinuxOrMacSystem();
+#endif
 
+	return true;
 
+}
+
+bool FileReader::OpenWithWindowsSystem()
+{
+#ifdef PLATFORM_WINDOWS
 	// 打开文件
 	this->m_File = CreateFile(m_FilePath.data(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (m_File == INVALID_HANDLE_VALUE) {
@@ -114,18 +127,49 @@ bool FileReader::Open()
 	}
 	this->IS = this->FILESTART;
 	this->FILEEND = this->FILESTART + this->m_FileSize;
+#endif 
 	return true;
-
 }
+bool FileReader::OpenWithLinuxOrMacSystem()
+{
+#if defined(PLATFORM_LINUX) || defined(PLATFORM_MAC)
+	// 打开文件
+	m_File = open(filePath, O_RDONLY);
+	if (m_File == -1) {
+		perror("open");
+		return false;
+	}
 
+	// 获取文件大小
+	struct stat st;
+	if (fstat(m_File, &st) == -1) {
+		perror("fstat");
+		close(m_File);
+		return false;
+	}
+	m_FileSize = st.st_size;
+
+	// 映射文件到内存
+	FILESTART = (char*)mmap(NULL, m_FileSize, PROT_READ, MAP_PRIVATE, m_File, 0);
+	if (FILESTART == MAP_FAILED) {
+		perror("mmap");
+		close(m_File);
+		return false;
+	}
+	this->IS = this->FILESTART;
+	FILEEND = FILESTART + FILEEND;
+#endif
+	return true;
+}
 bool FileReader::Close()
 {
-	//fclose(file_);
-	//free(this->FILESTART);
-	//return true;
+#ifdef PLATFORM_WINDOWS
 	UnmapViewOfFile(this->IS);
 	CloseHandle(this->m_MapFile);
 	CloseHandle(this->m_File);
+#elif defined(PLATFORM_LINUX) || defined(PLATFORM_MAC)
+	close(m_File);
+#endif
 	return true;
 }
 
@@ -723,7 +767,7 @@ void FileReader::SetFilePath(const std::string& filePath) {
 	this->m_FileName = filePath.substr(filePath.find_last_of('/') + 1, filePath.size());;
 }
 
-void FileReader::SkipNullData(){
+void FileReader::SkipNullData() {
 	while (this->IS && (*this->IS == ' ' || *this->IS == '\r' || *this->IS == '\n' || *this->IS == '\t'))this->IS++;
 }
 void FileReader::UpdateReadProgress() {

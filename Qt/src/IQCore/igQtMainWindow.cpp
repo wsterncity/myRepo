@@ -22,6 +22,8 @@
 #include <Sources/iGameLineTypePointsSource.h>
 #include <IQWidgets/igQtModelInformationWidget.h>
 #include "iGameFilterIncludes.h"
+#include <fcntl.h>  // 用于 open
+#include <stdio.h>  
 igQtMainWindow::igQtMainWindow(QWidget* parent)
 	: QMainWindow(parent), ui(new Ui::MainWindow) {
 	ui->setupUi(this);
@@ -152,8 +154,8 @@ void igQtMainWindow::initAllComponents() {
 	connect(ui->action_LoadFile, &QAction::triggered, fileLoader,
 		&igQtFileLoader::LoadFile);
 	// connect(ui->action_SaveMesh, &QAction::triggered, fileLoader,
-	// &igQtFileLoader::SaveFile); connect(ui->action_SaveMeshAs,
-	// &QAction::triggered, fileLoader, &igQtFileLoader::SaveFileAs);
+	// &igQtFileLoader::SaveFile); 
+	connect(ui->action_SaveMeshAs,&QAction::triggered, fileLoader, &igQtFileLoader::SaveFileAs);
 	// connect(ui->action_CopyMesh, &QAction::triggered, this, [&]() {
 	//	iGame::iGameManager::Instance()->CopyMesh();
 	//	});
@@ -507,14 +509,15 @@ void igQtMainWindow::initAllFilters() {
 		});
 	auto action_loadtest = ui->menu_help->addAction("loadtest");
 	connect(action_loadtest, &QAction::triggered, this, [&](bool checked) {
-		std::string filePath = "F:\\OpeniGame\\Model\\Common\\test.vtk";
-		clock_t time_1 = clock();
-		auto writer = VTKWriter::New();
-		auto mesh = SceneManager::Instance()->GetCurrentScene()->GetCurrentModel()->GetDataObject();
-		writer->WriteToFile(mesh, filePath);
-		clock_t time_2 = clock();
-		std::cout << time_2 - time_1 << "ms\n";
-		return;
+		//std::string filePath = "F:\\OpeniGame\\Model\\vtk\\Spherical001.vtk";
+		std::string filePath = "F:\\OpeniGame\\Model\\secrecy\\DrivAer_fastback_base_0.4_remesh_coarse_kw_CPU_test_P_V.cgns";
+		//clock_t time_1 = clock();
+		//auto writer = VTKWriter::New();
+		//auto mesh = SceneManager::Instance()->GetCurrentScene()->GetCurrentModel()->GetDataObject();
+		//writer->WriteToFile(mesh, filePath);
+		//clock_t time_2 = clock();
+		//std::cout << time_2 - time_1 << "ms\n";
+		//return;
 
 
 		CharArray::Pointer m_Buffer = CharArray::New();
@@ -553,6 +556,54 @@ void igQtMainWindow::initAllFilters() {
 
 
 
+		});
+
+	auto action_savetest_fwrite = ui->menu_help->addAction("savetest_fwrite");
+	connect(action_savetest_fwrite, &QAction::triggered, this, [&](bool checked) {
+		std::string filePath = "F:\\OpeniGame\\Model\\common\\test.txt";
+		// 创建多个长度为一亿的 char 数组
+		const int num_arrays = 3;
+		const size_t array_size = 200000000;
+		char* data[num_arrays];
+		for (int i = 0; i < num_arrays; ++i) {
+			data[i] = (char*)malloc(array_size * sizeof(char));
+			if (data[i] == NULL) {
+				_tprintf(_T("Memory allocation failed.\n"));
+				return 1;
+			}
+
+			// 初始化数组
+			for (size_t j = 0; j < array_size; ++j) {
+				data[i][j] = 'A' + (j % 26);
+			}
+		}
+		clock_t time1 = clock();
+		// 打开文件用于写入
+		FILE* file = fopen(filePath.data(), "wb");
+		if (file == NULL) {
+			_tprintf(_T("File opening failed.\n"));
+			return 1;
+		}
+
+		// 将每个数组依次写入文件
+		for (int i = 0; i < num_arrays; ++i) {
+			size_t elements_written = fwrite(data[i], sizeof(char), array_size, file);
+			if (elements_written != array_size) {
+				_tprintf(_T("Error writing to file.\n"));
+				fclose(file);
+				return 1;
+			}
+		}
+
+		// 关闭文件
+		fclose(file);
+
+		// 释放内存
+		for (int i = 0; i < num_arrays; ++i) {
+			free(data[i]);
+		}
+		clock_t time2 = clock();
+		std::cout << "Read file to buffer Cost " << time2 - time1 << "ms\n";
 		});
 
 	connect(ui->menuTest->addAction("addTetra"), &QAction::triggered, this,

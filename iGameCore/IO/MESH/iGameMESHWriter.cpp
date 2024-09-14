@@ -10,15 +10,28 @@ bool MESHWriter::GenerateBuffers()
 	{
 	case IG_SURFACE_MESH:
 		m_SurfaceMesh = DynamicCast<SurfaceMesh>(m_DataObject);
-		WriteWithSurfaceMeshType();
+		if (m_SurfaceMesh) {
+			WriteWithSurfaceMeshType();
+		}
 		break;
 	case IG_VOLUME_MESH:
 		m_VolumeMesh = DynamicCast<VolumeMesh>(m_DataObject);
-		WriteWithVolumeMeshType();
+		if (m_VolumeMesh) {
+			WriteWithVolumeMeshType();
+		}
 		break;
 	case IG_UNSTRUCTURED_MESH:
-		m_VolumeMesh = DynamicCast<UnstructuredMesh>(m_DataObject)->TransferToVolumeMesh();
-		WriteWithVolumeMeshType();
+		m_VolumeMesh = DynamicCast<UnstructuredMesh>(m_DataObject)->ExtractVolumeMesh();
+		if (m_VolumeMesh && m_VolumeMesh->GetNumberOfVolumes()) {
+			WriteWithVolumeMeshType();
+		}
+		else {
+			m_SurfaceMesh = DynamicCast<UnstructuredMesh>(m_DataObject)->ExtractSurfaceMesh();
+			if (m_SurfaceMesh && m_SurfaceMesh->GetNumberOfFaces()) {
+				WriteWithSurfaceMeshType();
+			}
+		}
+
 		break;
 	default:
 		return false;

@@ -64,6 +64,7 @@ public:
 	VolumeMesh::Pointer ExtractVolumeMesh();
 	//Generate from VolumeMesh
 	bool GenerateFromVolumeMesh(VolumeMesh::Pointer volumeMesh);
+
 	static bool TransferVolumeMeshToUnstructuredMesh(VolumeMesh::Pointer volumeMesh, UnstructuredMesh::Pointer&);
 
 	SurfaceMesh::Pointer GetDrawMesh() { return m_DrawMesh; }
