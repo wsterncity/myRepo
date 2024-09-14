@@ -32,6 +32,7 @@ signals:
 	//void DrawEllipsoidGlyph(iGame::iGameFloatArray*, iGame::iGameIntArray*);
 	void DrawTensorGlyphs(DataObject::Pointer);
 	void UpdateTensorGlyphs(DataObject::Pointer);
+	void UpdateAttributes(DataObject::Pointer);
 private:
 	Ui::TensorView* ui;
 	iGameTensorWidgetBase* m_Manager;

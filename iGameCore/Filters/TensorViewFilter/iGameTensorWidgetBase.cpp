@@ -117,18 +117,18 @@ void iGameTensorWidgetBase::SetPositionColors(FloatArray::Pointer colors)
 	UpdateGlyphDrawColor();
 }
 
-void iGameTensorWidgetBase::GenerateVectorField()
+DoubleArray::Pointer iGameTensorWidgetBase::GenerateVectorField()
 {
 	int PointNum = this->m_Points ? this->m_Points->GetNumberOfPoints() : 0;
 	if (PointNum == 0 || !this->m_TensorAttributes ||
 		this->m_TensorAttributes->GetNumberOfValues() != (9 * PointNum)) {
-		return;
+		return nullptr;
 	}
 	double vector[3];
-	DoubleArray::Pointer vectorData = DoubleArray::New();
-	vectorData->SetElementSize(3);
-	vectorData->SetName(this->m_TensorAttributes->GetName() + "_PrimaryFeature");
-	vectorData->Resize(PointNum);
+	m_EigenVector = DoubleArray::New();
+	m_EigenVector->SetElementSize(3);
+	m_EigenVector->SetName(this->m_TensorAttributes->GetName() + "_PrimaryFeature");
+	m_EigenVector->Resize(PointNum);
 	double t[9];
 	for (int i = 0; i < PointNum; i++) {
 		for (int j = 0; j < 9; j++) {
@@ -136,8 +136,9 @@ void iGameTensorWidgetBase::GenerateVectorField()
 		}
 		m_TensorManager->InitTensorEigenData(t);
 		m_TensorManager->GetEigenVector(0, vector);
-		vectorData->SetElement(i, vector);
+		m_EigenVector->SetElement(i, vector);
 	}
+	return m_EigenVector;
 }
 void iGameTensorWidgetBase::Draw(Scene* scene)
 {

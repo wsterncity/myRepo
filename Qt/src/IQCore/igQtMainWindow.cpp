@@ -49,8 +49,10 @@ igQtMainWindow::igQtMainWindow(QWidget *parent)
   // Set up the dock window corners to give the vertical docks more room.
   this->setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);
   this->setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
+  modelTreeWidget->setFloating(false); // Make sure it's docked
+  modelTreeWidget->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::TopDockWidgetArea);
+  modelTreeWidget->setFeatures(QDockWidget::NoDockWidgetFeatures); // Disable floating and moving
   this->addDockWidget(Qt::LeftDockWidgetArea, modelTreeWidget);
-
   initToolbarComponent();
   initAllComponents();
   initAllFilters();
@@ -882,6 +884,12 @@ void igQtMainWindow::initAllMySignalConnections() {
             // modelTreeWidget->addDataObjectToModelTree(res,
             // ItemSource::Algorithm);
           });
+  connect(ui->widget_TensorField, &igQtTensorWidget::UpdateAttributes, this,
+      [&](iGame::DataObject::Pointer res) {
+          modelTreeWidget->updateAllattriubute(res);
+          // modelTreeWidget->addDataObjectToModelTree(res,
+          // ItemSource::Algorithm);
+      });
   // connect(ui->widget_TensorField, &igQtTensorWidget::DrawEllipsoidGlyph,
   // this, [&]() { 	this->rendererWidget->DrawEllipsoidGlyph();
   //	});

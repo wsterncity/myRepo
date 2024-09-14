@@ -186,5 +186,12 @@ void igQtTensorWidget::UpdateGlyphColors()
 }
 void igQtTensorWidget::GenerateVectorField()
 {
-	this->m_Manager->GenerateVectorField();
+	auto data = this->m_Manager->GenerateVectorField();
+	if (!m_DataObject->GetAttributeSet()) {
+		m_DataObject->SetAttributeSet(AttributeSet::New());
+	}
+	data->SetName(ui->TensorInfoComboBox->currentText().toStdString() + "_EigenVector");
+	m_DataObject->GetAttributeSet()->AddAttribute(IG_VECTOR, IG_POINT, data);
+	Q_EMIT UpdateAttributes(m_DataObject);
+
 }
