@@ -59,23 +59,23 @@ bool FileReader::Open()
 		return false;
 	}
 
-	file_ = fopen(m_FilePath.c_str(), "rb");
-	if (fseek(file_, SEEK_SET, SEEK_END) != 0) {
-		return false;
-	}
-	m_FileSize = static_cast<size_t>(_ftelli64(file_));
-	rewind(file_);
-	if (m_FileSize == 0) {
-		return false;
-	}
-	this->FILESTART = (char*)malloc(m_FileSize);
-	if (fread(this->FILESTART, 1, m_FileSize, file_) == m_FileSize)
-	{
-		this->IS = this->FILESTART;
-		this->FILEEND = this->FILESTART + m_FileSize;
-		return true;
-	}
-	return false;
+	//file_ = fopen(m_FilePath.c_str(), "rb");
+	//if (fseek(file_, SEEK_SET, SEEK_END) != 0) {
+	//	return false;
+	//}
+	//m_FileSize = static_cast<size_t>(_ftelli64(file_));
+	//rewind(file_);
+	//if (m_FileSize == 0) {
+	//	return false;
+	//}
+	//this->FILESTART = (char*)malloc(m_FileSize);
+	//if (fread(this->FILESTART, 1, m_FileSize, file_) == m_FileSize)
+	//{
+	//	this->IS = this->FILESTART;
+	//	this->FILEEND = this->FILESTART + m_FileSize;
+	//	return true;
+	//}
+	//return false;
 
 
 
