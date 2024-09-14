@@ -151,7 +151,6 @@ public:
         if (v_[dimension - 1] < x.v_[dimension - 1]) { return true; }
         return false;
     }
-
     inline void setZero() {
         for (int i = 0; i < dimension; ++i) { v_[i] = 0; }
     }

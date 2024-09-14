@@ -85,7 +85,7 @@ void igQtStreamTracerWidget::generateStreamline() {
 	auto scene = SceneManager::Instance()->GetCurrentScene();
 	iGameStreamTracer streamtracer;
 	Model::Pointer model = scene->GetCurrentModel();
-	VolumeMesh::Pointer mesh = DynamicCast<VolumeMesh>(model->GetDataObject());
+	VolumeMesh::Pointer mesh = DynamicCast<UnstructuredMesh>(model->GetDataObject())->TransferToVolumeMesh();
 	streamtracer.SetMesh(mesh);
 	auto seeds = streamtracer.streamSeedGenerate(control, proportion, numOfSeeds);
 	//manager->GetCurrentModel()->seedPointsOfstreamline = new float[3 * seeds.size()];
