@@ -12,7 +12,8 @@ bool OBJReader::Parsing()
 	char line[256];
 	float coord[3] = { .0 };
 	igIndex size = 0;
-	while (this->ReadString(line)) {
+	const char* lineEnd = nullptr;
+	while (this->IS<this->FILEEND&& this->ReadString(line)) {
 		if (line[0] == '\0') {
 			continue;
 		}
@@ -26,9 +27,10 @@ bool OBJReader::Parsing()
 			VertexNum++;
 		}
 		else if (line[0] == 'f' && line[1] == '\0') {
-			this->SkipNullData();
 			size = 0;
-			while (this->IS < FILEEND && *this->IS != 'f') {
+			lineEnd = strchr(this->IS, '\n');
+			if (!lineEnd)lineEnd = FILEEND;
+			while (this->IS < lineEnd) {
 				if (!this->Read(vhs + size)) {
 					return false;
 				}
@@ -36,6 +38,7 @@ bool OBJReader::Parsing()
 				size++;
 				this->SkipNullData();
 			}
+			this->IS = lineEnd + 1;
 			Faces->AddCellIds(vhs, size);
 			FaceNum++;
 		}

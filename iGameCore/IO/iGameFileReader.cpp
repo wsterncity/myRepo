@@ -77,8 +77,6 @@ bool FileReader::Open()
 	//}
 	//return false;
 
-
-
 #ifdef PLATFORM_WINDOWS
 	return OpenWithWindowsSystem();
 #elif defined(PLATFORM_LINUX)
@@ -395,7 +393,13 @@ int FileReader::ReadString(char result[256])
 			break;
 		}
 	}
-	this->IS = op + 1;
+	if (result[0] == '\0') {
+		this->IS = op + 1;
+	}
+	this->IS = op;
+	if (result[0] == '\0') {
+		this->IS++;
+	}
 	return 1;
 }
 int FileReader::ReadString(std::string& result)
@@ -417,7 +421,10 @@ int FileReader::ReadString(std::string& result)
 	if (slen > 0 && result[slen - 1] == '\r') {
 		result = std::string(this->IS, op - 1);
 	}
-	this->IS = op + 1;
+	this->IS = op;
+	if (result[0] == '\0') {
+		this->IS++;
+	}
 	return 1;
 }
 
