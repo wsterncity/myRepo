@@ -1,8 +1,8 @@
 #pragma once
 #include "OpenGL/GLBuffer.h"
 #include "OpenGL/GLIndirectCommand.h"
-#include "Timer.h"
 #include "iGameObject.h"
+#include "iGameTimer.h"
 #include "meshoptimizer.h"
 
 IGAME_NAMESPACE_BEGIN

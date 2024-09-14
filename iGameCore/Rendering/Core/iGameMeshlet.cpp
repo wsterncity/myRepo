@@ -14,7 +14,7 @@ void Meshlet::CreateBuffer() {
 void Meshlet::BuildMeshlet(const float* vertex_positions, size_t vertex_count,
                            const int* indices, size_t index_count,
                            GLBuffer& EBO) {
-    Timer timer;
+    iGameTimer timer;
     timer.reset();
 
     // use for mesh shader

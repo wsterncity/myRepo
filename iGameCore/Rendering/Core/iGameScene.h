@@ -15,6 +15,8 @@
 #include "iGameModel.h"
 #include "iGameSelection.h"
 
+#include "iGamePainterT.h"
+
 IGAME_NAMESPACE_BEGIN
 class Interactor;
 class Scene : public Object {
@@ -121,7 +123,6 @@ public:
         m_UpdateFunctor = std::bind(functor, args...);
     }
 
-    // TODO: slove z-buffer Accuracy issues
     GLBuffer& GetDrawCullDataBuffer() { return m_DrawCullData; }
 
     void MakeCurrent() {
@@ -205,6 +206,8 @@ protected:
     GLBuffer m_DrawCullData;
     int m_DepthPyramidWidth, m_DepthPyramidHeight, m_DepthPyramidLevels;
     GLTexture2d m_DepthPyramid;
+
+    Painter::Pointer painter = Painter::New();
 
     friend class Interactor;
     friend class BasicInteractor;

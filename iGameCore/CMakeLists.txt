@@ -26,6 +26,7 @@ target_include_directories(${MODULE_NAME} PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/Rendering/Common
         ${CMAKE_CURRENT_SOURCE_DIR}/Rendering/Core
         ${CMAKE_CURRENT_SOURCE_DIR}/Rendering/Core/Interactor
+        ${CMAKE_CURRENT_SOURCE_DIR}/Rendering/Core/Painter
         ${CMAKE_CURRENT_SOURCE_DIR}/Rendering/OpenGL
 )
 target_link_libraries(${MODULE_NAME} PUBLIC
@@ -34,7 +35,6 @@ target_link_libraries(${MODULE_NAME} PUBLIC
         eigen
         meshoptimizer
         tinyXML2
-
 )
 
 if (ENABLE_CGNS_MODULE)
