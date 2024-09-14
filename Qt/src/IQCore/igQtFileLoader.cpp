@@ -18,16 +18,16 @@
 #include <qaction.h>
 #include <iostream>
 
-igQtFileLoader::igQtFileLoader(QObject* parent) : QObject(parent) 
+igQtFileLoader::igQtFileLoader(QObject* parent) : QObject(parent)
 {
 	InitRecentFilePaths();
-    m_SceneManager = SceneManager::Instance();
+	m_SceneManager = SceneManager::Instance();
 }
 
 igQtFileLoader::~igQtFileLoader() {
 }
 
-void igQtFileLoader::LoadFile() 
+void igQtFileLoader::LoadFile()
 {
 	std::string filePath = QFileDialog::getOpenFileName(nullptr, "Load file", "", "ALL FIle(*.obj *.off *.stl *.ply *.vtk *.mesh *.pvd *.vts *.vtu *.vtm * cgns);;VTK file(*.vtk);;CGNS file(*.cgns)").toStdString();
 	this->OpenFile(filePath);
@@ -37,7 +37,7 @@ void igQtFileLoader::OpenFile(const std::string& filePath)
 {
 	using namespace iGame;
 	if (filePath.empty() || strrchr(filePath.data(), '.') == nullptr)return;
-	
+
 	auto obj = iGame::FileIO::ReadFile(filePath);
 	if (obj == nullptr) {
 		igDebug("This file read error.");
@@ -45,7 +45,7 @@ void igQtFileLoader::OpenFile(const std::string& filePath)
 	}
 	auto filename = filePath.substr(filePath.find_last_of('/') + 1);
 	obj->SetName(filename.substr(0, filename.find_last_of('.')).c_str());
-
+	obj->GetPropertys()->AddProperty(Variant::String, "FilePath")->SetValue(filePath);
 	//Q_EMIT AddFileToModelList(QString(filePath.substr(filePath.find_last_of('/') + 1).c_str()));
 
 	this->SaveCurrentFileToRecentFile(QString::fromStdString(filePath));
@@ -61,16 +61,22 @@ void igQtFileLoader::SaveFile() {
 	//}
 }
 void igQtFileLoader::SaveFileAs() {
-	//auto currentModel = iGame::iGameManager::Instance()->GetCurrentModel();
-	//if (currentModel == nullptr)return;
-	//std::string filePath = QFileDialog::getSaveFileName(nullptr, "Save file as ", "", "Surface Mesh(*.obj *.off *.stl *.vtk);;Volume Mesh(*.mesh *.vtk *.ex2 *.e *.pvd *.vts)").toStdString();
-	//if (filePath.empty()) {
-	//	igDebug("Could not save file with error file path\n");
-	//	return;
-	//}
-	//if (!iGame::iGameFileIO::WriteDataSetToFile(currentModel->DataSet, filePath)) {
-	//	igDebug("Save File Error\n");
-	//}
+
+	auto sceneManager = iGame::SceneManager::Instance();
+	auto scene = sceneManager->GetCurrentScene();
+	if (!scene)return;
+	auto currentModel = scene->GetCurrentModel();
+	if (!currentModel)return;
+	auto obj = currentModel->GetDataObject();
+	if (!obj)return;
+	std::string filePath = QFileDialog::getSaveFileName(nullptr, "Save file as ", "", "Surface Mesh(*.obj *.off *.stl *.vtk);;Volume Mesh(*.mesh *.vtk *.ex2 *.e *.pvd *.vts)").toStdString();
+	if (filePath.empty()) {
+		igDebug("Could not save file with error file path\n");
+		return;
+	}
+	if (!iGame::FileIO::WriteFile(filePath, obj)) {
+		igDebug("Save File Error\n");
+	}
 }
 
 void igQtFileLoader::SaveCurrentFileToRecentFile(QString path)

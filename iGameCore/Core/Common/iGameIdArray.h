@@ -61,6 +61,10 @@ public:
     void AddElement(igIndex&& _Element) = delete;
     void AddElement(const igIndex& _Element) = delete;
     IGsize GetNumberOfElements() const = delete;
+
+    IGsize GetRealMemorySize() {
+        return  this->GetNumberOfIds() * sizeof(igIndex);
+    }
 protected:
     IdArray() = default;
     ~IdArray() override = default;

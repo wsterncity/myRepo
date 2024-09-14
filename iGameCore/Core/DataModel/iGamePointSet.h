@@ -2,11 +2,12 @@
 #define iGamePointSet_h
 
 #include "iGameDataObject.h"
+#include "iGameDrawObject.h"
 #include "iGameMarker.h"
 #include "iGamePoints.h"
 
 IGAME_NAMESPACE_BEGIN
-class PointSet : public DataObject {
+class PointSet : public DrawObject {
 public:
   I_OBJECT(PointSet);
   static Pointer New() { return new PointSet; }
@@ -46,7 +47,8 @@ public:
   void MakeEditStatusOn();
   // Unable data edit state
   void MakeEditStatusOff();
-
+  //Get real size of DataObject
+  IGsize GetRealMemorySize() override ;
 protected:
   PointSet();
   ~PointSet() override = default;
@@ -74,19 +76,7 @@ public:
   virtual void SetAttributeWithPointData(ArrayObject::Pointer attr,
                                          igIndex dimension = -1, const std::pair<float, float>& attrRange = {0.f, 0.f});
 
-private:
-  GLVertexArray m_PointVAO;
-  GLBuffer m_PositionVBO, m_ColorVBO;
-  GLBuffer m_PointEBO;
 
-  FloatArray::Pointer m_Positions{};
-  FloatArray::Pointer m_Colors{};
-  bool m_UseColor{false};
-  int m_PointSize{5};
-
-  ArrayObject::Pointer m_ViewAttribute;
-  int m_ViewDemension;
-  bool m_Flag{ false };
 };
 
 IGAME_NAMESPACE_END

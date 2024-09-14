@@ -11,6 +11,7 @@
 #include <qdebug.h>
 
 #include <iGameFileIO.h>
+#include <iGameThreadPool.h>
 #include <iGameSceneManager.h>
 
 /**
@@ -118,12 +119,27 @@ void igQtAnimationWidget::playAnimation_snap(int keyframe_idx){
     auto currentObject = currentScene->GetCurrentModel()->GetDataObject();
     if(currentObject == nullptr || currentObject->GetTimeFrames()->GetArrays().empty())  return;
     auto& frameSubFiles = currentObject->GetTimeFrames()->GetTargetTimeFrame(keyframe_idx).SubFileNames;
-    currentScene->MakeCurrent();
-    currentObject->ClearSubDataObject();
-    for(int i = 0; i < frameSubFiles->Size(); i ++){
-        auto sub = FileIO::ReadFile(frameSubFiles->GetElement(i));
-        currentObject->AddSubDataObject(sub);
-    }
+        {
+            std::vector<std::future<iGame::DataObject::Pointer>> tasks;
+
+            for(int i = 0; i < frameSubFiles->GetNumberOfElements(); i ++){
+                tasks.emplace_back
+                (iGame::ThreadPool::Instance()->Commit([](const std::string &fileName){
+                    return FileIO::ReadFile(fileName);
+                    }, frameSubFiles->GetElement(i))
+                );
+            }
+            currentObject->ClearSubDataObject();
+            for(auto& task : tasks){
+                currentObject->AddSubDataObject(task.get());
+            }
+        }
+
+
+//    for(int i = 0; i < frameSubFiles->Size(); i ++){
+//        auto sub = FileIO::ReadFile(frameSubFiles->GetElement(i));
+//        currentObject->AddSubDataObject(sub);
+//    }
 
     /* process Object's scalar range*/
     IGsize scalar_size = currentObject->GetAttributeSet() ? currentObject->GetAttributeSet()->GetAllAttributes()->GetNumberOfElements() : 0;
@@ -143,10 +159,13 @@ void igQtAnimationWidget::playAnimation_snap(int keyframe_idx){
         }
 //        std::cout << "range : " << range_max << ' ' << range_min << '\n';
     }
-    for(auto it = currentObject->SubDataObjectIteratorBegin(); it != currentObject->SubDataObjectIteratorEnd(); ++ it){
-        it->second->SetViewStyle(currentObject->GetViewStyle());
-        it->second->ConvertToDrawableData();
-    }
+    currentScene->MakeCurrent();
+
+    currentObject->SetViewStyle(currentObject->GetViewStyle());
+//    for(auto it = currentObject->SubDataObjectIteratorBegin(); it != currentObject->SubDataObjectIteratorEnd(); ++ it){
+//        it->second->SetViewStyle(currentObject->GetViewStyle());
+//        it->second->ConvertToDrawableData();
+//    }
     if(currentObject->GetAttributeIndex() != -1){
         currentObject->ViewCloudPicture(currentScene, currentObject->GetAttributeIndex());
     }

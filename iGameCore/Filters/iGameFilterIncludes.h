@@ -1,4 +1,4 @@
-#include "iGameModelSurfaceFilters/iGameAtomicMutex.h"
+
 #include "iGameModelSurfaceFilters/iGameModelGeometryFilter.h"
 #include "iGameSubdivision/iGameHexhedronSubdivision.h"
 #include "iGameSubdivision/iGameQuadSubdivision.h"
@@ -10,3 +10,4 @@
 #include "Sources/iGamePointsSource.h"
 #include "Sources/iGameLineTypePointsSource.h"
 #include "TensorViewFilter/iGameTensorWidgetBase.h"
+#include "TestFilter/iGameTestFilter.h"

@@ -12,9 +12,14 @@ void Meshlet::CreateBuffer() {
 }
 
 void Meshlet::BuildMeshlet(const float* vertex_positions, size_t vertex_count,
-                           const int* indices, size_t index_count) {
-    Timer timer;
+                           const int* indices, size_t index_count,
+                           GLBuffer& EBO) {
+    iGameTimer timer;
     timer.reset();
+
+    // use for mesh shader
+    std::vector<unsigned int> meshletVertices;
+    std::vector<unsigned char> meshletTriangles;
 
     // Preprocessing: Vertex Cache Optimization
     std::vector<int> optimized_indices(index_count);
@@ -28,29 +33,29 @@ void Meshlet::BuildMeshlet(const float* vertex_positions, size_t vertex_count,
     // Allocate meshlet data structure
     std::vector<meshopt_Meshlet> meshlets(max_meshlets);
     // Triangle index
-    m_MeshletVertices.resize(max_meshlets * m_MaxVertices);
+    meshletVertices.resize(max_meshlets * m_MaxVertices);
     // Index of triangle index
-    m_MeshletTriangles.resize(max_meshlets * m_MaxTriangles * 3);
+    meshletTriangles.resize(max_meshlets * m_MaxTriangles * 3);
 
     // Generate meshlet data
     size_t meshlet_count = meshopt_buildMeshlets(
-            meshlets.data(), m_MeshletVertices.data(),
-            m_MeshletTriangles.data(), optimized_indices.data(), index_count,
-            vertex_positions, vertex_count, sizeof(float) * 3, m_MaxVertices,
-            m_MaxTriangles, m_ConeWeight);
+            meshlets.data(), meshletVertices.data(), meshletTriangles.data(),
+            optimized_indices.data(), index_count, vertex_positions,
+            vertex_count, sizeof(float) * 3, m_MaxVertices, m_MaxTriangles,
+            m_ConeWeight);
 
     // Resize the vector to fit the actual generated meshlet data
     const meshopt_Meshlet& last = meshlets[meshlet_count - 1];
-    m_MeshletVertices.resize(last.vertex_offset + last.vertex_count);
-    m_MeshletTriangles.resize(last.triangle_offset +
-                              ((last.triangle_count * 3 + 3) & ~3));
+    meshletVertices.resize(last.vertex_offset + last.vertex_count);
+    meshletTriangles.resize(last.triangle_offset +
+                            ((last.triangle_count * 3 + 3) & ~3));
     meshlets.resize(meshlet_count);
 
     // Optimize vertex and index data for each meshlet
     for (size_t i = 0; i < meshlet_count; ++i) {
         const meshopt_Meshlet& m = meshlets[i];
-        meshopt_optimizeMeshlet(&m_MeshletVertices[m.vertex_offset],
-                                &m_MeshletTriangles[m.triangle_offset],
+        meshopt_optimizeMeshlet(&meshletVertices[m.vertex_offset],
+                                &meshletTriangles[m.triangle_offset],
                                 m.triangle_count, m.vertex_count);
     }
 
@@ -59,15 +64,16 @@ void Meshlet::BuildMeshlet(const float* vertex_positions, size_t vertex_count,
     for (size_t i = 0; i < meshlet_count; ++i) {
         const meshopt_Meshlet& m = meshlets[i];
         meshlet_bounds[i] = meshopt_computeMeshletBounds(
-                &m_MeshletVertices[m.vertex_offset],
-                &m_MeshletTriangles[m.triangle_offset], m.triangle_count,
+                &meshletVertices[m.vertex_offset],
+                &meshletTriangles[m.triangle_offset], m.triangle_count,
                 vertex_positions, vertex_count, sizeof(float) * 3);
     }
 
     // Record indirect Command
+    std::vector<unsigned int> meshletIndices;
     std::vector<MeshletData> meshletDatas(meshlet_count);
     std::vector<DrawElementsIndirectCommand> drawCommands(meshlet_count);
-    m_MeshletIndices.resize(m_MeshletTriangles.size());
+    meshletIndices.resize(meshletTriangles.size());
     for (size_t i = 0; i < meshlet_count; ++i) {
         const meshopt_Meshlet& m = meshlets[i];
         const meshopt_Bounds& b = meshlet_bounds[i];
@@ -79,10 +85,13 @@ void Meshlet::BuildMeshlet(const float* vertex_positions, size_t vertex_count,
 
         for (auto j = m.triangle_offset;
              j < m.triangle_offset + m.triangle_count * 3; j++) {
-            m_MeshletIndices[j] =
-                    m_MeshletVertices[m.vertex_offset + m_MeshletTriangles[j]];
+            meshletIndices[j] =
+                    meshletVertices[m.vertex_offset + meshletTriangles[j]];
         }
     }
+
+    GLAllocateGLBuffer(EBO, meshletIndices.size() * sizeof(igIndex),
+                       meshletIndices.data());
 
     m_MeshletsCount = meshlet_count;
     m_MeshletsBuffer.target(GL_SHADER_STORAGE_BUFFER);
@@ -110,12 +119,6 @@ void Meshlet::BuildMeshlet(const float* vertex_positions, size_t vertex_count,
 }
 
 size_t Meshlet::MeshletsCount() { return m_MeshletsCount; };
-
-const unsigned int* Meshlet::GetMeshletIndices() const {
-    return m_MeshletIndices.data();
-};
-
-size_t Meshlet::GetMeshletIndexCount() { return m_MeshletIndices.size(); };
 
 GLBuffer& Meshlet::MeshletsBuffer() { return m_MeshletsBuffer; };
 

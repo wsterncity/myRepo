@@ -75,7 +75,14 @@ PointSet::PointSet() {
   m_Points = Points::New();
   m_ViewStyle = IG_POINT;
 }
-
+IGsize PointSet::GetRealMemorySize()
+{
+    IGsize res = 0;
+    if (m_Points)res += m_Points->GetRealMemorySize();
+    if (m_PointDeleteMarker)res += m_PointDeleteMarker->GetRealMemorySize();
+    if (m_Attributes)res += m_Attributes->GetRealMemorySize();
+    return res + sizeof(m_InEditStatus);
+}
 void PointSet::RequestPointStatus() {
   if (m_PointDeleteMarker == nullptr) {
     m_PointDeleteMarker = DeleteMarker::New();

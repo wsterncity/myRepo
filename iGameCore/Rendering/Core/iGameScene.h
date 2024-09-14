@@ -13,8 +13,10 @@
 #include "iGameFontSet.h"
 #include "iGameLight.h"
 #include "iGameModel.h"
+#include "iGameSelection.h"
 
 IGAME_NAMESPACE_BEGIN
+class Interactor;
 class Scene : public Object {
 public:
     I_OBJECT(Scene);
@@ -29,6 +31,10 @@ public:
     void RemoveCurrentModel();
     void SetCurrentModel(int index);
     void SetCurrentModel(Model*);
+
+    /* Interactor Related */
+    void SetInteractor(Interactor* i);
+    Interactor* GetInteractor();
 
     Model* GetCurrentModel();
     Model* GetModelById(int index);
@@ -82,6 +88,10 @@ public:
     CameraDataBuffer& CameraData() { return m_CameraData; }
     ObjectDataBuffer& ObjectData() { return m_ObjectData; }
     UniformBufferObjectBuffer& UBO() { return m_UBO; }
+    igm::vec4& ModelsBoundingSphere() { return m_ModelsBoundingSphere; }
+    igm::mat4& ModelRotate() { return m_ModelRotate; }
+    igm::mat4& ModelMatrix() { return m_ModelMatrix; }
+
     void UseColor();
     void UpdateUniformBuffer();
 
@@ -111,7 +121,6 @@ public:
         m_UpdateFunctor = std::bind(functor, args...);
     }
 
-    // TODO: slove z-buffer Accuracy issues
     GLBuffer& GetDrawCullDataBuffer() { return m_DrawCullData; }
 
     void MakeCurrent() {
@@ -163,6 +172,7 @@ protected:
     Camera::Pointer m_Camera{};
     Light::Pointer m_Light{};
     Axes::Pointer m_Axes{};
+    Interactor* m_Interactor{nullptr};
 
     /* Rendering related */
     CameraDataBuffer m_CameraData;
@@ -194,6 +204,8 @@ protected:
     GLBuffer m_DrawCullData;
     int m_DepthPyramidWidth, m_DepthPyramidHeight, m_DepthPyramidLevels;
     GLTexture2d m_DepthPyramid;
+
+    Painter::Pointer painter = Painter::New();
 
     friend class Interactor;
     friend class BasicInteractor;

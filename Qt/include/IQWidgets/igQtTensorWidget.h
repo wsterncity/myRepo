@@ -5,41 +5,38 @@
 
 #pragma once
 #include <ui_TensorView.h>
+#include "TensorViewFilter/iGameTensorWidgetBase.h"
+#include <IQCore/igQtExportModule.h>
 
-//namespace iGame {
-//	class iGameFloatArray;
-//	class iGameIntArray;
-//	class iGameTensorRepresentation;
-//	class iGamePoints;
-//	class iGameModelColorManager;
-//};
-
-class igQtTensorWidget : public QWidget {
+using namespace iGame;
+class IG_QT_MODULE_EXPORT igQtTensorWidget : public QWidget {
 
 	Q_OBJECT
 
 public:
 	igQtTensorWidget(QWidget* parent = nullptr);
-
+	~igQtTensorWidget() override;
 public slots:
 
 	void InitTensorAttributes();
 	void ShowTensorField();
-	void UpdateEllipsoidGlyphData();
-	void UpdateEllipsoidGlyphColor();
+	void UpdateGlyphType();
 	void UpdateGlyphScale(double s);
 	void UpdateTensorsNameList();
 	void UpdateScalarsNameList();
-	void InitPointGlyphColors();
+	void UpdateGlyphColors();
 	void UpdateComponentsShow(bool);
 	void GenerateVectorField();
+
 signals:
 	//void DrawEllipsoidGlyph(iGame::iGameFloatArray*, iGame::iGameIntArray*);
-	void DrawEllipsoidGlyph();
-	void UpdateEllipsoidGlyph();
-
+	void DrawTensorGlyphs(DataObject::Pointer);
+	void UpdateTensorGlyphs(DataObject::Pointer);
 private:
 	Ui::TensorView* ui;
+	iGameTensorWidgetBase* m_Manager;
+	DataObject* m_DataObject;
+	bool m_Generated = false;
 	//iGame::iGamePoints* Points;
 	//iGame::iGameFloatArray* TensorAttributes;
 	//iGame::iGameTensorRepresentation* tensorManager;

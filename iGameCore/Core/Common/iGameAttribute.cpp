@@ -15,5 +15,5 @@ iGame::Attribute iGame::Attribute::None(){
 }
 
 bool iGame::Attribute::isNone() const {
-    return pointer == nullptr || type == IG_NONE || attachmentType == IG_NONE || isDeleted == true;
+    return pointer == nullptr || type == IG_NONE || attachmentType == IG_NONE || isDeleted;
 }

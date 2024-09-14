@@ -1,5 +1,5 @@
 #include "iGameModelGeometryFilter.h"
-#include "iGameAtomicMutex.h"
+#include "Mutex/iGameAtomicMutex.h"
 #include "iGameThreadPool.h"
 #include <mutex>
 #include <omp.h>
@@ -1214,7 +1214,10 @@ int iGameModelGeometryFilter::ExecuteWithUnstructuredGrid(
 		}
 	}
 	if (is3D == false) {
-		return ExecuteWithSurfaceMesh(Grid->TransferToSurfaceMesh(), output);
+		auto surfaceMesh = Grid->TransferToSurfaceMesh();
+		if (!ExecuteWithSurfaceMesh(Grid->TransferToSurfaceMesh(), output))
+			output = surfaceMesh;
+		return 1;
 	}
 	igIndex i = 0, j = 0, k = 0;
 	igIndex64 cellId = 0, pointId = 0;
@@ -1548,7 +1551,7 @@ void iGameModelGeometryFilter::CompositeCellAttribute(std::vector<igIndex>& F2C,
 			CellAttributes.emplace_back(inAllDataArray->GetAttribute(i));
 		}
 		else {
-			outAllDataArray->AddAttribute(inAllDataArray->GetAttribute(i).type, inAllDataArray->GetAttribute(i).attachmentType, inAllDataArray->GetAttribute(i).pointer);
+			outAllDataArray->AddAttribute(inAllDataArray->GetAttribute(i).type, inAllDataArray->GetAttribute(i).attachmentType, inAllDataArray->GetAttribute(i).pointer, inAllDataArray->GetAttribute(i).dataRange);
 		}
 	}
 	igIndex AttributeSize = CellAttributes.size();

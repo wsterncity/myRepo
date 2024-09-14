@@ -28,6 +28,7 @@ inline constexpr int IG_NONE = -1;
 enum {
 	IG_DATA_OBJECT = 0,
 	IG_COMPOSITE_DATA_OBJECT,
+	IG_DRAW_OBJECT,
 	IG_POINT_SET,
 	IG_SURFACE_MESH,
 	IG_VOLUME_MESH,
@@ -140,5 +141,17 @@ enum Color {
 	Blue,
 	LightBlue,
 	White,
+        Black,
+        Gray,
+        DarkGray,
+        LightGray,
+        Yellow,
+        Magenta,
+        Cyan,
+        Orange,
+        Purple,
+        Pink,
+        Brown,
+        Gold
 };
 #endif

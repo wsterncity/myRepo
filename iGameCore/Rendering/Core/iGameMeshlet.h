@@ -1,8 +1,8 @@
 #pragma once
 #include "OpenGL/GLBuffer.h"
 #include "OpenGL/GLIndirectCommand.h"
-#include "Timer.h"
 #include "iGameObject.h"
+#include "iGameTimer.h"
 #include "meshoptimizer.h"
 
 IGAME_NAMESPACE_BEGIN
@@ -25,11 +25,9 @@ protected:
 public:
     void CreateBuffer();
     void BuildMeshlet(const float* vertex_positions, size_t vertex_count,
-                      const int* indices, size_t index_count);
+                      const int* indices, size_t index_count, GLBuffer& EBO);
 
     size_t MeshletsCount();
-    const unsigned int* GetMeshletIndices() const;
-    size_t GetMeshletIndexCount();
     GLBuffer& MeshletsBuffer();
     GLBuffer& DrawCommandBuffer();
     GLBuffer& VisibleMeshletBuffer();
@@ -40,17 +38,12 @@ private:
     const size_t m_MaxTriangles = 124;
     const float m_ConeWeight = 0.0f;
 
-    // use for mesh shader
-    std::vector<unsigned int> m_MeshletVertices;
-    std::vector<unsigned char> m_MeshletTriangles;
-
     // use for indirect draw
     size_t m_MeshletsCount = 0;
     GLBuffer m_MeshletsBuffer;
     GLBuffer m_DrawCommandBuffer;
     GLBuffer m_VisibleMeshletBuffer;
     GLBuffer m_FinalDrawCommandBuffer;
-    std::vector<unsigned int> m_MeshletIndices;
 };
 #endif
 

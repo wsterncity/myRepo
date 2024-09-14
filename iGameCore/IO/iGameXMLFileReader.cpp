@@ -26,7 +26,7 @@ void iGameXMLFileReader::SetFilePath(const std::string& filePath) {
 
 bool iGameXMLFileReader::Execute() {
 	clock_t start, end;
-	start = clock();
+//	start = clock();
 
 	if (!Open()) {
 		return false;
@@ -52,9 +52,9 @@ bool iGameXMLFileReader::Execute() {
 	m_Output->SetName(m_FileName);
 	delete doc;
 	SetOutput(0, m_Output);
-	end = clock();
-	std::cout << "Read file success!" << std::endl;
-	std::cout << "   The time cost: " << end - start << "ms" << std::endl;
+//	end = clock();
+//	std::cout << "Read file success!" << std::endl;
+//	std::cout << "   The time cost: " << end - start << "ms" << std::endl;
 	return true;
 }
 

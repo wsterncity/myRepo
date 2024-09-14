@@ -1,19 +1,20 @@
 ﻿#include "iGameTensorRepresentation.h" 
+#include "iGameHexahedron.h" 
 #include <Eigen/Dense>
 using namespace Eigen;
-#define DEFAULT_SLICE_NUM 5
+#define DEFAULT_SLICE_NUM 8
 const float pi = IGM_PI;
 IGAME_NAMESPACE_BEGIN
 iGameTensorRepresentation::iGameTensorRepresentation()
 {
-	this->EllipsoidDrawPoints = FloatArray::New();
-	this->EllipsoidDrawPoints->SetElementSize(3);
-	this->SphereDrawPointsBaseData = Points::New();
-	this->EllipsoidDrawPointIndexOrders = IntArray::New();
-	this->EllipsoidDrawPointIndexOrders->SetElementSize(3);
-	this->SetSliceNum(DEFAULT_SLICE_NUM);
+	this->DrawPoints = FloatArray::New();
+	this->DrawPoints->SetElementSize(3);
+	this->DrawPointsBaseData = Points::New();
+	this->DrawPointIndexOrders = IntArray::New();
+	this->DrawPointIndexOrders->SetElementSize(3);
 	this->scale = 0.01;
-	this->DrawType = ELLIPSOID;
+	this->m_DrawType = ELLIPSOID;
+	this->SetSliceNum(DEFAULT_SLICE_NUM);
 }
 iGameTensorRepresentation::~iGameTensorRepresentation()
 {
@@ -111,15 +112,12 @@ void iGameTensorRepresentation::SortTensorCharacteristicData(double vec[3][3])
 void iGameTensorRepresentation::UpdateDrawDataFromTensor()
 {
 	//Different graphics will be added later
-	switch (DrawType)
-	{
-	case ELLIPSOID:
-		InitEllipsoidDrawPoints();
-		break;
-	case CUBOID:
-		break;
-	}
+	InitDrawPoints();
 }
+
+
+
+
 /**
 * @brief Get the ellipsoid coordinate point at the current longitude and latitude.
 * @param rx,ry,yz The lengths of the three axes of the ellipsoid.
@@ -127,7 +125,7 @@ void iGameTensorRepresentation::UpdateDrawDataFromTensor()
 * @param b The current latitude.
 * @param p The coordinate point.
 */
-void  iGameTensorRepresentation::GetPointOval(double& rx, double& ry, double& rz, double& a, double& b, iGame::Point& p) {
+void iGameTensorRepresentation::GetPointOval(double& rx, double& ry, double& rz, double& a, double& b, iGame::Point& p) {
 	p[0] = rx * sin(a * pi / 180.0) * cos(b * pi / 180.0);
 	p[1] = ry * sin(a * pi / 180.0) * sin(b * pi / 180.0);
 	p[2] = rz * cos(a * pi / 180.0);
@@ -136,16 +134,11 @@ void  iGameTensorRepresentation::GetPointOval(double& rx, double& ry, double& rz
 }
 /**
 * @brief Initialize the draw points.
-* Enter the three axis lengths of the ellipsoid and the number of m_Slices.
+* Enter the three axis lengths of the glyph.
 */
-void iGameTensorRepresentation::InitEllipsoidDrawPoints(double& rx, double& ry, double& rz, int m_Slices) {
-	int i, j, w = 2 * m_Slices, h = m_Slices;
-	double a = 0.0, b = 0.0;
-	double hStep = 180.0 / (h - 1);
-	double wStep = 360.0 / w;
-	int length = w * h;
-	this->EllipsoidDrawPoints->Reset();
-	this->EllipsoidDrawPoints->Reserve(length);
+void iGameTensorRepresentation::InitDrawPoints(double& rx, double& ry, double& rz) {
+	this->DrawPoints->Reset();
+	this->DrawPoints->Reserve(DrawPointsBaseData->GetNumberOfPoints());
 	Point tmpP;
 	Point radius(rx, ry, rz);
 	radius = radius * this->scale;
@@ -156,13 +149,13 @@ void iGameTensorRepresentation::InitEllipsoidDrawPoints(double& rx, double& ry, 
 	rotate[2] = Point(Eigenvectors[0][2], Eigenvectors[1][2], Eigenvectors[2][2]);
 	Point p;
 
-	for (igIndex i = 0; i < this->SphereDrawPointsBaseData->GetNumberOfPoints(); i++) {
-		tmpP = this->SphereDrawPointsBaseData->GetPoint(i).scale(radius);
+	for (igIndex i = 0; i < this->DrawPointsBaseData->GetNumberOfPoints(); i++) {
+		tmpP = this->DrawPointsBaseData->GetPoint(i).scale(radius);
 		p[0] = tmpP.dot(rotate[0]);
 		p[1] = tmpP.dot(rotate[1]);
 		p[2] = tmpP.dot(rotate[2]);
 		p += translation;
-		this->EllipsoidDrawPoints->AddElement3(p[0], p[1], p[2]);
+		this->DrawPoints->AddElement3(p[0], p[1], p[2]);
 	}
 }
 /**
@@ -171,9 +164,47 @@ void iGameTensorRepresentation::InitEllipsoidDrawPoints(double& rx, double& ry, 
 */
 void iGameTensorRepresentation::SetSliceNum(int s) {
 	this->m_Slices = s;
-	UpdateEllipsoidDrawPointBasedData();
-	UpdateEllipsoidDrawPointIndexOrders();
+	UpdateDrawPointBasedData();
+	UpdateDrawPointIndexOrders();
 }
+
+/**
+* @brief Update the order of drawing points of the slice.
+*/
+void iGameTensorRepresentation::UpdateDrawPointBasedData()
+{
+	switch (m_DrawType)
+	{
+	case ELLIPSOID:
+		UpdateEllipsoidDrawPointBasedData();
+		break;
+	case CUBOID:
+		UpdateCuboidDrawPointBasedData();
+		break;
+	default:
+		UpdateEllipsoidDrawPointBasedData();
+		break;
+	}
+}
+/**
+* @brief Update the basic spherical coordinates.
+*/
+void iGameTensorRepresentation::UpdateDrawPointIndexOrders()
+{
+	switch (m_DrawType)
+	{
+	case ELLIPSOID:
+		UpdateEllipsoidDrawPointIndexOrders();
+		break;
+	case CUBOID:
+		UpdateCuboidDrawPointIndexOrders();
+		break;
+	default:
+		UpdateEllipsoidDrawPointIndexOrders();
+		break;
+	}
+}
+
 /**
 * @brief Update the basic spherical coordinates.
 */
@@ -184,7 +215,8 @@ void iGameTensorRepresentation::UpdateEllipsoidDrawPointBasedData()
 	double hStep = 180.0 / (h - 1);
 	double wStep = 360.0 / w;
 	int length = w * h;
-	this->SphereDrawPointsBaseData->Reserve(length);
+	this->DrawPointsBaseData->Reset();
+	this->DrawPointsBaseData->Reserve(length);
 	double degreeScale = pi / 180.0;
 	Point p;
 	for (a = 0.0, i = 0; i < h; i++, a += hStep) {
@@ -192,7 +224,7 @@ void iGameTensorRepresentation::UpdateEllipsoidDrawPointBasedData()
 			p[0] = sin(a * degreeScale) * cos(b * degreeScale);
 			p[1] = sin(a * degreeScale) * sin(b * degreeScale);
 			p[2] = cos(a * pi / 180.0);
-			this->SphereDrawPointsBaseData->AddPoint(p);
+			this->DrawPointsBaseData->AddPoint(p);
 		}
 	}
 }
@@ -201,16 +233,43 @@ void iGameTensorRepresentation::UpdateEllipsoidDrawPointBasedData()
 */
 void iGameTensorRepresentation::UpdateEllipsoidDrawPointIndexOrders() {
 	int i = 0, j = 0, w = 2 * this->m_Slices, h = this->m_Slices;
-	EllipsoidDrawPointIndexOrders->Reserve(w * h);
+	DrawPointIndexOrders->Reset();
+	DrawPointIndexOrders->Reserve(w * h);
 	for (; i < h - 1; i++) {
 		for (j = 0; j < w - 1; j++) {
-			EllipsoidDrawPointIndexOrders->AddElement3(i * w + j, i * w + j + 1, (i + 1) * w + j + 1);
-			EllipsoidDrawPointIndexOrders->AddElement3(i * w + j, (i + 1) * w + j + 1, (i + 1) * w + j);
+			DrawPointIndexOrders->AddElement3(i * w + j, i * w + j + 1, (i + 1) * w + j + 1);
+			DrawPointIndexOrders->AddElement3(i * w + j, (i + 1) * w + j + 1, (i + 1) * w + j);
 		}
-		EllipsoidDrawPointIndexOrders->AddElement3(i * w + j, i * w, (i + 1) * w);
-		EllipsoidDrawPointIndexOrders->AddElement3(i * w + j, (i + 1) * w, (i + 1) * w + j);
+		DrawPointIndexOrders->AddElement3(i * w + j, i * w, (i + 1) * w);
+		DrawPointIndexOrders->AddElement3(i * w + j, (i + 1) * w, (i + 1) * w + j);
 	}
 }
 
+/**
+ * @brief Update the order of drawing points of the slice with cuboid glyph.
+*/
+void iGameTensorRepresentation::UpdateCuboidDrawPointIndexOrders()
+{
+	this->DrawPointsBaseData->Resize(8);
+	Point p[8] = { {-1,-1,-1},{-1,1,-1},{1,1,-1},{1,-1,-1},
+	{-1,-1,1},{-1,1,1},{1,1,1},{1,-1,1} };
+	for (int i = 0; i < 8; i++) {
+		this->DrawPointsBaseData->SetPoint(i, p[i]);
+	}
+}
+/**
+* @brief Update the basic spherical coordinates with cuboid glyph.
+*/
+void iGameTensorRepresentation::UpdateCuboidDrawPointBasedData()
+{
+	DrawPointIndexOrders->Reset();
+	DrawPointIndexOrders->Reserve(12);
+	auto hexahedron = Hexahedron::New();
+	for (int i = 0; i < 6; i++) {
+		auto quad = Hexahedron::faces[i];
+		DrawPointIndexOrders->AddElement3(quad[0], quad[1], quad[2]);
+		DrawPointIndexOrders->AddElement3(quad[0], quad[2], quad[3]);
+	}
+}
 
 IGAME_NAMESPACE_END

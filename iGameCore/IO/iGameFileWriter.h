@@ -1,10 +1,26 @@
 #ifndef iGameFileWriter_h
 #define iGameFileWriter_h
+/**
+ * @class   iGameFileWriter
+ * @brief   It is the base class of the iGame framework string stream output file
+ *
+ When outputting files, the file mapping method is used,
+ and the character stream of the file needs to be saved in m_Buffers
+ by the developer. Developers can process data in parallel,
+ but need to put the data buffer into m_Buffers in order. In subsequent development,
+ users can process data in a temporary buffer pool in parallel while
+ outputting data to files, and finally pass the data in the temporary buffer pool
+ to m_Buffers for output to files. However, due to some problems,
+ the method of parallel data processing and data output has not been used yet.
+ */
+
 #include "iGameFilter.h"
 #include "iGameSurfaceMesh.h"
 #include "iGameVolumeMesh.h"
 #include "iGameUnstructuredMesh.h"
 #include "iGameStructuredMesh.h"
+#include "Mutex/iGameAtomicMutex.h"
+#include "iGameThreadPool.h"
 IGAME_NAMESPACE_BEGIN
 class FileWriter : public Filter {
 public:
@@ -49,8 +65,10 @@ public:
 	void SetDataObject(DataObject::Pointer dataobject);
 
 	// Add a string to the buffer for writing to the file.
-	void AddStringToBuffer(std::string& data, CharArray::Pointer buffer);
+	void AddStringToBuffer(std::string data, CharArray::Pointer buffer);
 
+	void TransferBuffer();
+	int EncodeString(char* resname, const char* name);
 protected:
 	// Constructor for FileWriter.
 	FileWriter();
@@ -76,9 +94,19 @@ protected:
 	std::vector<CharArray::Pointer> m_Buffers;
 
 	/*
+	The Temporary buffers, used for parallel processing.
+	When writing buffered data of m_Buffers to a file,
+	the data can be pre-processed and placed in the temporary buffers.
+	*/
+	std::vector<CharArray::Pointer> m_TemporaryBuffers;
+
+	iGameAtomicMutex m_Lock;
+	/*
 	File type, may be either ASCII or binary.
 	*/
 	IGenum m_FileType{ IGAME_ASCII };
+
+	int m_MaxThreadSize = 8;
 };
 
 IGAME_NAMESPACE_END

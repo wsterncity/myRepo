@@ -28,6 +28,9 @@ public:
 public slots:
 	int addModelToModelTree(Model::Pointer model);
 	int addDataObjectToModelTree(DataObject::Pointer obj, ItemSource source);
+	int updateCurrentModelInfo();
+signals:
+	void CurrendModelChanged();
 protected:
 	void UpdateCurrentModel(Model::Pointer model);
 

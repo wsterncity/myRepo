@@ -33,8 +33,20 @@ public:
         glNamedBufferData(handle, size, data, usage);
     }
 
+    // GLbitfield flags: GL_DYNAMIC_STORAGE_BIT
+    // GLbitfield flags: GL_MAP_READ_BIT, GL_MAP_WRITE_BIT
+    // GLbitfield flags: GL_MAP_PERSISTENT_BIT, GL_MAP_COHERENT_BIT
+    // GLbitfield flags: GL_CLIENT_STORAGE_BIT
     void storage(size_t size, const void* data, GLbitfield flags) {
         glNamedBufferStorage(handle, size, data, flags);
+    }
+
+    void subData(size_t offset, size_t size, const void* data) const {
+        glNamedBufferSubData(handle, offset, size, data);
+    }
+
+    void getSubData(size_t offset, size_t size, void* data) const {
+        glGetNamedBufferSubData(handle, offset, size, data);
     }
 
     // GLbitfield access: GL_MAP_READ_BIT, GL_MAP_WRITE_BIT
@@ -46,14 +58,6 @@ public:
             throw std::runtime_error("Map buffer range is nullptr.");
         }
         return ptr;
-    }
-
-    void subData(size_t offset, size_t size, const void* data) const {
-        glNamedBufferSubData(handle, offset, size, data);
-    }
-
-    void getSubData(size_t offset, size_t size, void* data) const {
-        glGetNamedBufferSubData(handle, offset, size, data);
     }
 
     void unmap() {
@@ -81,5 +85,8 @@ static inline const unsigned int GL_VBO_IDX_1{1};
 static inline const unsigned int GL_VBO_IDX_2{2};
 static inline const unsigned int GL_VBO_IDX_3{3};
 
+inline void GLAllocateGLBuffer(GLBuffer& vbo, size_t size, const void* data) {
+    vbo.allocate(size, data, GL_STATIC_DRAW);
+}
 
 IGAME_NAMESPACE_END

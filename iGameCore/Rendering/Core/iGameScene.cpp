@@ -1,5 +1,6 @@
 #include "iGameScene.h"
 #include "iGameCommand.h"
+#include "iGameInteractor.h"
 #include <chrono>
 
 IGAME_NAMESPACE_BEGIN
@@ -111,6 +112,10 @@ void Scene::SetCurrentModel(Model* _model) {
         }
     }
 }
+
+void Scene::SetInteractor(Interactor* i) { m_Interactor = i; }
+
+Interactor* Scene::GetInteractor() { return m_Interactor; }
 
 Model* Scene::GetCurrentModel() { return m_CurrentModel; }
 
@@ -356,6 +361,31 @@ void Scene::InitOpenGL() {
 
     // init framebuffer
     ResizeFrameBuffer();
+
+    //Pen::Pointer pen = Pen::New();
+    //Brush::Pointer brush = Brush::New();
+    //painter->SetPen(pen);
+    //painter->SetBrush(brush);
+    //
+    //Point p{0.0f, 0.0f, 0.0f};
+    //Point p1{-1.0f, 0.0f, 0.0f};
+    //Point p2{1.0f, 0.0f, 0.0f};
+    //Point p3{0.0f, 1.0f, 0.0f};
+
+    //pen->SetColor(Color{White});
+    //pen->SetWidth(10);
+    //std::cout << painter->DrawPoint(Point{0.0f, -0.5f, 0.0f}) << std::endl;
+    //
+    //pen->SetColor(Color{LightBlue});
+    //pen->SetWidth(3);
+    //std::cout << painter->DrawLine(Point{-1.0f, -1.0f, 0.0f},
+    //                               Point{1.0f, -1.0f, 0.0f})
+    //          << std::endl;
+    //
+    //pen->SetColor(Color{LightBlue});
+    //pen->SetWidth(3);
+    //brush->SetColor(Color{Red});
+    //std::cout << painter->DrawTriangle(p1, p2, p3) << std::endl;
 }
 void Scene::InitFont() {
     const wchar_t* text = L"XYZ";
@@ -691,6 +721,7 @@ void Scene::DrawModels() {
             obj->m_DataObject->ConvertToDrawableData();
             obj->Draw(this);
         }
+        painter->Draw(this);
     }
 #endif
 }
