@@ -68,19 +68,24 @@ void MultiSelectionStyle::LeftButtonMouseMove() {
 }
 
 void MultiSelectionStyle::SelectPoints(const std::vector<igm::vec4>& planes) {
-    m_Model->GetPointPainter()->Clear();
+    //m_Model->GetPointPainter()->Clear();
+
+    auto painter = m_Model->GetPainter();
+    painter->SetPen(10);
+    painter->SetPen(Color::Red);
+
     for (int i = 0; i < m_Points->GetNumberOfPoints(); i++) {
         auto& p = m_Points->GetPoint(i);
 
         if (IsPointInFrustum(igm::vec3(p[0], p[1], p[2]), planes)) {
-            m_Model->GetPointPainter()->DrawPoint(p);
+            painter->DrawPoint(p);
         }
     }
 }
 
 void MultiSelectionStyle::SelectFaces(const std::vector<igm::vec4>& planes) {
     std::vector<bool> pvis(m_Points->GetNumberOfPoints(), false);
-    m_Model->GetFacePainter()->Clear();
+    //m_Model->GetFacePainter()->Clear();
     for (int i = 0; i < m_Points->GetNumberOfPoints(); i++) {
         auto& p = m_Points->GetPoint(i);
         if (IsPointInFrustum(igm::vec3(p[0], p[1], p[2]), planes)) {
@@ -99,11 +104,15 @@ void MultiSelectionStyle::SelectFaces(const std::vector<igm::vec4>& planes) {
             }
         }
         if (flag) {
+            auto painter = m_Model->GetPainter();
+            painter->SetPen(3);
+            painter->SetPen(Color::Green);
+            painter->SetBrush(Color::Red);
+
             for (int j = 2; j < size; j++) {
-                m_Model->GetFacePainter()->DrawTriangle(
-                        m_Points->GetPoint(face[0]),
-                        m_Points->GetPoint(face[j - 1]),
-                        m_Points->GetPoint(face[j]));
+                painter->DrawTriangle(m_Points->GetPoint(face[0]),
+                                      m_Points->GetPoint(face[j - 1]),
+                                      m_Points->GetPoint(face[j]));
 
                 //std::cout << "--------------\n";
                 //std::cout << m_Mesh->GetPoint(face[0]) << std::endl;
@@ -127,5 +136,3 @@ bool MultiSelectionStyle::IsPointInFrustum(
 }
 
 IGAME_NAMESPACE_END
-
-

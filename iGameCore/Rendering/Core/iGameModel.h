@@ -4,10 +4,10 @@
 #include <utility>
 
 #include "iGameDataObject.h"
-#include "iGameFilter.h"
 #include "iGameObject.h"
 #include "iGamePainter.h"
 #include "iGamePoints.h"
+#include "iGameSelection.h"
 
 IGAME_NAMESPACE_BEGIN
 class Scene;
@@ -21,11 +21,13 @@ public:
 
     DataObject::Pointer GetDataObject() { return m_DataObject; }
     bool GetVisibility() { return m_DataObject->GetVisibility(); }
-   Filter* GetModelFilter();
-   Painter* GetPainter() { return m_Painter; }
+    Filter* GetModelFilter();
+    Painter* GetPainter() { return m_Painter; }
     void DeleteModelFilter();
     void SetModelFilter(SmartPointer<Filter> _filter);
-    void SetDataObject(DataObject::Pointer dataObject){m_DataObject = dataObject;}
+    void SetDataObject(DataObject::Pointer dataObject) {
+        m_DataObject = dataObject;
+    }
     void Modified() { m_DataObject->Modified(); }
 
     void Show();

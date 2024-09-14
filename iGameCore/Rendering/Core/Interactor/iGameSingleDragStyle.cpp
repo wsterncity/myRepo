@@ -3,8 +3,8 @@
 #include "iGamePointPicker.h"
 
 IGAME_NAMESPACE_BEGIN
-void SingleDragStyle::MousePressEvent(IEvent _event) { 
-	SelectionStyle::MousePressEvent(_event);
+void SingleDragStyle::MousePressEvent(IEvent _event) {
+    SelectionStyle::MousePressEvent(_event);
     MVP = m_Interactor->GetMVP();
     InvertedMVP = MVP.invert();
 
@@ -20,23 +20,25 @@ void SingleDragStyle::MousePressEvent(IEvent _event) {
             Vector3d(point1.x, point1.y, point1.z),
             Vector3d(dir.x, dir.y, dir.z));
 
-    m_Model->GetPointPainter()->Clear();
+    //m_Model->GetPointPainter()->Clear();
     if (m_SelectedPointId != -1) {
         //std::cout << "click point id: " << m_SelectedPointId << std::endl;
         auto& tp = m_Points->GetPoint(m_SelectedPointId);
         igm::vec4 p{tp[0], tp[1], tp[2], 1.f};
         p = MVP * p;
         Selected_NDC_Z = p.z / p.w;
-        m_Model->GetPointPainter()->DrawPoint(tp);
+
+        auto painter = m_Model->GetPainter();
+        painter->SetPen(10);
+        painter->SetPen(Color::Red);
+        painter->DrawPoint(tp);
     }
 }
 void SingleDragStyle::MouseMoveEvent(IEvent _event) {
     igm::vec2 pos = _event.pos;
-    
+
     if (m_MouseMode == MouseButton::LeftButton) {
-        if (m_SelectedPointId == -1) {
-            return;
-        }
+        if (m_SelectedPointId == -1) { return; }
 
         //std::cout << "drag point id: " << m_SelectedPointId << std::endl;
 
@@ -57,11 +59,12 @@ void SingleDragStyle::MouseMoveEvent(IEvent _event) {
             m_Points->SetPoint(m_SelectedPointId, e.pos);
             m_Model->Modified();
 
-                    m_Model->GetPointPainter()->Clear();
-            m_Model->GetPointPainter()->DrawPoint(e.pos);
+            //m_Model->GetPointPainter()->Clear();
+            auto painter = m_Model->GetPainter();
+            painter->SetPen(10);
+            painter->SetPen(Color::Red);
+            painter->DrawPoint(e.pos);
         }
     }
 }
 IGAME_NAMESPACE_END
-
-
