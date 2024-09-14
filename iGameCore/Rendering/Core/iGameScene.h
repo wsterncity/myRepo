@@ -15,8 +15,6 @@
 #include "iGameModel.h"
 #include "iGameSelection.h"
 
-#include "iGamePainterT.h"
-
 IGAME_NAMESPACE_BEGIN
 class Interactor;
 class Scene : public Object {
