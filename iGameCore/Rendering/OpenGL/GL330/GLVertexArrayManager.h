@@ -20,8 +20,8 @@ struct GLVertexArrayManagerTupleHash {
 
 class GLVertexArrayManager {
 private:
-    GLVertexArrayManager(){};
-    ~GLVertexArrayManager(){};
+    GLVertexArrayManager() = default;
+    ~GLVertexArrayManager() = default;
 
 public:
     static GLVertexArrayManager& Instance() {

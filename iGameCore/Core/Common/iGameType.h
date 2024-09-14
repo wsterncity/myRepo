@@ -141,5 +141,17 @@ enum Color {
 	Blue,
 	LightBlue,
 	White,
+        Black,
+        Gray,
+        DarkGray,
+        LightGray,
+        Yellow,
+        Magenta,
+        Cyan,
+        Orange,
+        Purple,
+        Pink,
+        Brown,
+        Gold
 };
 #endif

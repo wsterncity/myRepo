@@ -6,11 +6,11 @@
 #include <chrono>
 
 IGAME_NAMESPACE_BEGIN
-class Timer {
+class iGameTimer {
 public:
     enum class TimeUnit { Microseconds, Milliseconds, Seconds };
 
-    Timer() { reset(); }
+    iGameTimer() { reset(); }
 
     void reset() { start = std::chrono::high_resolution_clock::now(); }
 

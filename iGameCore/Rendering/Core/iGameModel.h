@@ -4,10 +4,9 @@
 #include <utility>
 
 #include "iGameDataObject.h"
+#include "iGameObject.h"
+#include "iGamePainter.h"
 #include "iGamePoints.h"
-#include "iGamePointPainter.h"
-#include "iGameLinePainter.h"
-#include "iGameFacePainter.h"
 #include "iGameSelection.h"
 
 IGAME_NAMESPACE_BEGIN
@@ -22,13 +21,13 @@ public:
 
     DataObject::Pointer GetDataObject() { return m_DataObject; }
     bool GetVisibility() { return m_DataObject->GetVisibility(); }
-    PointPainter* GetPointPainter() { return m_PickedPointPainter.get(); }
-    LinePainter* GetLinePainter() { return m_PickedLinePainter.get(); }
     Filter* GetModelFilter();
+    Painter* GetPainter() { return m_Painter; }
     void DeleteModelFilter();
     void SetModelFilter(SmartPointer<Filter> _filter);
-    FacePainter* GetFacePainter() { return m_PickedFacePainter.get(); }
-    void SetDataObject(DataObject::Pointer dataObject){m_DataObject = dataObject;}
+    void SetDataObject(DataObject::Pointer dataObject) {
+        m_DataObject = dataObject;
+    }
     void Modified() { m_DataObject->Modified(); }
 
     void Show();
@@ -66,10 +65,8 @@ protected:
     DataObject::Pointer m_DataObject{};
     std::string m_FilePath;
     Scene* m_Scene{nullptr};
-    PointPainter::Pointer m_PickedPointPainter{};
-    LinePainter::Pointer m_PickedLinePainter{};
-    FacePainter::Pointer m_PickedFacePainter{};
-    LinePainter::Pointer m_BBoxPainter{};
+    Painter::Pointer m_Painter{};
+    IGuint m_BboxHandle = 0;
     unsigned long long m_Switch{0ull};
 
     friend class Scene;

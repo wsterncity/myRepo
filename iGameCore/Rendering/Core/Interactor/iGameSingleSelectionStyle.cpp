@@ -4,8 +4,8 @@
 
 IGAME_NAMESPACE_BEGIN
 
-void SingleSelectionStyle::MousePressEvent(IEvent _event) { 
-	SelectionStyle::MousePressEvent(_event);
+void SingleSelectionStyle::MousePressEvent(IEvent _event) {
+    SelectionStyle::MousePressEvent(_event);
 
     if (_event.button != LeftButton) return;
     switch (GetSelectedType()) {
@@ -28,7 +28,7 @@ void SingleSelectionStyle::SelectPoint(igm::vec2 pos) {
     // 3D World coordinate
     igm::vec3 point1 = GetNearWorldCoord(pos, mvp_invert);
     igm::vec3 point2 = GetFarWorldCoord(pos, mvp_invert);
-    
+
     igm::vec3 dir = (point1 - point2).normalized();
 
     PointPicker::Pointer picker = PointPicker::New();
@@ -40,7 +40,11 @@ void SingleSelectionStyle::SelectPoint(igm::vec2 pos) {
     //m_Model->GetPointPainter()->Clear();
     if (id != -1) {
         //std::cout << "pick point id: " << id << std::endl;
-        m_Model->GetPointPainter()->DrawPoint(m_Points->GetPoint(id));
+        auto painter = m_Model->GetPainter();
+        painter->SetPen(10);
+        painter->SetPen(Color::Red);
+        painter->DrawPoint(m_Points->GetPoint(id));
+
         if (m_Selection) {
             Selection::Event e;
             e.type = Selection::Event::PickPoint;
@@ -52,9 +56,7 @@ void SingleSelectionStyle::SelectPoint(igm::vec2 pos) {
 }
 
 void SingleSelectionStyle::SelectFace(igm::vec2 pos) {
-    if (m_Points == nullptr || m_Cells == nullptr) {
-        return;
-    }
+    if (m_Points == nullptr || m_Cells == nullptr) { return; }
 
     auto mvp = m_Interactor->GetMVP();
     auto mvp_invert = mvp.invert();
@@ -78,7 +80,7 @@ void SingleSelectionStyle::SelectFace(igm::vec2 pos) {
         for (int j = 2; j < size; j++) {
             auto& p1 = m_Points->GetPoint(face[j - 1]);
             auto& p2 = m_Points->GetPoint(face[j]);
-            
+
             if (IsIntersectTriangle(point1, point2, t(p0), t(p1), t(p2),
                                     intersect)) {
                 flag = true;
@@ -103,16 +105,22 @@ void SingleSelectionStyle::SelectFace(igm::vec2 pos) {
         }
     }
 
-    m_Model->GetFacePainter()->Clear();
+    //m_Model->GetFacePainter()->Clear();
     if (id != -1) {
         //std::cout << "pick face id: " << id << std::endl;
         igIndex face[16]{};
         int size = m_Cells->GetCellIds(id, face);
         auto& p0 = m_Points->GetPoint(face[0]);
+
+        auto painter = m_Model->GetPainter();
+        painter->SetPen(3);
+        painter->SetPen(Color::Green);
+        painter->SetBrush(Color::Red);
+
         for (int j = 2; j < size; j++) {
             auto& p1 = m_Points->GetPoint(face[j - 1]);
             auto& p2 = m_Points->GetPoint(face[j]);
-            m_Model->GetFacePainter()->DrawTriangle(p0, p1, p2);
+            painter->DrawTriangle(p0, p1, p2);
         }
         if (m_Selection) {
             Selection::Event e;
@@ -125,5 +133,3 @@ void SingleSelectionStyle::SelectFace(igm::vec2 pos) {
 }
 
 IGAME_NAMESPACE_END
-
-
