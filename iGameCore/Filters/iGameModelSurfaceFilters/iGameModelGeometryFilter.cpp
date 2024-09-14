@@ -118,12 +118,13 @@ bool iGameModelGeometryFilter::Execute(DataObject::Pointer input, SurfaceMesh::P
 	case IG_NONE:
 		return true;
 	case IG_VOLUME_MESH:
-		return this->ExecuteWithVolumeMesh(input, output, excFaces);
+	return this->ExecuteWithVolumeMesh(input, output, excFaces);
 	case IG_SURFACE_MESH:
 		return this->ExecuteWithSurfaceMesh(input, output, excFaces);
 	case IG_UNSTRUCTURED_MESH:
 		return this->ExecuteWithUnstructuredGrid(input, output, excFaces);
 	case IG_STRUCTURED_MESH:
+		//return this->ExecuteWithVolumeMesh(input, output, excFaces);
 		return this->ExecuteWithStructuredGrid(input, output, excFaces);
 	default:
 		break;
