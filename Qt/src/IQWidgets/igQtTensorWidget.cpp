@@ -152,7 +152,7 @@ void igQtTensorWidget::ShowTensorField()
 	this->m_Manager->ShowTensorField();
 	this->UpdateComponentsShow(true);
 	m_Generated = true;
-	m_Manager->DataObject::SetName(m_DataObject->GetName() + "_Tensor");
+	m_Manager->DataObject::SetName(m_DataObject->GetName() + "_TensorView");
 	Q_EMIT DrawTensorGlyphs(m_Manager);
 }
 void igQtTensorWidget::UpdateGlyphScale(double s)

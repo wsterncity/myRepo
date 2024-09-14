@@ -155,7 +155,7 @@ void igQtMainWindow::initAllComponents() {
 		&igQtFileLoader::LoadFile);
 	// connect(ui->action_SaveMesh, &QAction::triggered, fileLoader,
 	// &igQtFileLoader::SaveFile); 
-	connect(ui->action_SaveMeshAs,&QAction::triggered, fileLoader, &igQtFileLoader::SaveFileAs);
+	connect(ui->action_SaveMeshAs, &QAction::triggered, fileLoader, &igQtFileLoader::SaveFileAs);
 	// connect(ui->action_CopyMesh, &QAction::triggered, this, [&]() {
 	//	iGame::iGameManager::Instance()->CopyMesh();
 	//	});

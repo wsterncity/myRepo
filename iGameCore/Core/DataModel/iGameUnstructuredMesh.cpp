@@ -387,19 +387,19 @@ void UnstructuredMesh::Draw(Scene* scene) {
 }
 void UnstructuredMesh::ConvertToDrawableData() {
 	if (m_Positions && m_Positions->GetMTime() > this->GetMTime()) { return; }
-	if (m_DrawMesh == nullptr || m_DrawMesh->GetMTime() < this->GetMTime()) {
-		iGameModelGeometryFilter::Pointer extract = iGameModelGeometryFilter::New();
-		m_DrawMesh = SurfaceMesh::New();
-		if (!extract->Execute(this, m_DrawMesh)) {
-			m_DrawMesh = nullptr;
-		}
-		if (m_DrawMesh) {
-			m_DrawMesh->Modified();
-		}
-	}
-	if (m_DrawMesh) {
-		return m_DrawMesh->ConvertToDrawableData();
-	}
+	//if (m_DrawMesh == nullptr || m_DrawMesh->GetMTime() < this->GetMTime()) {
+	//	iGameModelGeometryFilter::Pointer extract = iGameModelGeometryFilter::New();
+	//	m_DrawMesh = SurfaceMesh::New();
+	//	if (!extract->Execute(this, m_DrawMesh)) {
+	//		m_DrawMesh = nullptr;
+	//	}
+	//	if (m_DrawMesh) {
+	//		m_DrawMesh->Modified();
+	//	}
+	//}
+	//if (m_DrawMesh) {
+	//	return m_DrawMesh->ConvertToDrawableData();
+	//}
 
 	this->Create();
 
@@ -665,3 +665,5 @@ void UnstructuredMesh::Create() {
 	}
 }
 IGAME_NAMESPACE_END
+
+
