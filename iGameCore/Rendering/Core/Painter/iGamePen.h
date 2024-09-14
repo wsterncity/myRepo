@@ -33,8 +33,8 @@ public:
     void SetStyle(PenStyle style);
     PenStyle GetStyle() const;
 
-    void SetOpacity(float opacity);
-    float GetOpacity() const;
+    //void SetOpacity(float opacity);
+    //float GetOpacity() const;
 
 protected:
     Pen();

@@ -21,7 +21,7 @@ void Brush::SetStyle(BrushStyle style) { m_BrushStyle = style; }
 BrushStyle Brush::GetStyle() const { return m_BrushStyle; }
 
 //void Brush::SetOpacity(float opacity) { m_BrushOpacity = opacity; }
-//
+
 //float Brush::GetOpacity() const { return m_BrushOpacity; }
 
 IGAME_NAMESPACE_END
