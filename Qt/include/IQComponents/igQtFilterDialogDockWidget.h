@@ -85,8 +85,7 @@ public:
 
 private:
     Ui::FilterDockDialog* ui;
-    QVBoxLayout* titleList;
-    QVBoxLayout* valueList;
+    QGridLayout* gridLayout;
 
     struct Item {
         QString title;

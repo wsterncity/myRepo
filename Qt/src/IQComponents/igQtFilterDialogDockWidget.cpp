@@ -16,25 +16,15 @@ igQtFilterDialogDockWidget::igQtFilterDialogDockWidget(QWidget *parent) : QDockW
     connect(ui->applyButton, &QPushButton::clicked, this, &igQtFilterDialogDockWidget::apply);
     connect(ui->closeButton, &QPushButton::clicked, this, &igQtFilterDialogDockWidget::close);
 
-    QHBoxLayout* hLayout = new QHBoxLayout();
-    titleList = new QVBoxLayout();
-    valueList = new QVBoxLayout();
-
-    hLayout->addLayout(titleList);
-    hLayout->addLayout(valueList);
-
-    titleList->setAlignment(Qt::AlignRight | Qt::AlignCenter);
-    valueList->setAlignment(Qt::AlignLeft | Qt::AlignCenter);
-    hLayout->setStretchFactor(titleList, 1);
-    hLayout->setSpacing(10);
-    hLayout->setStretchFactor(valueList, 1);
-
-    titleList->setSpacing(4);
-    valueList->setSpacing(4);
+    gridLayout = new QGridLayout();
+    gridLayout->setSpacing(4);
+    gridLayout->setColumnStretch(0, 1);
+    gridLayout->setColumnStretch(1, 1);
 
     ui->verticalLayout->setAlignment(Qt::AlignTop);
     ui->verticalLayout->setMargin(20);
-    ui->verticalLayout->addLayout(hLayout);
+    ui->verticalLayout->addLayout(gridLayout);
+
     index = 0;
 }
 
@@ -94,8 +84,8 @@ int igQtFilterDialogDockWidget::addParameter(WidgetType type,
     label->setMinimumHeight(20);
     widget->setMinimumHeight(20);
 
-    titleList->addWidget(label);
-    valueList->addWidget(widget);
+    gridLayout->addWidget(label, index, 0);
+    gridLayout->addWidget(widget, index, 1);
 
     Item item{title, defaultValue, type, widget};
     itemMap[index] = item;
