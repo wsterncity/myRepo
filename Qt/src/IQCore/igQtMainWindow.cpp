@@ -896,6 +896,111 @@ void igQtMainWindow::initAllMySignalConnections() {
   // connect(ui->widget_TensorField, &igQtTensorWidget::UpdateEllipsoidGlyph,
   // this, [&]() { 	this->rendererWidget->UpdateEllipsoidGlyph();
   //	});
+
+  // box clipping
+  connect(ui->action_BoxClipping, &QAction::triggered, this, [&](bool checked) {
+      if (!rendererWidget->GetScene()->GetCurrentModel()) {
+          std::cout << "Need Input" << std::endl;
+          return;
+      }
+      bool ok;
+
+      auto scene = iGame::SceneManager::Instance()->GetCurrentScene();
+      auto inputMesh = DynamicCast<iGame::VolumeMesh>(scene->GetCurrentModel()->GetDataObject());
+      if (!inputMesh || inputMesh->GetDataObjectType() != IG_VOLUME_MESH) {
+          std::cout << "Need VolumeMesh" << std::endl;
+          return;
+      }
+
+      auto box = inputMesh->GetBoundingBox();
+      auto center = (box.min + box.max) * 0.5;
+      auto size = box.max - box.min;
+
+      igQtFilterDialogDockWidget* dialog = new igQtFilterDialogDockWidget(this);
+      int x_min_id = dialog->addParameter(igQtFilterDialogDockWidget::QT_LINE_EDIT, "x_min(0..1)", "0.0");
+      int y_min_id = dialog->addParameter(igQtFilterDialogDockWidget::QT_LINE_EDIT, "y_min(0..1)", "0.0");
+      int z_min_id = dialog->addParameter(igQtFilterDialogDockWidget::QT_LINE_EDIT, "z_min(0..1)", "0.0");
+      int x_max_id = dialog->addParameter(igQtFilterDialogDockWidget::QT_LINE_EDIT, "x_max(0..1)", "0.5");
+      int y_max_id = dialog->addParameter(igQtFilterDialogDockWidget::QT_LINE_EDIT, "y_max(0..1)", "1.0");
+      int z_max_id = dialog->addParameter(igQtFilterDialogDockWidget::QT_LINE_EDIT, "z_max(0..1)", "1.0");
+      dialog->show();
+
+      dialog->setApplyFunctor([=]() { 
+          bool ok;
+          auto Clamp = [](double x, double l, double r) -> double {
+              if (x < l) return l;
+              if (x > r) return r;
+              return x;
+              };
+
+          double x_min = box.min[0] + size[0] * Clamp(dialog->getDouble(x_min_id, ok), 0., 1.);
+          double y_min = box.min[1] + size[1] * Clamp(dialog->getDouble(y_min_id, ok), 0., 1.);
+          double z_min = box.min[2] + size[2] * Clamp(dialog->getDouble(z_min_id, ok), 0., 1.);
+          double x_max = box.min[0] + size[0] * Clamp(dialog->getDouble(x_max_id, ok), 0., 1.);
+          double y_max = box.min[1] + size[1] * Clamp(dialog->getDouble(y_max_id, ok), 0., 1.);
+          double z_max = box.min[2] + size[2] * Clamp(dialog->getDouble(z_max_id, ok), 0., 1.);
+
+          inputMesh->SetExtent(x_min, x_max, y_min, y_max, z_min, z_max);
+          inputMesh->Modified();
+
+          rendererWidget->update();
+          });
+      });
+
+
+  // plane clipping
+  connect(ui->action_PlaneClipping, &QAction::triggered, this, [&](bool checked) {
+      if (!rendererWidget->GetScene()->GetCurrentModel()) {
+          std::cout << "Need Input" << std::endl;
+          return;
+      }
+      bool ok;
+
+      auto scene = iGame::SceneManager::Instance()->GetCurrentScene();
+      auto inputMesh = DynamicCast<iGame::VolumeMesh>(scene->GetCurrentModel()->GetDataObject());
+      if (!inputMesh || inputMesh->GetDataObjectType() != IG_VOLUME_MESH) {
+          std::cout << "Need VolumeMesh" << std::endl;
+          return;
+      }
+
+      auto box = inputMesh->GetBoundingBox();
+      auto center = (box.min + box.max) * 0.5;
+      auto size = box.max - box.min;
+
+      igQtFilterDialogDockWidget* dialog = new igQtFilterDialogDockWidget(this);
+      int origin_x_id = dialog->addParameter(igQtFilterDialogDockWidget::QT_LINE_EDIT, "origin_x(0..1)", "0.5");
+      int origin_y_id = dialog->addParameter(igQtFilterDialogDockWidget::QT_LINE_EDIT, "origin_y(0..1)", "0.5");
+      int origin_z_id = dialog->addParameter(igQtFilterDialogDockWidget::QT_LINE_EDIT, "origin_z(0..1)", "0.5");
+      int normal_x_id = dialog->addParameter(igQtFilterDialogDockWidget::QT_LINE_EDIT, "normal_x(-1..1)", "1.0");
+      int normal_y_id = dialog->addParameter(igQtFilterDialogDockWidget::QT_LINE_EDIT, "normal_y(-1..1)", "0.0");
+      int normal_z_id = dialog->addParameter(igQtFilterDialogDockWidget::QT_LINE_EDIT, "normal_z(-1..1)", "0.0");
+      dialog->show();
+
+      dialog->setApplyFunctor([=]() {
+          bool ok;
+          auto Clamp = [](double x, double l, double r) -> double {
+              if (x < l) return l;
+              if (x > r) return r;
+              return x;
+              };
+
+          double origin_x = box.min[0] + size[0] * Clamp(dialog->getDouble(origin_x_id, ok), 0., 1.);
+          double origin_y = box.min[1] + size[1] * Clamp(dialog->getDouble(origin_y_id, ok), 0., 1.);
+          double origin_z = box.min[2] + size[2] * Clamp(dialog->getDouble(origin_z_id, ok), 0., 1.);
+          double normal_x = Clamp(dialog->getDouble(normal_x_id, ok), -1., 1.);
+          double normal_y = Clamp(dialog->getDouble(normal_y_id, ok), -1., 1.);
+          double normal_z = Clamp(dialog->getDouble(normal_z_id, ok), -1., 1.);
+          if (normal_x == 0. && normal_y == 0. && normal_z == 0.) {
+              std::cout << "Normal is a vector of zero" << std::endl;
+              return;
+          }
+
+          inputMesh->SetClipPlane(origin_x, origin_y, origin_z, normal_x, normal_y, normal_z);
+          inputMesh->Modified();
+
+          rendererWidget->update();
+          });
+      });
 }
 
 void igQtMainWindow::updateRecentFilePaths() {
