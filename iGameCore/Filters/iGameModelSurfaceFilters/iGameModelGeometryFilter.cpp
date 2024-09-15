@@ -28,6 +28,8 @@ iGameModelGeometryFilter::iGameModelGeometryFilter() {
 	this->CellClipping = false;
 	this->ExtentClipping = false;
 	this->PlaneClipping = false;
+	this->ExtentClippingFlip = false;
+	this->PlaneClippingFlip = false;
 
 	this->Merging = true;
 
@@ -43,12 +45,11 @@ iGameModelGeometryFilter::~iGameModelGeometryFilter()
 {
 }
 void iGameModelGeometryFilter::SetExtent(double xMin, double xMax, double yMin,
-	double yMax, double zMin,
-	double zMax) {
+	double yMax, double zMin, double zMax, bool flip) {
 	double extent[6] = { xMin, xMax, yMin, yMax, zMin, zMax };
-	this->SetExtent(extent);
+	this->SetExtent(extent, flip);
 }
-void iGameModelGeometryFilter::SetExtent(double extent[6]) {
+void iGameModelGeometryFilter::SetExtent(double extent[6], bool flip) {
 	int i;
 	bool needSet = false;
 	for (i = 0; i < 6; i++) { needSet |= extent[i] != this->Extent[i]; }
@@ -62,21 +63,23 @@ void iGameModelGeometryFilter::SetExtent(double extent[6]) {
 			this->Extent[2 * i + 1] = extent[2 * i + 1];
 		}
 	}
+	this->ExtentClippingFlip = flip;
 	this->SetExtentClipping(true);
 }
-void iGameModelGeometryFilter::SetClipPlane(double ox, double oy, double oz, double nx, double ny, double nz)
+void iGameModelGeometryFilter::SetClipPlane(double ox, double oy, double oz, double nx, double ny, double nz, bool flip)
 {
-	PlaneOrigin[0] = ox;
-	PlaneOrigin[1] = oy;
-	PlaneOrigin[2] = oz;
-	PlaneNormal[0] = nx;
-	PlaneNormal[1] = ny;
-	PlaneNormal[2] = nz;
+	this->PlaneOrigin[0] = ox;
+	this->PlaneOrigin[1] = oy;
+	this->PlaneOrigin[2] = oz;
+	this->PlaneNormal[0] = nx;
+	this->PlaneNormal[1] = ny;
+	this->PlaneNormal[2] = nz;
+	this->PlaneClippingFlip = flip;
 	this->SetPlaneClipping(true);
 }
-void iGameModelGeometryFilter::SetClipPlane(double orgin[3], double normal[3])
+void iGameModelGeometryFilter::SetClipPlane(double orgin[3], double normal[3], bool flip)
 {
-	this->SetClipPlane(orgin[0], orgin[1], orgin[2], normal[0], normal[1], normal[2]);
+	this->SetClipPlane(orgin[0], orgin[1], orgin[2], normal[0], normal[1], normal[2], flip);
 }
 void iGameModelGeometryFilter::SetPointIndexExtent(igIndex _min, igIndex _max)
 {
@@ -1548,7 +1551,7 @@ char* iGameModelGeometryFilter::ComputeCellVisibleArray(CharArray::Pointer& Cell
 						CellVisible[cellId] = 0;
 						break;
 					}
-					else if (ExtentClipping && (
+					else if (ExtentClipping && !ExtentClippingFlip && (
 						x[0] < Extent[0] || x[0] > Extent[1] ||
 						x[1] < Extent[2] || x[1] > Extent[3] ||
 						x[2] < Extent[4] || x[2] > Extent[5]
@@ -1556,10 +1559,26 @@ char* iGameModelGeometryFilter::ComputeCellVisibleArray(CharArray::Pointer& Cell
 						CellVisible[cellId] = 0;
 						break;
 					}
-					else if (PlaneClipping && (/*dot product*/
+					else if (ExtentClipping && ExtentClippingFlip && (
+						x[0] >= Extent[0] && x[0] <= Extent[1] &&
+						x[1] >= Extent[2] && x[1] <= Extent[3] &&
+						x[2] >= Extent[4] && x[2] <= Extent[5]
+						)) {
+						CellVisible[cellId] = 0;
+						break;
+					}
+					else if (PlaneClipping && !PlaneClippingFlip &&(/*dot product*/
 						((x[0] - PlaneOrigin[0]) * PlaneNormal[0]
 						+ (x[1] - PlaneOrigin[1]) * PlaneNormal[1]
 						+ (x[2] - PlaneOrigin[2]) * PlaneNormal[2]) > 0.
+						)) {
+						CellVisible[cellId] = 0;
+						break;
+					}
+					else if (PlaneClipping && PlaneClippingFlip && (/*dot product*/
+						((x[0] - PlaneOrigin[0]) * PlaneNormal[0]
+							+ (x[1] - PlaneOrigin[1]) * PlaneNormal[1]
+							+ (x[2] - PlaneOrigin[2]) * PlaneNormal[2]) <= 0.
 						)) {
 						CellVisible[cellId] = 0;
 						break;

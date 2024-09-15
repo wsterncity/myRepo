@@ -923,6 +923,7 @@ void igQtMainWindow::initAllMySignalConnections() {
       int x_max_id = dialog->addParameter(igQtFilterDialogDockWidget::QT_LINE_EDIT, "x_max(0..1)", "0.5");
       int y_max_id = dialog->addParameter(igQtFilterDialogDockWidget::QT_LINE_EDIT, "y_max(0..1)", "1.0");
       int z_max_id = dialog->addParameter(igQtFilterDialogDockWidget::QT_LINE_EDIT, "z_max(0..1)", "1.0");
+      int flip_id = dialog->addParameter(igQtFilterDialogDockWidget::QT_CHECK_BOX, "flip", "false");
       dialog->show();
 
       dialog->setApplyFunctor([=]() { 
@@ -939,8 +940,9 @@ void igQtMainWindow::initAllMySignalConnections() {
           double x_max = box.min[0] + size[0] * Clamp(dialog->getDouble(x_max_id, ok), 0., 1.);
           double y_max = box.min[1] + size[1] * Clamp(dialog->getDouble(y_max_id, ok), 0., 1.);
           double z_max = box.min[2] + size[2] * Clamp(dialog->getDouble(z_max_id, ok), 0., 1.);
+          bool flip = dialog->getChecked(flip_id, ok);
 
-          inputMesh->SetExtent(x_min, x_max, y_min, y_max, z_min, z_max);
+          inputMesh->SetExtent(x_min, x_max, y_min, y_max, z_min, z_max, flip);
           inputMesh->Modified();
 
           rendererWidget->update();
@@ -974,6 +976,7 @@ void igQtMainWindow::initAllMySignalConnections() {
       int normal_x_id = dialog->addParameter(igQtFilterDialogDockWidget::QT_LINE_EDIT, "normal_x(-1..1)", "1.0");
       int normal_y_id = dialog->addParameter(igQtFilterDialogDockWidget::QT_LINE_EDIT, "normal_y(-1..1)", "0.0");
       int normal_z_id = dialog->addParameter(igQtFilterDialogDockWidget::QT_LINE_EDIT, "normal_z(-1..1)", "0.0");
+      int flip_id = dialog->addParameter(igQtFilterDialogDockWidget::QT_CHECK_BOX, "flip", "false");
       dialog->show();
 
       dialog->setApplyFunctor([=]() {
@@ -990,12 +993,13 @@ void igQtMainWindow::initAllMySignalConnections() {
           double normal_x = Clamp(dialog->getDouble(normal_x_id, ok), -1., 1.);
           double normal_y = Clamp(dialog->getDouble(normal_y_id, ok), -1., 1.);
           double normal_z = Clamp(dialog->getDouble(normal_z_id, ok), -1., 1.);
+          bool flip = dialog->getChecked(flip_id, ok);
           if (normal_x == 0. && normal_y == 0. && normal_z == 0.) {
               std::cout << "Normal is a vector of zero" << std::endl;
               return;
           }
 
-          inputMesh->SetClipPlane(origin_x, origin_y, origin_z, normal_x, normal_y, normal_z);
+          inputMesh->SetClipPlane(origin_x, origin_y, origin_z, normal_x, normal_y, normal_z, flip);
           inputMesh->Modified();
 
           rendererWidget->update();
