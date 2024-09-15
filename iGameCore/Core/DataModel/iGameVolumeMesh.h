@@ -258,6 +258,28 @@ public:
 	}
 	//Get real size of DataObject
 	IGsize GetRealMemorySize() override;
+
+	void SetExtentClipping(bool _in) { this->m_Clip.m_Extent.m_Use = _in; }
+	void SetPlaneClipping(bool _in) { this->m_Clip.m_Plane.m_Use = _in; }
+	void SetExtent(double xMin, double xMax, double yMin, double yMax,
+		double zMin, double zMax) {
+		m_Clip.m_Extent.bmin[0] = xMin;
+		m_Clip.m_Extent.bmin[1] = yMin;
+		m_Clip.m_Extent.bmin[2] = zMin;
+		m_Clip.m_Extent.bmax[0] = xMax;
+		m_Clip.m_Extent.bmax[1] = yMax;
+		m_Clip.m_Extent.bmax[2] = zMax;
+		SetExtentClipping(true);
+	}
+	void SetClipPlane(double ox, double oy, double oz, double nx, double ny, double nz) {
+		m_Clip.m_Plane.origin[0] = ox;
+		m_Clip.m_Plane.origin[1] = oy;
+		m_Clip.m_Plane.origin[2] = oz;
+		m_Clip.m_Plane.normal[0] = nx;
+		m_Clip.m_Plane.normal[1] = ny;
+		m_Clip.m_Plane.normal[2] = nz;
+		SetPlaneClipping(true);
+	}
 protected:
 	VolumeMesh();
 	~VolumeMesh() override = default;
@@ -285,6 +307,17 @@ private:
 		m_Prism{}; // Used for the returned 'Prism' object, which is Thread-Unsafe
 	Pyramid::Pointer
 		m_Pyramid{}; // Used for the returned 'Pyramid' object, which is Thread-Unsafe
+
+	struct {
+		struct {
+			bool m_Use{ false };
+			double bmin[3], bmax[3];
+		} m_Extent;
+		struct {
+			bool m_Use{ false };
+			double origin[3], normal[3];
+		} m_Plane;
+	} m_Clip; // Used for clip mesh
 
 public:
 	void Draw(Scene*) override;

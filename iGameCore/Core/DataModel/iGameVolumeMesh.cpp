@@ -1427,6 +1427,16 @@ void VolumeMesh::ConvertToDrawableData()
 	}
 	if (m_DrawMesh == nullptr || m_DrawMesh->GetMTime() < this->GetMTime()) {
 		iGameModelGeometryFilter::Pointer extract = iGameModelGeometryFilter::New();
+		// update clip status
+		if (m_Clip.m_Extent.m_Use) {
+			const auto& a = m_Clip.m_Extent.bmin;
+			const auto& b = m_Clip.m_Extent.bmax;
+			extract->SetExtent(a[0], b[0], a[1], b[1], a[2], b[2]);
+		}
+		if (m_Clip.m_Plane.m_Use) {
+			extract->SetClipPlane(m_Clip.m_Plane.origin, m_Clip.m_Plane.normal);
+		}
+
 		m_DrawMesh = SurfaceMesh::New();
 		if (!extract->Execute(this, m_DrawMesh)) {
 			m_DrawMesh = nullptr;

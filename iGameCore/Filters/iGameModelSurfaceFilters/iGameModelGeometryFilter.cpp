@@ -18,9 +18,16 @@ iGameModelGeometryFilter::iGameModelGeometryFilter() {
 	this->Extent[3] = DBL_MAX;
 	this->Extent[4] = -DBL_MAX;
 	this->Extent[5] = DBL_MAX;
+	this->PlaneOrigin[0] = 0;
+	this->PlaneOrigin[1] = 0;
+	this->PlaneOrigin[2] = 0;
+	this->PlaneNormal[0] = 1;
+	this->PlaneNormal[1] = 0;
+	this->PlaneNormal[2] = 0;
 	this->PointClipping = false;
 	this->CellClipping = false;
 	this->ExtentClipping = false;
+	this->PlaneClipping = false;
 
 	this->Merging = true;
 
@@ -56,6 +63,20 @@ void iGameModelGeometryFilter::SetExtent(double extent[6]) {
 		}
 	}
 	this->SetExtentClipping(true);
+}
+void iGameModelGeometryFilter::SetClipPlane(double ox, double oy, double oz, double nx, double ny, double nz)
+{
+	PlaneOrigin[0] = ox;
+	PlaneOrigin[1] = oy;
+	PlaneOrigin[2] = oz;
+	PlaneNormal[0] = nx;
+	PlaneNormal[1] = ny;
+	PlaneNormal[2] = nz;
+	this->SetPlaneClipping(true);
+}
+void iGameModelGeometryFilter::SetClipPlane(double orgin[3], double normal[3])
+{
+	this->SetClipPlane(orgin[0], orgin[1], orgin[2], normal[0], normal[1], normal[2]);
 }
 void iGameModelGeometryFilter::SetPointIndexExtent(igIndex _min, igIndex _max)
 {
@@ -1496,7 +1517,7 @@ char* iGameModelGeometryFilter::ComputeCellVisibleArray(CharArray::Pointer& Cell
 	IGsize numCells = Cells ? Cells->GetNumberOfCells() : 0;
 	char* CellVisible = nullptr;
 	// Determine nature of what we have to do
-	if ((!CellClipping) && (!PointClipping) && (!ExtentClipping)) {
+	if ((!CellClipping) && (!PointClipping) && (!ExtentClipping) && (!PlaneClipping)) {
 		return nullptr;
 	}
 	else {
@@ -1523,12 +1544,23 @@ char* iGameModelGeometryFilter::ComputeCellVisibleArray(CharArray::Pointer& Cell
 				for (i = 0; i < vnum; i++) {
 					pointId = vhs[i];
 					x = inPoints->GetPoint(pointId);
-					if ((PointClipping &&
-						(pointId < PointMinimum || pointId > PointMaximum)) ||
-						(ExtentClipping &&
-							(x[0] < Extent[0] || x[0] > Extent[1] ||
-								x[1] < Extent[2] || x[1] > Extent[3] ||
-								x[2] < Extent[4] || x[2] > Extent[5]))) {
+					if (PointClipping && (pointId < PointMinimum || pointId > PointMaximum)) {
+						CellVisible[cellId] = 0;
+						break;
+					}
+					else if (ExtentClipping && (
+						x[0] < Extent[0] || x[0] > Extent[1] ||
+						x[1] < Extent[2] || x[1] > Extent[3] ||
+						x[2] < Extent[4] || x[2] > Extent[5]
+						)) {
+						CellVisible[cellId] = 0;
+						break;
+					}
+					else if (PlaneClipping && (/*dot product*/
+						((x[0] - PlaneOrigin[0]) * PlaneNormal[0]
+						+ (x[1] - PlaneOrigin[1]) * PlaneNormal[1]
+						+ (x[2] - PlaneOrigin[2]) * PlaneNormal[2]) > 0.
+						)) {
 						CellVisible[cellId] = 0;
 						break;
 					}
