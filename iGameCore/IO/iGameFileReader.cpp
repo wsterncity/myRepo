@@ -202,32 +202,33 @@ bool FileReader::CreateDataObject() {
 //------------------------------------------------------------------------------
 // Internal function to read in an integer value.
 // Returns zero if there was an error.
-int FileReader::Read(char *result) {
-  // int intData;
-  //*this->IS >> intData;
-  // if (this->IS->fail())
-  //{
-  //	return 0;
-  // }
-  //*result = (char)intData;
-  return 1;
+int FileReader::Read(char* result)
+{
+    if (this->IS < this->FILEEND) {
+        *result = (char)*this->IS;
+        return 1;
+    }
+    return 0;
 }
 //------------------------------------------------------------------------------
 int FileReader::Read(char *data, size_t n) {
-  memcpy(data, this->IS, n);
-  this->IS += n;
-  return 1;
+    if (this->IS + n > this->FILEEND) {
+        n = this->FILEEND - this->IS;
+   }
+    if (n>0) {
+        memcpy(data, this->IS, n);
+        this->IS += n;
+        return 1;
+    }
+    return 0;
 }
 //------------------------------------------------------------------------------
 int FileReader::Read(unsigned char *result) {
-  // int intData;
-  //*this->IS >> intData;
-  // if (this->IS->fail())
-  //{
-  //	return 0;
-  // }
-  //*result = (unsigned char)intData;
-  return 1;
+    if (this->IS < this->FILEEND) {
+        *result = (unsigned char)*this->IS;
+        return 1;
+    }
+    return 0;
 }
 
 //------------------------------------------------------------------------------
@@ -311,11 +312,11 @@ int FileReader::ReadLine(char result[256]) {
   const char *lineEnd = strchr(this->IS, '\n');
   if (!lineEnd)
     lineEnd = this->FILEEND;
-  if (!this->IS || this->IS > lineEnd) {
+  if (!this->IS || this->IS >= lineEnd) {
     result[0] = '\0';
     return 0;
   }
-  size_t slen = lineEnd - this->IS;
+  int slen = lineEnd - this->IS;
   std::memcpy(result, this->IS, slen);
   result[slen] = '\0';
   // remove '\r', if present.
@@ -338,14 +339,12 @@ int FileReader::ReadString(char result[256]) {
   if (!op || op > lineEnd) {
     op = lineEnd;
   }
-  size_t slen = 0;
+  int slen = 0;
   if (!op) {
-    op = this->FILEEND;
-    slen = op - this->IS + 1;
-  } else {
-    slen = op - this->IS;
-  }
-  if (this->IS > op) {
+    op = this->FILEEND+1;
+  } 
+  slen = op - this->IS;
+  if (slen<1) {
     result[0] = '\0';
     return 0;
   }
@@ -362,9 +361,6 @@ int FileReader::ReadString(char result[256]) {
       op = this->IS + i;
       break;
     }
-  }
-  if (result[0] == '\0') {
-    this->IS = op + 1;
   }
   this->IS = op;
   if (result[0] == '\0') {
@@ -387,9 +383,16 @@ int FileReader::ReadString(std::string &result) {
     return 0;
   }
   result = std::string(this->IS, op);
-  size_t slen = result.length();
+  int slen = result.length();
   if (slen > 0 && result[slen - 1] == '\r') {
     result = std::string(this->IS, op - 1);
+  }
+  for (int i = 0; i < slen; i++) {
+      if (result[i] == '\t') {
+          result[i] = '\0';
+          op = this->IS + i;
+          break;
+      }
   }
   this->IS = op;
   if (result[0] == '\0') {
