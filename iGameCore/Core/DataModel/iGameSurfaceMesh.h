@@ -185,8 +185,8 @@ public:
         igIndex i = -1, const std::pair<float, float>& range = { 0.f, 0.f }) override;
     void SetAttributeWithCellData(ArrayObject::Pointer attr, igIndex i = -1);
 
-private:
-
+protected:
+    SurfaceMesh::Pointer m_DrawMesh{ nullptr };
 
 #ifdef IGAME_OPENGL_VERSION_460
     Meshlet::Pointer m_Meshlets{ Meshlet::New() };

@@ -310,19 +310,6 @@ private:
 	Pyramid::Pointer
 		m_Pyramid{}; // Used for the returned 'Pyramid' object, which is Thread-Unsafe
 
-	struct {
-		struct {
-			bool m_Use{ false };
-			double m_bmin[3], m_bmax[3];
-			bool m_flip{ false };
-		} m_Extent;
-		struct {
-			bool m_Use{ false };
-			double m_origin[3], m_normal[3];
-			bool m_flip{ false };
-		} m_Plane;
-	} m_Clip; // Used for clip mesh
-
 public:
 	void Draw(Scene*) override;
 	void ConvertToDrawableData() override;
@@ -333,9 +320,6 @@ public:
 		igIndex i = -1, const std::pair<float, float>& range = { 0.f, 0.f }) override;
 
 	void SetAttributeWithCellData(ArrayObject::Pointer attr, igIndex i = -1);
-
-private:
-	SurfaceMesh::Pointer m_DrawMesh{};
 };
 IGAME_NAMESPACE_END
 #endif
