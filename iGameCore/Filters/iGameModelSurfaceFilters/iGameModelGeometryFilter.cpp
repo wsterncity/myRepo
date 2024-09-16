@@ -519,7 +519,19 @@ public:
 			previous->Next = newF;
 		}
 	}
-
+	void CompositeFaces(CellArray::Pointer& Polygons, std::vector<igIndex>& f2c)
+	{
+		auto numInputPts = this->Buckets.size();
+		size_t i = 0;
+		for (i = 0; i < numInputPts; i++) {
+			auto current = Buckets[i].Head;
+			while (current != nullptr) {
+				Polygons->AddCellIds(current->PointIds, current->NumberOfPoints);
+				f2c.emplace_back(current->OriginalCellId);
+				current = current->Next;
+			}
+		}
+	}
 	void PopulateCellArrays(std::vector<CellArrayType*>& threadedPolys) {
 		std::vector<GFace*> Faces;
 		for (auto& bucket : this->Buckets) {
@@ -563,17 +575,12 @@ struct ExtractCellBoundaries {
 	igIndex NumPts;
 	igIndex NumCells;
 	ExtractCellBoundaries* Extract;
-	//vtkStaticCellLinksTemplate<TInputIdType>* ExcFaces;
-	//using TThreadOutputType = ThreadOutputType<TInputIdType>;
-	//TThreadOutputType* Threads;
+
 
 	ExtractCellBoundaries(const char* cellVis, const unsigned char* cellGhosts,
-		const unsigned char* pointGhost /*,
-	   vtkExcludedFaces<TInputIdType>* exc,
-		TThreadOutputType* threads*/)
+		const unsigned char* pointGhost )
 		: PointMap(nullptr), CellVis(cellVis), CellGhosts(cellGhosts),
-		PointGhost(pointGhost)/*, Threads(threads)*/ {
-		/*this->ExcFaces = (exc == nullptr ? nullptr : exc->Links);*/
+		PointGhost(pointGhost){
 	}
 
 	virtual ~ExtractCellBoundaries() { delete[] this->PointMap; }
@@ -840,16 +847,8 @@ int iGameModelGeometryFilter::ExecuteWithVolumeMesh(
 	clock_t time_2 = clock();
 	igDebug("Extracted surface(not composite) cost " << time_2 - time1 << "ms.");
 
-	auto& buckets = extract->FaceMap.get()->GetBuckets();
 	std::vector<igIndex> f2c;
-	for (i = 0; i < numInputPts; i++) {
-		auto current = buckets[i].Head;
-		while (current != nullptr) {
-			Polygons->AddCellIds(current->PointIds, current->NumberOfPoints);
-			f2c.emplace_back(current->OriginalCellId);
-			current = current->Next;
-		}
-	}
+	extract->FaceMap.get()->CompositeFaces(Polygons, f2c);
 
 	CompositeCellAttribute(f2c, inAllDataArray, outAllDataArray);
 	output->SetPoints(inPoints);
@@ -1270,16 +1269,8 @@ int iGameModelGeometryFilter::ExecuteWithUnstructuredGrid(
 	clock_t time_2 = clock();
 	igDebug("Extracted surface(not composite) cost " << time_2 - time1 << "ms.");
 
-	auto& buckets = extract->FaceMap.get()->GetBuckets();
 	std::vector<igIndex> f2c;
-	for (i = 0; i < numInputPts; i++) {
-		auto current = buckets[i].Head;
-		while (current != nullptr) {
-			Polygons->AddCellIds(current->PointIds, current->NumberOfPoints);
-			f2c.emplace_back(current->OriginalCellId);
-			current = current->Next;
-		}
-	}
+	extract->FaceMap.get()->CompositeFaces(Polygons, f2c);
 
 	CompositeCellAttribute(f2c, inAllDataArray, outAllDataArray);
 	output->SetPoints(inPoints);
@@ -1485,6 +1476,9 @@ int iGameModelGeometryFilter::ExecuteWithStructuredGrid(
 	CellArray::Pointer Polygons = CellArray::New();
 	CharArray::Pointer CellVisibleArray = CharArray::New();
 	char* CellVisible = ComputeCellVisibleArray(CellVisibleArray, inPoints, Grid->GetCells());
+	if (CellVisible) {
+		return this->ExecuteWithVolumeMesh(input, output);
+	}
 	unsigned char* cellGhosts = nullptr;
 	unsigned char* pointGhosts = nullptr;
 

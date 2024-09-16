@@ -421,8 +421,8 @@ void igQtMainWindow::initAllFilters() {
             /*	fp->SetCellIndexExtent(100, 100000);*/
             // fp->SetPointIndexExtent(0, 100);
             auto bound = input->GetBoundingBox();
-            auto a = (bound.max + bound.min * 2) / 3;
-            auto b = (bound.max * 2 + bound.min) / 3;
+            auto a = (bound.max + bound.min * 4) / 5;
+            auto b = (bound.max * 4 + bound.min) / 5;
             double extent[6] = {a[0], b[0], a[1], b[1], a[2], b[2]};
 
             for (int i = 0; i < 3; i++) {
@@ -959,8 +959,9 @@ void igQtMainWindow::initAllMySignalConnections() {
       bool ok;
 
       auto scene = iGame::SceneManager::Instance()->GetCurrentScene();
+
       auto inputMesh = DynamicCast<iGame::VolumeMesh>(scene->GetCurrentModel()->GetDataObject());
-      if (!inputMesh || inputMesh->GetDataObjectType() != IG_VOLUME_MESH) {
+      if (!inputMesh /*|| inputMesh->GetDataObjectType() != IG_VOLUME_MESH*/) {
           std::cout << "Need VolumeMesh" << std::endl;
           return;
       }
