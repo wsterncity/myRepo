@@ -777,6 +777,9 @@ void FileReader::SetFilePath(const std::string& filePath) {
 void FileReader::SkipNullData() {
 	while (this->IS && (*this->IS == ' ' || *this->IS == '\r' || *this->IS == '\n' || *this->IS == '\t'))this->IS++;
 }
+void FileReader::SkipDataToSpace() {
+	while (this->IS && *this->IS != ' ')this->IS++;
+}
 void FileReader::UpdateReadProgress() {
 	if (!this->IS)return;
 	double progress = 1.0 * (this->IS - this->FILESTART) / m_FileSize;

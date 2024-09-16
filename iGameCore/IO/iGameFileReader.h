@@ -66,6 +66,7 @@ public:
 	char* LowerCase(char* str, const size_t len = 256);
 	ArrayObject::Pointer ReadArray(const char* dataType, int numTuples, int numComp);
 	void SkipNullData();
+	void SkipDataToSpace();
 	void UpdateReadProgress();
 	int DecodeString(char* resname, const char* name);
 

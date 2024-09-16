@@ -36,6 +36,7 @@ bool OBJReader::Parsing()
 				}
 				vhs[size]--;
 				size++;
+				this->SkipDataToSpace();
 				this->SkipNullData();
 			}
 			this->IS = lineEnd + 1;
