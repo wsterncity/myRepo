@@ -907,7 +907,7 @@ void igQtMainWindow::initAllMySignalConnections() {
 
       auto scene = iGame::SceneManager::Instance()->GetCurrentScene();
       auto inputMesh = DynamicCast<iGame::VolumeMesh>(scene->GetCurrentModel()->GetDataObject());
-      if (!inputMesh || inputMesh->GetDataObjectType() != IG_VOLUME_MESH) {
+      if (!inputMesh /*|| inputMesh->GetDataObjectType() != IG_VOLUME_MESH*/) {
           std::cout << "Need VolumeMesh" << std::endl;
           return;
       }
