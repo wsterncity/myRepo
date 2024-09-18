@@ -233,6 +233,7 @@ const void VTKWriter::WriteCellsTypeToBuffer()
 
 		}
 	}
+	m_TemporaryBuffers.emplace_back(buffer);
 }
 std::string VTKWriter::GenerateAttributeHeader(AttributeSet::Attribute attribute)
 {

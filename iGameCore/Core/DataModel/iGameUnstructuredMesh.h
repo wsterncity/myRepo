@@ -64,6 +64,7 @@ public:
 	VolumeMesh::Pointer ExtractVolumeMesh();
 	//Generate from VolumeMesh
 	bool GenerateFromVolumeMesh(VolumeMesh::Pointer volumeMesh);
+
 	static bool TransferVolumeMeshToUnstructuredMesh(VolumeMesh::Pointer volumeMesh, UnstructuredMesh::Pointer&);
 
 	SurfaceMesh::Pointer GetDrawMesh() { return m_DrawMesh; }
@@ -110,28 +111,10 @@ public:
 	void SetAttributeWithPointData(ArrayObject::Pointer attr,
 		igIndex i = -1, const std::pair<float, float>& range = { 0.f, 0.f }) override;
 	void SetAttributeWithCellData(ArrayObject::Pointer attr, igIndex i = -1);
-
-private:
-	void Create();
-
-	GLVertexArray m_PointVAO, m_VertexVAO, m_LineVAO, m_TriangleVAO;
-	GLBuffer m_PositionVBO, m_ColorVBO, m_NormalVBO, m_TextureVBO;
-	GLBuffer m_VertexEBO, m_LineEBO, m_TriangleEBO;
-
-	FloatArray::Pointer m_Positions{};
-	FloatArray::Pointer m_Colors{};
-	UnsignedIntArray::Pointer m_VertexIndices{};
-	UnsignedIntArray::Pointer m_LineIndices{};
-	UnsignedIntArray::Pointer m_TriangleIndices{};
-
-	bool m_Flag{ false };
-	bool m_UseColor{ false };
-	int m_PointSize{ 1 };
-	int m_LineWidth{ 1 };
-	bool m_ColorWithCell{ false };
-	ArrayObject::Pointer m_ViewAttribute{};
-	int m_ViewDemension{ -1 };
+	
+protected:
 	SurfaceMesh::Pointer m_DrawMesh{ nullptr };
+	void Create();
 };
 IGAME_NAMESPACE_END
 #endif

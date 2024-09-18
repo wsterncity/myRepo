@@ -26,10 +26,10 @@ FileWriter::~FileWriter()
 }
 bool FileWriter::WriteToFile()
 {
-	if (!GenerateBuffers()) {
-		igError("Could not generate buffer to load.");
-		return false;
-	}
+	//if (!GenerateBuffers()) {
+	//	igError("Could not generate buffer to load.");
+	//	return false;
+	//}
 	return SaveBufferDataToFile();
 
 }
@@ -42,18 +42,42 @@ bool FileWriter::WriteToFile(DataObject::Pointer dataObject, std::string filePat
 
 bool FileWriter::SaveBufferDataToFile()
 {
-
+	FILE* file = fopen(this->m_FilePath.c_str(), "wb");
+	if (file == NULL) {
+		perror("fopen failed");
+		return false;
+	}
+	size_t fileSize = 0;
+	for (int i = 0; i < m_Buffers.size(); i++) {
+		if (m_Buffers[i]) {
+			fileSize += m_Buffers[i]->GetNumberOfValues();
+		}
+	}
+	for (int i = 0; i < m_Buffers.size(); i++) {
+		if (m_Buffers[i] && m_Buffers[i]->RawPointer()) {
+			size_t bufferSize = m_Buffers[i]->GetNumberOfValues();
+			if (fwrite(m_Buffers[i]->RawPointer(), 1, bufferSize, file) != bufferSize) {
+				perror("fwrite failed");
+				fclose(file);
+				return false;
+			}
+		}
+	}
+	m_Buffers.clear();
+	fclose(file);
+	return true;
+//下面的是内存映射方式，效率没有fwrite高
 #ifdef PLATFORM_WINDOWS
 	return SaveBufferDataToFileWithWindows();
 #elif defined(PLATFORM_LINUX)
 	return SaveBufferDataToFileWithLinux();
 #elif defined(PLATFORM_MAC)
 	return SaveBufferDataToFileWithMac();
-
 #endif
 }
 bool FileWriter::SaveBufferDataToFileWithWindows()
 {
+#ifdef PLATFORM_WINDOWS
 	clock_t time_1 = clock();
 	// 打开文件
 
@@ -104,6 +128,7 @@ bool FileWriter::SaveBufferDataToFileWithWindows()
 
 	clock_t time_2 = clock();
 	std::cout << "Write buffer to file cost " << time_2 - time_1 << "ms\n";
+#endif
 	return true;
 }
 

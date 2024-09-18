@@ -13,7 +13,7 @@ private:
         glCreateTextures(GL_TEXTURE_2D, count, handles);
     }
     static void destroyHandle(GLsizei count, GLuint* handles) {
-        glDeleteTextures(count, handles);
+         glDeleteTextures(count, handles);
     }
 
 private:

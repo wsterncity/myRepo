@@ -185,33 +185,14 @@ public:
         igIndex i = -1, const std::pair<float, float>& range = { 0.f, 0.f }) override;
     void SetAttributeWithCellData(ArrayObject::Pointer attr, igIndex i = -1);
 
-private:
-    GLVertexArray m_PointVAO, m_LineVAO, m_TriangleVAO;
-    GLBuffer m_PositionVBO, m_ColorVBO, m_NormalVBO, m_TextureVBO;
-    GLBuffer m_PointEBO, m_LineEBO, m_TriangleEBO;
-
-    GLVertexArray m_CellVAO;
-    GLBuffer m_CellPositionVBO, m_CellColorVBO;
-    int m_CellPositionSize{};
-
-    FloatArray::Pointer m_Positions{};
-    FloatArray::Pointer m_Colors{};
-    IdArray::Pointer m_PointIndices{};
-    IdArray::Pointer m_LineIndices{};
-    IdArray::Pointer m_TriangleIndices{};
+protected:
+    SurfaceMesh::Pointer m_DrawMesh{ nullptr };
 
 #ifdef IGAME_OPENGL_VERSION_460
     Meshlet::Pointer m_Meshlets{ Meshlet::New() };
 #endif
 
-    bool m_Flag{ false };
-    bool m_UseColor{ false };
-    bool m_ColorWithCell{ false };
-    int m_PointSize{ 1 };
-    int m_LineWidth{ 1 };
 
-    ArrayObject::Pointer m_ViewAttribute{};
-    int m_ViewDemension{ -1 };
 };
 IGAME_NAMESPACE_END
 #endif
