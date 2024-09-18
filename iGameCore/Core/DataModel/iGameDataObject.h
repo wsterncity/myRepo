@@ -219,14 +219,13 @@ protected:
 };
 
 template <typename Functor, typename... Args>
-inline void DataObject::ProcessSubDataObjects(Functor&& functor,
-	Args &&...args) {
-	if (HasSubDataObject()) {
-		for (auto it = m_SubDataObjectsHelper->Begin();
-			it != m_SubDataObjectsHelper->End(); ++it) {
-			(it->second->*functor)(std::forward<Args>(args)...);
-		}
-	}
+inline void DataObject::ProcessSubDataObjects(Functor&& functor, Args &&...args) {
+    if (HasSubDataObject()) {
+        for (auto it = m_SubDataObjectsHelper->Begin();
+             it != m_SubDataObjectsHelper->End(); ++it) {
+            (it->second->*functor)(std::forward<Args>(args)...);
+        }
+    }
 }
 
 IGAME_NAMESPACE_END

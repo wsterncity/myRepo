@@ -162,6 +162,7 @@ void igQtAnimationWidget::playAnimation_snap(int keyframe_idx){
     currentScene->MakeCurrent();
 
     currentObject->SetViewStyle(currentObject->GetViewStyle());
+    currentObject->ConvertToDrawableData();
 //    for(auto it = currentObject->SubDataObjectIteratorBegin(); it != currentObject->SubDataObjectIteratorEnd(); ++ it){
 //        it->second->SetViewStyle(currentObject->GetViewStyle());
 //        it->second->ConvertToDrawableData();

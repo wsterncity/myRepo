@@ -17,7 +17,6 @@ public:
     Points::Pointer        Points{};
 
     AttributeSet::Pointer Data{};
-    StreamingData::Pointer Time_Data{};
 
     CellArray::Pointer Lines{};
 
@@ -26,6 +25,10 @@ public:
 
     // Volume struct
     CellArray::Pointer Volumes{};
+
+    StreamingData::Pointer Time_Data{};
+
+    igIndex dimensionSize[3];
 
     IGenum Type{};
 

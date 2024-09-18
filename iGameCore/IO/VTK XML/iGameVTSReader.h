@@ -17,6 +17,8 @@ public:
 
     bool Parsing() override;
 
+    bool CreateDataObject() override;
+
 protected:
     iGameVTSReader() = default;
     ~iGameVTSReader() = default;
