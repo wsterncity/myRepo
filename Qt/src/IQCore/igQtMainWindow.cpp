@@ -760,8 +760,16 @@ void igQtMainWindow::initAllMySignalConnections() {
   // &igQtMainWindow::updateCurrentSceneWidget);
   connect(fileLoader, &igQtFileLoader::FinishReading, ui->widget_Animation,
           &igQtAnimationWidget::initAnimationComponents);
-  connect(ui->widget_FlowField, &igQtStreamTracerWidget::NewModel,
-          modelTreeWidget, &igQtModelDialogWidget::addDataObjectToModelTree);
+
+  connect(ui->widget_FlowField, &igQtStreamTracerWidget::AddStreamObject, this,
+      [&](iGame::DataObject::Pointer res) {
+          modelTreeWidget->addDataObjectToModelTree(res, ItemSource::Algorithm);
+      });
+  connect(ui->widget_FlowField, &igQtStreamTracerWidget::UpdateStreamObject, this,
+      [&](iGame::DataObject::Pointer res) {
+          res->Modified();
+          rendererWidget->update();
+      });
   // connect(fileLoader, &igQtFileLoader::FinishReading, ui->widget_ScalarField,
   // &igQtScalarViewWidget::getScalarsName); connect(fileLoader,
   // &igQtFileLoader::FinishReading, ui->widget_TensorField, [&]() {
@@ -872,15 +880,12 @@ void igQtMainWindow::initAllMySignalConnections() {
   //
   connect(ui->widget_TensorField, &igQtTensorWidget::DrawTensorGlyphs, this,
           [&](iGame::DataObject::Pointer res) {
-            modelTreeWidget->addDataObjectToModelTree(res,
-                                                      ItemSource::Algorithm);
+            modelTreeWidget->addDataObjectToModelTree(res,ItemSource::Algorithm);
           });
   connect(ui->widget_TensorField, &igQtTensorWidget::UpdateTensorGlyphs, this,
           [&](iGame::DataObject::Pointer res) {
             res->Modified();
             rendererWidget->update();
-            // modelTreeWidget->addDataObjectToModelTree(res,
-            // ItemSource::Algorithm);
           });
   // connect(ui->widget_TensorField, &igQtTensorWidget::DrawEllipsoidGlyph,
   // this, [&]() { 	this->rendererWidget->DrawEllipsoidGlyph();

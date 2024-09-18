@@ -1,10 +1,11 @@
 #include<IQWidgets/igQtStreamTracerWidget.h>
 #include <iGameSceneManager.h>
-
+using namespace iGame;
 igQtStreamTracerWidget::igQtStreamTracerWidget(QWidget* parent) : QWidget(parent), ui(new Ui::SteamLineTracer)
 {
     ui->setupUi(this);
-	connect(ui->control_comboBox, SIGNAL(currentIndexChanged(QString)), this, SLOT(changeControl()));
+	m_StreamBase = iGameStreamBase::New();
+   connect(ui->control_comboBox, SIGNAL(currentIndexChanged(QString)), this, SLOT(changeControl()));
 	connect(ui->numOfSeedLineEdit, SIGNAL(textChanged(const QString&)), this, SLOT(changenumOfSeeds()));
 	connect(ui->lengthOfStreamLine, SIGNAL(textChanged(const QString&)), this, SLOT(changelengthOfStreamLine()));
 	connect(ui->lengthOfStep, SIGNAL(textChanged(const QString&)), this, SLOT(changelengthOfStep()));
@@ -83,44 +84,25 @@ void igQtStreamTracerWidget::increaseProportion() {
 void igQtStreamTracerWidget::generateStreamline() {
 	
 	auto scene = SceneManager::Instance()->GetCurrentScene();
-	iGameStreamTracer streamtracer;
+	iGameStreamTracer* streamtracer=m_StreamBase->streamFilter;
 	Model::Pointer model = scene->GetCurrentModel();
+
 	VolumeMesh::Pointer mesh = DynamicCast<UnstructuredMesh>(model->GetDataObject())->TransferToVolumeMesh();
-	streamtracer.SetMesh(mesh);
-	auto seeds = streamtracer.streamSeedGenerate(control, proportion, numOfSeeds);
-	//manager->GetCurrentModel()->seedPointsOfstreamline = new float[3 * seeds.size()];
-	//for (size_t i = 0; i < seeds.size(); i++)
-	//{
-	//	manager->GetCurrentModel()->seedPointsOfstreamline[3 * i] = seeds[i][0];
-	//	manager->GetCurrentModel()->seedPointsOfstreamline[3 * i + 1] = seeds[i][1];
-	//	manager->GetCurrentModel()->seedPointsOfstreamline[3 * i + 2] = seeds[i][2];
-	//}
+	streamtracer->SetMesh(mesh);
+	auto seeds = streamtracer->streamSeedGenerate(control, proportion, numOfSeeds);
 	std::vector<std::vector<float>> streamlineColor;
-	auto streamline = streamtracer.showStreamLineHex(seeds, "V", streamlineColor,lengthOfStreamLine, lengthOfStep,terminalSpeed,maxSteps);
-	Points::Pointer points = Points::New();
-	CellArray::Pointer cells = CellArray::New();
-	FloatArray::Pointer colors = FloatArray::New();
-	UnsignedIntArray::Pointer types = UnsignedIntArray::New();
-	for (int i = 0; i < streamline.size(); i++) {
-		IdArray::Pointer line = IdArray::New();
-		for (int j = 0; j < streamline[i].size() / 3; j++) {
-			int id = points->AddPoint(Point(streamline[i][j * 3], streamline[i][j * 3 + 1], streamline[i][j * 3 + 2]));
-			colors->AddValue(streamlineColor[i][j * 3]);
-			line->AddId(id);
-		}
-		cells->AddCellIds(line);
-		types->AddValue(IG_POLY_LINE);
-	}
-	streamlineResult->SetPoints(points);
-	streamlineResult->SetCells(cells, types);
-	streamlineResult->GetAttributeSet()->AddAttribute(IG_SCALAR, IG_POINT, colors);
+	auto streamline = streamtracer->showStreamLineHex(seeds, "V", streamlineColor,lengthOfStreamLine, lengthOfStep,terminalSpeed,maxSteps);
+	m_StreamBase->SetStreamLine(streamline);
+	
 
-
-	//manager->GetCurrentModel()->streamline = streamline;
 	if (!haveDraw) {
+		m_StreamBase->DataObject::SetName("SAHDAKDHKASJ");
+		Q_EMIT AddStreamObject(m_StreamBase);
 		haveDraw = true;
-		emit NewModel(streamlineResult, ItemSource::Algorithm);
-		scene->SetCurrentModel(model);
 	}
+	else {
+		Q_EMIT UpdateStreamObject(m_StreamBase);
+	}
+   
 
 }
