@@ -62,7 +62,6 @@ public:
     }
 	
     igIndex FindClosestPoint(const Vector3d& x) {
-        this->Initialize();
         int i, j;
         double minDist2;
         double dist2 = std::numeric_limits<double>::max();
