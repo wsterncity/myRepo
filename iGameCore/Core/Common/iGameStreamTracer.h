@@ -10,6 +10,7 @@
 #include<iGameVolumeMesh.h>
 #include<iGameVector.h>
 #include<set>
+#include<iGamePointFinder.h>
 using namespace iGame;
 
 /**
@@ -53,6 +54,9 @@ public:
 	bool CellData2PointData( std::string vectorName);
 	void SetMesh(VolumeMesh::Pointer mesh) {
 		this->mesh = mesh;
+	};
+	void SetPtFinder(PointFinder::Pointer ptf) {
+		this->ptFinder = ptf;
 	};
 	std::vector<std::vector<float>> showStreamLineMix(std::vector<Vector3f>seed, std::string vectorName, std::vector<std::vector<float>>& streamColor, float lengthOfStreamLine, float lengthOfStep, float terminalSpeed, int maxSteps);
 	std::vector<std::vector<float>> showStreamLineHex(std::vector<Vector3f>seed, std::string vectorName, std::vector<std::vector<float>>& streamColor, float lengthOfStreamLine, float lengthOfStep, float terminalSpeed, int maxSteps);
@@ -147,5 +151,5 @@ private:
 */
 	bool checkContact(Vector3f coord, Vector3f v0, Vector3f v1, Vector3f v2);
 	VolumeMesh::Pointer mesh{};
-
+	PointFinder::Pointer ptFinder{};
 };

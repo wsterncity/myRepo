@@ -967,14 +967,20 @@ Vector3f iGameStreamTracer::interpolationVectorMixWithMeanV(Vector3f coord, bool
 		for (int i = 0; i < numOfPoints; i++)
 		{
 			Point a = mesh->GetPoint(i);
-			if (a == coord) {
+			if ((a-coord).length()<=0.001) {
 				return _vector[i];
 			}
 		}
-		for (int i = 0; i < numOfVolumes; i++)
-		{
-			tem.emplace_back(i);
+		if (!ptFinder) {
+			igIndex temPointId = ptFinder->FindClosestPoint(coord);
+			igIndex nearVolume[128];
+			int find=	mesh->GetPointToNeighborVolumes(temPointId,nearVolume);
+			for (int i = 0; i < find; i++)
+			{
+				tem.emplace_back(nearVolume[i]);
+			}
 		}
+
 	}
 	else {
 		igIndex nearVolume[128];

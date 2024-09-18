@@ -86,14 +86,19 @@ void igQtStreamTracerWidget::generateStreamline() {
 	auto scene = SceneManager::Instance()->GetCurrentScene();
 	iGameStreamTracer* streamtracer=m_StreamBase->streamFilter;
 	Model::Pointer model = scene->GetCurrentModel();
-
 	VolumeMesh::Pointer mesh = DynamicCast<UnstructuredMesh>(model->GetDataObject())->TransferToVolumeMesh();
 	streamtracer->SetMesh(mesh);
+	if (!ptFinder)
+	{
+		ptFinder = PointFinder::New();
+		ptFinder->SetPoints(mesh->GetPoints());
+		ptFinder->Initialize();
+	}
+	streamtracer->SetPtFinder(ptFinder);
 	auto seeds = streamtracer->streamSeedGenerate(control, proportion, numOfSeeds);
 	std::vector<std::vector<float>> streamlineColor;
 	auto streamline = streamtracer->showStreamLineHex(seeds, "V", streamlineColor,lengthOfStreamLine, lengthOfStep,terminalSpeed,maxSteps);
 	m_StreamBase->SetStreamLine(streamline);
-	
 
 	if (!haveDraw) {
 		m_StreamBase->DataObject::SetName("SAHDAKDHKASJ");
