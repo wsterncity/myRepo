@@ -47,22 +47,22 @@ public:
         m_ReciprocalBoxSize[2] = 1.0 / m_BoxSize[2];
 
         m_Buffer = ElementArray<IdArray::Pointer>::New();
-        m_Buffer->Resize(m_NumberOfBoxes);
+        m_Buffer->Resize(m_NumberOfBoxes, nullptr);
 
         for (IGsize i = 0; i < m_Points->GetNumberOfPoints(); i++) {
             auto& x = m_Points->GetPoint(i);
             IGsize index = this->GetBoxIndex(x);
-            auto& box = m_Buffer->ElementAt(index);
-            if (box = nullptr) {
+            auto& box = m_Buffer->GetElement(index);
+            if (box == nullptr) {
                 box = IdArray::New();
                 box->Reserve(m_NumberOfPointsPerBox);
+                m_Buffer->SetElement(index, box);
             }
             box->AddId(i);
         }
     }
 	
     igIndex FindClosestPoint(const Vector3d& x) {
-        this->Initialize();
         int i, j;
         double minDist2;
         double dist2 = std::numeric_limits<double>::max();
