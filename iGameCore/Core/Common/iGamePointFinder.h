@@ -61,19 +61,85 @@ public:
     }
 	
     igIndex FindClosestPoint(const Vector3d& x) {
+        this->Initialize();
+        int i, j;
+        double minDist2;
+        double dist2 = std::numeric_limits<double>::max();
+        Vector3d p;
+        int level;
+        igIndex ptId, closest, boxIndex, nids;
+        IdArray::Pointer ptIds;
+        Vector3i ijk, nei;
+        FlexArray<Vector3i> boxes;
 
+        ijk = this->Interize(x);
+
+        for (closest = -1, minDist2 = std::numeric_limits<double>::max(), level = 0;
+            (closest == -1) && (level < m_Size); level++)
+        {
+            this->GetBoxNeighbors(boxes, ijk, level);
+
+            for (i = 0; i < boxes.size(); i++)
+            {
+                nei = boxes[i];
+                boxIndex = nei[0] + nei[1] * m_Size + nei[2] * m_SizeSquared;
+
+                if ((ptIds = m_Buffer->GetElement(boxIndex)) != nullptr)
+                {
+                    nids = ptIds->GetNumberOfIds();
+                    for (j = 0; j < nids; j++)
+                    {
+                        ptId = ptIds->GetId(j);
+                        m_Points->GetPoint(ptId, p);
+                        if ((dist2 = x.dot(p)) < minDist2)
+                        {
+                            closest = ptId;
+                            minDist2 = dist2;
+                        }
+                    }
+                }
+            }
+        }
+
+        // 由于在此box的最近距离点不一定是全局最近的，
+        // 所以还需要查找minDist2距离内所有的box
+        if (minDist2 > 0.0)
+        {
+            this->GetOverlappingBoxes(boxes, x, ijk, sqrt(minDist2), 0);
+            for (i = 0; i < boxes.size(); i++)
+            {
+                nei = boxes[i];
+                boxIndex = nei[0] + nei[1] * m_Size + nei[2] * m_SizeSquared;
+
+                if ((ptIds = m_Buffer->GetElement(boxIndex)) != nullptr)
+                {
+                    nids = ptIds->GetNumberOfIds();
+                    for (j = 0; j < nids; j++)
+                    {
+                        ptId = ptIds->GetId(j);
+                        m_Points->GetPoint(ptId, p);
+                        if ((dist2 = x.dot(p)) < minDist2)
+                        {
+                            closest = ptId;
+                            minDist2 = dist2;
+                        }
+                    }
+                }
+            }
+        }
+
+        return closest;
     }
 
 protected:
     PointFinder() { }
     ~PointFinder() override = default;
 
-    void GetBoxNeighbors(FlexArray<int>* boxes, const Vector3i ijk,
-                         const Vector3i ndivs, int level) {
+    void GetBoxNeighbors(FlexArray<Vector3i>& boxes, const Vector3i ijk, int level) {
         int i, j, k, min, max;
         Vector3i minLevel, maxLevel, nei;
 
-        boxes->reset();
+        boxes.reset();
 
         // If at this box
         if (level == 0) {
@@ -86,7 +152,7 @@ protected:
             min = ijk[i] - level;
             max = ijk[i] + level;
             minLevel[i] = (min > 0 ? min : 0);
-            maxLevel[i] = (max < (ndivs[i] - 1) ? max : (ndivs[i] - 1));
+            maxLevel[i] = (max < (m_Size - 1) ? max : (m_Size - 1));
         }
 
         // 仅找level层的box
@@ -99,7 +165,41 @@ protected:
                         nei[0] = i;
                         nei[1] = j;
                         nei[2] = k;
-                        //boxes->InsertNextPoint(nei);
+                        boxes.push_back(nei);
+                    }
+                }
+            }
+        }
+    }
+
+    void GetOverlappingBoxes(FlexArray<Vector3i>& boxes,
+        const Vector3d x, const Vector3i ijk, double dist, int level)
+    {
+        int i, j, k;
+        Vector3i nei, minLevel, maxLevel;
+        Vector3d xMin, xMax;
+
+        boxes.reset();
+
+        xMin -= dist;
+        xMax += dist;
+
+        minLevel = this->Interize(xMin);
+        maxLevel = this->Interize(xMax);
+
+        for (i = minLevel[0]; i <= maxLevel[0]; i++)
+        {
+            for (j = minLevel[1]; j <= maxLevel[1]; j++)
+            {
+                for (k = minLevel[2]; k <= maxLevel[2]; k++)
+                {
+                    if (i < (ijk[0] - level) || i >(ijk[0] + level) || j < (ijk[1] - level) ||
+                        j >(ijk[1] + level) || k < (ijk[2] - level) || k >(ijk[2] + level))
+                    {
+                        nei[0] = i;
+                        nei[1] = j;
+                        nei[2] = k;
+                        boxes.push_back(nei);
                     }
                 }
             }
