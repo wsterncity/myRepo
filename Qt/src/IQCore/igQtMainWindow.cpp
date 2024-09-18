@@ -630,7 +630,7 @@ void igQtMainWindow::initAllFilters() {
             mesh->SetVolumes(cells);
             mesh->SetName("undefined_unstructured_mesh");
             mesh->RequestEditStatus();
-            mesh->PrintSelf();
+            //mesh->PrintSelf();
             modelTreeWidget->addDataObjectToModelTree(mesh, ItemSource::File);
           });
 
@@ -661,7 +661,7 @@ void igQtMainWindow::initAllFilters() {
             mesh->GarbageCollection();
 
             mesh->RequestEditStatus();
-            mesh->PrintSelf();
+           // mesh->PrintSelf();
             modelTreeWidget->addDataObjectToModelTree(mesh, ItemSource::File);
           });
 
