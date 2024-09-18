@@ -32,14 +32,21 @@ void igQtModelInformationWidget::updateInformationFrame() {
 	this->show();
 	auto obj = currentModel->GetDataObject();
 	// File Properties
-	//auto filePath = obj->GetPropertys()->GetProperty("FilePath")->Get<std::string>();
-	std::string  filePath = "";
+	std::string filePath = "";
+	if (obj->GetPropertys()->GetProperty("FilePath")) {
+		filePath = obj->GetPropertys()->GetProperty("FilePath")->Get<std::string>();
+	}
 	size_t lastSlashPos = filePath.find_last_of("/\\");
 	QString directory;
 	QString fileName;
 	if (lastSlashPos == std::string::npos) {
-		directory = "";
-		fileName = QString::fromStdString(filePath);
+		directory = "(n/a)";
+		if (filePath.length() == 0) {
+			fileName = "(n/a)";
+		}
+		else {
+			fileName = QString::fromStdString(filePath);
+		}
 	}
 	else {
 		directory = QString::fromStdString(filePath.substr(0, lastSlashPos));

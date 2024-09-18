@@ -389,6 +389,15 @@ void UnstructuredMesh::ConvertToDrawableData() {
 	if (m_Positions && m_Positions->GetMTime() > this->GetMTime()) { return; }
 	if (m_DrawMesh == nullptr || m_DrawMesh->GetMTime() < this->GetMTime()) {
 		iGameModelGeometryFilter::Pointer extract = iGameModelGeometryFilter::New();
+		// update clip status
+		if (m_Clip.m_Extent.m_Use) {
+			const auto& a = m_Clip.m_Extent.m_bmin;
+			const auto& b = m_Clip.m_Extent.m_bmax;
+			extract->SetExtent(a[0], b[0], a[1], b[1], a[2], b[2], m_Clip.m_Extent.m_flip);
+		}
+		if (m_Clip.m_Plane.m_Use) {
+			extract->SetClipPlane(m_Clip.m_Plane.m_origin, m_Clip.m_Plane.m_normal, m_Clip.m_Plane.m_flip);
+		}
 		m_DrawMesh = SurfaceMesh::New();
 		if (!extract->Execute(this, m_DrawMesh)) {
 			m_DrawMesh = nullptr;
@@ -665,3 +674,5 @@ void UnstructuredMesh::Create() {
 	}
 }
 IGAME_NAMESPACE_END
+
+

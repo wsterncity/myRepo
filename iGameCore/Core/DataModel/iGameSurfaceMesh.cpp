@@ -1,6 +1,6 @@
 #include "iGameSurfaceMesh.h"
 #include "iGameScene.h"
-
+#include "iGameModelSurfaceFilters/iGameModelGeometryFilter.h"
 IGAME_NAMESPACE_BEGIN
 
 IGsize SurfaceMesh::GetNumberOfEdges() const noexcept {
@@ -855,7 +855,10 @@ void SurfaceMesh::Draw(Scene *scene) {
   if (!m_Visibility) {
     return;
   }
-
+  if (m_DrawMesh) {
+      m_DrawMesh->SetViewStyle(m_ViewStyle);
+      return m_DrawMesh->Draw(scene);
+  }
   // update uniform buffer
   if (m_UseColor) {
     scene->UBO().useColor = true;
@@ -1119,7 +1122,28 @@ void SurfaceMesh::ConvertToDrawableData() {
   if (m_Positions && m_Positions->GetMTime() > this->GetMTime()) {
     return;
   }
-
+  if (m_DrawMesh == nullptr || m_DrawMesh->GetMTime() < this->GetMTime()) {
+      iGameModelGeometryFilter::Pointer extract = iGameModelGeometryFilter::New();
+      // update clip status
+      if (m_Clip.m_Extent.m_Use) {
+          const auto& a = m_Clip.m_Extent.m_bmin;
+          const auto& b = m_Clip.m_Extent.m_bmax;
+          extract->SetExtent(a[0], b[0], a[1], b[1], a[2], b[2], m_Clip.m_Extent.m_flip);
+      }
+      if (m_Clip.m_Plane.m_Use) {
+          extract->SetClipPlane(m_Clip.m_Plane.m_origin, m_Clip.m_Plane.m_normal, m_Clip.m_Plane.m_flip);
+      }
+      m_DrawMesh = SurfaceMesh::New();
+      if (!extract->Execute(this, m_DrawMesh)) {
+          m_DrawMesh = nullptr;
+      }
+      if (m_DrawMesh) {
+          m_DrawMesh->Modified();
+      }
+  }
+  if (m_DrawMesh) {
+      return m_DrawMesh->ConvertToDrawableData();
+  }
   if (!m_Flag) {
     m_PointVAO.create();
     m_LineVAO.create();
@@ -1224,7 +1248,10 @@ void SurfaceMesh::ConvertToDrawableData() {
 }
 
 void SurfaceMesh::ViewCloudPicture(Scene *scene, int index, int demension) {
-  if (index == -1) {
+    if (m_DrawMesh) {
+        return m_DrawMesh->ViewCloudPicture(scene, index, demension);
+    }
+    if (index == -1) {
     m_UseColor = false;
     m_ViewAttribute = nullptr;
     m_ViewDemension = -1;

@@ -30,7 +30,7 @@ public:
 
 	void SetPositionColors(FloatArray::Pointer);
 
-	void GenerateVectorField();
+	DoubleArray::Pointer GenerateVectorField();
 
 	Points::Pointer GetDrawGlyphPoints() { return this->m_DrawGlyphPoints; };
 
@@ -61,6 +61,8 @@ private:
 	//椭球面片的颜色
 	FloatArray::Pointer m_DrawGlyphColors;
 
+	//存放每个点的生成的某一个特征向量（最大或者最小），用于作为矢量输出。
+	DoubleArray::Pointer m_EigenVector;
 public:
 	void Draw(Scene*) override;
 	void ConvertToDrawableData() override;

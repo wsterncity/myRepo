@@ -300,11 +300,11 @@ protected:
                 item->changeVisibility();
                 call = false;
             }
-            else if(currentItem() != item){ // Check operation
-                emit ChangeCurrentModel(item->getModel());
+            else if(currentItem() != item){ // Check operation       
                 iGame::SceneManager::Instance()->GetCurrentScene()->SetCurrentModel(item->getModel());
                 setItemSelected(item, true);
                 item->getModel()->ViewCloudPicture(-1);
+                emit ChangeCurrentModel(item->getModel());
             }
         }
         else if((child = getChild(event->pos())) && child) {

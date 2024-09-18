@@ -152,7 +152,7 @@ void igQtTensorWidget::ShowTensorField()
 	this->m_Manager->ShowTensorField();
 	this->UpdateComponentsShow(true);
 	m_Generated = true;
-	m_Manager->DataObject::SetName(m_DataObject->GetName() + "_Tensor");
+	m_Manager->DataObject::SetName(m_DataObject->GetName() + "_TensorView");
 	Q_EMIT DrawTensorGlyphs(m_Manager);
 }
 void igQtTensorWidget::UpdateGlyphScale(double s)
@@ -186,5 +186,12 @@ void igQtTensorWidget::UpdateGlyphColors()
 }
 void igQtTensorWidget::GenerateVectorField()
 {
-	this->m_Manager->GenerateVectorField();
+	auto data = this->m_Manager->GenerateVectorField();
+	if (!m_DataObject->GetAttributeSet()) {
+		m_DataObject->SetAttributeSet(AttributeSet::New());
+	}
+	data->SetName(ui->TensorInfoComboBox->currentText().toStdString() + "_EigenVector");
+	m_DataObject->GetAttributeSet()->AddAttribute(IG_VECTOR, IG_POINT, data);
+	Q_EMIT UpdateAttributes(m_DataObject);
+
 }

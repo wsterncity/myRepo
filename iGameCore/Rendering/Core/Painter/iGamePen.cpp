@@ -24,8 +24,8 @@ void Pen::SetStyle(PenStyle style) { m_PenStyle = style; }
 
 PenStyle Pen::GetStyle() const { return m_PenStyle; }
 
-void Pen::SetOpacity(float opacity) { m_PenOpacity = opacity; }
+//void Pen::SetOpacity(float opacity) { m_PenOpacity = opacity; }
 
-float Pen::GetOpacity() const { return m_PenOpacity; }
+//float Pen::GetOpacity() const { return m_PenOpacity; }
 
 IGAME_NAMESPACE_END

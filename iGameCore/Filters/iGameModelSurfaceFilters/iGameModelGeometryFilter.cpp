@@ -18,9 +18,18 @@ iGameModelGeometryFilter::iGameModelGeometryFilter() {
 	this->Extent[3] = DBL_MAX;
 	this->Extent[4] = -DBL_MAX;
 	this->Extent[5] = DBL_MAX;
+	this->PlaneOrigin[0] = 0;
+	this->PlaneOrigin[1] = 0;
+	this->PlaneOrigin[2] = 0;
+	this->PlaneNormal[0] = 1;
+	this->PlaneNormal[1] = 0;
+	this->PlaneNormal[2] = 0;
 	this->PointClipping = false;
 	this->CellClipping = false;
 	this->ExtentClipping = false;
+	this->PlaneClipping = false;
+	this->ExtentClippingFlip = false;
+	this->PlaneClippingFlip = false;
 
 	this->Merging = true;
 
@@ -36,12 +45,11 @@ iGameModelGeometryFilter::~iGameModelGeometryFilter()
 {
 }
 void iGameModelGeometryFilter::SetExtent(double xMin, double xMax, double yMin,
-	double yMax, double zMin,
-	double zMax) {
+	double yMax, double zMin, double zMax, bool flip) {
 	double extent[6] = { xMin, xMax, yMin, yMax, zMin, zMax };
-	this->SetExtent(extent);
+	this->SetExtent(extent, flip);
 }
-void iGameModelGeometryFilter::SetExtent(double extent[6]) {
+void iGameModelGeometryFilter::SetExtent(double extent[6], bool flip) {
 	int i;
 	bool needSet = false;
 	for (i = 0; i < 6; i++) { needSet |= extent[i] != this->Extent[i]; }
@@ -55,7 +63,23 @@ void iGameModelGeometryFilter::SetExtent(double extent[6]) {
 			this->Extent[2 * i + 1] = extent[2 * i + 1];
 		}
 	}
+	this->ExtentClippingFlip = flip;
 	this->SetExtentClipping(true);
+}
+void iGameModelGeometryFilter::SetClipPlane(double ox, double oy, double oz, double nx, double ny, double nz, bool flip)
+{
+	this->PlaneOrigin[0] = ox;
+	this->PlaneOrigin[1] = oy;
+	this->PlaneOrigin[2] = oz;
+	this->PlaneNormal[0] = nx;
+	this->PlaneNormal[1] = ny;
+	this->PlaneNormal[2] = nz;
+	this->PlaneClippingFlip = flip;
+	this->SetPlaneClipping(true);
+}
+void iGameModelGeometryFilter::SetClipPlane(double orgin[3], double normal[3], bool flip)
+{
+	this->SetClipPlane(orgin[0], orgin[1], orgin[2], normal[0], normal[1], normal[2], flip);
 }
 void iGameModelGeometryFilter::SetPointIndexExtent(igIndex _min, igIndex _max)
 {
@@ -118,12 +142,13 @@ bool iGameModelGeometryFilter::Execute(DataObject::Pointer input, SurfaceMesh::P
 	case IG_NONE:
 		return true;
 	case IG_VOLUME_MESH:
-		return this->ExecuteWithVolumeMesh(input, output, excFaces);
+	return this->ExecuteWithVolumeMesh(input, output, excFaces);
 	case IG_SURFACE_MESH:
 		return this->ExecuteWithSurfaceMesh(input, output, excFaces);
 	case IG_UNSTRUCTURED_MESH:
 		return this->ExecuteWithUnstructuredGrid(input, output, excFaces);
 	case IG_STRUCTURED_MESH:
+		//return this->ExecuteWithVolumeMesh(input, output, excFaces);
 		return this->ExecuteWithStructuredGrid(input, output, excFaces);
 	default:
 		break;
@@ -494,7 +519,19 @@ public:
 			previous->Next = newF;
 		}
 	}
-
+	void CompositeFaces(CellArray::Pointer& Polygons, std::vector<igIndex>& f2c)
+	{
+		auto numInputPts = this->Buckets.size();
+		size_t i = 0;
+		for (i = 0; i < numInputPts; i++) {
+			auto current = Buckets[i].Head;
+			while (current != nullptr) {
+				Polygons->AddCellIds(current->PointIds, current->NumberOfPoints);
+				f2c.emplace_back(current->OriginalCellId);
+				current = current->Next;
+			}
+		}
+	}
 	void PopulateCellArrays(std::vector<CellArrayType*>& threadedPolys) {
 		std::vector<GFace*> Faces;
 		for (auto& bucket : this->Buckets) {
@@ -538,17 +575,12 @@ struct ExtractCellBoundaries {
 	igIndex NumPts;
 	igIndex NumCells;
 	ExtractCellBoundaries* Extract;
-	//vtkStaticCellLinksTemplate<TInputIdType>* ExcFaces;
-	//using TThreadOutputType = ThreadOutputType<TInputIdType>;
-	//TThreadOutputType* Threads;
+
 
 	ExtractCellBoundaries(const char* cellVis, const unsigned char* cellGhosts,
-		const unsigned char* pointGhost /*,
-	   vtkExcludedFaces<TInputIdType>* exc,
-		TThreadOutputType* threads*/)
+		const unsigned char* pointGhost )
 		: PointMap(nullptr), CellVis(cellVis), CellGhosts(cellGhosts),
-		PointGhost(pointGhost)/*, Threads(threads)*/ {
-		/*this->ExcFaces = (exc == nullptr ? nullptr : exc->Links);*/
+		PointGhost(pointGhost){
 	}
 
 	virtual ~ExtractCellBoundaries() { delete[] this->PointMap; }
@@ -815,16 +847,8 @@ int iGameModelGeometryFilter::ExecuteWithVolumeMesh(
 	clock_t time_2 = clock();
 	igDebug("Extracted surface(not composite) cost " << time_2 - time1 << "ms.");
 
-	auto& buckets = extract->FaceMap.get()->GetBuckets();
 	std::vector<igIndex> f2c;
-	for (i = 0; i < numInputPts; i++) {
-		auto current = buckets[i].Head;
-		while (current != nullptr) {
-			Polygons->AddCellIds(current->PointIds, current->NumberOfPoints);
-			f2c.emplace_back(current->OriginalCellId);
-			current = current->Next;
-		}
-	}
+	extract->FaceMap.get()->CompositeFaces(Polygons, f2c);
 
 	CompositeCellAttribute(f2c, inAllDataArray, outAllDataArray);
 	output->SetPoints(inPoints);
@@ -1215,8 +1239,9 @@ int iGameModelGeometryFilter::ExecuteWithUnstructuredGrid(
 	}
 	if (is3D == false) {
 		auto surfaceMesh = Grid->TransferToSurfaceMesh();
-		if (!ExecuteWithSurfaceMesh(Grid->TransferToSurfaceMesh(), output))
+		if (!ExecuteWithSurfaceMesh(Grid->TransferToSurfaceMesh(), output)) {
 			output = surfaceMesh;
+		}
 		return 1;
 	}
 	igIndex i = 0, j = 0, k = 0;
@@ -1244,16 +1269,8 @@ int iGameModelGeometryFilter::ExecuteWithUnstructuredGrid(
 	clock_t time_2 = clock();
 	igDebug("Extracted surface(not composite) cost " << time_2 - time1 << "ms.");
 
-	auto& buckets = extract->FaceMap.get()->GetBuckets();
 	std::vector<igIndex> f2c;
-	for (i = 0; i < numInputPts; i++) {
-		auto current = buckets[i].Head;
-		while (current != nullptr) {
-			Polygons->AddCellIds(current->PointIds, current->NumberOfPoints);
-			f2c.emplace_back(current->OriginalCellId);
-			current = current->Next;
-		}
-	}
+	extract->FaceMap.get()->CompositeFaces(Polygons, f2c);
 
 	CompositeCellAttribute(f2c, inAllDataArray, outAllDataArray);
 	output->SetPoints(inPoints);
@@ -1459,6 +1476,9 @@ int iGameModelGeometryFilter::ExecuteWithStructuredGrid(
 	CellArray::Pointer Polygons = CellArray::New();
 	CharArray::Pointer CellVisibleArray = CharArray::New();
 	char* CellVisible = ComputeCellVisibleArray(CellVisibleArray, inPoints, Grid->GetCells());
+	if (CellVisible) {
+		return this->ExecuteWithVolumeMesh(input, output);
+	}
 	unsigned char* cellGhosts = nullptr;
 	unsigned char* pointGhosts = nullptr;
 
@@ -1494,7 +1514,7 @@ char* iGameModelGeometryFilter::ComputeCellVisibleArray(CharArray::Pointer& Cell
 	IGsize numCells = Cells ? Cells->GetNumberOfCells() : 0;
 	char* CellVisible = nullptr;
 	// Determine nature of what we have to do
-	if ((!CellClipping) && (!PointClipping) && (!ExtentClipping)) {
+	if ((!CellClipping) && (!PointClipping) && (!ExtentClipping) && (!PlaneClipping)) {
 		return nullptr;
 	}
 	else {
@@ -1521,12 +1541,39 @@ char* iGameModelGeometryFilter::ComputeCellVisibleArray(CharArray::Pointer& Cell
 				for (i = 0; i < vnum; i++) {
 					pointId = vhs[i];
 					x = inPoints->GetPoint(pointId);
-					if ((PointClipping &&
-						(pointId < PointMinimum || pointId > PointMaximum)) ||
-						(ExtentClipping &&
-							(x[0] < Extent[0] || x[0] > Extent[1] ||
-								x[1] < Extent[2] || x[1] > Extent[3] ||
-								x[2] < Extent[4] || x[2] > Extent[5]))) {
+					if (PointClipping && (pointId < PointMinimum || pointId > PointMaximum)) {
+						CellVisible[cellId] = 0;
+						break;
+					}
+					else if (ExtentClipping && !ExtentClippingFlip && (
+						x[0] < Extent[0] || x[0] > Extent[1] ||
+						x[1] < Extent[2] || x[1] > Extent[3] ||
+						x[2] < Extent[4] || x[2] > Extent[5]
+						)) {
+						CellVisible[cellId] = 0;
+						break;
+					}
+					else if (ExtentClipping && ExtentClippingFlip && (
+						x[0] >= Extent[0] && x[0] <= Extent[1] &&
+						x[1] >= Extent[2] && x[1] <= Extent[3] &&
+						x[2] >= Extent[4] && x[2] <= Extent[5]
+						)) {
+						CellVisible[cellId] = 0;
+						break;
+					}
+					else if (PlaneClipping && !PlaneClippingFlip &&(/*dot product*/
+						((x[0] - PlaneOrigin[0]) * PlaneNormal[0]
+						+ (x[1] - PlaneOrigin[1]) * PlaneNormal[1]
+						+ (x[2] - PlaneOrigin[2]) * PlaneNormal[2]) > 0.
+						)) {
+						CellVisible[cellId] = 0;
+						break;
+					}
+					else if (PlaneClipping && PlaneClippingFlip && (/*dot product*/
+						((x[0] - PlaneOrigin[0]) * PlaneNormal[0]
+							+ (x[1] - PlaneOrigin[1]) * PlaneNormal[1]
+							+ (x[2] - PlaneOrigin[2]) * PlaneNormal[2]) <= 0.
+						)) {
 						CellVisible[cellId] = 0;
 						break;
 					}

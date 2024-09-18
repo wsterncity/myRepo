@@ -42,6 +42,18 @@ protected:
 	ArrayObject::Pointer m_ViewAttribute{};
 	int m_ViewDemension{};
 
+	struct {
+		struct {
+			bool m_Use{ false };
+			double m_bmin[3], m_bmax[3];
+			bool m_flip{ false };
+		} m_Extent;
+		struct {
+			bool m_Use{ false };
+			double m_origin[3], m_normal[3];
+			bool m_flip{ false };
+		} m_Plane;
+	} m_Clip; // Used for clip mesh
 };
 
 IGAME_NAMESPACE_END

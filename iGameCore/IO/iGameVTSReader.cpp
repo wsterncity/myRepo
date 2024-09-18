@@ -52,7 +52,7 @@ bool iGame::iGameVTSReader::Parsing() {
         printf("Could not load Vts file . Error='No StructuredGrid Attribute'. Exiting.\n");
         return false;
     }
-
+    std::cout << x_dimension << ' ' << y_dimension << ' ' << z_dimension << '\n';
     //  find Points' position Data
     elem = FindTargetItem(root, "Points")->FirstChildElement("DataArray");
     data = elem->GetText();

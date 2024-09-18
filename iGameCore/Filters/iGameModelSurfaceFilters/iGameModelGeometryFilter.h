@@ -28,8 +28,15 @@ public:
 	 * Specify a (xmin,xmax, ymin,ymax, zmin,zmax) bounding box to clip data.
 	 */
 	void SetExtent(double xMin, double xMax, double yMin, double yMax,
-		double zMin, double zMax);
-	void SetExtent(double ex[6]);
+		double zMin, double zMax, bool flip = false);
+	void SetExtent(double ex[6], bool flip = false);
+
+	/**
+	 * Specify a plane to clip data.
+	 */
+	void SetClipPlane(double ox, double oy, double oz, double nx, double ny, double nz, bool flip = false);
+	void SetClipPlane(double orgin[3], double normal[3], bool flip = false);
+
 	///@{
 
 	void SetPointIndexExtent(igIndex _min, igIndex _max);
@@ -88,10 +95,13 @@ protected:
 	igIndex CellMaximum;
 	std::vector<Vector4d>CutPlanes;
 	double Extent[6];
+	double PlaneOrigin[3], PlaneNormal[3];
 	bool PointClipping;
 	bool CellClipping;
 	bool ExtentClipping;
 	bool PlaneClipping;
+	bool ExtentClippingFlip;
+	bool PlaneClippingFlip;
 
 	int OutputPointsPrecision;
 

@@ -66,6 +66,7 @@ bool FileWriter::SaveBufferDataToFile()
 	m_Buffers.clear();
 	fclose(file);
 	return true;
+//下面的是内存映射方式，效率没有fwrite高
 #ifdef PLATFORM_WINDOWS
 	return SaveBufferDataToFileWithWindows();
 #elif defined(PLATFORM_LINUX)
