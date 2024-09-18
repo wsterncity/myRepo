@@ -342,7 +342,7 @@ void UnstructuredMesh::Draw(Scene* scene) {
 
 		m_LineVAO.bind();
 		glLineWidth(m_LineWidth);
-		glad_glDrawElements(GL_LINES, m_LineIndices->GetNumberOfValues(),
+		glad_glDrawElements(GL_LINES, M_LineIndices->GetNumberOfValues(),
 			GL_UNSIGNED_INT, 0);
 		m_LineVAO.release();
 	}
@@ -350,13 +350,13 @@ void UnstructuredMesh::Draw(Scene* scene) {
 		scene->GetShader(Scene::PATCH)->use();
 		m_TriangleVAO.bind();
 		glad_glDrawElements(GL_TRIANGLES,
-			m_TriangleIndices->GetNumberOfValues(),
+			M_TriangleIndices->GetNumberOfValues(),
 			GL_UNSIGNED_INT, 0);
 		m_TriangleVAO.release();
 
 		m_VertexVAO.bind();
 		glPointSize(m_PointSize);
-		glad_glDrawElements(GL_POINTS, m_VertexIndices->GetNumberOfValues(),
+		glad_glDrawElements(GL_POINTS, M_VertexIndices->GetNumberOfValues(),
 			GL_UNSIGNED_INT, 0);
 		m_PointVAO.release();
 
@@ -373,14 +373,14 @@ void UnstructuredMesh::Draw(Scene* scene) {
 
 		m_LineVAO.bind();
 		glLineWidth(m_LineWidth);
-		glad_glDrawElements(GL_LINES, m_LineIndices->GetNumberOfValues(),
+		glad_glDrawElements(GL_LINES, M_LineIndices->GetNumberOfValues(),
 							GL_UNSIGNED_INT, 0);
 		m_LineVAO.release();
 
 		scene->GetShader(Scene::PATCH)->use();
 		m_TriangleVAO.bind();
 		glad_glDrawElements(GL_TRIANGLES,
-							m_TriangleIndices->GetNumberOfValues(),
+							M_TriangleIndices->GetNumberOfValues(),
 							GL_UNSIGNED_INT, 0);
 		m_TriangleVAO.release();
 	}*/
@@ -389,6 +389,15 @@ void UnstructuredMesh::ConvertToDrawableData() {
 	if (m_Positions && m_Positions->GetMTime() > this->GetMTime()) { return; }
 	if (m_DrawMesh == nullptr || m_DrawMesh->GetMTime() < this->GetMTime()) {
 		iGameModelGeometryFilter::Pointer extract = iGameModelGeometryFilter::New();
+		// update clip status
+		if (m_Clip.m_Extent.m_Use) {
+			const auto& a = m_Clip.m_Extent.m_bmin;
+			const auto& b = m_Clip.m_Extent.m_bmax;
+			extract->SetExtent(a[0], b[0], a[1], b[1], a[2], b[2], m_Clip.m_Extent.m_flip);
+		}
+		if (m_Clip.m_Plane.m_Use) {
+			extract->SetClipPlane(m_Clip.m_Plane.m_origin, m_Clip.m_Plane.m_normal, m_Clip.m_Plane.m_flip);
+		}
 		m_DrawMesh = SurfaceMesh::New();
 		if (!extract->Execute(this, m_DrawMesh)) {
 			m_DrawMesh = nullptr;
@@ -405,12 +414,11 @@ void UnstructuredMesh::ConvertToDrawableData() {
 
 	m_Positions = m_Points->ConvertToArray();
 	m_Positions->Modified();
-	m_VertexIndices = UnsignedIntArray::New();
-	//m_PointIndices = UnsignedIntArray::New();
-	m_LineIndices = UnsignedIntArray::New();
-	m_TriangleIndices = UnsignedIntArray::New();
-	m_LineIndices->SetElementSize(2);
-	m_TriangleIndices->SetElementSize(3);
+	M_VertexIndices = UnsignedIntArray::New();
+	M_LineIndices = UnsignedIntArray::New();
+	M_TriangleIndices = UnsignedIntArray::New();
+	M_LineIndices->SetElementSize(2);
+	M_TriangleIndices->SetElementSize(3);
 
 
 	igIndex ids[128]{};
@@ -419,46 +427,46 @@ void UnstructuredMesh::ConvertToDrawableData() {
 		IGenum type = GetCellType(id);
 		switch (type) {
 		case IG_VERTEX:
-			m_VertexIndices->AddValue(ids[0]);
+			M_VertexIndices->AddValue(ids[0]);
 			break;
 		case IG_LINE:
 		case IG_POLY_LINE: {
 			for (int i = 1; i < size; i++) {
-				m_LineIndices->AddElement2(ids[i - 1], ids[i]);
+				M_LineIndices->AddElement2(ids[i - 1], ids[i]);
 			}
 		} break;
 		case IG_QUADRATIC_EDGE: {
-			m_LineIndices->AddElement2(ids[0], ids[2]);
-			m_LineIndices->AddElement2(ids[2], ids[1]);
+			M_LineIndices->AddElement2(ids[0], ids[2]);
+			M_LineIndices->AddElement2(ids[2], ids[1]);
 		}break;
 		case IG_TRIANGLE:
 		case IG_QUAD:
 		case IG_POLYGON: {
 			for (int i = 2; i < size; i++) {
-				m_TriangleIndices->AddElement3(ids[0], ids[i - 1], ids[i]);
+				M_TriangleIndices->AddElement3(ids[0], ids[i - 1], ids[i]);
 			}
 			for (int i = 0; i < size; i++) {
-				m_LineIndices->AddElement2(ids[i], ids[(i + 1) % size]);
+				M_LineIndices->AddElement2(ids[i], ids[(i + 1) % size]);
 			}
 		} break;
 		case IG_QUADRATIC_TRIANGLE:
 		case IG_QUADRATIC_QUAD: {
 			int trueSize = size / 2;
-			m_TriangleIndices->AddElement3(
+			M_TriangleIndices->AddElement3(
 				ids[0], ids[trueSize], ids[trueSize * 2 - 1]
 			);
 			for (int j = 1; j < trueSize; j++) {
-				m_TriangleIndices->AddElement3(
+				M_TriangleIndices->AddElement3(
 					ids[j], ids[j + trueSize], ids[j + trueSize - 1]
 				);
 			}
 			for (int j = 2; j < trueSize; j++) {
-				m_TriangleIndices->AddElement3(
+				M_TriangleIndices->AddElement3(
 					ids[trueSize], ids[trueSize + j - 1], ids[trueSize + j]);
 			}
 			for (int i = 0; i < trueSize; i++) {
-				m_LineIndices->AddElement2(ids[i], ids[i + trueSize]);
-				m_LineIndices->AddElement2(ids[(i + 1) % trueSize], ids[i + trueSize]);
+				M_LineIndices->AddElement2(ids[i], ids[i + trueSize]);
+				M_LineIndices->AddElement2(ids[(i + 1) % trueSize], ids[i + trueSize]);
 			}
 		} break;
 		case IG_TETRA:
@@ -471,12 +479,12 @@ void UnstructuredMesh::ConvertToDrawableData() {
 			const int* edge{}, * face{};
 			for (int i = 0; i < cell->GetNumberOfEdges(); i++) {
 				cell->GetEdgePointIds(i, edge);
-				m_LineIndices->AddElement2(ids[edge[0]], ids[edge[1]]);
+				M_LineIndices->AddElement2(ids[edge[0]], ids[edge[1]]);
 			}
 			for (int i = 0; i < cell->GetNumberOfFaces(); i++) {
 				int face_size = cell->GetFacePointIds(i, face);
 				for (int j = 2; j < face_size; j++) {
-					m_TriangleIndices->AddElement3(
+					M_TriangleIndices->AddElement3(
 						ids[face[0]], ids[face[j - 1]], ids[face[j]]);
 				}
 			}
@@ -488,10 +496,10 @@ void UnstructuredMesh::ConvertToDrawableData() {
 			{
 				realsize = ids[index++];
 				for (igIndex id = 1; id < realsize; id++) {
-					m_LineIndices->AddElement2(ids[index + id - 1], ids[index + id]);
+					M_LineIndices->AddElement2(ids[index + id - 1], ids[index + id]);
 				}
 				for (igIndex id = 2; id < realsize; id++) {
-					m_TriangleIndices->AddElement3(
+					M_TriangleIndices->AddElement3(
 						ids[index], ids[index + id - 1], ids[index + id]);
 				}
 				index += realsize;
@@ -506,21 +514,21 @@ void UnstructuredMesh::ConvertToDrawableData() {
 			const int* edge{}, * face{};
 			for (int i = 0; i < cell->GetNumberOfEdges(); i++) {
 				cell->GetEdgePointIds(i, edge);
-				m_LineIndices->AddElement2(ids[edge[0]], ids[edge[2]]);
-				m_LineIndices->AddElement2(ids[edge[2]], ids[edge[1]]);
+				M_LineIndices->AddElement2(ids[edge[0]], ids[edge[2]]);
+				M_LineIndices->AddElement2(ids[edge[2]], ids[edge[1]]);
 			}
 			for (int i = 0; i < cell->GetNumberOfFaces(); i++) {
 				int base_face_size = cell->GetFacePointIds(i, face) / 2;
-				m_TriangleIndices->AddElement3(
+				M_TriangleIndices->AddElement3(
 					ids[face[0]], ids[face[base_face_size]], ids[face[base_face_size * 2 - 1]]
 				);
 				for (int j = 1; j < base_face_size; j++) {
-					m_TriangleIndices->AddElement3(
+					M_TriangleIndices->AddElement3(
 						ids[face[j]], ids[face[j + base_face_size]], ids[face[j + base_face_size - 1]]
 					);
 				}
 				for (int j = 2; j < base_face_size; j++) {
-					m_TriangleIndices->AddElement3(
+					M_TriangleIndices->AddElement3(
 						ids[face[base_face_size]], ids[face[base_face_size + j - 1]], ids[face[base_face_size + j]]);
 				}
 			}
@@ -535,19 +543,19 @@ void UnstructuredMesh::ConvertToDrawableData() {
 		m_Positions->RawPointer());
 
 	GLAllocateGLBuffer(m_VertexEBO,
-		m_VertexIndices->GetNumberOfValues() *
+		M_VertexIndices->GetNumberOfValues() *
 		sizeof(unsigned int),
-		m_VertexIndices->RawPointer());
+		M_VertexIndices->RawPointer());
 
 	GLAllocateGLBuffer(m_LineEBO,
-		m_LineIndices->GetNumberOfValues() *
+		M_LineIndices->GetNumberOfValues() *
 		sizeof(unsigned int),
-		m_LineIndices->RawPointer());
+		M_LineIndices->RawPointer());
 
 	GLAllocateGLBuffer(m_TriangleEBO,
-		m_TriangleIndices->GetNumberOfValues() *
+		M_TriangleIndices->GetNumberOfValues() *
 		sizeof(unsigned int),
-		m_TriangleIndices->RawPointer());
+		M_TriangleIndices->RawPointer());
 
 	m_PointVAO.vertexBuffer(GL_VBO_IDX_0, m_PositionVBO, 0, 3 * sizeof(float));
 	GLSetVertexAttrib(m_PointVAO, GL_LOCATION_IDX_0, GL_VBO_IDX_0, 3, GL_FLOAT,
@@ -666,3 +674,5 @@ void UnstructuredMesh::Create() {
 	}
 }
 IGAME_NAMESPACE_END
+
+

@@ -7,8 +7,11 @@
 
 #include "iGameTensorRepresentation.h" 
 #include "iGameSurfaceMesh.h"
+#include "iGameDrawObject.h"
+
 IGAME_NAMESPACE_BEGIN
-class iGameTensorWidgetBase : public Filter {
+class Scene;
+class iGameTensorWidgetBase : public Filter, public DrawObject {
 public:
 	I_OBJECT(iGameTensorWidgetBase);
 	static iGameTensorWidgetBase* New() { return new iGameTensorWidgetBase; }
@@ -20,19 +23,23 @@ public:
 
 	void ShowTensorField();
 
-	void UpdateGlyphDrawData();
+	void UpdateGlyphDrawPositionData();
+	void UpdateGlyphDrawIndexData();
 	void UpdateGlyphDrawColor();
 	void UpdateGlyphScale(double s);
 
 	void SetPositionColors(FloatArray::Pointer);
 
-	void GenerateVectorField();
+	DoubleArray::Pointer GenerateVectorField();
 
 	Points::Pointer GetDrawGlyphPoints() { return this->m_DrawGlyphPoints; };
 
-	IntArray::Pointer GetDrawGlyphPointOrders() { return this->m_DrawGlyphPointOrders; }
+	UnsignedIntArray::Pointer GetDrawGlyphPointOrders() { return this->m_DrawGlyphPointOrders; }
 
 	FloatArray::Pointer GetDrawGlyphColors() { return this->m_DrawGlyphColors; }
+	void SetGlyphType(iGameTensorRepresentation::DrawType drawType) {
+		this->m_TensorManager->SetDrawType(drawType);
+	}
 protected:
 	iGameTensorWidgetBase();
 private:
@@ -50,10 +57,15 @@ private:
 	//绘制椭球图元的顶点坐标
 	Points::Pointer m_DrawGlyphPoints;
 	//椭球面片的邻接顺序
-	IntArray::Pointer m_DrawGlyphPointOrders;
+	UnsignedIntArray::Pointer m_DrawGlyphPointOrders;
 	//椭球面片的颜色
 	FloatArray::Pointer m_DrawGlyphColors;
 
+	//存放每个点的生成的某一个特征向量（最大或者最小），用于作为矢量输出。
+	DoubleArray::Pointer m_EigenVector;
+public:
+	void Draw(Scene*) override;
+	void ConvertToDrawableData() override;
 };
 IGAME_NAMESPACE_END
 #endif

@@ -113,6 +113,13 @@ border:2px solid #EEF1F7
      <addaction name="separator"/>
      <addaction name="action_CustomView"/>
     </widget>
+    <widget class="QMenu" name="menu_2">
+     <property name="title">
+      <string>切割</string>
+     </property>
+     <addaction name="action_BoxClipping"/>
+     <addaction name="action_PlaneClipping"/>
+    </widget>
     <addaction name="action_Scalar"/>
     <addaction name="action_Vector"/>
     <addaction name="action_Tensor"/>
@@ -120,6 +127,7 @@ border:2px solid #EEF1F7
     <addaction name="action_FlowField"/>
     <addaction name="action_ExportAnimation"/>
     <addaction name="action_QualityDetection"/>
+    <addaction name="menu_2"/>
     <addaction name="separator"/>
     <addaction name="separator"/>
     <addaction name="action_ColorMap"/>
@@ -1291,6 +1299,16 @@ border:2px solid #EEF1F7
    </property>
    <property name="toolTip">
     <string>Drag point</string>
+   </property>
+  </action>
+  <action name="action_BoxClipping">
+   <property name="text">
+    <string>盒子切割</string>
+   </property>
+  </action>
+  <action name="action_PlaneClipping">
+   <property name="text">
+    <string>平面切割</string>
    </property>
   </action>
  </widget>

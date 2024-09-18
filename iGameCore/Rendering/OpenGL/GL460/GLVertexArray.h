@@ -72,10 +72,6 @@ inline const GLVertexAttribute GL_LOCATION_IDX_1{1};
 inline const GLVertexAttribute GL_LOCATION_IDX_2{2};
 inline const GLVertexAttribute GL_LOCATION_IDX_3{3};
 
-inline void GLAllocateGLBuffer(GLBuffer& vbo, size_t size, const void* data) {
-    vbo.allocate(size, data, GL_STATIC_DRAW);
-}
-
 inline void GLSetVertexAttrib(GLVertexArray& VAO, GLVertexAttribute attribute,
                               GLuint vbo_binding_index, int size, GLenum type,
                               GLboolean normalized, unsigned int offset) {

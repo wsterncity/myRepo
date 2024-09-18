@@ -42,8 +42,13 @@ void igQtModelInformationWidget::updateInformationFrame() {
 	QString directory;
 	QString fileName;
 	if (lastSlashPos == std::string::npos) {
-		directory = "";
-		fileName = QString::fromStdString(filePath);
+		directory = "(n/a)";
+		if (filePath.length() == 0) {
+			fileName = "(n/a)";
+		}
+		else {
+			fileName = QString::fromStdString(filePath);
+		}
 	}
 	else {
 		directory = QString::fromStdString(filePath.substr(0, lastSlashPos));

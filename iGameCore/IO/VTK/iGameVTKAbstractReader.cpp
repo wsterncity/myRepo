@@ -891,7 +891,9 @@ int  VTKAbstractReader::ReadCellsWithCellSizeType(int CellNum, int size, ArrayOb
 	auto m_CellsId = IntArray::New();
 	m_CellsId->Reserve(CellNum + 1);
 	auto m_CellsConnect = IntArray::New();
-	m_CellsConnect->Reserve(size - CellNum);
+	if (size > CellNum) {
+		m_CellsConnect->Reserve(size - CellNum);
+	}
 	int component, i, j;
 	int x;
 	int index = 0;

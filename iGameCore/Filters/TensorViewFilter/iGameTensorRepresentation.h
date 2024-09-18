@@ -134,15 +134,26 @@ public:
 	/**
 	* @brief Get the number of draw points, which is used to draw glyph.
 	*/
-	igIndex GetNumberOfDrawPoints() { return 2 * m_Slices * m_Slices; }
+	igIndex GetNumberOfDrawPoints() {
+		switch (m_DrawType)
+		{
+		case iGame::iGameTensorRepresentation::ELLIPSOID:
+			return 2 * m_Slices * m_Slices;
+		case iGame::iGameTensorRepresentation::CUBOID:
+			return 8;
+		default:
+			break;
+		}
+		return 0;
+	}
 	/**
 	* @brief Get the draw points of glyph, which is used to draw glyph.
 	*/
-	FloatArray::Pointer GetEllipsoidDrawPoints() { return this->EllipsoidDrawPoints; }
+	FloatArray::Pointer GetDrawPoints() { return this->DrawPoints; }
 	/**
 	* @brief Get the face sequence of the glyph drawing.
 	*/
-	IntArray::Pointer GetEllipsoidDrawPointIndexOrders() { return this->EllipsoidDrawPointIndexOrders; }
+	IntArray::Pointer GetDrawPointIndexOrders() { return this->DrawPointIndexOrders; }
 	/**
 	* @brief Get the ellipsoid coordinate point at the current longitude and latitude.
 	* @param rx,ry,yz The lengths of the three axes of the ellipsoid.
@@ -153,43 +164,69 @@ public:
 	void GetPointOval(double& rx, double& ry, double& rz, double& a, double& b, iGame::Point& p);
 	/**
 	* @brief Initialize the draw points using the data set in the class.
-	* Enter the three axis lengths of the ellipsoid and the number of slices.
+	* Enter the three axis lengths of the glyph.
 	*/
-	void InitEllipsoidDrawPoints() {
-		InitEllipsoidDrawPoints(Eigenvalues[0], Eigenvalues[1], Eigenvalues[2], this->m_Slices);
+	void InitDrawPoints() {
+		InitDrawPoints(Eigenvalues[0], Eigenvalues[1], Eigenvalues[2]);
 	}
 	/**
 	* @brief Initialize the draw points.
-	* Enter the three axis lengths of the ellipsoid and the number of slices.
+	* Enter the three axis lengths of the glyph.
 	*/
-	void InitEllipsoidDrawPoints(double eval[3], int slices) {
-		InitEllipsoidDrawPoints(eval[0], eval[1], eval[2], slices);
+	void InitDrawPoints(double eval[3]) {
+		InitDrawPoints(eval[0], eval[1], eval[2]);
 	}
 	/**
 	* @brief Initialize the draw points.
-	* Enter the three axis lengths of the ellipsoid and the number of slices.
+	* Enter the three axis lengths of theglyph.
 	*/
-	void InitEllipsoidDrawPoints(double& rx, double& ry, double& rz, int slices);
+	void InitDrawPoints(double& rx, double& ry, double& rz);
 	/**
 	* @brief Set the number of slices. It will automatically initialize basic drawing information,
 	* such as the order of drawing points of the slice and basic spherical coordinates.
 	*/
 	void SetSliceNum(int s);
 	/**
-	* @brief Update the order of drawing points of the slice.
+	* @brief Update the order of drawing points of the slice with ellipsoid glyph.
 	*/
 	void UpdateEllipsoidDrawPointIndexOrders();
 	/**
-	* @brief Update the basic spherical coordinates.
+	* @brief Update the basic spherical coordinates with ellipsoid glyph.
 	*/
 	void UpdateEllipsoidDrawPointBasedData();
-protected:
-	iGameTensorRepresentation();
 
-	enum drawType {
+	/**
+	 * @brief Update the order of drawing points of the slice with cuboid glyph.
+	*/
+	void UpdateCuboidDrawPointIndexOrders();
+	/**
+	* @brief Update the basic spherical coordinates with cuboid glyph.
+	*/
+	void UpdateCuboidDrawPointBasedData();
+	/**
+	* @brief Update the order of drawing points of the slice.
+	*/
+	void UpdateDrawPointBasedData();
+	/**
+	* @brief Update the basic spherical coordinates.
+	*/
+	void UpdateDrawPointIndexOrders();
+
+	enum DrawType {
 		ELLIPSOID,
 		CUBOID,
 	};
+
+
+	void SetDrawType(DrawType drawType) {
+		this->m_DrawType = drawType;
+		UpdateDrawPointBasedData();
+		UpdateDrawPointIndexOrders();
+	}
+protected:
+	iGameTensorRepresentation();
+
+
 private:
 	double Tensor[9]; // stored as 3x3 symmetric matrix
 	double Eigenvalues[3]; // the eigenvalues of the matrix
@@ -197,15 +234,15 @@ private:
 	double TensorPosition[3];// the positon to place glyph
 	double scale = 1.0;//  the scaling raito of the glyph
 
-	bool DrawType = drawType::ELLIPSOID;
+	DrawType m_DrawType = DrawType::ELLIPSOID;
 
 	/**
 	* The basic spherical coordinates to draw.
-	* Scale, rotate, and translate the coordinates to get the actual point coordinates of the ellipsoid
+	* Scale, rotate, and translate the coordinates to get the actual point coordinates of the glyph
 	*/
-	Points::Pointer SphereDrawPointsBaseData;
-	FloatArray::Pointer EllipsoidDrawPoints; //the actual point coordinates of the ellipsoid
-	IntArray::Pointer EllipsoidDrawPointIndexOrders;// the order of drawing points of the slice
+	Points::Pointer DrawPointsBaseData;
+	FloatArray::Pointer DrawPoints; //the actual point coordinates of the ellipsoid
+	IntArray::Pointer DrawPointIndexOrders;// the order of drawing points of the slice
 	int m_Slices = 0; // the number of slices
 
 };

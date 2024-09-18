@@ -1,8 +1,8 @@
 #pragma once
 #include<ui_igstreamtracer.h>
 //#include <iGameManager.h>
-#include<iostream>
-#include<iGameStreamTracer.h>
+#include <iostream>
+#include <StreamView/iGameStreamBase.h>
 #include <iGameUnstructuredMesh.h>
 class igQtStreamTracerWidget : public QWidget {
 
@@ -24,10 +24,8 @@ public slots:
     void Pressed();
     void Released();
 signals:
-    void NewModel(DataObject::Pointer obj, ItemSource source);
-    void UpdateModel(DataObject::Pointer obj, ItemSource source);
-    void sendstreams();
-    void updatestreams();
+    void AddStreamObject(DataObject::Pointer);
+    void UpdateStreamObject(DataObject::Pointer);
 private:
     Ui::SteamLineTracer* ui;
     int numOfSeeds;
@@ -40,4 +38,5 @@ private:
     bool haveDraw;
     bool haveClicked;
     UnstructuredMesh::Pointer streamlineResult{};
+    iGameStreamBase* m_StreamBase{ nullptr };
 };

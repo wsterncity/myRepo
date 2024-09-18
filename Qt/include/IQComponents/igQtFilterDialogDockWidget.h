@@ -12,6 +12,7 @@
 #include <IQCore/igQtExportModule.h>
 #include <qaction.h>
 #include <QLineEdit>
+#include <QComboBox>
 #include <functional>
 
 class IG_QT_MODULE_EXPORT igQtFilterDialogDockWidget : public QDockWidget {
@@ -23,6 +24,7 @@ public:
     enum WidgetType{ 
         QT_LINE_EDIT = 1,
         QT_CHECK_BOX,
+        QT_COMBO_BOX,
     };
 
     void apply();
@@ -32,6 +34,8 @@ public:
     void setFilterDescription(const QString& text);
     int addParameter(WidgetType type, const QString& title,
                      const QString& defaultValue);
+    int addParameter(WidgetType type, const QString& title,
+        const std::vector<QString>& defaultValue);
 
     double getDouble(int i, bool& ok) {
         Item& item = itemMap[i];
@@ -67,13 +71,31 @@ public:
     bool getChecked(int i, bool& ok) {
         Item& item = itemMap[i];
         bool value{};
+        ok = false;
         switch (item.type) {
             case QT_CHECK_BOX: {
                 QCheckBox* check = dynamic_cast<QCheckBox*>(item.widget);
                 value = check->isChecked();
+                ok = true;
             } break;
             default:
                 break;
+        }
+        return value;
+    }
+
+    int getComboIndex(int i, bool& ok) {
+        Item& item = itemMap[i];
+        int value{};
+        ok = false;
+        switch (item.type) {
+        case QT_COMBO_BOX: {
+            QComboBox* check = dynamic_cast<QComboBox*>(item.widget);
+            value = check->currentIndex();
+            ok = true;
+        } break;
+        default:
+            break;
         }
         return value;
     }
@@ -82,15 +104,15 @@ public:
     void setApplyFunctor(Functor&& functor, Args&&... args) {
         applyFunctor = std::bind(functor, args...);
     }
-
+private:
+    int addParameter(QLabel* label, QWidget* value);
 private:
     Ui::FilterDockDialog* ui;
-    QVBoxLayout* titleList;
-    QVBoxLayout* valueList;
+    QGridLayout* gridLayout;
 
     struct Item {
         QString title;
-        QString value;
+        std::vector<QString> value;
         WidgetType type;
         QWidget* widget;
     };

@@ -546,6 +546,80 @@ Mac系统最高只支持``OpenGL4.1``，因此必须设置为``OpenGL3.3``，还
 format.setVersion(4, 6); //Mac set to format.setVersion(4, 1);
 ```
 
+### Painter 类用法
+
+``Painter``类用于在场景中绘制各种图元，如点、线、三角形、矩形和立方体等。
+
+创建``Painter``实例：
+
+```cpp
+Painter::Pointer painter = Painter::New();
+```
+
+``Painter``创建完成后，需要设置画笔（Pen）和画刷（Brush），画笔用于绘制图元的边框，画刷用于绘制图元的填充。
+
+```cpp
+// 创建画笔
+Pen::Pointer pen = Pen::New();
+// 设置画笔粗细
+pen->SetWidth(10);
+// 设置画笔颜色
+pen->SetColor(Color::Green);
+
+// 创建画刷
+Brush::Pointer brush = Brush::New();
+// 设置画刷颜色
+brush->SetColor(Color::Red);
+
+// Painter设置
+painter->SetPen(pen);
+painter->SetBrush(brush);
+```
+
+设置完成后就可以进行绘制，绘制调用会返回一个句柄作为唯一标识符，后续可以根据该句柄进行显示/隐藏或删除操作。
+
+```cpp
+IGuint handle = painter->DrawPoint(Point{0.0f, 0.0f, 0.0f});
+
+// 隐藏该图元
+painter->Hide(handle);
+// 显示该图元
+painter->Show(handle);
+// 删除该图元
+painter->Delete(handle);
+```
+
+如果只想绘制边框则需要把画刷颜色设置为``None``，例如绘制Bounding-Box时只需要绘制立方体边框。
+
+```cpp
+Painter::Pointer painter = Painter::New();
+
+// 设置画笔粗细
+painter->SetPen(3);
+// 设置画笔颜色
+painter->SetPen(Color::LightBlue);
+// 设置画刷颜色为无填充
+painter->SetBrush(Color::None);
+
+// 绘制Bounding-Box
+Point p1{0.0f, 0.0f, 0.0f};
+Point p7{1.0f, 1.0f, 1.0f};
+painter->DrawCube(p1, p7);
+```
+
+``Painter``创建后拥有默认画笔和画刷。
+
+```cpp
+Painter::Pointer painter = Painter::New();
+
+// 设置默认画笔粗细
+painter->SetPen(10);
+// 设置默认画笔颜色
+painter->SetPen(Color::Green);
+// 设置默认画刷颜色
+painter->SetBrush(Color::Red);
+```
+
 ## 相关问题
 
 ### 子模块导入后构建失败
