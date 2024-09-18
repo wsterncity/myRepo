@@ -46,6 +46,7 @@ public:
         m_ReciprocalBoxSize[1] = 1.0 / m_BoxSize[1];
         m_ReciprocalBoxSize[2] = 1.0 / m_BoxSize[2];
 
+        m_Buffer = ElementArray<IdArray::Pointer>::New();
         m_Buffer->Resize(m_NumberOfBoxes);
 
         for (IGsize i = 0; i < m_Points->GetNumberOfPoints(); i++) {
@@ -54,7 +55,7 @@ public:
             auto& box = m_Buffer->ElementAt(index);
             if (box = nullptr) {
                 box = IdArray::New();
-                //box->Reserve(m_NumberOfPointsPerBox);
+                box->Reserve(m_NumberOfPointsPerBox);
             }
             box->AddId(i);
         }
@@ -143,7 +144,7 @@ protected:
 
         // If at this box
         if (level == 0) {
-            //boxes->push_back(ijk);
+            boxes.push_back(ijk);
             return;
         }
 
