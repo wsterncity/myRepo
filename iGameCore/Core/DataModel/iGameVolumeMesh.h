@@ -155,7 +155,7 @@ public:
 	bool IsBoundaryVolume(const IGsize volumeId);
 	bool IsCornerPoint(const IGsize ptId) override;
 
-	/*void ReplacePointReference(const IGsize fromPtId, const IGsize toPtId) {
+	void ReplacePointReference(const IGsize fromPtId, const IGsize toPtId) {
 		assert(fromPtId < GetNumberOfPoints() && "ptId too large");
 		assert(toPtId < GetNumberOfPoints() && "ptId too large");
 		if (fromPtId == toPtId) {
@@ -219,7 +219,7 @@ public:
 			}
 			std::cout << "\n";
 		}
-	}*/
+	}
 
 	void InitPolyhedronVertices() {
 		m_Volumes = CellArray::New();
