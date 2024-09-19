@@ -4,7 +4,7 @@ IGAME_NAMESPACE_BEGIN
 void ColorMap::InitColorBarByOneSegmentType()
 {
 	ColorBar->Reset();
-	ColorBar->SetElementSize(3);
+	ColorBar->SetDimension(3);
 	ColorBar->Reserve(2);
 	ColorBar->AddElement3(0.0, 0.0, 0.0);
 	ColorBar->AddElement3(1.0, 1.0, 1.0);
@@ -18,7 +18,7 @@ void ColorMap::InitColorBarByOneSegmentType()
 void ColorMap::InitColorBarByTwoSegmentType()
 {
 	ColorBar->Reset();
-	ColorBar->SetElementSize(3);
+	ColorBar->SetDimension(3);
 	ColorBar->Reserve(3);
 	ColorBar->AddElement3(0.0, 0.0, 1.0);
 	ColorBar->AddElement3(1.0, 1.0, 1.0);
@@ -34,7 +34,7 @@ void ColorMap::InitColorBarByTwoSegmentType()
 void ColorMap::InitColorBarByFourSegmentType()
 {
 	ColorBar->Reset();
-	ColorBar->SetElementSize(3);
+	ColorBar->SetDimension(3);
 	ColorBar->Reserve(5);
 	ColorBar->AddElement3(0.0, 0.0, 1.0);
 	ColorBar->AddElement3(0.0, 1.0, 1.0);
@@ -54,7 +54,7 @@ void ColorMap::InitColorBarByFourSegmentType()
 void ColorMap::InitColorBarByFiveSegmentType()
 {
 	ColorBar->Reset();
-	ColorBar->SetElementSize(3);
+	ColorBar->SetDimension(3);
 	ColorBar->Reserve(6);
 	ColorBar->AddElement3(0.0, 0.0, 1.0);
 	ColorBar->AddElement3(0.0, 1.0, 1.0);
@@ -86,7 +86,7 @@ void ColorMap::DeleteIndexColor(int index)
 {
 	FloatArray::Pointer retColor = FloatArray::New();
 	FloatArray::Pointer retRange = FloatArray::New();
-	retColor->SetElementSize(3);
+	retColor->SetDimension(3);
 	float color[3];
 	for (int i = 0; i <= ColorBarSize; i++) {
 		if (i == index)continue;
@@ -101,7 +101,7 @@ void ColorMap::DeleteIndexColor(int index)
 void ColorMap::AddColorBar(int index, float r, float g, float b)
 {
 	FloatArray::Pointer ret = FloatArray::New();
-	ret->SetElementSize(3);
+	ret->SetDimension(3);
 	for (int i = 0; i < index; i++) {
 		float color[3];
 		ColorBar->GetElement(i, color);
@@ -143,7 +143,7 @@ void ColorMap::MapColor(float value, float rgb[3])
 	float startRGB[3];
 	float finalRGB[3];
 	//std::cout << idx << std::endl;
-	ColorBar->SetElementSize(3);
+	ColorBar->SetDimension(3);
 	if (idx == 0) {
 		ColorBar->GetElement(idx, startRGB);
 		st_v = 0.0;
@@ -173,7 +173,7 @@ void ColorMap::MapColor(float value, float rgb[3])
 FloatArray::Pointer ColorMap::GetColorBarDrawInfo()
 {
 	FloatArray::Pointer ret = FloatArray::New();
-	ret->SetElementSize(3);
+	ret->SetDimension(3);
 	float color[16];
 	for (int i = 0; i < ColorBarSize; i++) {
 		ColorBar->GetElement(i, color);

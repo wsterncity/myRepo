@@ -88,7 +88,7 @@ const void MESHWriter::WriteFacesToBuffer(CellArray::Pointer Cells, CharArray::P
 	igIndex vhs[IGAME_CELL_MAX_SIZE];
 
 	auto Triangles = IntArray::New();
-	Triangles->SetElementSize(3);
+	Triangles->SetDimension(3);
 	for (igIndex i = 0; i < FaceNum; i++) {
 		vcnt = Cells->GetCellIds(i, vhs);
 		if (vcnt == 3) {
@@ -113,7 +113,7 @@ const void MESHWriter::WriteFacesToBuffer(CellArray::Pointer Cells, CharArray::P
 	}
 
 	auto Quads = IntArray::New();
-	Quads->SetElementSize(4);
+	Quads->SetDimension(4);
 	for (igIndex i = 0; i < FaceNum; i++) {
 		vcnt = Cells->GetCellIds(i, vhs);
 		if (vcnt == 4) {
@@ -151,7 +151,7 @@ const void MESHWriter::WriteVolumesToBuffer(CellArray::Pointer Cells, CharArray:
 	igIndex vhs[IGAME_CELL_MAX_SIZE];
 
 	auto Tetras = IntArray::New();
-	Tetras->SetElementSize(4);
+	Tetras->SetDimension(4);
 	for (igIndex i = 0; i < VolumeNum; i++) {
 		vcnt = Cells->GetCellIds(i, vhs);
 		if (vcnt == 4) {
@@ -177,7 +177,7 @@ const void MESHWriter::WriteVolumesToBuffer(CellArray::Pointer Cells, CharArray:
 
 
 	auto Hexahedrons = IntArray::New();
-	Hexahedrons->SetElementSize(8);
+	Hexahedrons->SetDimension(8);
 	for (igIndex i = 0; i < VolumeNum; i++) {
 		vcnt = Cells->GetCellIds(i, vhs);
 		if (vcnt == 8) {
@@ -202,7 +202,7 @@ const void MESHWriter::WriteVolumesToBuffer(CellArray::Pointer Cells, CharArray:
 	}
 
 	auto Prisms = IntArray::New();
-	Prisms->SetElementSize(6);
+	Prisms->SetDimension(6);
 	for (igIndex i = 0; i < VolumeNum; i++) {
 		vcnt = Cells->GetCellIds(i, vhs);
 		if (vcnt == 6) {
@@ -227,7 +227,7 @@ const void MESHWriter::WriteVolumesToBuffer(CellArray::Pointer Cells, CharArray:
 	}
 
 	auto Pyramids = IntArray::New();
-	Pyramids->SetElementSize(6);
+	Pyramids->SetDimension(6);
 	for (igIndex i = 0; i < VolumeNum; i++) {
 		vcnt = Cells->GetCellIds(i, vhs);
 		if (vcnt == 6) {

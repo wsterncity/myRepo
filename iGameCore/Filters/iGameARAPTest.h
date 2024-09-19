@@ -24,6 +24,18 @@ public:
 		model->RequestPointSelection(ps, fixed);
 
 		// 执行算法初始化
+		auto painter = model->GetPainter();
+		painter->SetPen(Color::Red);
+		painter->SetPen(3);
+		painter->DrawLine(mesh->GetPoint(0), mesh->GetPoint(1));
+
+		FloatArray::Pointer color = FloatArray::New();
+		color->SetDimension(3);
+		color->SetName("test");
+		for (int i = 0; i < mesh->GetNumberOfPoints(); i++) {
+			color->AddValue(mesh->GetPoint(i)[0]);
+		}
+		mesh->GetAttributeSet()->AddAttribute(IG_SCALAR, IG_POINT, color);
 
 		return true;
 	}

@@ -417,8 +417,8 @@ void UnstructuredMesh::ConvertToDrawableData() {
 	M_VertexIndices = UnsignedIntArray::New();
 	M_LineIndices = UnsignedIntArray::New();
 	M_TriangleIndices = UnsignedIntArray::New();
-	M_LineIndices->SetElementSize(2);
-	M_TriangleIndices->SetElementSize(3);
+	M_LineIndices->SetDimension(2);
+	M_TriangleIndices->SetDimension(3);
 
 
 	igIndex ids[128]{};

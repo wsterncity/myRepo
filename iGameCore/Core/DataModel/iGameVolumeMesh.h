@@ -122,7 +122,7 @@ public:
 	IntArray* GetCellTypes() {
 		IntArray::Pointer Types = IntArray::New();
 		Types->Resize(this->GetNumberOfVolumes());
-		Types->SetElementSize(this->GetNumberOfVolumes());
+		Types->SetDimension(this->GetNumberOfVolumes());
 		auto types = Types->RawPointer();
 		igIndex cell[IGAME_CELL_MAX_SIZE];
 		for (int i = 0; i < this->GetNumberOfVolumes(); i++) {

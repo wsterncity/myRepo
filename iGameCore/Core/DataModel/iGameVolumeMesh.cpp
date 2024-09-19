@@ -71,20 +71,6 @@ Volume* VolumeMesh::GetVolume(const IGsize volumeId)
 		volume->Points->AddPoint(this->GetPoint(cell[i]));
 	}
 
-	if (InEditStatus()) {
-		volume->EdgeIds->Reset();
-		volume->FaceIds->Reset();
-		ncells = m_VolumeEdges->GetCellIds(volumeId, cell);
-		for (int i = 0; i < ncells; i++) {
-			volume->EdgeIds->AddId(cell[i]);
-		}
-
-		ncells = m_VolumeFaces->GetCellIds(volumeId, cell);
-		for (int i = 0; i < ncells; i++) {
-			volume->FaceIds->AddId(cell[i]);
-		}
-	}
-
 	return volume;
 }
 
@@ -1646,8 +1632,8 @@ void VolumeMesh::SetAttributeWithCellData(ArrayObject::Pointer attr,
 
 		FloatArray::Pointer newPositions = FloatArray::New();
 		FloatArray::Pointer newColors = FloatArray::New();
-		newPositions->SetElementSize(3);
-		newColors->SetElementSize(3);
+		newPositions->SetDimension(3);
+		newColors->SetDimension(3);
 
 		float color[3]{};
 		for (int i = 0; i < this->GetNumberOfVolumes(); i++) {
