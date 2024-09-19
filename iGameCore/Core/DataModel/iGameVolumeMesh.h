@@ -225,6 +225,7 @@ public:
 
 		EdgeTable::Pointer EdgeTable = EdgeTable::New();
 		m_Volumes = CellArray::New();
+		m_VolumeEdges = CellArray::New();
 		igIndex CellNum = this->m_VolumeFaces->GetNumberOfCells();
 		igIndex ptIds[64]{}, edgeIds[64]{}, faceIds[64]{};
 		IGsize npts, nedges;
@@ -340,8 +341,6 @@ private:
 		m_Prism{}; // Used for the returned 'Prism' object, which is Thread-Unsafe
 	Pyramid::Pointer
 		m_Pyramid{}; // Used for the returned 'Pyramid' object, which is Thread-Unsafe
-	Polyhedron::Pointer
-		m_Polyhedron{};
 public:
 	void Draw(Scene*) override;
 	void ConvertToDrawableData() override;
