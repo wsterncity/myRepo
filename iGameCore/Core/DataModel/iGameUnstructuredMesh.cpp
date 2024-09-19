@@ -347,7 +347,7 @@ void UnstructuredMesh::Draw(Scene* scene) {
 		m_LineVAO.release();
 	}
 	if (m_ViewStyle & IG_SURFACE) {
-		scene->GetShader(Scene::PATCH)->use();
+		scene->GetShader(Scene::BLINNPHONG)->use();
 		m_TriangleVAO.bind();
 		glad_glDrawElements(GL_TRIANGLES,
 			M_TriangleIndices->GetNumberOfValues(),

@@ -46,6 +46,7 @@ public:
 
     /* Rendering Related */
     struct CameraDataBuffer {
+        alignas(16) igm::vec3 camera_position;
         alignas(16) igm::mat4 view;
         alignas(16) igm::mat4 proj;
         alignas(16) igm::mat4 proj_view; // proj * view
@@ -56,7 +57,6 @@ public:
         alignas(16) igm::vec4 sphereBounds;
     };
     struct UniformBufferObjectBuffer {
-        alignas(16) igm::vec3 viewPos;
         alignas(4) int useColor{0};
     };
 
@@ -70,7 +70,7 @@ public:
     };
 
     enum ShaderType {
-        PATCH = 0,
+        BLINNPHONG = 0,
         NOLIGHT,
         PURECOLOR,
         AXES,
