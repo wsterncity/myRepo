@@ -1562,7 +1562,7 @@ void VolumeMesh::ViewCloudPicture(Scene* scene, int index, int demension) {
 	auto& attr = this->GetAttributeSet()->GetAttribute(index);
 	if (!attr.isDeleted) {
 		if (attr.attachmentType == IG_POINT)
-			this->SetAttributeWithPointData(attr.pointer, demension, attr.dataRange);
+			this->SetAttributeWithPointData(attr.pointer, attr.dataRange, demension);
 		else if (attr.attachmentType == IG_CELL)
 			this->SetAttributeWithCellData(attr.pointer, demension);
 	}
@@ -1570,26 +1570,24 @@ void VolumeMesh::ViewCloudPicture(Scene* scene, int index, int demension) {
 	scene->Update();
 }
 
-void VolumeMesh::SetAttributeWithPointData(ArrayObject::Pointer attr,
-	igIndex i, const std::pair<float, float>& range) {
-	if (m_ViewAttribute != attr || m_ViewDemension != i) {
+void VolumeMesh::SetAttributeWithPointData(ArrayObject::Pointer attr, std::pair<float, float>& range, igIndex dimension) {
+	if (m_ViewAttribute != attr || m_ViewDemension != dimension) {
 		m_ViewAttribute = attr;
-		m_ViewDemension = i;
+		m_ViewDemension = dimension;
 		m_UseColor = true;
 		m_ColorWithCell = false;
 		ScalarsToColors::Pointer mapper = ScalarsToColors::New();
 
 		if (range.first != range.second) {
-			mapper->SetRange(range.first, range.second * 2);
-		}
-		else if (i == -1) {
+			mapper->SetRange(range.first, range.second);
+		} else if (dimension == -1) {
 			mapper->InitRange(attr);
+		} else {
+			mapper->InitRange(attr, dimension);
 		}
-		else {
-			mapper->InitRange(attr, i);
-		}
-
-		m_Colors = mapper->MapScalars(attr, i);
+        range.first  = mapper->GetRange()[0];
+        range.second = mapper->GetRange()[1];
+		m_Colors = mapper->MapScalars(attr, dimension);
 		if (m_Colors == nullptr) { return; }
 
 		GLAllocateGLBuffer(m_ColorVBO,

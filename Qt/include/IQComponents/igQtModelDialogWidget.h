@@ -31,6 +31,8 @@ public slots:
 	void updateAllAttriubute(DataObject::Pointer obj);
 	int addDataObjectToModelTree(DataObject::Pointer obj, ItemSource source);
 	int updateCurrentModelInfo();
+
+    void deleteCurrentModel();
 signals:
 	void CurrendModelChanged();
 protected:

@@ -177,7 +177,7 @@ bool iGame::iGamePVDReader::Parsing() {
                 m_data_object->AddSubDataObject(task.get());
         }
         auto t3 = std::chrono::steady_clock::now();
-        std::cout << "test times : " << times  << "Read subFiles cost : "<< std::chrono::duration_cast<std::chrono::milliseconds>(t3 - t2).count() << " ms\n";
+        std::cout << "Read subFiles cost : "<< std::chrono::duration_cast<std::chrono::milliseconds>(t3 - t2).count() << " ms\n";
 
 //        iGame::ThreadPool::Instance()->Commit()
         /* Reset DataObject's scalar range. */

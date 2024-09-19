@@ -1264,7 +1264,7 @@ void SurfaceMesh::ViewCloudPicture(Scene *scene, int index, int demension) {
   auto &attr = this->GetAttributeSet()->GetAttribute(index);
   if (!attr.isDeleted) {
     if (attr.attachmentType == IG_POINT)
-      this->SetAttributeWithPointData(attr.pointer, demension, attr.dataRange);
+      this->SetAttributeWithPointData(attr.pointer, attr.dataRange, demension);
     else if (attr.attachmentType == IG_CELL)
       this->SetAttributeWithCellData(attr.pointer, demension);
   }
@@ -1273,28 +1273,27 @@ void SurfaceMesh::ViewCloudPicture(Scene *scene, int index, int demension) {
 }
 
 void SurfaceMesh::SetAttributeWithPointData(
-    ArrayObject::Pointer attr, igIndex i,
-    const std::pair<float, float> &range) {
-  if (m_ViewAttribute != attr || m_ViewDemension != i) {
+    ArrayObject::Pointer attr, std::pair<float, float> &range, igIndex dimension) {
+  if (m_ViewAttribute != attr || m_ViewDemension != dimension) {
     m_ViewAttribute = attr;
-    m_ViewDemension = i;
+    m_ViewDemension = dimension;
     m_UseColor = true;
     m_ColorWithCell = false;
     ScalarsToColors::Pointer mapper = ScalarsToColors::New();
 
     if (range.first != range.second) {
-      mapper->SetRange(range.first, range.second * 2);
-    } else if (i == -1) {
+      mapper->SetRange(range.first, range.second);
+    } else if (dimension == -1) {
       mapper->InitRange(attr);
     } else {
-      mapper->InitRange(attr, i);
+      mapper->InitRange(attr, dimension);
     }
-
-    m_Colors = mapper->MapScalars(attr, i);
+    m_Colors = mapper->MapScalars(attr, dimension);
     if (m_Colors == nullptr) {
       return;
     }
-
+    range.first  = mapper->GetRange()[0];
+    range.second = mapper->GetRange()[1];
     GLAllocateGLBuffer(m_ColorVBO,
                        m_Colors->GetNumberOfValues() * sizeof(float),
                        m_Colors->RawPointer());

@@ -87,7 +87,7 @@ public:
 		}
 
 		void ClearSubDataObject() {
-			m_SubDataObjects.clear();
+            m_SubDataObjects.clear();
 			this->Modified();
 		}
 
@@ -103,7 +103,7 @@ public:
 
 	private:
 		SubDataObjectsHelper() {}
-		~SubDataObjectsHelper() override {}
+		~SubDataObjectsHelper() override {std::cout << "Helper Desctructure\n";}
 
 		DataObject* m_parentObject{ nullptr };
 		SubDataObjectMap m_SubDataObjects;
@@ -112,7 +112,8 @@ public:
 	using SubIterator = typename SubDataObjectsHelper::Iterator;
 	using SubConstIterator = typename SubDataObjectsHelper::ConstIterator;
 
-	void ResetAttributeRange();
+//	void UpdateAttributeSetRange();
+
 	DataObject::Pointer GetSubDataObject(DataObjectId id);
 	void SetParentDataObject(DataObject* parent) { m_Parent = parent; }
 
@@ -157,7 +158,7 @@ protected:
 		m_Propertys->AddProperty(Variant::Int, "Length");
 
 	}
-	~DataObject() override = default;
+	~DataObject() override{/*std::cout << "Destructed\n";*/};
 
 	virtual void ComputeBoundingBox() {}
 
@@ -219,14 +220,13 @@ protected:
 };
 
 template <typename Functor, typename... Args>
-inline void DataObject::ProcessSubDataObjects(Functor&& functor,
-	Args &&...args) {
-	if (HasSubDataObject()) {
-		for (auto it = m_SubDataObjectsHelper->Begin();
-			it != m_SubDataObjectsHelper->End(); ++it) {
-			(it->second->*functor)(std::forward<Args>(args)...);
-		}
-	}
+inline void DataObject::ProcessSubDataObjects(Functor&& functor, Args &&...args) {
+    if (HasSubDataObject()) {
+        for (auto it = m_SubDataObjectsHelper->Begin();
+             it != m_SubDataObjectsHelper->End(); ++it) {
+            (it->second->*functor)(std::forward<Args>(args)...);
+        }
+    }
 }
 
 IGAME_NAMESPACE_END

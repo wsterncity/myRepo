@@ -17,9 +17,14 @@ public:
 
     bool Parsing() override;
 
+    bool CreateDataObject() override;
+
 protected:
     iGameVTSReader() = default;
     ~iGameVTSReader() = default;
+
+protected:
+    bool m_Header_8_byte_flag {false};
 };
 
 IGAME_NAMESPACE_END

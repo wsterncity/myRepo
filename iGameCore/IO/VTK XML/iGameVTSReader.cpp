@@ -11,6 +11,8 @@
 #include "iGameFileReader.h"
 #include "iGameBase64Util.h"
 
+
+#include <iGameStructuredMesh.h>
 #include <tinyxml2.h>
 #undef max
 #undef min
@@ -24,6 +26,13 @@ bool iGame::iGameVTSReader::Parsing() {
     const char* attribute;
     const char* delimiters = " \n";
     char* token;
+    attribute = root->Attribute("header_type");
+    if (attribute) {
+        if (strcmp(attribute, "UInt64") == 0) {
+            m_Header_8_byte_flag = true;
+        }
+    }
+
     // get x y z range.
     elem = FindTargetItem(root, "StructuredGrid");
     int x_dimension, y_dimension, z_dimension;
@@ -37,22 +46,22 @@ bool iGame::iGameVTSReader::Parsing() {
         r = mAtoi(token);
         token = strtok(nullptr, delimiters);
         x_dimension = r - l + 1;
-
+        m_Data.dimensionSize[0] = r - l + 1;
         l = mAtoi(token);
         token = strtok(nullptr, delimiters);
         r = mAtoi(token);
         token = strtok(nullptr, delimiters);
         y_dimension = r - l + 1;
-
+        m_Data.dimensionSize[1] = r - l + 1;
         l = mAtoi(token);
         token = strtok(nullptr, delimiters);
         r = mAtoi(token);
         z_dimension = r - l + 1;
+        m_Data.dimensionSize[2] = r - l + 1;
     } else {
         printf("Could not load Vts file . Error='No StructuredGrid Attribute'. Exiting.\n");
         return false;
     }
-    std::cout << x_dimension << ' ' << y_dimension << ' ' << z_dimension << '\n';
     //  find Points' position Data
     elem = FindTargetItem(root, "Points")->FirstChildElement("DataArray");
     data = elem->GetText();
@@ -94,34 +103,35 @@ bool iGame::iGameVTSReader::Parsing() {
             if(!strncmp(type, "Float", 5)) {
                 //  Float32
                 if (!strncmp(type + 5, "32", 2)) {
-                    ReadBase64EncodedPoints<float>(data_p, dataSetPoints);
+                    ReadBase64EncodedPoints<float>(m_Header_8_byte_flag, data_p, dataSetPoints);
                 } else /*Float64*/{
-                    ReadBase64EncodedPoints<double>(data_p, dataSetPoints);
+                    ReadBase64EncodedPoints<double>(m_Header_8_byte_flag, data_p, dataSetPoints);
                 }
             }
         }
     }
-    int vhs[16] = { 0 };
-//    int CellNum = (x_dimension - 1) * (y_dimension - 1) * (z_dimension - 1);
-    CellArray::Pointer volume = m_Data.GetVolumes();
 
-    int xy_multi_dimensions = x_dimension * y_dimension;
-    int xyz_multi_dimensions = x_dimension * y_dimension * z_dimension;
-    for(int z = 0; z + xy_multi_dimensions < xyz_multi_dimensions + 0; z += xy_multi_dimensions)
-    {
-        for(int y = z; y + y_dimension < z + xy_multi_dimensions; y += y_dimension)
-        {
-            for(int x = y; x + 1 < y + y_dimension; x ++)
-            {
-                int xz = x + xy_multi_dimensions;
-
-                vhs[0] = x ,  vhs[1] = x  + 1,  vhs[2] = x  + y_dimension + 1,  vhs[3] = x  + y_dimension;
-                vhs[4] = xz,  vhs[5] = xz + 1,  vhs[6] = xz + y_dimension + 1,  vhs[7] = xz + y_dimension;
-//                Hexahdrons->AddCell(vhs, 8);
-                volume->AddCellIds(vhs, 8);
-            }
-        }
-    }
+//    int vhs[16] = { 0 };
+////    int CellNum = (x_dimension - 1) * (y_dimension - 1) * (z_dimension - 1);
+//    CellArray::Pointer volume = m_Data.GetVolumes();
+//
+//    int xy_multi_dimensions = x_dimension * y_dimension;
+//    int xyz_multi_dimensions = x_dimension * y_dimension * z_dimension;
+//    for(int z = 0; z + xy_multi_dimensions < xyz_multi_dimensions + 0; z += xy_multi_dimensions)
+//    {
+//        for(int y = z; y + y_dimension < z + xy_multi_dimensions; y += y_dimension)
+//        {
+//            for(int x = y; x + 1 < y + y_dimension; x ++)
+//            {
+//                int xz = x + xy_multi_dimensions;
+//
+//                vhs[0] = x ,  vhs[1] = x  + 1,  vhs[2] = x  + y_dimension + 1,  vhs[3] = x  + y_dimension;
+//                vhs[4] = xz,  vhs[5] = xz + 1,  vhs[6] = xz + y_dimension + 1,  vhs[7] = xz + y_dimension;
+////                Hexahdrons->AddCell(vhs, 8);
+//                volume->AddCellIds(vhs, 8);
+//            }
+//        }
+//    }
 
     unsigned int pointNum =  Points->GetNumberOfPoints();
     // find Points' Scalar Data
@@ -170,4 +180,14 @@ bool iGame::iGameVTSReader::Parsing() {
     }
     return true;
 }
+
+    bool iGameVTSReader::CreateDataObject() {
+        m_Output = iGame::StructuredMesh::New();
+        auto structed_mesh = DynamicCast<iGame::StructuredMesh>(m_Output);
+        structed_mesh->SetDimensionSize(m_Data.dimensionSize);
+        structed_mesh->SetPoints(m_Data.GetPoints());
+        structed_mesh->SetAttributeSet(m_Data.GetData());
+        structed_mesh->GenStructuredCellConnectivities();
+        return true;
+    }
 IGAME_NAMESPACE_END
