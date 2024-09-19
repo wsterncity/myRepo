@@ -285,28 +285,28 @@ std::vector<std::vector<float>> iGameStreamTracer::showStreamLineHex(std::vector
 			k[2] = lengthOfStep * interpolationVectorMixWithMeanV(_coord + k[1] * B[0][0], inside, flag1, vectorName, _vector, terminalSpeed);
 			if (inside) { flag = true; inside = false; }
 
-			k[3] = lengthOfStep * interpolationVectorMixWithMeanV(_coord + k[1] * B[1][0] + k[2] * B[1][1], inside, flag1,  vectorName, _vector, terminalSpeed);
+			k[3] = lengthOfStep * interpolationVectorMixWithMeanV(_coord + k[1] * B[1][0] + k[2] * B[1][1], inside, flag1, vectorName, _vector, terminalSpeed);
 			if (inside) { flag = true; inside = false; }
 
-			k[4] = lengthOfStep * interpolationVectorMixWithMeanV(_coord + k[1] * B[2][0] + k[2] * B[2][1] + k[3] * B[2][2], inside, flag1,vectorName, _vector, terminalSpeed);
+			k[4] = lengthOfStep * interpolationVectorMixWithMeanV(_coord + k[1] * B[2][0] + k[2] * B[2][1] + k[3] * B[2][2], inside, flag1, vectorName, _vector, terminalSpeed);
 			if (inside) { flag = true; inside = false; }
 
-			k[5] = lengthOfStep * interpolationVectorMixWithMeanV(_coord + k[1] * B[3][0] + k[2] * B[3][1] + k[3] * B[3][2] + k[4] * B[3][3], inside, flag1,vectorName, _vector, terminalSpeed);
+			k[5] = lengthOfStep * interpolationVectorMixWithMeanV(_coord + k[1] * B[3][0] + k[2] * B[3][1] + k[3] * B[3][2] + k[4] * B[3][3], inside, flag1, vectorName, _vector, terminalSpeed);
 			if (inside) { flag = true; inside = false; }
 
-			k[6] = lengthOfStep * interpolationVectorMixWithMeanV(_coord + k[1] * B[4][0] + k[2] * B[4][1] + k[3] * B[4][2] + k[4] * B[4][3] + k[5] * B[4][4], inside, flag1,  vectorName, _vector, terminalSpeed);
+			k[6] = lengthOfStep * interpolationVectorMixWithMeanV(_coord + k[1] * B[4][0] + k[2] * B[4][1] + k[3] * B[4][2] + k[4] * B[4][3] + k[5] * B[4][4], inside, flag1, vectorName, _vector, terminalSpeed);
 			if (inside) { flag = true; inside = false; }
 
 			if (flag) {
-					Vector3f temC(0, 0, 0);
-					for (int i = 0; i < 6; i++)
-					{
-						temC += k[i + 1] * C[i];
-					}
-					length += temC.length();
-					_coord += temC;
+				Vector3f temC(0, 0, 0);
+				for (int i = 0; i < 6; i++)
+				{
+					temC += k[i + 1] * C[i];
+				}
+				length += temC.length();
+				_coord += temC;
 
-				
+
 			}
 			tem[i].emplace_back(_coord[0]);
 			tem[i].emplace_back(_coord[1]);
@@ -333,7 +333,7 @@ std::vector<std::vector<float>> iGameStreamTracer::showStreamLineHex(std::vector
 	}
 	for (int i = 0; i < seed.size(); i++) {
 		result[i].wait();
-	}	
+	}
 
 
 	//result[2] = tp->Commit(func, 2);
@@ -683,7 +683,7 @@ std::vector<std::vector<std::vector<float>>> iGameStreamTracer::showStreamFace(s
 	//	std::cout << "time: " << clock() - time1 << std::endl;
 	return tem;
 }
- bool iGameStreamTracer:: CellData2PointData(std::string vectorName)
+bool iGameStreamTracer::CellData2PointData(std::string vectorName)
 {
 	this->mesh = DynamicCast<VolumeMesh>(this->mesh);
 	auto allPolyhedrons = mesh->GetVolumes();
@@ -708,7 +708,7 @@ std::vector<std::vector<std::vector<float>>> iGameStreamTracer::showStreamFace(s
 		auto volume = mesh->GetVolume(i);
 		int numOfCellPoints = volume->GetCellSize();//点的数量
 		for (int j = 0; j < numOfCellPoints; j++) {
-			auto pointId=volume->GetPointId(j);
+			auto pointId = volume->GetPointId(j);
 			pointVector[pointId] = pointVector[pointId] + temVec;
 			pointVectorNUM[pointId]++;
 		}
@@ -720,7 +720,7 @@ std::vector<std::vector<std::vector<float>>> iGameStreamTracer::showStreamFace(s
 	{
 		for (size_t j = 0; j < vecV; j++)
 		{
-			VectorData->AddValue(pointVector[i][j] / pointVectorNUM[i]); 
+			VectorData->AddValue(pointVector[i][j] / pointVectorNUM[i]);
 		}
 	}
 	return true;
@@ -728,7 +728,7 @@ std::vector<std::vector<std::vector<float>>> iGameStreamTracer::showStreamFace(s
 float iGameStreamTracer::distance2Line(Vector3f point, Vector3f lineP1, Vector3f lineP2) {
 	Vector3f  pP1 = point - lineP1;
 	Vector3f  line = lineP2 - lineP1;
-	return abs((pP1*line) / line.length());
+	return abs((pP1 * line) / line.length());
 }
 Vector3f iGameStreamTracer::interpolationVectorTri(Vector3f coord, bool& inside, igIndex& VolumeId, std::string vectorName, std::vector<Vector3f>_vector, float terminalSpeed) {//插值运算
 	this->mesh = DynamicCast<VolumeMesh>(this->mesh);
@@ -752,7 +752,7 @@ Vector3f iGameStreamTracer::interpolationVectorTri(Vector3f coord, bool& inside,
 	}
 	else {
 		igIndex link[30];
-		 int nearNum=mesh->GetVolumeToNeighborVolumesWithPoint(VolumeId,link);
+		int nearNum = mesh->GetVolumeToNeighborVolumesWithPoint(VolumeId, link);
 		for (int i = 0; i < nearNum; i++)
 		{
 			tem.emplace_back(link[i]);
@@ -770,11 +770,11 @@ Vector3f iGameStreamTracer::interpolationVectorTri(Vector3f coord, bool& inside,
 		{
 			auto* f = volume->GetFace(i);
 
-				auto& v0 = f->GetPoint(0);
-				auto& v1 = f->GetPoint(1);
-				auto& v2 = f->GetPoint(2);
-				if (checkContact(coord, v0, v1, v2))
-					contactPointNum++;
+			auto& v0 = f->GetPoint(0);
+			auto& v1 = f->GetPoint(1);
+			auto& v2 = f->GetPoint(2);
+			if (checkContact(coord, v0, v1, v2))
+				contactPointNum++;
 
 		}
 		if (contactPointNum % 2 == 1)
@@ -792,10 +792,10 @@ Vector3f iGameStreamTracer::interpolationVectorTri(Vector3f coord, bool& inside,
 		v[i] = volume->GetPoint(i);
 	}
 	float weights[4];
-	 weights[0] = pointToFaceDis(coord, v[1], v[2], v[3]) / pointToFaceDis(v[0], v[1], v[2], v[3]);
-	 weights[1] = pointToFaceDis(coord, v[0], v[2], v[3]) / pointToFaceDis(v[1], v[1], v[2], v[3]);
-	 weights[2] = pointToFaceDis(coord, v[3], v[1], v[0]) / pointToFaceDis(v[2], v[1], v[2], v[3]);
-	 weights[3] = pointToFaceDis(coord, v[1], v[2], v[0]) / pointToFaceDis(v[3], v[1], v[2], v[3]);
+	weights[0] = pointToFaceDis(coord, v[1], v[2], v[3]) / pointToFaceDis(v[0], v[1], v[2], v[3]);
+	weights[1] = pointToFaceDis(coord, v[0], v[2], v[3]) / pointToFaceDis(v[1], v[1], v[2], v[3]);
+	weights[2] = pointToFaceDis(coord, v[3], v[1], v[0]) / pointToFaceDis(v[2], v[1], v[2], v[3]);
+	weights[3] = pointToFaceDis(coord, v[1], v[2], v[0]) / pointToFaceDis(v[3], v[1], v[2], v[3]);
 	for (size_t i = 0; i < 4; i++)
 	{
 		finnal += _vector[volume->GetPointId(i)] * weights[i];
@@ -967,19 +967,35 @@ Vector3f iGameStreamTracer::interpolationVectorMixWithMeanV(Vector3f coord, bool
 		for (int i = 0; i < numOfPoints; i++)
 		{
 			Point a = mesh->GetPoint(i);
-			if ((a-coord).length()<=0.001) {
+			if ((a - coord).length() <= 0.001) {
 				return _vector[i];
 			}
 		}
-		if (!ptFinder) {
-			igIndex temPointId = ptFinder->FindClosestPoint(coord);
+		if (ptFinder) {
+			//igIndex temPointId = ptFinder->FindClosestPoint(coord);
+			igIndex temPointId = 0;
+			float dist = FLT_MAX;
+			for (size_t i = 0; i < numOfPoints; i++)
+			{
+				Point a = mesh->GetPoint(i);
+				if ((a - coord).length() <= dist) {
+					temPointId = i;
+					dist = (a - coord).length();
+				}
+			}
 			igIndex nearVolume[128];
 			int find=	mesh->GetPointToNeighborVolumes(temPointId,nearVolume);
 			for (int i = 0; i < find; i++)
 			{
 				tem.emplace_back(nearVolume[i]);
 			}
+			std::cout <<":" << temPointId << " :" << std::endl;
 		}
+		//for (size_t i = 0; i < numOfVolumes; i++)
+		//{
+
+		//	tem.emplace_back(i);
+		//}
 
 	}
 	else {
@@ -1004,7 +1020,7 @@ Vector3f iGameStreamTracer::interpolationVectorMixWithMeanV(Vector3f coord, bool
 		for (int i = 0; i < size; i++)
 		{
 			int fsize = mesh->GetFacePointIds(volume[i], f);
-			for (int j = 1; j < fsize-1; j++)
+			for (int j = 1; j < fsize - 1; j++)
 			{
 				auto& v0 = mesh->GetPoint(f[0]);
 				auto& v1 = mesh->GetPoint(f[j]);
@@ -1034,7 +1050,7 @@ Vector3f iGameStreamTracer::interpolationVectorMixWithMeanV(Vector3f coord, bool
 		int fpsize = mesh->GetFacePointIds(face[i], p);
 		MaxPolygonSize = std::max(fpsize, MaxPolygonSize);
 	}
-	weights = ComputeWeightsForPolygonMesh(volume, coord, face, MaxPolygonSize,size,fsize);
+	weights = ComputeWeightsForPolygonMesh(volume, coord, face, MaxPolygonSize, size, fsize);
 	for (size_t i = 0; i < size; i++)
 	{
 
@@ -1045,31 +1061,31 @@ Vector3f iGameStreamTracer::interpolationVectorMixWithMeanV(Vector3f coord, bool
 	return finnal;
 
 }
-std::vector<float> iGameStreamTracer::ComputeWeightsForPolygonMesh(igIndex* PointIds,Vector3f coord,igIndex* FaceIds,int MaxPolygonSize,int psize,int fsize){
-	 std::vector<float>weights(psize,0);
-	 //点到点源的长度
+std::vector<float> iGameStreamTracer::ComputeWeightsForPolygonMesh(igIndex* PointIds, Vector3f coord, igIndex* FaceIds, int MaxPolygonSize, int psize, int fsize) {
+	std::vector<float>weights(psize, 0);
+	//点到点源的长度
 	std::vector<double> dist(psize);
 	//点到点源的单位矢量
 	std::vector<Vector3f> uVec(psize);
-		static constexpr double eps = 0.00000001;
-		for (int pid = 0; pid < psize; ++pid)
+	static constexpr double eps = 0.00000001;
+	for (int pid = 0; pid < psize; ++pid)
+	{
+
+		auto pt = mesh->GetPoint(PointIds[pid]);
+		uVec[pid] = Vector3f(pt[0] - coord[0], pt[1] - coord[1], pt[2] - coord[2]);
+		// distance
+		dist[pid] = uVec[pid].length();
+
+		// handle special case when the point is really close to a vertex
+		if (dist[pid] < eps)
 		{
-			
-			 auto pt = mesh->GetPoint(PointIds[pid]);
-			uVec[pid] = Vector3f(pt[0] - coord[0],pt[1] - coord[1],pt[2] - coord[2]);
-			// distance
-			dist[pid] = uVec[pid].length();
-
-			// handle special case when the point is really close to a vertex
-			if (dist[pid] < eps)
-			{
-				weights[pid] = 1.0;
-				return weights;
-			}
-
-			// project onto unit sphere
-			uVec[pid] /= dist[pid];
+			weights[pid] = 1.0;
+			return weights;
 		}
+
+		// project onto unit sphere
+		uVec[pid] /= dist[pid];
+	}
 
 	// Now loop over all triangle to compute weights
 	//点到多面体内点源的单位矢量
@@ -1080,7 +1096,7 @@ std::vector<float> iGameStreamTracer::ComputeWeightsForPolygonMesh(igIndex* Poin
 	std::vector<double> theta(MaxPolygonSize);
 
 	int poly = 0;
-	while (poly <fsize)
+	while (poly < fsize)
 	{
 		igIndex fp[32];
 		int fpsize = mesh->GetFacePointIds(FaceIds[poly], fp);
@@ -1095,15 +1111,15 @@ std::vector<float> iGameStreamTracer::ComputeWeightsForPolygonMesh(igIndex* Poin
 			for (size_t i = 0; i < psize; i++)
 			{
 				int temid = fp[j];
-				if(PointIds[i] == temid)
-				u[j] = uVec[i];
+				if (PointIds[i] == temid)
+					u[j] = uVec[i];
 				uIdInVolume[j] = i;
 			}
-			
+
 		}
 
 		// unit vector v.
-		Vector3f v(0,0,0);
+		Vector3f v(0, 0, 0);
 		double l;
 		double angle;
 		Vector3f temp;
@@ -1112,16 +1128,16 @@ std::vector<float> iGameStreamTracer::ComputeWeightsForPolygonMesh(igIndex* Poin
 			temp = u[j].cross(u[j + 1]);
 			temp.normalize();
 
-			l = (u[j]-u[j+1]).length();
+			l = (u[j] - u[j + 1]).length();
 			angle = 2.0 * asin(l / 2.0);
 
 			v[0] += 0.5 * angle * temp[0];
 			v[1] += 0.5 * angle * temp[1];
 			v[2] += 0.5 * angle * temp[2];
 		}
-		l = (u[fpsize - 1]-u[0]).length();
+		l = (u[fpsize - 1] - u[0]).length();
 		angle = 2.0 * asin(l / 2.0);
-		temp=u[fpsize - 1].cross(u[0]);
+		temp = u[fpsize - 1].cross(u[0]);
 		temp.normalize();
 		v[0] += 0.5 * angle * temp[0];
 		v[1] += 0.5 * angle * temp[1];
@@ -1143,25 +1159,25 @@ std::vector<float> iGameStreamTracer::ComputeWeightsForPolygonMesh(igIndex* Poin
 		for (int j = 0; j < fpsize - 1; j++)
 		{
 			n0 = u[j].cross(v);
-			n0.normalize();			
-			n1 = u[j+1].cross(v);
+			n0.normalize();
+			n1 = u[j + 1].cross(v);
 			n1.normalize();
-			l = (n0-n1).length();
+			l = (n0 - n1).length();
 			alpha[j] = 2.0 * asin(l / 2.0);
 			temp = n0.cross(n1);
 			if (temp.dot(v) < 0)
 			{
 				alpha[j] = -alpha[j];
 			}
-			l = (u[j]-v).length();
+			l = (u[j] - v).length();
 			theta[j] = 2.0 * asin(l / 2.0);
 		}
 
-		n0=u[fpsize - 1].cross(v);
+		n0 = u[fpsize - 1].cross(v);
 		n0.normalize();
 		n1 = u[0].cross(v);
 		n1.normalize();
-		l = (n0-n1).length();
+		l = (n0 - n1).length();
 		alpha[fpsize - 1] = 2.0 * asin(l / 2.0);
 		temp = n0.cross(n1);
 		if (temp.dot(v) < 0)
@@ -1170,7 +1186,7 @@ std::vector<float> iGameStreamTracer::ComputeWeightsForPolygonMesh(igIndex* Poin
 		}
 
 		// theta[nPolyPts-1] = acos(vtkMath::Dot(u[nPolyPts-1], v));
-		l = (u[fpsize - 1]-v).length();
+		l = (u[fpsize - 1] - v).length();
 		theta[fpsize - 1] = 2.0 * asin(l / 2.0);
 
 		bool outlierFlag = false;
@@ -1205,10 +1221,10 @@ std::vector<float> iGameStreamTracer::ComputeWeightsForPolygonMesh(igIndex* Poin
 			// recompute theta, the theta computed previously are not robust
 			for (int j = 0; j < fpsize - 1; j++)
 			{
-				l =(u[j]- u[j + 1]).length();
+				l = (u[j] - u[j + 1]).length();
 				theta[j] = 2.0 * asin(l / 2.0);
 			}
-			l = (u[fpsize - 1]-u[0]).length();
+			l = (u[fpsize - 1] - u[0]).length();
 			theta[fpsize - 1] = 2.0 * asin(l / 2.0);
 
 			double sumWeight;
