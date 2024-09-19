@@ -119,33 +119,33 @@ public:
 	Cell* GetCell(igIndex cellId) {
 		return this->GetVolume(cellId);
 	}
-	IntArray* GetCellTypes() {
-		IntArray::Pointer Types = IntArray::New();
-		Types->Resize(this->GetNumberOfVolumes());
-		Types->SetDimension(this->GetNumberOfVolumes());
-		auto types = Types->RawPointer();
-		igIndex cell[IGAME_CELL_MAX_SIZE];
-		for (int i = 0; i < this->GetNumberOfVolumes(); i++) {
-			int ncells = m_Volumes->GetCellIds(i, cell);
-			switch (ncells) {
-			case 4:
-				types[i] = IG_TETRA;
-				break;
-			case 5:
-				types[i] = IG_PYRAMID;
-				break;
-			case 6:
-				types[i] = IG_PRISM;
-				break;
-			case 8:
-				types[i] = IG_HEXAHEDRON;
-				break;
-			default:
-				break;
-			}
-		}
-		return Types.get();
-	}
+	//IntArray* GetCellTypes() {
+	//	IntArray::Pointer Types = IntArray::New();
+	//	Types->Resize(this->GetNumberOfVolumes());
+	//	Types->SetDimension(this->GetNumberOfVolumes());
+	//	auto types = Types->RawPointer();
+	//	igIndex cell[IGAME_CELL_MAX_SIZE];
+	//	for (int i = 0; i < this->GetNumberOfVolumes(); i++) {
+	//		int ncells = m_Volumes->GetCellIds(i, cell);
+	//		switch (ncells) {
+	//		case 4:
+	//			types[i] = IG_TETRA;
+	//			break;
+	//		case 5:
+	//			types[i] = IG_PYRAMID;
+	//			break;
+	//		case 6:
+	//			types[i] = IG_PRISM;
+	//			break;
+	//		case 8:
+	//			types[i] = IG_HEXAHEDRON;
+	//			break;
+	//		default:
+	//			break;
+	//		}
+	//	}
+	//	return Types.get();
+	//}
 	igIndex GetCellDimension(igIndex CellTyp) { return 3; };
 	SurfaceMesh::Pointer GetDrawMesh() { return m_DrawMesh; }
 
