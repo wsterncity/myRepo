@@ -1,7 +1,6 @@
 #include "iGameSurfaceMesh.h"
-#include "iGameSurfaceMesh.h"
-#include "iGameScene.h"
 #include "iGameModelSurfaceFilters/iGameModelGeometryFilter.h"
+#include "iGameScene.h"
 IGAME_NAMESPACE_BEGIN
 
 IGsize SurfaceMesh::GetNumberOfEdges() const noexcept {
@@ -857,8 +856,8 @@ void SurfaceMesh::Draw(Scene *scene) {
     return;
   }
   if (m_DrawMesh) {
-      m_DrawMesh->SetViewStyle(m_ViewStyle);
-      return m_DrawMesh->Draw(scene);
+    m_DrawMesh->SetViewStyle(m_ViewStyle);
+    return m_DrawMesh->Draw(scene);
   }
   // update uniform buffer
   if (m_UseColor) {
@@ -869,7 +868,7 @@ void SurfaceMesh::Draw(Scene *scene) {
   scene->UpdateUniformBuffer();
 
   if (m_UseColor && m_ColorWithCell) {
-    scene->GetShader(Scene::PATCH)->use();
+    scene->GetShader(Scene::BLINNPHONG)->use();
     m_CellVAO.bind();
     glad_glDrawArrays(GL_TRIANGLES, 0, m_CellPositionSize);
     m_CellVAO.release();
@@ -880,7 +879,7 @@ void SurfaceMesh::Draw(Scene *scene) {
     scene->GetShader(Scene::NOLIGHT)->use();
     m_PointVAO.bind();
     glad_glPointSize(8);
-    glad_glDepthRange(0, 0.99999);
+    glad_glDepthRange(0.000001, 1);
     glad_glDrawArrays(GL_POINTS, 0, m_Positions->GetNumberOfValues() / 3);
     glad_glDepthRange(0, 1);
     m_PointVAO.release();
@@ -914,7 +913,7 @@ void SurfaceMesh::Draw(Scene *scene) {
     m_LineVAO.release();
   }
   if (m_ViewStyle & IG_SURFACE) {
-    scene->GetShader(Scene::PATCH)->use();
+    scene->GetShader(Scene::BLINNPHONG)->use();
     m_TriangleVAO.bind();
     glad_glDrawElements(GL_TRIANGLES, m_TriangleIndices->GetNumberOfIds(),
                         GL_UNSIGNED_INT, 0);

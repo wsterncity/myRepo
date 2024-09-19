@@ -8,6 +8,8 @@ elseif (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     add_definitions(-DPLATFORM_MAC)
 endif ()
 
+set(SHADER_COMPILE_TARGET OpeniGameShaderCompile)
+add_subdirectory(Rendering/Shaders)
 
 file(GLOB_RECURSE IGAME_CORE_FILE CONFIGURE_DEPENDS ./*.h ./*.cpp)
 add_library(${MODULE_NAME} STATIC ${IGAME_CORE_FILE})
@@ -41,10 +43,12 @@ if (ENABLE_CGNS_MODULE)
     target_compile_definitions(${MODULE_NAME} PRIVATE CGNS_ENABLE)
     target_link_libraries(${MODULE_NAME} PUBLIC cgns_static)
 ENDIF ()
-target_compile_definitions(${MODULE_NAME} PRIVATE ASSEST_DIR="${CMAKE_CURRENT_SOURCE_DIR}/Rendering/Assests")
+
+target_compile_definitions(${MODULE_NAME} PRIVATE ASSESTS_DIR="${CMAKE_CURRENT_SOURCE_DIR}/Rendering/Assests")
+target_compile_definitions(${MODULE_NAME} PRIVATE SHADERS_DIR="${CMAKE_CURRENT_SOURCE_DIR}/Rendering/Shaders")
 
 IF (WIN32)
-    target_compile_definitions(${MODULE_NAME} PUBLIC IGAME_OPENGL_VERSION_460)
+    target_compile_definitions(${MODULE_NAME} PUBLIC IGAME_OPENGL_VERSION_330)
 ELSEIF (APPLE)
     target_compile_definitions(${MODULE_NAME} PUBLIC IGAME_OPENGL_VERSION_330)
 ELSEIF (UNIX)

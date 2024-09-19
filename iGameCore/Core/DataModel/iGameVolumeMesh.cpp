@@ -133,7 +133,7 @@ void VolumeMesh::BuildFacesAndEdges() {
 		for (int j = 0; j < vol->GetNumberOfFaces(); j++) // number of faces
 		{
 			const igIndex* index;
-			int size = vol->GetFacePointIds(j, index); // this face's number of points 
+			int size = vol->GetFacePointIds(j, index); // this face's number of points
 			for (int k = 0; k < size; k++) {
 				face[k] = cell[index[k]];
 			}
@@ -976,7 +976,7 @@ IGsize VolumeMesh::AddVolume(igIndex* ptIds, int size)
 	//	for (int j = 0; j < Tetra::NumberOfEdges; j++)
 	//	{
 	//		const igIndex* index;
-	//		int size = Tetra::EdgePointIds(j, index); 
+	//		int size = Tetra::EdgePointIds(j, index);
 	//		for (int k = 0; k < 2; k++) {
 	//			edge[k] = volumeIds[index[k]];
 	//		}
@@ -1328,7 +1328,7 @@ void VolumeMesh::Draw(Scene* scene)
 	scene->UpdateUniformBuffer();
 
 	if (m_UseColor && m_ColorWithCell) {
-		scene->GetShader(Scene::PATCH)->use();
+		scene->GetShader(Scene::BLINNPHONG)->use();
 		m_CellVAO.bind();
 		glad_glDrawArrays(GL_TRIANGLES, 0, m_CellPositionSize);
 		m_CellVAO.release();
@@ -1339,7 +1339,7 @@ void VolumeMesh::Draw(Scene* scene)
 		scene->GetShader(Scene::NOLIGHT)->use();
 		m_PointVAO.bind();
 		glad_glPointSize(m_PointSize);
-		glad_glDepthRange(0, 0.99999);
+                glad_glDepthRange(0.000001, 1);
 		glad_glDrawArrays(GL_POINTS, 0, m_Positions->GetNumberOfValues() / 3);
 		glad_glDepthRange(0, 1);
 		m_PointVAO.release();
@@ -1374,7 +1374,7 @@ void VolumeMesh::Draw(Scene* scene)
 		m_LineVAO.release();
 	}
 	if (m_ViewStyle & IG_SURFACE) {
-		scene->GetShader(Scene::PATCH)->use();
+		scene->GetShader(Scene::BLINNPHONG)->use();
 		m_TriangleVAO.bind();
 		glad_glDrawElements(GL_TRIANGLES, m_TriangleIndices->GetNumberOfIds(),
 			GL_UNSIGNED_INT, 0);
