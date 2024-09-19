@@ -194,4 +194,30 @@ StreamingData::Pointer DataObject::GetTimeFrames() {
   return m_TimeFrames;
 }
 
+//void DataObject::UpdateAttributeSetRange() {
+//    IGsize scalarNum = this->GetAttributeSet()->GetAllAttributes()->GetNumberOfElements();
+//    float range_max, range_min;
+//    for(IGsize k = 0; k < scalarNum; k ++)
+//    {
+//        range_max = FLT_MIN;
+//        range_min = FLT_MAX;
+//        if(this->HasSubDataObject()){
+//            this->
+//        }
+//        if(scalar_exist_1){
+//            for(auto it = m_data_object->SubDataObjectIteratorBegin(); it != m_data_object->SubDataObjectIteratorEnd(); ++ it){
+//                const auto& ScalarDataRange = it->second->GetAttributeSet()->GetAttribute(k).dataRange;
+//                range_min = std::min(range_min, ScalarDataRange.first );
+//                range_max = std::max(range_max, ScalarDataRange.second);
+//            }
+//            for(auto it = m_data_object->SubDataObjectIteratorBegin(); it != m_data_object->SubDataObjectIteratorEnd(); ++ it){
+//                auto& ScalarDataRange = it->second->GetAttributeSet()->GetAttribute(k).dataRange;
+//                ScalarDataRange.first  = range_min;
+//                ScalarDataRange.second = range_max;
+//            }
+//        }
+//        m_data_object->GetAttributeSet()->AddScalar(IG_POINT, array, {range_min, range_max});
+//    }
+//}
+
 IGAME_NAMESPACE_END

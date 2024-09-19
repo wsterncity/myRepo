@@ -178,3 +178,34 @@ int igQtModelDialogWidget::updateCurrentModelInfo()
 	Q_EMIT CurrendModelChanged();
 	return 1;
 }
+
+void igQtModelDialogWidget::deleteCurrentModel() {
+
+//    ModelTreeWidgetItem* item = new ModelTreeWidgetItem(modelTreeWidget);
+//    auto scene = iGame::SceneManager::Instance()->GetCurrentScene();
+//    auto model = scene->CreateModel(obj);
+//    int id = scene->AddModel(model);
+//
+//    item->setName(QString::fromStdString(obj->GetName()));
+//    item->setModel(model);
+//
+//    auto attrSet = obj->GetAttributeSet()->GetAllAttributes();
+//    for (int i = 0; i < attrSet->GetNumberOfElements(); i++) {
+//        auto& attr = attrSet->GetElement(i);
+//        if (attr.isDeleted) continue;
+//        QTreeWidgetItem* child = new QTreeWidgetItem(item);
+//        child->setText(0, QString::fromStdString(attr.pointer->GetName()));
+//        child->setIcon(0, QIcon(":/Ticon/Icons/select/file.png"));
+//        child->setData(0, Qt::UserRole, i);
+//        //int index = child->data(0, Qt::UserRole).toInt();
+//        //std::cout << index << std::endl;
+//    }
+//
+//    modelTreeWidget->removeItemWidget(modelTreeWidget->currentItem())
+//    modelTreeWidget->addTopLevelItem(item);
+//    modelTreeWidget->setCurrentItem(item);
+//    updateCurrentModelInfo();
+
+
+    std::cout << "delete\n";
+}

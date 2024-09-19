@@ -120,7 +120,7 @@ void igQtAnimationWidget::playAnimation_snap(int keyframe_idx){
     if(currentObject == nullptr || currentObject->GetTimeFrames()->GetArrays().empty())  return;
     auto& frameSubFiles = currentObject->GetTimeFrames()->GetTargetTimeFrame(keyframe_idx).SubFileNames;
         {
-            std::vector<std::future<iGame::DataObject::Pointer>> tasks;
+            std::vector<std::future<iGame::DataObject::Pointer> > tasks;
 
             for(int i = 0; i < frameSubFiles->GetNumberOfElements(); i ++){
                 tasks.emplace_back
@@ -130,6 +130,7 @@ void igQtAnimationWidget::playAnimation_snap(int keyframe_idx){
                 );
             }
             currentObject->ClearSubDataObject();
+
             for(auto& task : tasks){
                 currentObject->AddSubDataObject(task.get());
             }
@@ -163,6 +164,7 @@ void igQtAnimationWidget::playAnimation_snap(int keyframe_idx){
 
     currentObject->SetViewStyle(currentObject->GetViewStyle());
     currentObject->ConvertToDrawableData();
+
 //    for(auto it = currentObject->SubDataObjectIteratorBegin(); it != currentObject->SubDataObjectIteratorEnd(); ++ it){
 //        it->second->SetViewStyle(currentObject->GetViewStyle());
 //        it->second->ConvertToDrawableData();

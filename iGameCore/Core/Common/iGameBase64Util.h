@@ -224,4 +224,31 @@ static void Base64_ConvertTo_FlatArray(const char* p, int offset_byte_num, uint6
     }
     delete[] target_bytes;
 }
+
+/*
+ * Template of Base64 Encoded.
+ * */
+
+template<typename  T>
+void ReadBase64EncodedPoints(bool is_header_8_byte, const char *p, Points::Pointer pointSet) {
+    if(is_header_8_byte){
+        auto byte_size = Base64_Convert_TargetValue<uint64_t>(p);
+        Base64_ConvertTo_Points<T>(p, 8, byte_size, pointSet);
+    } else {
+        auto byte_size = Base64_Convert_TargetValue<uint32_t>(p);
+        Base64_ConvertTo_Points<T>(p, 4, byte_size, pointSet);
+    }
+}
+
+template<typename T>
+void ReadBase64EncodedArray(bool is_header_8_byte, const char* p, typename FlatArray<T>::Pointer arr){
+    if(is_header_8_byte){
+        auto byte_size =  Base64_Convert_TargetValue<uint64_t>(p);
+        Base64_ConvertTo_FlatArray<T>(p, 8, byte_size, arr);
+    } else {
+        auto byte_size =  Base64_Convert_TargetValue<uint32_t>(p);
+        Base64_ConvertTo_FlatArray<T>(p, 4, byte_size, arr);
+    }
+}
+
 IGAME_NAMESPACE_END

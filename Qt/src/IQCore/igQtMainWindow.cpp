@@ -630,7 +630,7 @@ void igQtMainWindow::initAllFilters() {
             mesh->SetVolumes(cells);
             mesh->SetName("undefined_unstructured_mesh");
             mesh->RequestEditStatus();
-            mesh->PrintSelf();
+//            mesh->PrintSelf();
             modelTreeWidget->addDataObjectToModelTree(mesh, ItemSource::File);
           });
 
@@ -661,7 +661,7 @@ void igQtMainWindow::initAllFilters() {
             mesh->GarbageCollection();
 
             mesh->RequestEditStatus();
-            mesh->PrintSelf();
+//            mesh->PrintSelf();
             modelTreeWidget->addDataObjectToModelTree(mesh, ItemSource::File);
           });
 
@@ -716,120 +716,120 @@ void igQtMainWindow::initAllFilters() {
 
 
 	auto action_savetest = ui->menu_help->addAction("savetest");
-	connect(action_savetest, &QAction::triggered, this, [&](bool checked) {
-		std::string filePath = "H:\\test.txt";
-		// 创建多个长度为一亿的 char 数组
-		const int num_arrays = 30;
-		const size_t array_size = 10000000;
-		char* data[num_arrays];
-		for (int i = 0; i < num_arrays; ++i) {
-			data[i] = (char*)malloc(array_size * sizeof(char));
-			if (data[i] == NULL) {
-				_tprintf(_T("Memory allocation failed.\n"));
-				return 1;
-			}
-
-			// 初始化数组
-			for (size_t j = 0; j < array_size; ++j) {
-				data[i][j] = 'A' + (j % 26);
-			}
-		}
-		clock_t time1 = clock();
-		// 打开文件
-		HANDLE hFile = CreateFile(filePath.data(), GENERIC_READ | GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-		if (hFile == INVALID_HANDLE_VALUE) {
-			_tprintf(_T("CreateFile failed with error: %lu\n"), GetLastError());
-			return 1;
-		}
-		// 获取文件大小
-		DWORD dwFileSize = GetFileSize(hFile, NULL);
-		if (dwFileSize == INVALID_FILE_SIZE) {
-			_tprintf(_T("GetFileSize failed with error: %lu\n"), GetLastError());
-			CloseHandle(hFile);
-			return 1;
-		}
-		// 计算所有数组的总长度
-		size_t total_size = 0;
-		for (int i = 0; i < num_arrays; ++i) {
-			total_size += array_size;
-		}
-		// 调整文件大小以匹配所有数组的总长度
-		if (!SetFilePointer(hFile, total_size, NULL, FILE_BEGIN)) {
-			_tprintf(_T("SetFilePointer failed with error: %lu\n"), GetLastError());
-			CloseHandle(hFile);
-			return 1;
-		}
-		if (!SetEndOfFile(hFile)) {
-			_tprintf(_T("SetEndOfFile failed with error: %lu\n"), GetLastError());
-			CloseHandle(hFile);
-			return 1;
-		}
-		// 将每个数组的数据依次写入文件
-		DWORD dwBytesWritten;
-		for (int i = 0; i < num_arrays; ++i) {
-			if (!WriteFile(hFile, data[i], array_size, &dwBytesWritten, NULL)) {
-				_tprintf(_T("WriteFile failed with error: %lu\n"), GetLastError());
-				CloseHandle(hFile);
-				return 1;
-			}
-		}
-		// 关闭文件
-		CloseHandle(hFile);
-		// 释放内存
-		for (int i = 0; i < num_arrays; ++i) {
-			free(data[i]);
-		}
-
-		clock_t time2 = clock();
-		std::cout << "Read file to buffer Cost " << time2 - time1 << "ms\n";
-		});
-	auto action_savetest_fwrite = ui->menu_help->addAction("savetest_fwrite");
-	connect(action_savetest_fwrite, &QAction::triggered, this, [&](bool checked) {
-		std::string filePath = "H:\\test.txt";
-		// 创建多个长度为一亿的 char 数组
-		const int num_arrays = 30;
-		const size_t array_size = 10000000;
-		char* data[num_arrays];
-		for (int i = 0; i < num_arrays; ++i) {
-			data[i] = (char*)malloc(array_size * sizeof(char));
-			if (data[i] == NULL) {
-				_tprintf(_T("Memory allocation failed.\n"));
-				return 1;
-			}
-
-			// 初始化数组
-			for (size_t j = 0; j < array_size; ++j) {
-				data[i][j] = 'A' + (j % 26);
-			}
-		}
-		clock_t time1 = clock();
-		// 打开文件用于写入
-		FILE* file = fopen(filePath.data(), "wb");
-		if (file == NULL) {
-			_tprintf(_T("File opening failed.\n"));
-			return 1;
-		}
-
-		// 将每个数组依次写入文件
-		for (int i = 0; i < num_arrays; ++i) {
-			size_t elements_written = fwrite(data[i], sizeof(char), array_size, file);
-			if (elements_written != array_size) {
-				_tprintf(_T("Error writing to file.\n"));
-				fclose(file);
-				return 1;
-			}
-		}
-
-		// 关闭文件
-		fclose(file);
-
-		// 释放内存
-		for (int i = 0; i < num_arrays; ++i) {
-			free(data[i]);
-		}
-		clock_t time2 = clock();
-		std::cout << "Read file to buffer Cost " << time2 - time1 << "ms\n";
-		});
+//	connect(action_savetest, &QAction::triggered, this, [&](bool checked) {
+//		std::string filePath = "H:\\test.txt";
+//		// 创建多个长度为一亿的 char 数组
+//		const int num_arrays = 30;
+//		const size_t array_size = 10000000;
+//		char* data[num_arrays];
+//		for (int i = 0; i < num_arrays; ++i) {
+//			data[i] = (char*)malloc(array_size * sizeof(char));
+//			if (data[i] == NULL) {
+//				_tprintf(_T("Memory allocation failed.\n"));
+//				return 1;
+//			}
+//
+//			// 初始化数组
+//			for (size_t j = 0; j < array_size; ++j) {
+//				data[i][j] = 'A' + (j % 26);
+//			}
+//		}
+//		clock_t time1 = clock();
+//		// 打开文件
+//		HANDLE hFile = CreateFile(filePath.data(), GENERIC_READ | GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+//		if (hFile == INVALID_HANDLE_VALUE) {
+//			_tprintf(_T("CreateFile failed with error: %lu\n"), GetLastError());
+//			return 1;
+//		}
+//		// 获取文件大小
+//		DWORD dwFileSize = GetFileSize(hFile, NULL);
+//		if (dwFileSize == INVALID_FILE_SIZE) {
+//			_tprintf(_T("GetFileSize failed with error: %lu\n"), GetLastError());
+//			CloseHandle(hFile);
+//			return 1;
+//		}
+//		// 计算所有数组的总长度
+//		size_t total_size = 0;
+//		for (int i = 0; i < num_arrays; ++i) {
+//			total_size += array_size;
+//		}
+//		// 调整文件大小以匹配所有数组的总长度
+//		if (!SetFilePointer(hFile, total_size, NULL, FILE_BEGIN)) {
+//			_tprintf(_T("SetFilePointer failed with error: %lu\n"), GetLastError());
+//			CloseHandle(hFile);
+//			return 1;
+//		}
+//		if (!SetEndOfFile(hFile)) {
+//			_tprintf(_T("SetEndOfFile failed with error: %lu\n"), GetLastError());
+//			CloseHandle(hFile);
+//			return 1;
+//		}
+//		// 将每个数组的数据依次写入文件
+//		DWORD dwBytesWritten;
+//		for (int i = 0; i < num_arrays; ++i) {
+//			if (!WriteFile(hFile, data[i], array_size, &dwBytesWritten, NULL)) {
+//				_tprintf(_T("WriteFile failed with error: %lu\n"), GetLastError());
+//				CloseHandle(hFile);
+//				return 1;
+//			}
+//		}
+//		// 关闭文件
+//		CloseHandle(hFile);
+//		// 释放内存
+//		for (int i = 0; i < num_arrays; ++i) {
+//			free(data[i]);
+//		}
+//
+//		clock_t time2 = clock();
+//		std::cout << "Read file to buffer Cost " << time2 - time1 << "ms\n";
+//		});
+//	auto action_savetest_fwrite = ui->menu_help->addAction("savetest_fwrite");
+//	connect(action_savetest_fwrite, &QAction::triggered, this, [&](bool checked) {
+//		std::string filePath = "H:\\test.txt";
+//		// 创建多个长度为一亿的 char 数组
+//		const int num_arrays = 30;
+//		const size_t array_size = 10000000;
+//		char* data[num_arrays];
+//		for (int i = 0; i < num_arrays; ++i) {
+//			data[i] = (char*)malloc(array_size * sizeof(char));
+//			if (data[i] == NULL) {
+//				_tprintf(_T("Memory allocation failed.\n"));
+//				return 1;
+//			}
+//
+//			// 初始化数组
+//			for (size_t j = 0; j < array_size; ++j) {
+//				data[i][j] = 'A' + (j % 26);
+//			}
+//		}
+//		clock_t time1 = clock();
+//		// 打开文件用于写入
+//		FILE* file = fopen(filePath.data(), "wb");
+//		if (file == NULL) {
+//			_tprintf(_T("File opening failed.\n"));
+//			return 1;
+//		}
+//
+//		// 将每个数组依次写入文件
+//		for (int i = 0; i < num_arrays; ++i) {
+//			size_t elements_written = fwrite(data[i], sizeof(char), array_size, file);
+//			if (elements_written != array_size) {
+//				_tprintf(_T("Error writing to file.\n"));
+//				fclose(file);
+//				return 1;
+//			}
+//		}
+//
+//		// 关闭文件
+//		fclose(file);
+//
+//		// 释放内存
+//		for (int i = 0; i < num_arrays; ++i) {
+//			free(data[i]);
+//		}
+//		clock_t time2 = clock();
+//		std::cout << "Read file to buffer Cost " << time2 - time1 << "ms\n";
+//		});
 }
 
 void igQtMainWindow::initAllDockWidgetConnectWithAction() {
@@ -873,6 +873,9 @@ void igQtMainWindow::initAllMySignalConnections() {
           &igQtModelDialogWidget::addDataObjectToModelTree);
   connect(fileLoader, &igQtFileLoader::FinishReading, this,
           &igQtMainWindow::updateRecentFilePaths);
+  connect(ui->action_DeleteMesh, &QAction::triggered, modelTreeWidget, &igQtModelDialogWidget::deleteCurrentModel);
+
+
   // connect(fileLoader, &igQtFileLoader::FinishReading, this,
   // &igQtMainWindow::updateViewStyleAndCloudPicture); connect(fileLoader,
   // &igQtFileLoader::FinishReading, this,

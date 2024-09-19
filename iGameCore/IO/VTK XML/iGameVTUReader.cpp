@@ -35,7 +35,7 @@ bool iGame::iGameVTUReader::Parsing() {
 	attribute = root->Attribute("header_type");
 	if (attribute) {
 		if (strcmp(attribute, "UInt64") == 0) {
-			is_header_type_uint64 = true;
+            m_Header_8_byte_flag = true;
 		}
 	}
 	// get Piece's point and Cell num.
@@ -75,10 +75,10 @@ bool iGame::iGameVTUReader::Parsing() {
 			if (!strncmp(type, "Float", 5)) {
 				//  Float32
 				if (!strncmp(type + 5, "32", 2)) {
-					ReadBase64EncodedPoints<float>(data_p, dataSetPoints);
+					ReadBase64EncodedPoints<float>(m_Header_8_byte_flag, data_p, dataSetPoints);
 				}
 				else /*Float64*/ {
-					ReadBase64EncodedPoints<double>(data_p, dataSetPoints);
+					ReadBase64EncodedPoints<double>(m_Header_8_byte_flag, data_p, dataSetPoints);
 				}
 			}
 		}
@@ -120,12 +120,12 @@ bool iGame::iGameVTUReader::Parsing() {
 					//  Float32
 					if (!strncmp(type + 5, "32", 2)) {
 						FloatArray::Pointer arr = FloatArray::New();
-						ReadBase64EncodedArray<float>(data_p, arr);
+						ReadBase64EncodedArray<float>(m_Header_8_byte_flag, data_p, arr);
 						array = arr;
 					}
 					else /*Float64*/ {
 						DoubleArray::Pointer arr = DoubleArray::New();
-						ReadBase64EncodedArray<double>(data_p, arr);
+						ReadBase64EncodedArray<double>(m_Header_8_byte_flag, data_p, arr);
 						array = arr;
 					}
 
@@ -152,12 +152,12 @@ bool iGame::iGameVTUReader::Parsing() {
 					//  Int32
 					if (!strncmp(type + 3, "32", 2)) {
 						IntArray::Pointer arr = IntArray::New();
-						ReadBase64EncodedArray<int>(data_p, arr);
+						ReadBase64EncodedArray<int>(m_Header_8_byte_flag, data_p, arr);
 						array = arr;
 					}
 					else /* Int64*/ {
 						LongLongArray::Pointer arr = LongLongArray::New();
-						ReadBase64EncodedArray<int64_t>(data_p, arr);
+						ReadBase64EncodedArray<int64_t>(m_Header_8_byte_flag, data_p, arr);
 						array = arr;
 					}
 				}
@@ -224,12 +224,12 @@ bool iGame::iGameVTUReader::Parsing() {
 			//  Int32
 			if (!strncmp(attribute, "Int32", 5)) {
 				IntArray::Pointer arr = IntArray::New();
-				ReadBase64EncodedArray<int>(data_p, arr);
+				ReadBase64EncodedArray<int>(m_Header_8_byte_flag, data_p, arr);
 				CellConnects = arr;
 			}
 			else /* Int64*/ {
 				LongLongArray::Pointer arr = LongLongArray::New();
-				ReadBase64EncodedArray<int64_t>(data_p, arr);
+				ReadBase64EncodedArray<int64_t>(m_Header_8_byte_flag, data_p, arr);
 				CellConnects = arr;
 			}
 		}
@@ -264,13 +264,13 @@ bool iGame::iGameVTUReader::Parsing() {
 			if (!strncmp(attribute, "Int32", 5)) {
 				IntArray::Pointer arr = IntArray::New();
 				arr->AddValue(0);
-				ReadBase64EncodedArray<int>(data_p, arr);
+				ReadBase64EncodedArray<int>(m_Header_8_byte_flag, data_p, arr);
 				CellOffsets = arr;
 			}
 			else /* Int64*/ {
 				LongLongArray::Pointer arr = LongLongArray::New();
 				arr->AddValue(0);
-				ReadBase64EncodedArray<int64_t>(data_p, arr);
+				ReadBase64EncodedArray<int64_t>(m_Header_8_byte_flag, data_p, arr);
 				CellOffsets = arr;
 			}
 		}
@@ -296,7 +296,7 @@ bool iGame::iGameVTUReader::Parsing() {
 			}
 		}
 		else if (strcmp(attribute, "binary") == 0) {
-			ReadBase64EncodedArray<uint8_t>(data_p, CellTypes);
+			ReadBase64EncodedArray<uint8_t>(m_Header_8_byte_flag, data_p, CellTypes);
 		}
 	}
 	if (CellTypes)

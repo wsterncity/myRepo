@@ -26,6 +26,13 @@ bool iGame::iGameVTSReader::Parsing() {
     const char* attribute;
     const char* delimiters = " \n";
     char* token;
+    attribute = root->Attribute("header_type");
+    if (attribute) {
+        if (strcmp(attribute, "UInt64") == 0) {
+            m_Header_8_byte_flag = true;
+        }
+    }
+
     // get x y z range.
     elem = FindTargetItem(root, "StructuredGrid");
     int x_dimension, y_dimension, z_dimension;
@@ -55,7 +62,6 @@ bool iGame::iGameVTSReader::Parsing() {
         printf("Could not load Vts file . Error='No StructuredGrid Attribute'. Exiting.\n");
         return false;
     }
-    std::cout << x_dimension << ' ' << y_dimension << ' ' << z_dimension << '\n';
     //  find Points' position Data
     elem = FindTargetItem(root, "Points")->FirstChildElement("DataArray");
     data = elem->GetText();
@@ -97,9 +103,9 @@ bool iGame::iGameVTSReader::Parsing() {
             if(!strncmp(type, "Float", 5)) {
                 //  Float32
                 if (!strncmp(type + 5, "32", 2)) {
-                    ReadBase64EncodedPoints<float>(data_p, dataSetPoints);
+                    ReadBase64EncodedPoints<float>(m_Header_8_byte_flag, data_p, dataSetPoints);
                 } else /*Float64*/{
-                    ReadBase64EncodedPoints<double>(data_p, dataSetPoints);
+                    ReadBase64EncodedPoints<double>(m_Header_8_byte_flag, data_p, dataSetPoints);
                 }
             }
         }

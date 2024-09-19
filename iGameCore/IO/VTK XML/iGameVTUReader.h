@@ -22,6 +22,8 @@ protected:
 
 	iGameVTUReader() = default;
 	~iGameVTUReader() = default;
+    bool m_Header_8_byte_flag {false};
+
 //	igIndex m_DataObjectType = IG_NONE;
 };
 
