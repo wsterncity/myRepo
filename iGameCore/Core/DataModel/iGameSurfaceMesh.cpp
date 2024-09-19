@@ -947,7 +947,7 @@ void SurfaceMesh::DrawPhase1(Scene *scene) {
   if (m_ViewStyle & IG_WIREFRAME) {
   }
   if (m_ViewStyle & IG_SURFACE) {
-    scene->GetShader(Scene::PATCH)->use();
+    scene->GetShader(Scene::BLINNPHONG)->use();
     m_TriangleVAO.bind();
     unsigned int count = 0;
     m_Meshlets->VisibleMeshletBuffer().getSubData(0, sizeof(unsigned int),
@@ -1024,7 +1024,7 @@ void SurfaceMesh::DrawPhase2(Scene *scene) {
       glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
     }
 
-    scene->GetShader(Scene::PATCH)->use();
+    scene->GetShader(Scene::BLINNPHONG)->use();
     m_TriangleVAO.bind();
 
     unsigned int count = 0;
@@ -1123,26 +1123,28 @@ void SurfaceMesh::ConvertToDrawableData() {
     return;
   }
   if (m_DrawMesh == nullptr || m_DrawMesh->GetMTime() < this->GetMTime()) {
-      iGameModelGeometryFilter::Pointer extract = iGameModelGeometryFilter::New();
-      // update clip status
-      if (m_Clip.m_Extent.m_Use) {
-          const auto& a = m_Clip.m_Extent.m_bmin;
-          const auto& b = m_Clip.m_Extent.m_bmax;
-          extract->SetExtent(a[0], b[0], a[1], b[1], a[2], b[2], m_Clip.m_Extent.m_flip);
-      }
-      if (m_Clip.m_Plane.m_Use) {
-          extract->SetClipPlane(m_Clip.m_Plane.m_origin, m_Clip.m_Plane.m_normal, m_Clip.m_Plane.m_flip);
-      }
-      m_DrawMesh = SurfaceMesh::New();
-      if (!extract->Execute(this, m_DrawMesh)) {
-          m_DrawMesh = nullptr;
-      }
-      if (m_DrawMesh) {
-          m_DrawMesh->Modified();
-      }
+    iGameModelGeometryFilter::Pointer extract = iGameModelGeometryFilter::New();
+    // update clip status
+    if (m_Clip.m_Extent.m_Use) {
+      const auto &a = m_Clip.m_Extent.m_bmin;
+      const auto &b = m_Clip.m_Extent.m_bmax;
+      extract->SetExtent(a[0], b[0], a[1], b[1], a[2], b[2],
+                         m_Clip.m_Extent.m_flip);
+    }
+    if (m_Clip.m_Plane.m_Use) {
+      extract->SetClipPlane(m_Clip.m_Plane.m_origin, m_Clip.m_Plane.m_normal,
+                            m_Clip.m_Plane.m_flip);
+    }
+    m_DrawMesh = SurfaceMesh::New();
+    if (!extract->Execute(this, m_DrawMesh)) {
+      m_DrawMesh = nullptr;
+    }
+    if (m_DrawMesh) {
+      m_DrawMesh->Modified();
+    }
   }
   if (m_DrawMesh) {
-      return m_DrawMesh->ConvertToDrawableData();
+    return m_DrawMesh->ConvertToDrawableData();
   }
   if (!m_Flag) {
     m_PointVAO.create();
@@ -1248,10 +1250,10 @@ void SurfaceMesh::ConvertToDrawableData() {
 }
 
 void SurfaceMesh::ViewCloudPicture(Scene *scene, int index, int demension) {
-    if (m_DrawMesh) {
-        return m_DrawMesh->ViewCloudPicture(scene, index, demension);
-    }
-    if (index == -1) {
+  if (m_DrawMesh) {
+    return m_DrawMesh->ViewCloudPicture(scene, index, demension);
+  }
+  if (index == -1) {
     m_UseColor = false;
     m_ViewAttribute = nullptr;
     m_ViewDemension = -1;
@@ -1272,8 +1274,9 @@ void SurfaceMesh::ViewCloudPicture(Scene *scene, int index, int demension) {
   scene->Update();
 }
 
-void SurfaceMesh::SetAttributeWithPointData(
-    ArrayObject::Pointer attr, std::pair<float, float> &range, igIndex dimension) {
+void SurfaceMesh::SetAttributeWithPointData(ArrayObject::Pointer attr,
+                                            std::pair<float, float> &range,
+                                            igIndex dimension) {
   if (m_ViewAttribute != attr || m_ViewDemension != dimension) {
     m_ViewAttribute = attr;
     m_ViewDemension = dimension;
@@ -1292,7 +1295,7 @@ void SurfaceMesh::SetAttributeWithPointData(
     if (m_Colors == nullptr) {
       return;
     }
-    range.first  = mapper->GetRange()[0];
+    range.first = mapper->GetRange()[0];
     range.second = mapper->GetRange()[1];
     GLAllocateGLBuffer(m_ColorVBO,
                        m_Colors->GetNumberOfValues() * sizeof(float),

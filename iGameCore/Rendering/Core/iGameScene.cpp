@@ -173,12 +173,21 @@ GLShaderProgram* Scene::GenShader(IGenum type) {
     switch (type) {
         case BLINNPHONG: {
             GLShader shader_vert = GLShader{
-                    (std::string(SHADERS_DIR) + "/GLSL/shader.vert")
-                            .c_str(),
+                    (std::string(SHADERS_DIR) + "/GLSL/shader.vert").c_str(),
                     GL_VERTEX_SHADER};
             GLShader shader_frag = GLShader{
                     (std::string(SHADERS_DIR) + "/GLSL/blinnPhong.frag")
                             .c_str(),
+                    GL_FRAGMENT_SHADER};
+            sp = new GLShaderProgram;
+            sp->addShaders({shader_vert, shader_frag});
+        } break;
+        case PBR: {
+            GLShader shader_vert = GLShader{
+                    (std::string(SHADERS_DIR) + "/GLSL/shader.vert").c_str(),
+                    GL_VERTEX_SHADER};
+            GLShader shader_frag = GLShader{
+                    (std::string(SHADERS_DIR) + "/GLSL/pbr.frag").c_str(),
                     GL_FRAGMENT_SHADER};
             sp = new GLShaderProgram;
             sp->addShaders({shader_vert, shader_frag});
@@ -237,20 +246,20 @@ GLShaderProgram* Scene::GenShader(IGenum type) {
             sp->addShaders({font_vert, font_frag});
         } break;
         case DEPTHREDUCE: {
-            //GLShader depthReduce_comp = GLShader{
-            //        (std::string(SHADERS_DIR) + "/GLSL/depthReduce.comp")
-            //                .c_str(),
-            //        GL_COMPUTE_SHADER};
-            //sp = new GLShaderProgram;
-            //sp->addShaders({depthReduce_comp});
+            GLShader depthReduce_comp = GLShader{
+                    (std::string(SHADERS_DIR) + "/GLSL/depthReduce.comp")
+                            .c_str(),
+                    GL_COMPUTE_SHADER};
+            sp = new GLShaderProgram;
+            sp->addShaders({depthReduce_comp});
         } break;
         case MESHLETCULL: {
-            //GLShader meshletCull_comp = GLShader{
-            //        (std::string(SHADERS_DIR) + "/GLSL/meshletCull.comp")
-            //                .c_str(),
-            //        GL_COMPUTE_SHADER};
-            //sp = new GLShaderProgram;
-            //sp->addShaders({meshletCull_comp});
+            GLShader meshletCull_comp = GLShader{
+                    (std::string(SHADERS_DIR) + "/GLSL/meshletCull.comp")
+                            .c_str(),
+                    GL_COMPUTE_SHADER};
+            sp = new GLShaderProgram;
+            sp->addShaders({meshletCull_comp});
         } break;
         case SCREEN: {
             GLShader screen_vert = GLShader{
@@ -305,7 +314,7 @@ void Scene::InitOpenGL() {
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     // reversed-z buffer, depth range: 1.0(near plane) -> 0.0(far plane)
-    //glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
+    glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
 
     // create empty VAO to render full-screen triangle
     m_EmptyVAO.create();
@@ -348,8 +357,8 @@ void Scene::InitOpenGL() {
         }
         // map culling computer shader block
         {
-            //auto shader = this->GetShader(MESHLETCULL);
-            //shader->mapUniformBlock("CameraDataBlock", 0, m_CameraDataBlock);
+            auto shader = this->GetShader(MESHLETCULL);
+            shader->mapUniformBlock("CameraDataBlock", 0, m_CameraDataBlock);
         }
     }
 

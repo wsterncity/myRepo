@@ -71,6 +71,7 @@ public:
 
     enum ShaderType {
         BLINNPHONG = 0,
+        PBR,
         NOLIGHT,
         PURECOLOR,
         AXES,
