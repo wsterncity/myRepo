@@ -34,6 +34,7 @@ public:
 	bool Open();
 	bool OpenWithWindowsSystem();
 	bool OpenWithLinuxOrMacSystem();
+	bool OpenWithFreadType();
 	virtual bool Parsing() = 0;
 	virtual bool CreateDataObject();
 	bool Close();
@@ -86,11 +87,12 @@ protected:
 	std::string m_FileSuffix;
 	FILE* file_;
 	size_t m_FileSize;
+	
 #ifdef PLATFORM_WINDOWS
-	HANDLE m_File;
-	HANDLE m_MapFile;
+	HANDLE m_File{nullptr};
+	HANDLE m_MapFile{ nullptr };
 #elif defined(PLATFORM_LINUX) || defined(PLATFORM_MAC)
-	int m_File;
+	int m_File=-1;
 #endif
 
 	const char* IS;
