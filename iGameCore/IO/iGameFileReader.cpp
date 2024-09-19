@@ -456,7 +456,7 @@ ArrayObject::Pointer FileReader::ReadArray(const char *dataType, int numTuples,
   ArrayObject::Pointer array{nullptr};
   if (!strncmp(type, "bit", 3)) {
     /*	array = vtkBitArray::New();
-            array->SetElementSize(numComp);
+            array->SetDimension(numComp);
             if (numTuples != 0 && numComp != 0)
             {
                     unsigned char* ptr = ((vtkBitArray*)array)->WritePointer(0,
@@ -500,7 +500,7 @@ ArrayObject::Pointer FileReader::ReadArray(const char *dataType, int numTuples,
 
   else if (!strcmp(type, "char") || !strcmp(type, "signed_char")) {
     CharArray::Pointer arr = CharArray::New();
-    arr->SetElementSize(numComp);
+    arr->SetDimension(numComp);
     arr->Resize(numTuples);
     char *ptr = arr->RawPointer();
     if (m_FileType == IGAME_BINARY) {
@@ -513,7 +513,7 @@ ArrayObject::Pointer FileReader::ReadArray(const char *dataType, int numTuples,
 
   else if (!strncmp(type, "unsigned_char", 13)) {
     UnsignedCharArray::Pointer arr = UnsignedCharArray::New();
-    arr->SetElementSize(numComp);
+    arr->SetDimension(numComp);
     arr->Resize(numTuples);
     unsigned char *ptr = arr->RawPointer();
     if (m_FileType == IGAME_BINARY) {
@@ -526,7 +526,7 @@ ArrayObject::Pointer FileReader::ReadArray(const char *dataType, int numTuples,
 
   else if (!strncmp(type, "short", 5)) {
     ShortArray::Pointer arr = ShortArray::New();
-    arr->SetElementSize(numComp);
+    arr->SetDimension(numComp);
     arr->Resize(numTuples);
     short *ptr = arr->RawPointer();
     if (m_FileType == IGAME_BINARY) {
@@ -540,7 +540,7 @@ ArrayObject::Pointer FileReader::ReadArray(const char *dataType, int numTuples,
 
   else if (!strncmp(type, "unsigned_short", 14)) {
     UnsignedShortArray::Pointer arr = UnsignedShortArray::New();
-    arr->SetElementSize(numComp);
+    arr->SetDimension(numComp);
     arr->Resize(numTuples);
     unsigned short *ptr = arr->RawPointer();
     if (m_FileType == IGAME_BINARY) {
@@ -554,7 +554,7 @@ ArrayObject::Pointer FileReader::ReadArray(const char *dataType, int numTuples,
     // currently writing vtkidtype as int.
     // may be long long,need to transfer
     IntArray::Pointer arr = IntArray::New();
-    arr->SetElementSize(numComp);
+    arr->SetDimension(numComp);
     std::vector<int> buffer(numTuples * numComp);
     if (m_FileType == IGAME_BINARY) {
       iGameReadBinaryData(this, buffer.data(), numTuples, numComp);
@@ -570,7 +570,7 @@ ArrayObject::Pointer FileReader::ReadArray(const char *dataType, int numTuples,
     array = arr;
   } else if (!strncmp(type, "int", 3)) {
     IntArray::Pointer arr = IntArray::New();
-    arr->SetElementSize(numComp);
+    arr->SetDimension(numComp);
     arr->Resize(numTuples);
     int *ptr = arr->RawPointer();
     if (m_FileType == IGAME_BINARY) {
@@ -582,7 +582,7 @@ ArrayObject::Pointer FileReader::ReadArray(const char *dataType, int numTuples,
     array = arr;
   } else if (!strncmp(type, "unsigned_int", 12)) {
     UnsignedIntArray::Pointer arr = UnsignedIntArray::New();
-    arr->SetElementSize(numComp);
+    arr->SetDimension(numComp);
     arr->Resize(numTuples);
     unsigned int *ptr = arr->RawPointer();
     if (m_FileType == IGAME_BINARY) {
@@ -596,7 +596,7 @@ ArrayObject::Pointer FileReader::ReadArray(const char *dataType, int numTuples,
 
   else if (!strncmp(type, "vtktypeint64", 12)) {
     LongLongArray::Pointer arr = LongLongArray::New();
-    arr->SetElementSize(numComp);
+    arr->SetDimension(numComp);
     arr->Resize(numTuples);
     long long *ptr = arr->RawPointer();
     if (m_FileType == IGAME_BINARY) {
@@ -608,7 +608,7 @@ ArrayObject::Pointer FileReader::ReadArray(const char *dataType, int numTuples,
     array = arr;
   } else if (!strncmp(type, "vtktypeuint64", 13)) {
     UnsignedLongLongArray::Pointer arr = UnsignedLongLongArray::New();
-    arr->SetElementSize(numComp);
+    arr->SetDimension(numComp);
     arr->Resize(numTuples);
     unsigned long long *ptr = arr->RawPointer();
     if (m_FileType == IGAME_BINARY) {
@@ -622,7 +622,7 @@ ArrayObject::Pointer FileReader::ReadArray(const char *dataType, int numTuples,
 
   else if (!strncmp(type, "float", 5)) {
     FloatArray::Pointer arr = FloatArray::New();
-    arr->SetElementSize(numComp);
+    arr->SetDimension(numComp);
     arr->Resize(numTuples);
     float *ptr = arr->RawPointer();
     if (m_FileType == IGAME_BINARY) {
@@ -636,7 +636,7 @@ ArrayObject::Pointer FileReader::ReadArray(const char *dataType, int numTuples,
 
   else if (!strncmp(type, "double", 6)) {
     DoubleArray::Pointer arr = DoubleArray::New();
-    arr->SetElementSize(numComp);
+    arr->SetDimension(numComp);
     arr->Resize(numTuples);
     double *ptr = arr->RawPointer();
     if (this->m_FileType == IGAME_BINARY) {
@@ -648,7 +648,7 @@ ArrayObject::Pointer FileReader::ReadArray(const char *dataType, int numTuples,
     array = arr;
   } else if (!strncmp(type, "variant", 7)) {
     /*	array = iGameVariantArray::New();
-            array->SetElementSize(numComp);
+            array->SetDimension(numComp);
             for (int i = 0; i < numTuples; i++)
             {
                     for (int j = 0; j < numComp; j++)

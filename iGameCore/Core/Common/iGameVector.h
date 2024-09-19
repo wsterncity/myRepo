@@ -7,7 +7,6 @@
 #include <iostream>
 
 IGAME_NAMESPACE_BEGIN
-
 template<class ScalarT, int dimension_t>
 class Vector {
 public:

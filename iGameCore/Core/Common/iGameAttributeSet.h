@@ -15,8 +15,8 @@ public:
 	struct Attribute
 	{
 		ArrayObject::Pointer pointer{};
-		IGenum type{ IG_NONE };
-		IGenum attachmentType{ IG_NONE };
+		IGenum type{ IG_NONE };           // IG_SCALAR, IG_VECTOR, IG_NORMAL, IG_TCOORD, IG_TENSOR
+		IGenum attachmentType{ IG_NONE }; // IG_POINT, IG_CELL
 		bool isDeleted{ false };
 
 		std::pair<float, float> dataRange{ 0.f, 0.f };
@@ -58,8 +58,8 @@ public:
 	const Attribute& GetVector(const std::string& name) const;
 
 	// Add a attribute to array back.
-	// @param type: The type of attribute
-	// @param attachmentType: Which element is attached to, such as point,cell
+	// @param type: The type of attribute, such as IG_SCALAR, IG_VECTOR, IG_NORMAL, IG_TCOORD, IG_TENSOR
+	// @param attachmentType: Which element is attached to, such as IG_POINT, IG_CELL
 	// @param attr: The pointer of attribute array
 	IGsize AddAttribute(IGenum type, IGenum attachmentType, ArrayObject::Pointer attr, std::pair<float, float> dataRange = { 0.f, 0.f });
 

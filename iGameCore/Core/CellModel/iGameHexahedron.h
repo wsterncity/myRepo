@@ -31,7 +31,6 @@ public:
 		for (int i = 0; i < 4; ++i) {
 			m_Quad->PointIds->SetId(i, PointIds->GetId(verts[i]));
 			m_Quad->Points->SetPoint(i, Points->GetPoint(verts[i]));
-			m_Quad->EdgeIds->SetId(i, EdgeIds->GetId(edges[i]));
 		}
 
 		return m_Quad.get();

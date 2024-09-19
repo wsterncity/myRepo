@@ -8,7 +8,7 @@ iGameTensorWidgetBase::iGameTensorWidgetBase()
 	this->m_DrawGlyphPoints = Points::New();
 	this->m_DrawGlyphPointOrders = UnsignedIntArray::New();
 	this->m_DrawGlyphColors = FloatArray::New();
-	this->m_DrawGlyphColors->SetElementSize(3);
+	this->m_DrawGlyphColors->SetDimension(3);
 }
 iGameTensorWidgetBase::~iGameTensorWidgetBase()
 {
@@ -88,7 +88,7 @@ void iGameTensorWidgetBase::UpdateGlyphDrawColor()
 	int GlyphPointNum = m_TensorManager->GetNumberOfDrawPoints();
 	float rgb[16] = { .0 };
 	m_DrawGlyphColors = FloatArray::New();
-	m_DrawGlyphColors->SetElementSize(3);
+	m_DrawGlyphColors->SetDimension(3);
 	m_DrawGlyphColors->Resize(PointNum * GlyphPointNum);
 	auto GlyphColors = m_DrawGlyphColors->RawPointer();
 	IGsize offset = 0;
@@ -126,7 +126,7 @@ DoubleArray::Pointer iGameTensorWidgetBase::GenerateVectorField()
 	}
 	double vector[3];
 	m_EigenVector = DoubleArray::New();
-	m_EigenVector->SetElementSize(3);
+	m_EigenVector->SetDimension(3);
 	m_EigenVector->SetName(this->m_TensorAttributes->GetName() + "_PrimaryFeature");
 	m_EigenVector->Resize(PointNum);
 	double t[9];

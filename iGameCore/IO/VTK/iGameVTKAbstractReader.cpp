@@ -594,7 +594,7 @@ int VTKAbstractReader::ReadCoScalarData(int PointsNum)
 		data = this->ReadArray(type, PointsNum, numComp);
 		if (data != nullptr) {
 			UnsignedCharArray::Pointer scalars = UnsignedCharArray::New();
-			scalars->SetElementSize(numComp);
+			scalars->SetDimension(numComp);
 			scalars->Resize(PointsNum);
 			scalars->SetName(name);
 			for (i = 0; i < PointsNum; i++) {

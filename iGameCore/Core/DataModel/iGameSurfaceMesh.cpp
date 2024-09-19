@@ -1335,8 +1335,8 @@ void SurfaceMesh::SetAttributeWithCellData(ArrayObject::Pointer attr,
 
     FloatArray::Pointer newPositions = FloatArray::New();
     FloatArray::Pointer newColors = FloatArray::New();
-    newPositions->SetElementSize(3);
-    newColors->SetElementSize(3);
+    newPositions->SetDimension(3);
+    newColors->SetDimension(3);
 
     float color[3]{};
     for (int i = 0; i < this->GetNumberOfFaces(); i++) {

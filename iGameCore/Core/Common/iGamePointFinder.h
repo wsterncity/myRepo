@@ -102,8 +102,8 @@ public:
 			}
 		}
 
-		// 由于在此box的最近距离点不一定是全局最近的，
-		// 所以还需要查找minDist2距离内所有的box
+		// Since the nearest point of this box is not necessarily the global nearest,
+		// We need to search for all boxes within the minDist2 distance range.
 		if (minDist2 > 0.0)
 		{
 			this->GetOverlappingBoxes(boxes, x, ijk, sqrt(minDist2));

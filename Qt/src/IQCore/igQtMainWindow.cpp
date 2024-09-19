@@ -732,6 +732,13 @@ void igQtMainWindow::initAllFilters() {
 			test->SetInput(model->GetDataObject());
 			model->SetModelFilter(test);
 			test->Initialize();
+
+			Vector3f a;
+			a.maxCoeff();
+
+			modelTreeWidget->updateAllAttriubute(model->GetDataObject());
+
+
 			rendererWidget->update();
 		});
 
@@ -927,7 +934,7 @@ void igQtMainWindow::initAllMySignalConnections() {
 		});
 	connect(ui->widget_TensorField, &igQtTensorWidget::UpdateAttributes, this,
 		[&](iGame::DataObject::Pointer res) {
-			modelTreeWidget->updateAllattriubute(res);
+			modelTreeWidget->updateAllAttriubute(res);
 			// modelTreeWidget->addDataObjectToModelTree(res,
 			// ItemSource::Algorithm);
 		});

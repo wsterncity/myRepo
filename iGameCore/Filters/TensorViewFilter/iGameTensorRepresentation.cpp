@@ -8,10 +8,10 @@ IGAME_NAMESPACE_BEGIN
 iGameTensorRepresentation::iGameTensorRepresentation()
 {
 	this->DrawPoints = FloatArray::New();
-	this->DrawPoints->SetElementSize(3);
+	this->DrawPoints->SetDimension(3);
 	this->DrawPointsBaseData = Points::New();
 	this->DrawPointIndexOrders = IntArray::New();
-	this->DrawPointIndexOrders->SetElementSize(3);
+	this->DrawPointIndexOrders->SetDimension(3);
 	this->scale = 0.01;
 	this->m_DrawType = ELLIPSOID;
 	this->SetSliceNum(DEFAULT_SLICE_NUM);
