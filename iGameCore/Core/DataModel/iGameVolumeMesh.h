@@ -23,7 +23,7 @@ public:
 	CellArray* GetVolumes();
 	void SetVolumes(CellArray::Pointer volumes);
 
-	// Get edge cell by index volumeId
+	// Get edge cell by index volumeId. Thread-Unsafe, please use GetVolumePointIds and GetVolumeEdgeIds and GetVolumeFaceIds
 	Volume* GetVolume(const IGsize volumeId);
 
 	// Get volume's point index. Return PointIds size

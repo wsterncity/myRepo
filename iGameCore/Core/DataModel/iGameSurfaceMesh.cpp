@@ -1,4 +1,5 @@
 #include "iGameSurfaceMesh.h"
+#include "iGameSurfaceMesh.h"
 #include "iGameScene.h"
 #include "iGameModelSurfaceFilters/iGameModelGeometryFilter.h"
 IGAME_NAMESPACE_BEGIN
