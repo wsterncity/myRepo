@@ -171,22 +171,24 @@ void Scene::SetShader(IGenum type, GLShaderProgram* sp) {
 GLShaderProgram* Scene::GenShader(IGenum type) {
     GLShaderProgram* sp;
     switch (type) {
-        case PATCH: {
+        case BLINNPHONG: {
             GLShader shader_vert = GLShader{
-                    (std::string(ASSEST_DIR) + "/Shaders/shader.vert").c_str(),
+                    (std::string(SHADERS_DIR) + "/GLSL/shader.vert")
+                            .c_str(),
                     GL_VERTEX_SHADER};
             GLShader shader_frag = GLShader{
-                    (std::string(ASSEST_DIR) + "/Shaders/shader.frag").c_str(),
+                    (std::string(SHADERS_DIR) + "/GLSL/blinnPhong.frag")
+                            .c_str(),
                     GL_FRAGMENT_SHADER};
             sp = new GLShaderProgram;
             sp->addShaders({shader_vert, shader_frag});
         } break;
         case NOLIGHT: {
             GLShader shader_vert = GLShader{
-                    (std::string(ASSEST_DIR) + "/Shaders/shader.vert").c_str(),
+                    (std::string(SHADERS_DIR) + "/GLSL/shader.vert").c_str(),
                     GL_VERTEX_SHADER};
             GLShader shader_frag = GLShader{
-                    (std::string(ASSEST_DIR) + "/Shaders/shaderNoLight.frag")
+                    (std::string(SHADERS_DIR) + "/GLSL/shaderNoLight.frag")
                             .c_str(),
                     GL_FRAGMENT_SHADER};
             sp = new GLShaderProgram;
@@ -194,70 +196,69 @@ GLShaderProgram* Scene::GenShader(IGenum type) {
         } break;
         case PURECOLOR: {
             GLShader shader_vert = GLShader{
-                    (std::string(ASSEST_DIR) + "/Shaders/shader.vert").c_str(),
+                    (std::string(SHADERS_DIR) + "/GLSL/shader.vert").c_str(),
                     GL_VERTEX_SHADER};
             GLShader pureColor_frag = GLShader{
-                    (std::string(ASSEST_DIR) + "/Shaders/pureColor.frag")
-                            .c_str(),
+                    (std::string(SHADERS_DIR) + "/GLSL/pureColor.frag").c_str(),
                     GL_FRAGMENT_SHADER};
             sp = new GLShaderProgram;
             sp->addShaders({shader_vert, pureColor_frag});
         } break;
         case AXES: {
             GLShader Axis_vert = GLShader{
-                    (std::string(ASSEST_DIR) + "/Shaders/axis.vert").c_str(),
+                    (std::string(SHADERS_DIR) + "/GLSL/axis.vert").c_str(),
                     GL_VERTEX_SHADER};
             GLShader Axis_frag = GLShader{
-                    (std::string(ASSEST_DIR) + "/Shaders/axis.frag").c_str(),
+                    (std::string(SHADERS_DIR) + "/GLSL/axis.frag").c_str(),
                     GL_FRAGMENT_SHADER};
             sp = new GLShaderProgram;
             sp->addShaders({Axis_vert, Axis_frag});
         } break;
         case FONT: {
             GLShader font_vert = GLShader{
-                    (std::string(ASSEST_DIR) + "/Shaders/font.vert").c_str(),
+                    (std::string(SHADERS_DIR) + "/GLSL/font.vert").c_str(),
                     GL_VERTEX_SHADER};
             GLShader font_frag = GLShader{
-                    (std::string(ASSEST_DIR) + "/Shaders/font.frag").c_str(),
+                    (std::string(SHADERS_DIR) + "/GLSL/font.frag").c_str(),
                     GL_FRAGMENT_SHADER};
             sp = new GLShaderProgram;
             sp->addShaders({font_vert, font_frag});
         } break;
         case ATTACHMENTRESOLVE: {
-            GLShader font_vert = GLShader{(std::string(ASSEST_DIR) +
-                                           "/Shaders/attachmentResolve.vert")
-                                                  .c_str(),
-                                          GL_VERTEX_SHADER};
-            GLShader font_frag = GLShader{(std::string(ASSEST_DIR) +
-                                           "/Shaders/attachmentResolve.frag")
-                                                  .c_str(),
-                                          GL_FRAGMENT_SHADER};
+            GLShader font_vert = GLShader{
+                    (std::string(SHADERS_DIR) + "/GLSL/attachmentResolve.vert")
+                            .c_str(),
+                    GL_VERTEX_SHADER};
+            GLShader font_frag = GLShader{
+                    (std::string(SHADERS_DIR) + "/GLSL/attachmentResolve.frag")
+                            .c_str(),
+                    GL_FRAGMENT_SHADER};
             sp = new GLShaderProgram;
             sp->addShaders({font_vert, font_frag});
         } break;
         case DEPTHREDUCE: {
-            GLShader depthReduce_comp = GLShader{
-                    (std::string(ASSEST_DIR) + "/Shaders/depthReduce.comp")
-                            .c_str(),
-                    GL_COMPUTE_SHADER};
-            sp = new GLShaderProgram;
-            sp->addShaders({depthReduce_comp});
+            //GLShader depthReduce_comp = GLShader{
+            //        (std::string(SHADERS_DIR) + "/GLSL/depthReduce.comp")
+            //                .c_str(),
+            //        GL_COMPUTE_SHADER};
+            //sp = new GLShaderProgram;
+            //sp->addShaders({depthReduce_comp});
         } break;
         case MESHLETCULL: {
-            GLShader meshletCull_comp = GLShader{
-                    (std::string(ASSEST_DIR) + "/Shaders/meshletCull.comp")
-                            .c_str(),
-                    GL_COMPUTE_SHADER};
-            sp = new GLShaderProgram;
-            sp->addShaders({meshletCull_comp});
+            //GLShader meshletCull_comp = GLShader{
+            //        (std::string(SHADERS_DIR) + "/GLSL/meshletCull.comp")
+            //                .c_str(),
+            //        GL_COMPUTE_SHADER};
+            //sp = new GLShaderProgram;
+            //sp->addShaders({meshletCull_comp});
         } break;
         case SCREEN: {
             GLShader screen_vert = GLShader{
-                    (std::string(ASSEST_DIR) + "/Shaders/screenShader.vert")
+                    (std::string(SHADERS_DIR) + "/GLSL/screenShader.vert")
                             .c_str(),
                     GL_VERTEX_SHADER};
             GLShader screen_frag = GLShader{
-                    (std::string(ASSEST_DIR) + "/Shaders/screenShader.frag")
+                    (std::string(SHADERS_DIR) + "/GLSL/screenShader.frag")
                             .c_str(),
                     GL_FRAGMENT_SHADER};
             sp = new GLShaderProgram;
@@ -304,7 +305,7 @@ void Scene::InitOpenGL() {
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     // reversed-z buffer, depth range: 1.0(near plane) -> 0.0(far plane)
-    glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
+    //glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
 
     // create empty VAO to render full-screen triangle
     m_EmptyVAO.create();
@@ -326,7 +327,7 @@ void Scene::InitOpenGL() {
 
         // map shader block
         {
-            auto shader = this->GetShader(PATCH);
+            auto shader = this->GetShader(BLINNPHONG);
             shader->mapUniformBlock("CameraDataBlock", 0, m_CameraDataBlock);
             shader->mapUniformBlock("ObjectDataBlock", 1, m_ObjectDataBlock);
             shader->mapUniformBlock("UniformBufferObjectBlock", 2, m_UBOBlock);
@@ -347,8 +348,8 @@ void Scene::InitOpenGL() {
         }
         // map culling computer shader block
         {
-            auto shader = this->GetShader(MESHLETCULL);
-            shader->mapUniformBlock("CameraDataBlock", 0, m_CameraDataBlock);
+            //auto shader = this->GetShader(MESHLETCULL);
+            //shader->mapUniformBlock("CameraDataBlock", 0, m_CameraDataBlock);
         }
     }
 
@@ -599,7 +600,8 @@ void Scene::Draw() {
         m_ColorTextureResolved.active(GL_TEXTURE1);
         m_DepthTextureResolved.active(GL_TEXTURE2);
         m_DepthPyramid.active(GL_TEXTURE3);
-        shader->setUniform(shader->getUniformLocation("screenTexture"), 1);
+        shader->setUniform(shader->getUniformLocation("screen_color_sampler"),
+                           1);
 
         m_EmptyVAO.bind();
         glDrawArrays(GL_TRIANGLES, 0, 3);
@@ -728,6 +730,7 @@ void Scene::DrawModels() {
 
 void Scene::UpdateUniformData() {
     // update camera data matrix
+    m_CameraData.camera_position = m_Camera->GetCameraPos();
     m_CameraData.view = m_Camera->GetViewMatrix();
     m_CameraData.proj = m_Camera->GetProjectionMatrixReversedZ();
     m_CameraData.proj_view = m_Camera->GetProjectionMatrixReversedZ() *
@@ -738,7 +741,6 @@ void Scene::UpdateUniformData() {
     m_ObjectData.normal = m_ObjectData.model.invert().transpose();
 
     // update other ubo
-    m_UBO.viewPos = m_Camera->GetCameraPos();
 }
 
 void Scene::UseColor() { this->UBO().useColor = true; }
@@ -781,7 +783,7 @@ void Scene::DrawAxes() {
     {
         axesShader->setUniform(isFontLocation, true);
         GLUniform textureUniform =
-                axesShader->getUniformLocation("fontTexture");
+                axesShader->getUniformLocation("fontSampler");
         GLUniform colorUniform = axesShader->getUniformLocation("textColor");
 
         m_Axes->Update(Axes::ProjMatrix() * Axes::ViewMatrix() * m_ModelRotate,

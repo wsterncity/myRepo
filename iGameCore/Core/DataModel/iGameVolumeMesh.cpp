@@ -80,20 +80,6 @@ Cell* VolumeMesh::GetVolume(const IGsize volumeId)
 		volume->Points->AddPoint(this->GetPoint(cell[i]));
 	}
 
-	if (InEditStatus()) {
-		volume->EdgeIds->Reset();
-		volume->FaceIds->Reset();
-		ncells = m_VolumeEdges->GetCellIds(volumeId, cell);
-		for (int i = 0; i < ncells; i++) {
-			volume->EdgeIds->AddId(cell[i]);
-		}
-
-		ncells = m_VolumeFaces->GetCellIds(volumeId, cell);
-		for (int i = 0; i < ncells; i++) {
-			volume->FaceIds->AddId(cell[i]);
-		}
-	}
-
 	return volume;
 }
 
@@ -125,27 +111,27 @@ void VolumeMesh::BuildFacesAndEdges() {
 		m_VolumeFaces = CellArray::New();
 		m_FaceEdges = CellArray::New();
 
-		for (IGsize i = 0; i < this->GetNumberOfVolumes(); i++)
+	for (IGsize i = 0; i < this->GetNumberOfVolumes(); i++)
+	{
+		Volume* vol = this->GetVolume(i);
+		m_Volumes->GetCellIds(i, cell);
+		memset(isInsert, 0, vol->GetNumberOfFaces() * sizeof(igIndex));
+		for (int j = 0; j < vol->GetNumberOfFaces(); j++) // number of faces
 		{
-			Volume* vol = this->GetVolume(i);
-			m_Volumes->GetCellIds(i, cell);
-			memset(isInsert, 0, vol->GetNumberOfFaces() * sizeof(igIndex));
-			for (int j = 0; j < vol->GetNumberOfFaces(); j++) // number of faces
-			{
-				const igIndex* index;
-				int size = vol->GetFacePointIds(j, index); // this face's number of points 
-				for (int k = 0; k < size; k++) {
-					face[k] = cell[index[k]];
-				}
-				igIndex idx;
-				if ((idx = FaceTable->IsFace(face, size)) == -1) {
-					idx = FaceTable->GetNumberOfFaces();
-					FaceTable->InsertFace(face, size);
-					isInsert[j] = 1;
-				}
-				faceIds[j] = idx;
+			const igIndex* index;
+			int size = vol->GetFacePointIds(j, index); // this face's number of points
+			for (int k = 0; k < size; k++) {
+				face[k] = cell[index[k]];
 			}
-			m_VolumeFaces->AddCellIds(faceIds, vol->GetNumberOfFaces());
+			igIndex idx;
+			if ((idx = FaceTable->IsFace(face, size)) == -1) {
+				idx = FaceTable->GetNumberOfFaces();
+				FaceTable->InsertFace(face, size);
+				isInsert[j] = 1;
+			}
+			faceIds[j] = idx;
+		}
+		m_VolumeFaces->AddCellIds(faceIds, vol->GetNumberOfFaces());
 
 			for (int j = 0; j < vol->GetNumberOfEdges(); j++)
 			{
@@ -982,7 +968,7 @@ IGsize VolumeMesh::AddVolume(igIndex* ptIds, int size)
 	//	for (int j = 0; j < Tetra::NumberOfEdges; j++)
 	//	{
 	//		const igIndex* index;
-	//		int size = Tetra::EdgePointIds(j, index); 
+	//		int size = Tetra::EdgePointIds(j, index);
 	//		for (int k = 0; k < 2; k++) {
 	//			edge[k] = volumeIds[index[k]];
 	//		}
@@ -1334,7 +1320,7 @@ void VolumeMesh::Draw(Scene* scene)
 	scene->UpdateUniformBuffer();
 
 	if (m_UseColor && m_ColorWithCell) {
-		scene->GetShader(Scene::PATCH)->use();
+		scene->GetShader(Scene::BLINNPHONG)->use();
 		m_CellVAO.bind();
 		glad_glDrawArrays(GL_TRIANGLES, 0, m_CellPositionSize);
 		m_CellVAO.release();
@@ -1345,7 +1331,7 @@ void VolumeMesh::Draw(Scene* scene)
 		scene->GetShader(Scene::NOLIGHT)->use();
 		m_PointVAO.bind();
 		glad_glPointSize(m_PointSize);
-		glad_glDepthRange(0, 0.99999);
+                glad_glDepthRange(0.000001, 1);
 		glad_glDrawArrays(GL_POINTS, 0, m_Positions->GetNumberOfValues() / 3);
 		glad_glDepthRange(0, 1);
 		m_PointVAO.release();
@@ -1380,7 +1366,7 @@ void VolumeMesh::Draw(Scene* scene)
 		m_LineVAO.release();
 	}
 	if (m_ViewStyle & IG_SURFACE) {
-		scene->GetShader(Scene::PATCH)->use();
+		scene->GetShader(Scene::BLINNPHONG)->use();
 		m_TriangleVAO.bind();
 		glad_glDrawElements(GL_TRIANGLES, m_TriangleIndices->GetNumberOfIds(),
 			GL_UNSIGNED_INT, 0);
@@ -1568,7 +1554,7 @@ void VolumeMesh::ViewCloudPicture(Scene* scene, int index, int demension) {
 	auto& attr = this->GetAttributeSet()->GetAttribute(index);
 	if (!attr.isDeleted) {
 		if (attr.attachmentType == IG_POINT)
-			this->SetAttributeWithPointData(attr.pointer, demension, attr.dataRange);
+			this->SetAttributeWithPointData(attr.pointer, attr.dataRange, demension);
 		else if (attr.attachmentType == IG_CELL)
 			this->SetAttributeWithCellData(attr.pointer, demension);
 	}
@@ -1576,26 +1562,24 @@ void VolumeMesh::ViewCloudPicture(Scene* scene, int index, int demension) {
 	scene->Update();
 }
 
-void VolumeMesh::SetAttributeWithPointData(ArrayObject::Pointer attr,
-	igIndex i, const std::pair<float, float>& range) {
-	if (m_ViewAttribute != attr || m_ViewDemension != i) {
+void VolumeMesh::SetAttributeWithPointData(ArrayObject::Pointer attr, std::pair<float, float>& range, igIndex dimension) {
+	if (m_ViewAttribute != attr || m_ViewDemension != dimension) {
 		m_ViewAttribute = attr;
-		m_ViewDemension = i;
+		m_ViewDemension = dimension;
 		m_UseColor = true;
 		m_ColorWithCell = false;
 		ScalarsToColors::Pointer mapper = ScalarsToColors::New();
 
 		if (range.first != range.second) {
-			mapper->SetRange(range.first, range.second * 2);
-		}
-		else if (i == -1) {
+			mapper->SetRange(range.first, range.second);
+		} else if (dimension == -1) {
 			mapper->InitRange(attr);
+		} else {
+			mapper->InitRange(attr, dimension);
 		}
-		else {
-			mapper->InitRange(attr, i);
-		}
-
-		m_Colors = mapper->MapScalars(attr, i);
+        range.first  = mapper->GetRange()[0];
+        range.second = mapper->GetRange()[1];
+		m_Colors = mapper->MapScalars(attr, dimension);
 		if (m_Colors == nullptr) { return; }
 
 		GLAllocateGLBuffer(m_ColorVBO,
@@ -1640,8 +1624,8 @@ void VolumeMesh::SetAttributeWithCellData(ArrayObject::Pointer attr,
 
 		FloatArray::Pointer newPositions = FloatArray::New();
 		FloatArray::Pointer newColors = FloatArray::New();
-		newPositions->SetElementSize(3);
-		newColors->SetElementSize(3);
+		newPositions->SetDimension(3);
+		newColors->SetDimension(3);
 
 		float color[3]{};
 		for (int i = 0; i < this->GetNumberOfVolumes(); i++) {

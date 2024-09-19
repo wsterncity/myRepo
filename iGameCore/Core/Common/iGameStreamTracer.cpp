@@ -133,7 +133,7 @@ std::vector<std::vector<float>> iGameStreamTracer::showStreamLineMix(std::vector
 	auto PointData = mesh->GetAttributeSet();
 	auto Points = mesh->GetPoints();
 	auto Vector = PointData->GetVector(vectorName);
-	int component = Vector.pointer->GetElementSize();
+	int component = Vector.pointer->GetDimension();
 	float MAX_STEP = 0.001, MIN_STEP = 0.0001, ERR = 0.000001;
 
 	for (size_t i = 0; i < numOfPoints; i++)
@@ -244,7 +244,7 @@ std::vector<std::vector<float>> iGameStreamTracer::showStreamLineHex(std::vector
 	auto PointData = mesh->GetAttributeSet();
 	auto Points = mesh->GetPoints();
 	auto Vector = PointData->GetVector(vectorName);
-	int component = Vector.pointer->GetElementSize();
+	int component = Vector.pointer->GetDimension();
 	float MAX_STEP = 0.001, MIN_STEP = 0.0001, ERR = 0.000001;
 
 	for (size_t i = 0; i < numOfPoints; i++)
@@ -374,19 +374,17 @@ std::vector<std::vector<float>> iGameStreamTracer::showStreamLineCellData(std::v
 	igIndex vcnt, fcnt = 0;
 	for (size_t i = 0; i < numOfCells; i++)
 	{
-		auto volume = mesh->GetVolume(i);
-		int numOfCellFaces = volume->GetNumberOfFaces();//?
-		for (int j = 0; j < numOfCellFaces; j++) {
-			f2c[volume->GetFaceId(j)].emplace_back(i);
+		int size = mesh->GetVolumeFaceIds(i, fhs);
+		for (int j = 0; j < size; j++) {
+			f2c[fhs[j]].emplace_back(i);
 		}
 
 	}
 	for (size_t i = 0; i < numOfCells; i++)
 	{
-		auto volume = mesh->GetVolume(i);
-		int numOfCellFaces = volume->GetNumberOfFaces();
-		for (int j = 0; j < numOfCellFaces; j++) {
-			auto chs = f2c[volume->GetFaceId(j)];
+		int size = mesh->GetVolumeFaceIds(i, fhs);
+		for (int j = 0; j < size; j++) {
+			auto chs = f2c[fhs[j]];
 			for (int k = 0; k < chs.size(); k++) {
 				if (chs[k] != i) {
 					c2c[i].emplace_back(chs[k]);
@@ -499,7 +497,7 @@ std::vector<std::vector<std::vector<float>>> iGameStreamTracer::showStreamFace(s
 	clock_t time1 = clock();
 	auto PointData = mesh->GetAttributeSet();
 	auto Vector = PointData->GetVector(vectorName);
-	int component = Vector.pointer->GetElementSize();
+	int component = Vector.pointer->GetDimension();
 	float MAX_STEP = 0.001, MIN_STEP = 0.0001, ERR = 0.000001;
 	int initial = 0;
 	float* Length = new float[seedTem.size()];
@@ -694,7 +692,7 @@ bool iGameStreamTracer::CellData2PointData(std::string vectorName)
 	auto vec = Vec->GetVector(vectorName);
 	//维数
 	if (vec.attachmentType != IG_CELL) { return false; }
-	auto vecV = vec.pointer->GetElementSize();
+	auto vecV = vec.pointer->GetDimension();
 	std::vector<Vector3f>pointVector(numOfPoints);
 	std::vector<int>pointVectorNUM(numOfPoints);//点属于的体的数量
 	igIndex vhs[256];
@@ -714,7 +712,7 @@ bool iGameStreamTracer::CellData2PointData(std::string vectorName)
 		}
 	}
 	FloatArray::Pointer VectorData = FloatArray::New();
-	VectorData->SetElementSize(3);
+	VectorData->SetDimension(3);
 	VectorData->SetName(vectorName);
 	for (size_t i = 0; i < numOfPoints; i++)
 	{

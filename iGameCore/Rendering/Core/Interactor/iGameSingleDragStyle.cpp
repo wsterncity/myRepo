@@ -29,6 +29,7 @@ void SingleDragStyle::MousePressEvent(IEvent _event) {
         Selected_NDC_Z = p.z / p.w;
 
         auto painter = m_Model->GetPainter();
+        painter->Clear();
         painter->SetPen(10);
         painter->SetPen(Color::Red);
         painter->DrawPoint(tp);
@@ -61,6 +62,7 @@ void SingleDragStyle::MouseMoveEvent(IEvent _event) {
 
             //m_Model->GetPointPainter()->Clear();
             auto painter = m_Model->GetPainter();
+            painter->Clear();
             painter->SetPen(10);
             painter->SetPen(Color::Red);
             painter->DrawPoint(e.pos);

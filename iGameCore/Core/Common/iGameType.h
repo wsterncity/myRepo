@@ -118,7 +118,6 @@ inline constexpr int IG_UINT32 = 6;
 inline constexpr int IG_INT64 = 7;
 inline constexpr int IG_UINT64 = 8;
 
-// Index命名
 using igIndex = int;
 using iguIndex = unsigned int;
 using igIndex64 = long long;

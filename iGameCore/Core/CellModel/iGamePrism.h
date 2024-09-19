@@ -37,7 +37,6 @@ public:
         for (int i = 0; i < faces[faceId][MaxFaceSize]; ++i) {
             face->PointIds->SetId(i, this->PointIds->GetId(verts[i]));
             face->Points->SetPoint(i, this->Points->GetPoint(verts[i]));
-			face->EdgeIds->SetId(i, EdgeIds->GetId(edges[i]));
         }
 
         return face;

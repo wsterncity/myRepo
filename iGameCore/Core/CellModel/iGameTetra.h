@@ -31,7 +31,6 @@ public:
         for (int i = 0; i < 3; ++i) {
             m_Triangle->PointIds->SetId(i, PointIds->GetId(verts[i]));
             m_Triangle->Points->SetPoint(i, Points->GetPoint(verts[i]));
-			m_Triangle->EdgeIds->SetId(i, EdgeIds->GetId(edges[i]));
         }
         return m_Triangle.get();
     }

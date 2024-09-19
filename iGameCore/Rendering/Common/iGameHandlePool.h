@@ -2,6 +2,8 @@
 
 #include "iGameObject.h"
 #include <queue>
+#include <stdexcept>
+#include <unordered_map>
 #include <unordered_set>
 
 IGAME_NAMESPACE_BEGIN
@@ -46,6 +48,13 @@ public:
         if (activeHandles.find(handle) == activeHandles.end()) {
             throw std::runtime_error("Handle is not valid!");
         }
+    }
+
+    void Clear() {
+        freeHandles = std::queue<HandleType>(); // Reset the queue
+        activeHandles.clear();                  // Clear the set
+        handleToObject.clear();                 // Clear the map
+        currentHandle = 1; // Optionally reset handle counter if needed
     }
 
     Iterator begin() { return handleToObject.begin(); }

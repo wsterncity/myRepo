@@ -1608,7 +1608,7 @@ void iGameModelGeometryFilter::CompositeCellAttribute(std::vector<igIndex>& F2C,
 	for (int AttributeID = 0; AttributeID < AttributeSize; AttributeID++) {
 		auto& inData = CellAttributes[AttributeID].pointer;
 		auto newData = DoubleArray::New();
-		newData->SetElementSize(inData->GetElementSize());
+		newData->SetDimension(inData->GetDimension());
 		newData->Resize(fcnt);
 		newData->SetName(inData->GetName());
 		auto func = [&](igIndex start, igIndex end) -> void {

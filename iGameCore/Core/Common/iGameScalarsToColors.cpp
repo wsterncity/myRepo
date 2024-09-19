@@ -119,7 +119,7 @@ void ScalarsToColors::InitRange(ArrayObject::Pointer input, int component, int s
 	float minv = 1e9;
 	float maxv = -1e9;
 	int vectorMode = this->GetVectorMode();
-	int inComponent = input->GetElementSize();
+	int inComponent = input->GetDimension();
 	if (vectorMode == COMPONENT)
 	{
 		if (component == -1) {
@@ -198,9 +198,9 @@ FloatArray::Pointer ScalarsToColors::MapScalars(
 	ArrayObject::Pointer scalars, int component, int outputFormat)
 {
 	//component::渲染第几个维度
-	int numberOfComponents = scalars->GetElementSize();
+	int numberOfComponents = scalars->GetDimension();
 	FloatArray::Pointer newColors = FloatArray::New();
-	newColors->SetElementSize(outputFormat);
+	newColors->SetDimension(outputFormat);
 	newColors->Resize(scalars->GetNumberOfElements());
 	if (component < 0 && numberOfComponents>1) {
 		this->SetVectorModeToMagnitude();
@@ -224,7 +224,7 @@ void ScalarsToColors::MapVectorsThroughTable(ArrayObject::Pointer input, FloatAr
 	int outputFormat, int vectorComponent, int vectorSize)
 {
 	clock_t time1 = clock();
-	int inComponents = input->GetElementSize();
+	int inComponents = input->GetDimension();
 	int vectorMode = this->GetVectorMode();
 	if (vectorMode == COMPONENT) {
 		if (vectorComponent == -1) {

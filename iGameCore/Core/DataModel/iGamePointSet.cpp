@@ -168,12 +168,12 @@ void PointSet::ViewCloudPicture(Scene* scene, int index, int demension) {
     scene->MakeCurrent();
     auto &attr = this->GetAttributeSet()->GetAttribute(index);
     if (!attr.isDeleted && attr.attachmentType == IG_POINT) {
-        this->SetAttributeWithPointData(attr.pointer, demension, attr.dataRange);
+        this->SetAttributeWithPointData(attr.pointer, attr.dataRange, demension);
     }
     scene->DoneCurrent();
 }
 
-void PointSet::SetAttributeWithPointData(ArrayObject::Pointer attr, igIndex dimension, const std::pair<float, float>& range) {
+void PointSet::SetAttributeWithPointData(ArrayObject::Pointer attr, std::pair<float, float>& range, igIndex dimension) {
   if (m_ViewAttribute != attr || m_ViewDemension != dimension) {
     if (attr == nullptr) {
       m_UseColor = false;
@@ -187,12 +187,15 @@ void PointSet::SetAttributeWithPointData(ArrayObject::Pointer attr, igIndex dime
     m_UseColor = true;
     ScalarsToColors::Pointer mapper = ScalarsToColors::New();
 
-    if (dimension == -1) {
-      mapper->InitRange(attr);
-    } else {
-      mapper->InitRange(attr, dimension);
-    }
-
+      if (range.first != range.second) {
+          mapper->SetRange(range.first, range.second);
+      } else if (dimension == -1) {
+          mapper->InitRange(attr);
+      } else {
+          mapper->InitRange(attr, dimension);
+      }
+      range.first  = mapper->GetRange()[0];
+      range.second = mapper->GetRange()[1];
     m_Colors = mapper->MapScalars(attr, dimension);
     if (m_Colors == nullptr) {
       return;

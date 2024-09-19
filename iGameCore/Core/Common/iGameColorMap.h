@@ -8,7 +8,7 @@ class ColorMap :public Object {
 public:
 	I_OBJECT(ColorMap);
 	static Pointer NewInstance() { return new ColorMap; }
-	
+
 	/*map color to rgb,the value is rescaled to 0.0-1.0*/
 	void MapColor(float value, float rgb[3]);
 	/*change the color in index position*/
@@ -68,8 +68,8 @@ public:
 		int colorbarsize = colorbar->GetNumberOfElements();
 		int colorrangesize = colorrange->GetNumberOfElements();
 		assert(colorbarsize == colorrangesize);
-		assert(colorbar->GetElementSize() == 3);
-		assert(colorrange->GetElementSize() == 1);
+		assert(colorbar->GetDimension() == 3);
+		assert(colorrange->GetDimension() == 1);
 		this->ColorBarSize = colorbarsize - 1;
 		UpdateColorBar(colorbar);
 		UpdateColorRange(colorrange);

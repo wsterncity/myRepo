@@ -12,11 +12,14 @@ endif ()
 add_executable(${PROJECT_NAME}
         main.cpp
 )
-#--------------------------------------------------------------------
-# Set Cmake Option to On/OFF.
-#--------------------------------------------------------------------
 
-# Add an option that the user can set with the -D parameter
+set(OPENIGAME_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+
+#--------------------------------------------------------------------
+## Set Cmake Option to On/OFF.
+##--------------------------------------------------------------------
+#
+## Add an option that the user can set with the -D parameter
 
 # if need to Enable remote ThirdParty module. Follow this step:
 # 1. use git command1(git submodule init) and command2(git submodule update) to clone remote Submodule which are defined in .gitmodules file

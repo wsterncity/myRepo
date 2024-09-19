@@ -24,13 +24,13 @@ public:
 	// Reallocate memory, and the old data is preserved. The array
 	// size will not change. '_NewElementNum' is the number of elements.
 	void Reserve(const IGsize _NewElementNum) {
-		this->VectorType::reserve(_NewElementNum * m_ElementSize);
+		this->VectorType::reserve(_NewElementNum * m_Dimension);
 	}
 
 	// Reallocate memory, and the old data is preserved. The array
 	// size will change. '_Newsize' is the number of elements.
 	void Resize(const IGsize _NewElementNum) {
-		this->VectorType::resize(_NewElementNum * m_ElementSize);
+		this->VectorType::resize(_NewElementNum * m_Dimension);
 	}
 
 	// Reset the array size, and the old memory will not change.
@@ -44,19 +44,19 @@ public:
 	}
 
 	// Set the size of the element
-	void SetElementSize(const int _Newsize) override {
+	void SetDimension(const int _Newsize) override {
 		assert(_Newsize > 0);
-		m_ElementSize = _Newsize;
+		m_Dimension = _Newsize;
 	}
 	// Get the size of the element
-	int GetElementSize() override {
-		return m_ElementSize;
+	int GetDimension() override {
+		return m_Dimension;
 	}
 	IGsize GetNumberOfValues() const override {
 		return this->VectorType::size();
 	}
 	IGsize GetNumberOfElements() const override {
-		return this->GetNumberOfValues() / m_ElementSize;
+		return this->GetNumberOfValues() / m_Dimension;
 	}
 	IGsize GetCapacity() const {
 		return this->VectorType::capacity();
@@ -66,14 +66,14 @@ public:
 	template<int dimension_t>
 	IGsize AddElement(Vector<TValue, dimension_t>&& _Element)
 	{
-		assert(dimension_t >= m_ElementSize);
+		assert(dimension_t >= m_Dimension);
 		IGsize index = this->GetNumberOfElements();
-		if (index * m_ElementSize >= this->GetCapacity())
+		if (index * m_Dimension >= this->GetCapacity())
 		{
 			this->Reserve(2 * index + 1);
 		}
 
-		for (int i = 0; i < m_ElementSize; ++i) {
+		for (int i = 0; i < m_Dimension; ++i) {
 			this->VectorType::push_back(_Element[i]);
 		}
 		return index;
@@ -81,28 +81,28 @@ public:
 	template<int dimension_t>
 	IGsize AddElement(const Vector<TValue, dimension_t>& _Element)
 	{
-		assert(dimension_t >= m_ElementSize);
+		assert(dimension_t >= m_Dimension);
 		IGsize index = this->GetNumberOfElements();
-		if (index * m_ElementSize >= this->GetCapacity())
+		if (index * m_Dimension >= this->GetCapacity())
 		{
 			this->Reserve(2 * index + 1);
 		}
 
-		for (int i = 0; i < m_ElementSize; ++i) {
+		for (int i = 0; i < m_Dimension; ++i) {
 			this->VectorType::push_back(_Element[i]);
 		}
 		return index;
 	}
 	IGsize AddElement(const std::vector<TValue>& _Element)
 	{
-		assert(_Element.size() >= m_ElementSize);
+		assert(_Element.size() >= m_Dimension);
 		IGsize index = this->GetNumberOfElements();
-		if (index * m_ElementSize >= this->GetCapacity())
+		if (index * m_Dimension >= this->GetCapacity())
 		{
 			this->Reserve(2 * index + 1);
 		}
 
-		for (int i = 0; i < m_ElementSize; ++i) {
+		for (int i = 0; i < m_Dimension; ++i) {
 			this->VectorType::push_back(_Element[i]);
 		}
 		return index;
@@ -110,12 +110,12 @@ public:
 	IGsize AddElement(TValue* _Element)
 	{
 		IGsize index = this->GetNumberOfElements();
-		if (index * m_ElementSize >= this->GetCapacity())
+		if (index * m_Dimension >= this->GetCapacity())
 		{
 			this->Reserve(2 * index + 1);
 		}
 
-		for (int i = 0; i < m_ElementSize; ++i) {
+		for (int i = 0; i < m_Dimension; ++i) {
 			this->VectorType::push_back(_Element[i]);
 		}
 		return index;
@@ -141,7 +141,7 @@ public:
 	void ElementAt(const IGsize _Pos, TValue* _Element) {
 		assert(0 <= _Pos && _Pos < this->GetNumberOfElements());
 		TValue* data = this->RawPointer(_Pos);
-		for (int i = 0; i < m_ElementSize; ++i) {
+		for (int i = 0; i < m_Dimension; ++i) {
 			_Element[i] = data[i];
 		}
 	}
@@ -149,7 +149,7 @@ public:
 		assert(0 <= _Pos && _Pos < this->GetNumberOfElements());
 		_Element.clear();
 		TValue* data = this->RawPointer(_Pos);
-		for (int i = 0; i < m_ElementSize; ++i) {
+		for (int i = 0; i < m_Dimension; ++i) {
 			_Element.push_back(data[i]);
 		}
 	}
@@ -159,7 +159,7 @@ public:
 		assert(0 <= _Pos && _Pos < this->GetNumberOfElements());
 		m_Element.clear();
 		TValue* data = this->RawPointer(_Pos);
-		for (int i = 0; i < m_ElementSize; ++i) {
+		for (int i = 0; i < m_Dimension; ++i) {
 			m_Element.push_back(data[i]);
 		}
 		return m_Element;
@@ -169,40 +169,40 @@ public:
 	template<int dimension_t>
 	void SetElement(const IGsize _Pos, Vector<TValue, dimension_t>&& _Element) {
 		assert(0 <= _Pos && _Pos < this->GetNumberOfElements());
-		assert(dimension_t >= m_ElementSize);
+		assert(dimension_t >= m_Dimension);
 		TValue* data = this->RawPointer(_Pos);
-		for (int i = 0; i < m_ElementSize; ++i) {
+		for (int i = 0; i < m_Dimension; ++i) {
 			data[i] = _Element[i];
 		}
 	}
 	template<int dimension_t>
 	void SetElement(const IGsize _Pos, const Vector<TValue, dimension_t>& _Element) {
 		assert(0 <= _Pos && _Pos < this->GetNumberOfElements());
-		assert(dimension_t >= m_ElementSize);
+		assert(dimension_t >= m_Dimension);
 		TValue* data = this->RawPointer(_Pos);
-		for (int i = 0; i < m_ElementSize; ++i) {
+		for (int i = 0; i < m_Dimension; ++i) {
 			data[i] = _Element[i];
 		}
 	}
 	void SetElement(const IGsize _Pos, const std::vector<TValue>& _Element) {
 		assert(0 <= _Pos && _Pos < this->GetNumberOfElements());
-		assert(_Element.size() >= m_ElementSize);
+		assert(_Element.size() >= m_Dimension);
 		TValue* data = this->RawPointer(_Pos);
-		for (int i = 0; i < m_ElementSize; ++i) {
+		for (int i = 0; i < m_Dimension; ++i) {
 			data[i] = _Element[i];
 		}
 	}
 	void SetElement(const IGsize _Pos, TValue* _Element) {
 		assert(0 <= _Pos && _Pos < this->GetNumberOfElements());
 		TValue* data = this->RawPointer(_Pos);
-		for (int i = 0; i < m_ElementSize; ++i) {
+		for (int i = 0; i < m_Dimension; ++i) {
 			data[i] = _Element[i];
 		}
 	}
 	void SetElement(const IGsize _Pos, const TValue* _Element) {
 		assert(0 <= _Pos && _Pos < this->GetNumberOfElements());
 		TValue* data = this->RawPointer(_Pos);
-		for (int i = 0; i < m_ElementSize; ++i) {
+		for (int i = 0; i < m_Dimension; ++i) {
 			data[i] = _Element[i];
 		}
 	}
@@ -222,19 +222,19 @@ public:
 	}
 
 	// Constructed by std::vector or pointer
-	bool SetArray(const std::vector<TValue>& _Buffer, int _ElementSize) {
-		if (_ElementSize < 1)
+	bool SetArray(const std::vector<TValue>& _Buffer, int _Dimension) {
+		if (_Dimension < 1)
 		{
 			return false;
 		}
 		this->VectorType::swap(_Buffer);
-		m_ElementSize = _ElementSize;
+		m_Dimension = _Dimension;
 		return true;
 	}
-	bool SetArray(TValue* _DataBuffer, int _ElementSize,
+	bool SetArray(TValue* _DataBuffer, int _Dimension,
 		const IGsize _Size, const IGsize _Capacity)
 	{
-		if (_DataBuffer == nullptr || _ElementSize < 1 || _Size < 0 || _Capacity < 0)
+		if (_DataBuffer == nullptr || _Dimension < 1 || _Size < 0 || _Capacity < 0)
 		{
 			return false;
 		}
@@ -244,7 +244,7 @@ public:
 		vec.assign(_DataBuffer, _DataBuffer + _Size);
 
 		this->VectorType::swap(vec);
-		m_ElementSize = _ElementSize;
+		m_Dimension = _Dimension;
 		return true;
 	}
 
@@ -259,14 +259,14 @@ public:
 	void GetElement(const IGsize _Pos, float* _Element) override {
 		assert(0 <= _Pos && _Pos < this->GetNumberOfElements());
 		TValue* data = this->RawPointer(_Pos);
-		for (int i = 0; i < m_ElementSize; ++i) {
+		for (int i = 0; i < m_Dimension; ++i) {
 			_Element[i] = static_cast<float>(data[i]);
 		}
 	}
 	void GetElement(const IGsize _Pos, double* _Element) override {
 		assert(0 <= _Pos && _Pos < this->GetNumberOfElements());
 		TValue* data = this->RawPointer(_Pos);
-		for (int i = 0; i < m_ElementSize; ++i) {
+		for (int i = 0; i < m_Dimension; ++i) {
 			_Element[i] = static_cast<double>(data[i]);
 		}
 	}
@@ -274,7 +274,7 @@ public:
 		assert(0 <= _Pos && _Pos < this->GetNumberOfElements());
 		_Element.clear();
 		TValue* data = this->RawPointer(_Pos);
-		for (int i = 0; i < m_ElementSize; ++i) {
+		for (int i = 0; i < m_Dimension; ++i) {
 			_Element.push_back(static_cast<float>(data[i]));
 		}
 	}
@@ -282,17 +282,17 @@ public:
 		assert(0 <= _Pos && _Pos < this->GetNumberOfElements());
 		_Element.clear();
 		TValue* data = this->RawPointer(_Pos);
-		for (int i = 0; i < m_ElementSize; ++i) {
+		for (int i = 0; i < m_Dimension; ++i) {
 			_Element.push_back(static_cast<double>(data[i]));
 		}
 	}
 
 	// Get the raw pointer. '_Pos' is element index
 	TValue* RawPointer(const IGsize _Pos = 0) {
-		return this->VectorType::data() + _Pos * m_ElementSize;
+		return this->VectorType::data() + _Pos * m_Dimension;
 	}
 	const TValue* RawPointer(const IGsize _Pos = 0) const {
-		return this->VectorType::data() + _Pos * m_ElementSize;
+		return this->VectorType::data() + _Pos * m_Dimension;
 	}
 	IGsize GetArrayTypedSize() override {
 		return sizeof(TValue);
@@ -304,7 +304,7 @@ protected:
 	FlatArray() = default;
 	~FlatArray() override = default;
 
-	int m_ElementSize{ 1 };            // The size of element
+	int m_Dimension{ 1 };            // The size of element
 
 	// The temporary vector to return element, is thread-unsafe.
 	std::vector<TValue> m_Element{};

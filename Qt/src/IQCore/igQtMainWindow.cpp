@@ -267,6 +267,7 @@ void igQtMainWindow::initAllFilters() {
 		points->SetPoints(ps);
 		points->SetName("undefined_PointSet");
 		rendererWidget->AddDataObject(points);
+
 		});
 
 	connect(ui->action_test_02, &QAction::triggered, this, [&](bool checked) {
@@ -277,6 +278,7 @@ void igQtMainWindow::initAllFilters() {
 		fp->Execute();
 		rendererWidget->update();
 		});
+
 
 	connect(ui->action_test_03, &QAction::triggered, this, [&](bool checked) {
 		SurfaceMesh::Pointer mesh = SurfaceMesh::New();
@@ -732,6 +734,13 @@ void igQtMainWindow::initAllFilters() {
 			test->SetInput(model->GetDataObject());
 			model->SetModelFilter(test);
 			test->Initialize();
+
+			Vector3f a;
+			a.maxCoeff();
+
+			modelTreeWidget->updateAllAttriubute(model->GetDataObject());
+
+
 			rendererWidget->update();
 		});
 
@@ -749,6 +758,7 @@ void igQtMainWindow::initAllFilters() {
 			model->DeleteModelFilter();
 			rendererWidget->ChangeInteractorStyle(Interactor::BasicStyle);
 		});
+
 }
 
 void igQtMainWindow::initAllDockWidgetConnectWithAction() {
@@ -788,16 +798,20 @@ void igQtMainWindow::initAllMySignalConnections() {
 	// connect(rendererWidget, &igQtModelDrawWidget::insertToModelListView,
 	// ui->modelTreeView, &igQtModelListView::InsertModel);
 
-	connect(fileLoader, &igQtFileLoader::NewModel, modelTreeWidget,
-		&igQtModelDialogWidget::addDataObjectToModelTree);
-	connect(fileLoader, &igQtFileLoader::FinishReading, this,
-		&igQtMainWindow::updateRecentFilePaths);
-	// connect(fileLoader, &igQtFileLoader::FinishReading, this,
-	// &igQtMainWindow::updateViewStyleAndCloudPicture); connect(fileLoader,
-	// &igQtFileLoader::FinishReading, this,
-	// &igQtMainWindow::updateCurrentSceneWidget);
-	connect(fileLoader, &igQtFileLoader::FinishReading, ui->widget_Animation,
-		&igQtAnimationWidget::initAnimationComponents);
+  connect(fileLoader, &igQtFileLoader::NewModel, modelTreeWidget,
+          &igQtModelDialogWidget::addDataObjectToModelTree);
+  connect(fileLoader, &igQtFileLoader::FinishReading, this,
+          &igQtMainWindow::updateRecentFilePaths);
+  connect(ui->action_DeleteMesh, &QAction::triggered, modelTreeWidget, &igQtModelDialogWidget::deleteCurrentModel);
+
+
+  // connect(fileLoader, &igQtFileLoader::FinishReading, this,
+  // &igQtMainWindow::updateViewStyleAndCloudPicture); connect(fileLoader,
+  // &igQtFileLoader::FinishReading, this,
+  // &igQtMainWindow::updateCurrentSceneWidget);
+  connect(fileLoader, &igQtFileLoader::FinishReading, ui->widget_Animation,
+          &igQtAnimationWidget::initAnimationComponents);
+
 
 	connect(ui->widget_FlowField, &igQtStreamTracerWidget::AddStreamObject, this,
 		[&](iGame::DataObject::Pointer res) {
@@ -927,7 +941,7 @@ void igQtMainWindow::initAllMySignalConnections() {
 		});
 	connect(ui->widget_TensorField, &igQtTensorWidget::UpdateAttributes, this,
 		[&](iGame::DataObject::Pointer res) {
-			modelTreeWidget->updateAllattriubute(res);
+			modelTreeWidget->updateAllAttriubute(res);
 			// modelTreeWidget->addDataObjectToModelTree(res,
 			// ItemSource::Algorithm);
 		});

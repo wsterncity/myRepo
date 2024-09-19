@@ -1,6 +1,6 @@
 #include "iGameSurfaceMesh.h"
-#include "iGameScene.h"
 #include "iGameModelSurfaceFilters/iGameModelGeometryFilter.h"
+#include "iGameScene.h"
 IGAME_NAMESPACE_BEGIN
 
 IGsize SurfaceMesh::GetNumberOfEdges() const noexcept {
@@ -856,8 +856,8 @@ void SurfaceMesh::Draw(Scene *scene) {
     return;
   }
   if (m_DrawMesh) {
-      m_DrawMesh->SetViewStyle(m_ViewStyle);
-      return m_DrawMesh->Draw(scene);
+    m_DrawMesh->SetViewStyle(m_ViewStyle);
+    return m_DrawMesh->Draw(scene);
   }
   // update uniform buffer
   if (m_UseColor) {
@@ -868,7 +868,7 @@ void SurfaceMesh::Draw(Scene *scene) {
   scene->UpdateUniformBuffer();
 
   if (m_UseColor && m_ColorWithCell) {
-    scene->GetShader(Scene::PATCH)->use();
+    scene->GetShader(Scene::BLINNPHONG)->use();
     m_CellVAO.bind();
     glad_glDrawArrays(GL_TRIANGLES, 0, m_CellPositionSize);
     m_CellVAO.release();
@@ -879,7 +879,7 @@ void SurfaceMesh::Draw(Scene *scene) {
     scene->GetShader(Scene::NOLIGHT)->use();
     m_PointVAO.bind();
     glad_glPointSize(8);
-    glad_glDepthRange(0, 0.99999);
+    glad_glDepthRange(0.000001, 1);
     glad_glDrawArrays(GL_POINTS, 0, m_Positions->GetNumberOfValues() / 3);
     glad_glDepthRange(0, 1);
     m_PointVAO.release();
@@ -913,7 +913,7 @@ void SurfaceMesh::Draw(Scene *scene) {
     m_LineVAO.release();
   }
   if (m_ViewStyle & IG_SURFACE) {
-    scene->GetShader(Scene::PATCH)->use();
+    scene->GetShader(Scene::BLINNPHONG)->use();
     m_TriangleVAO.bind();
     glad_glDrawElements(GL_TRIANGLES, m_TriangleIndices->GetNumberOfIds(),
                         GL_UNSIGNED_INT, 0);
@@ -1264,7 +1264,7 @@ void SurfaceMesh::ViewCloudPicture(Scene *scene, int index, int demension) {
   auto &attr = this->GetAttributeSet()->GetAttribute(index);
   if (!attr.isDeleted) {
     if (attr.attachmentType == IG_POINT)
-      this->SetAttributeWithPointData(attr.pointer, demension, attr.dataRange);
+      this->SetAttributeWithPointData(attr.pointer, attr.dataRange, demension);
     else if (attr.attachmentType == IG_CELL)
       this->SetAttributeWithCellData(attr.pointer, demension);
   }
@@ -1273,28 +1273,27 @@ void SurfaceMesh::ViewCloudPicture(Scene *scene, int index, int demension) {
 }
 
 void SurfaceMesh::SetAttributeWithPointData(
-    ArrayObject::Pointer attr, igIndex i,
-    const std::pair<float, float> &range) {
-  if (m_ViewAttribute != attr || m_ViewDemension != i) {
+    ArrayObject::Pointer attr, std::pair<float, float> &range, igIndex dimension) {
+  if (m_ViewAttribute != attr || m_ViewDemension != dimension) {
     m_ViewAttribute = attr;
-    m_ViewDemension = i;
+    m_ViewDemension = dimension;
     m_UseColor = true;
     m_ColorWithCell = false;
     ScalarsToColors::Pointer mapper = ScalarsToColors::New();
 
     if (range.first != range.second) {
-      mapper->SetRange(range.first, range.second * 2);
-    } else if (i == -1) {
+      mapper->SetRange(range.first, range.second);
+    } else if (dimension == -1) {
       mapper->InitRange(attr);
     } else {
-      mapper->InitRange(attr, i);
+      mapper->InitRange(attr, dimension);
     }
-
-    m_Colors = mapper->MapScalars(attr, i);
+    m_Colors = mapper->MapScalars(attr, dimension);
     if (m_Colors == nullptr) {
       return;
     }
-
+    range.first  = mapper->GetRange()[0];
+    range.second = mapper->GetRange()[1];
     GLAllocateGLBuffer(m_ColorVBO,
                        m_Colors->GetNumberOfValues() * sizeof(float),
                        m_Colors->RawPointer());
@@ -1335,8 +1334,8 @@ void SurfaceMesh::SetAttributeWithCellData(ArrayObject::Pointer attr,
 
     FloatArray::Pointer newPositions = FloatArray::New();
     FloatArray::Pointer newColors = FloatArray::New();
-    newPositions->SetElementSize(3);
-    newColors->SetElementSize(3);
+    newPositions->SetDimension(3);
+    newColors->SetDimension(3);
 
     float color[3]{};
     for (int i = 0; i < this->GetNumberOfFaces(); i++) {

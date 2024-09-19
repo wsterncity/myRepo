@@ -23,8 +23,8 @@ public:
 	CellArray* GetVolumes();
 	void SetVolumes(CellArray::Pointer volumes);
 
-	// Get edge cell by index volumeId
-	Cell* GetVolume(const IGsize volumeId);
+	// Get edge cell by index volumeId. Thread-Unsafe, please use GetVolumePointIds and GetVolumeEdgeIds and GetVolumeFaceIds
+	Volume* GetVolume(const IGsize volumeId);
 
 	// Get volume's point index. Return PointIds size
 	int GetVolumePointIds(const IGsize volumeId, igIndex* ptIds);
@@ -119,33 +119,33 @@ public:
 	Cell* GetCell(igIndex cellId) {
 		return this->GetVolume(cellId);
 	}
-	IntArray* GetCellTypes() {
-		IntArray::Pointer Types = IntArray::New();
-		Types->Resize(this->GetNumberOfVolumes());
-		Types->SetElementSize(this->GetNumberOfVolumes());
-		auto types = Types->RawPointer();
-		igIndex cell[IGAME_CELL_MAX_SIZE];
-		for (int i = 0; i < this->GetNumberOfVolumes(); i++) {
-			int ncells = m_Volumes->GetCellIds(i, cell);
-			switch (ncells) {
-			case 4:
-				types[i] = IG_TETRA;
-				break;
-			case 5:
-				types[i] = IG_PYRAMID;
-				break;
-			case 6:
-				types[i] = IG_PRISM;
-				break;
-			case 8:
-				types[i] = IG_HEXAHEDRON;
-				break;
-			default:
-				break;
-			}
-		}
-		return Types.get();
-	}
+	//IntArray* GetCellTypes() {
+	//	IntArray::Pointer Types = IntArray::New();
+	//	Types->Resize(this->GetNumberOfVolumes());
+	//	Types->SetDimension(this->GetNumberOfVolumes());
+	//	auto types = Types->RawPointer();
+	//	igIndex cell[IGAME_CELL_MAX_SIZE];
+	//	for (int i = 0; i < this->GetNumberOfVolumes(); i++) {
+	//		int ncells = m_Volumes->GetCellIds(i, cell);
+	//		switch (ncells) {
+	//		case 4:
+	//			types[i] = IG_TETRA;
+	//			break;
+	//		case 5:
+	//			types[i] = IG_PYRAMID;
+	//			break;
+	//		case 6:
+	//			types[i] = IG_PRISM;
+	//			break;
+	//		case 8:
+	//			types[i] = IG_HEXAHEDRON;
+	//			break;
+	//		default:
+	//			break;
+	//		}
+	//	}
+	//	return Types.get();
+	//}
 	igIndex GetCellDimension(igIndex CellTyp) { return 3; };
 	SurfaceMesh::Pointer GetDrawMesh() { return m_DrawMesh; }
 
@@ -222,64 +222,46 @@ public:
 	}
 
 	void InitPolyhedronVertices() {
+
+		EdgeTable::Pointer EdgeTable = EdgeTable::New();
 		m_Volumes = CellArray::New();
 		igIndex CellNum = this->m_VolumeFaces->GetNumberOfCells();
-		igIndex i = 0, j = 0, k = 0;
-		igIndex fhs[IGAME_CELL_MAX_SIZE] = { 0 };
-		igIndex vhs[IGAME_CELL_MAX_SIZE] = { 0 };
-		igIndex fvhs[IGAME_CELL_MAX_SIZE] = { 0 };
-		igIndex fcnt = 0, vcnt = 0, fvcnt = 0;
-		for (i = 0; i < CellNum; i++) {
-			vcnt = 0;
+		igIndex ptIds[64]{}, edgeIds[64]{}, faceIds[64]{};
+		IGsize npts, nedges;
+		for (igIndex i = 0; i < CellNum; i++) {
 			std::set<igIndex> vset;
-			fcnt = m_VolumeFaces->GetCellIds(i, fhs);
-			for (j = 0; j < fcnt; j++) {
-				fvcnt = m_Faces->GetCellIds(fhs[j], fvhs);
-				for (k = 0; k < fvcnt; k++) {
-					vset.insert(fvhs[k]);
+			std::set<igIndex> eset;
+			int fsize = m_VolumeFaces->GetCellIds(i, faceIds);
+			for (int j = 0; j < fsize; j++) {
+				int size = m_Faces->GetCellIds(faceIds[j], ptIds);
+				for (int k = 0; k < size; k++) {
+					igIndex idx;
+					if ((idx = EdgeTable->IsEdge(ptIds[k], ptIds[(k + 1)% size])) == -1) {
+						idx = EdgeTable->GetNumberOfEdges();
+						EdgeTable->InsertEdge(ptIds[k], ptIds[(k + 1) % size]);
+					}
+					vset.insert(ptIds[k]);
+					eset.insert(idx);
 				}
 			}
+			npts = nedges = 0;
 			for (auto it : vset) {
-				vhs[vcnt++] = it;
+				ptIds[npts++] = it;
 			}
-			m_Volumes->AddCellIds(vhs, vcnt);
-		}
-		m_VolumeEdges = CellArray::New();
-		m_FaceEdges = CellArray::New();
-		EdgeTable::Pointer EdgeTable = EdgeTable::New();
-		igIndex cell[64]{}, edge[64]{}, edgeIds[64]{};
-		for (IGsize i = 0; i < CellNum; i++)
-		{
-			if (i == 97) {
-				int a = 1;
+			for (auto it : eset) {
+				edgeIds[nedges++] = it;
 			}
-			Volume* vol = this->GetVolume(i);
-			m_Volumes->GetCellIds(i, cell);
-
-			for (int j = 0; j < vol->GetNumberOfEdges(); j++)
-			{
-				const igIndex* index;
-				vol->GetEdgePointIds(j, index); // this edge's number of points
-				for (int k = 0; k < 2; k++) {
-					edge[k] = cell[index[k]];
-				}
-				igIndex idx;
-				if ((idx = EdgeTable->IsEdge(edge[0], edge[1])) == -1) {
-					idx = EdgeTable->GetNumberOfEdges();
-					EdgeTable->InsertEdge(edge[0], edge[1]);
-				}
-				edgeIds[j] = idx;
-			}
-			m_VolumeEdges->AddCellIds(edgeIds, vol->GetNumberOfEdges());
+			m_Volumes->AddCellIds(ptIds, npts);
+			m_VolumeEdges->AddCellIds(edgeIds, nedges);
 		}
 
 		for (IGsize i = 0; i < m_Faces->GetNumberOfCells(); i++)
 		{
-			int size = m_Faces->GetCellIds(i, cell);
+			int size = m_Faces->GetCellIds(i, ptIds);
 			for (int j = 0; j < size; j++)
 			{
 				igIndex idx;
-				if ((idx = EdgeTable->IsEdge(cell[j], cell[(j + 1) % size])) == -1) {
+				if ((idx = EdgeTable->IsEdge(ptIds[j], ptIds[(j + 1) % size])) == -1) {
 					std::cerr << "error!";
 				}
 				edgeIds[j] = idx;
@@ -366,8 +348,8 @@ public:
 	bool IsDrawable() override { return true; }
 	void ViewCloudPicture(Scene* scene, int index, int demension = -1) override;
 
-	void SetAttributeWithPointData(ArrayObject::Pointer attr,
-		igIndex i = -1, const std::pair<float, float>& range = { 0.f, 0.f }) override;
+	void SetAttributeWithPointData(ArrayObject::Pointer attr, std::pair<float, float>& range,
+		igIndex i = -1) override;
 
 	void SetAttributeWithCellData(ArrayObject::Pointer attr, igIndex i = -1);
 };
