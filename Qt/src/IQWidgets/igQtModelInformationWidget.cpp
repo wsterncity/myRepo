@@ -32,10 +32,12 @@ void igQtModelInformationWidget::updateInformationFrame() {
 	this->show();
 	auto obj = currentModel->GetDataObject();
 	// File Properties
-	std::string filePath = "";
-	if (obj->GetPropertys()->GetProperty("FilePath")) {
-		filePath = obj->GetPropertys()->GetProperty("FilePath")->Get<std::string>();
+	iGame::Property::Pointer p;
+	std::string filePath("");
+	if ((p = obj->GetPropertys()->GetProperty("FilePath")) != nullptr) {
+		filePath = p->Get<std::string>();
 	}
+	//auto filePath = currentModel->GetFilePath();
 	size_t lastSlashPos = filePath.find_last_of("/\\");
 	QString directory;
 	QString fileName;

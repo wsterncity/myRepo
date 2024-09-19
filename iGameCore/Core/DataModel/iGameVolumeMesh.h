@@ -221,9 +221,8 @@ public:
 		}
 	}
 
-
 	void InitPolyhedronVertices() {
-		this->m_Volumes = CellArray::New();
+		m_Volumes = CellArray::New();
 		igIndex CellNum = this->m_VolumeFaces->GetNumberOfCells();
 		igIndex i = 0, j = 0, k = 0;
 		igIndex fhs[IGAME_CELL_MAX_SIZE] = { 0 };
@@ -232,10 +231,10 @@ public:
 		igIndex fcnt = 0, vcnt = 0, fvcnt = 0;
 		for (i = 0; i < CellNum; i++) {
 			vcnt = 0;
-			std::set<igIndex>vset;
-			fcnt = this->m_VolumeFaces->GetCellIds(i, fhs);
+			std::set<igIndex> vset;
+			fcnt = m_VolumeFaces->GetCellIds(i, fhs);
 			for (j = 0; j < fcnt; j++) {
-				fvcnt = this->m_Faces->GetCellIds(fhs[j], fvhs);
+				fvcnt = m_Faces->GetCellIds(fhs[j], fvhs);
 				for (k = 0; k < fvcnt; k++) {
 					vset.insert(fvhs[k]);
 				}
@@ -243,8 +242,54 @@ public:
 			for (auto it : vset) {
 				vhs[vcnt++] = it;
 			}
-			this->m_Volumes->AddCellIds(vhs, vcnt);
+			m_Volumes->AddCellIds(vhs, vcnt);
 		}
+
+		EdgeTable::Pointer EdgeTable = EdgeTable::New();
+		igIndex cell[64]{}, edge[64]{}, edgeIds[64]{};
+		for (IGsize i = 0; i < CellNum; i++)
+		{
+			Volume* vol = this->GetVolume(i);
+			m_Volumes->GetCellIds(i, cell);
+
+			for (int j = 0; j < vol->GetNumberOfEdges(); j++)
+			{
+				const igIndex* index;
+				vol->GetEdgePointIds(j, index); // this edge's number of points
+				for (int k = 0; k < 2; k++) {
+					edge[k] = cell[index[k]];
+				}
+				igIndex idx;
+				if ((idx = EdgeTable->IsEdge(edge[0], edge[1])) == -1) {
+					idx = EdgeTable->GetNumberOfEdges();
+					EdgeTable->InsertEdge(edge[0], edge[1]);
+				}
+				edgeIds[j] = idx;
+			}
+			m_VolumeEdges->AddCellIds(edgeIds, vol->GetNumberOfEdges());
+		}
+
+		for (IGsize i = 0; i < m_Faces->GetNumberOfCells(); i++)
+		{
+			int size = m_Faces->GetCellIds(i, cell);
+			for (int j = 0; j < size; j++)
+			{
+				igIndex idx;
+				if ((idx = EdgeTable->IsEdge(cell[j], cell[(j + 1) % size])) == -1) {
+					std::cerr << "error!";
+				}
+				edgeIds[j] = idx;
+			}
+			m_FaceEdges->AddCellIds(edgeIds, size);
+		}
+
+		m_Edges = EdgeTable->GetOutput();
+		BuildEdgeLinks();
+		BuildFaceLinks();
+		BuildFaceEdgeLinks();
+		BuildVolumeEdgeLinks();
+		BuildVolumeFaceLinks();
+		BuildVolumeLinks();
 	}
 	void InitVolumesWithPolyhedron(CellArray::Pointer faces, CellArray::Pointer VolumeFaces)
 	{

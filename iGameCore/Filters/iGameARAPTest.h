@@ -1,4 +1,4 @@
-#ifndef iGameARAPTest_h
+ï»¿#ifndef iGameARAPTest_h
 #define iGameARAPTest_h
 
 #include "iGameFilter.h"
@@ -17,19 +17,19 @@ public:
 		model = m_Model;
 		if (mesh == nullptr) { return false; }
 
-		// ÕâÀïÇëÇó½øĞĞÑ¡µã
+		// è¿™é‡Œè¯·æ±‚è¿›è¡Œé€‰ç‚¹
 		Points* ps = mesh->GetPoints();
 		fixed = Selection::New();
 		fixed->SetFilterEvent(&ARAPTest::CallbackEvent, this, std::placeholders::_1);
 		model->RequestPointSelection(ps, fixed);
 
-		// Ö´ĞĞËã·¨³õÊ¼»¯
+		// æ‰§è¡Œç®—æ³•åˆå§‹åŒ–
 
 		return true;
 	}
 
 	bool Begin() {
-		// ÕâÀïÇëÇóÍÏ¶¯µã
+		// è¿™é‡Œè¯·æ±‚æ‹–åŠ¨ç‚¹
 		Points* ps = mesh->GetPoints();
 		moved = Selection::New();
 		moved->SetFilterEvent(&ARAPTest::CallbackEvent, this, std::placeholders::_1);
@@ -39,14 +39,14 @@ public:
 	}
 
 	bool Execute() override {
-		// TODO: Ö´ĞĞËã·¨
+		// TODO: æ‰§è¡Œç®—æ³•
 
 		mesh->SetPoint(dragId, dragNew);
 
 
 
 		mesh->Modified();
-		model->Update(); // ¸üĞÂÄ£ĞÍ
+		model->Update(); // æ›´æ–°æ¨¡å‹
 		return true;
     }
 
@@ -54,7 +54,7 @@ public:
 		switch (_event.type)
 		{
 		case Selection::Event::PickPoint:
-			// Ñ¡¼¸¸ö¹Ì¶¨µã, ²¢±£´æÏÂÀ´
+			// é€‰å‡ ä¸ªå›ºå®šç‚¹, å¹¶ä¿å­˜ä¸‹æ¥
 			std::cout << "Pick point id: " << _event.pickId << std::endl;
 			break;
 		case Selection::Event::PickFace:
