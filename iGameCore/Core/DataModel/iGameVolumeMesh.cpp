@@ -24,43 +24,52 @@ void VolumeMesh::SetVolumes(CellArray::Pointer volumes)
 	}
 }
 
-Volume* VolumeMesh::GetVolume(const IGsize volumeId)
+Cell* VolumeMesh::GetVolume(const IGsize volumeId)
 {
 	const igIndex* cell;
 	int ncells = m_Volumes->GetCellIds(volumeId, cell);
 
 	Volume* volume = nullptr;
-	if (ncells == Tetra::NumberOfPoints)
-	{
-		if (m_Tetra == nullptr)
+	if (!IsPolyhedronType) {
+		if (ncells == Tetra::NumberOfPoints)
 		{
-			m_Tetra = Tetra::New();
+			if (m_Tetra == nullptr)
+			{
+				m_Tetra = Tetra::New();
+			}
+			volume = m_Tetra.get();
 		}
-		volume = m_Tetra.get();
+		else if (ncells == Hexahedron::NumberOfPoints)
+		{
+			if (m_Hexahedron == nullptr)
+			{
+				m_Hexahedron = Hexahedron::New();
+			}
+			volume = m_Hexahedron.get();
+		}
+		else if (ncells == Prism::NumberOfPoints)
+		{
+			if (m_Prism == nullptr)
+			{
+				m_Prism = Prism::New();
+			}
+			volume = m_Prism.get();
+		}
+		else if (ncells == Pyramid::NumberOfPoints)
+		{
+			if (m_Pyramid == nullptr)
+			{
+				m_Pyramid = Pyramid::New();
+			}
+			volume = m_Pyramid.get();
+		}
 	}
-	else if (ncells == Hexahedron::NumberOfPoints)
-	{
-		if (m_Hexahedron == nullptr)
-		{
-			m_Hexahedron = Hexahedron::New();
+	else {
+		if (m_Polyhedron == nullptr) {
+			m_Polyhedron = Polyhedron::New();
 		}
-		volume = m_Hexahedron.get();
-	}
-	else if (ncells == Prism::NumberOfPoints)
-	{
-		if (m_Prism == nullptr)
-		{
-			m_Prism = Prism::New();
-		}
-		volume = m_Prism.get();
-	}
-	else if (ncells == Pyramid::NumberOfPoints)
-	{
-		if (m_Pyramid == nullptr)
-		{
-			m_Pyramid = Pyramid::New();
-		}
-		volume = m_Pyramid.get();
+		volume = m_Polyhedron;
+
 	}
 	assert(volume != nullptr);
 	volume->PointIds->Reset();
@@ -103,95 +112,78 @@ int VolumeMesh::GetVolumeFaceIds(const IGsize volumeId, igIndex* faceIds)
 	return m_VolumeFaces->GetCellIds(volumeId, faceIds);
 }
 
-void VolumeMesh::BuildFaces() {
-	FaceTable::Pointer FaceTable = FaceTable::New();
-	igIndex cell[64]{}, faceIds[64]{}, edgeIds[64]{}, face[64]{}, edge[2]{};
 
-	m_VolumeFaces = CellArray::New();
-
-	for (IGsize i = 0; i < this->GetNumberOfVolumes(); i++) {
-		Volume* vol = this->GetVolume(i);
-		int size = m_Volumes->GetCellIds(i, cell);
-		for (int j = 0; j < vol->GetNumberOfFaces(); j++) // number of faces
-		{
-			const igIndex* index; // this face's number of points
-			int size = vol->GetFacePointIds(j, index);
-			for (int k = 0; k < size; k++) { face[k] = cell[index[k]]; }
-			igIndex idx;
-			if ((idx = FaceTable->IsFace(face, size)) == -1) {
-				idx = FaceTable->GetNumberOfFaces();
-				FaceTable->InsertFace(face, size);
-			}
-			faceIds[j] = idx;
-		}
-		m_VolumeFaces->AddCellIds(faceIds, vol->GetNumberOfFaces());
-	}
-
-	m_Faces = FaceTable->GetOutput();
-}
 
 void VolumeMesh::BuildFacesAndEdges() {
 	FaceTable::Pointer FaceTable = FaceTable::New();
 	EdgeTable::Pointer EdgeTable = EdgeTable::New();
 	igIndex cell[64]{}, faceIds[64]{}, edgeIds[64]{}, face[64]{}, edge[2]{}, isInsert[64]{};
 
-	m_VolumeEdges = CellArray::New();
-	m_VolumeFaces = CellArray::New();
-	m_FaceEdges = CellArray::New();
 
-	for (IGsize i = 0; i < this->GetNumberOfVolumes(); i++)
-	{
-		Volume* vol = this->GetVolume(i);
-		m_Volumes->GetCellIds(i, cell);
-		memset(isInsert, 0, vol->GetNumberOfFaces() * sizeof(igIndex));
-		for (int j = 0; j < vol->GetNumberOfFaces(); j++) // number of faces
-		{
-			const igIndex* index;
-			int size = vol->GetFacePointIds(j, index); // this face's number of points 
-			for (int k = 0; k < size; k++) {
-				face[k] = cell[index[k]];
-			}
-			igIndex idx;
-			if ((idx = FaceTable->IsFace(face, size)) == -1) {
-				idx = FaceTable->GetNumberOfFaces();
-				FaceTable->InsertFace(face, size);
-				isInsert[j] = 1;
-			}
-			faceIds[j] = idx;
-		}
-		m_VolumeFaces->AddCellIds(faceIds, vol->GetNumberOfFaces());
+	if (!this->IsPolyhedronType) {
+		m_VolumeEdges = CellArray::New();
+		m_VolumeFaces = CellArray::New();
+		m_FaceEdges = CellArray::New();
 
-		for (int j = 0; j < vol->GetNumberOfEdges(); j++)
+		for (IGsize i = 0; i < this->GetNumberOfVolumes(); i++)
 		{
-			const igIndex* index;
-			vol->GetEdgePointIds(j, index); // this edge's number of points
-			for (int k = 0; k < 2; k++) {
-				edge[k] = cell[index[k]];
-			}
-			igIndex idx;
-			if ((idx = EdgeTable->IsEdge(edge[0], edge[1])) == -1) {
-				idx = EdgeTable->GetNumberOfEdges();
-				EdgeTable->InsertEdge(edge[0], edge[1]);
-			}
-			edgeIds[j] = idx;
-		}
-		m_VolumeEdges->AddCellIds(edgeIds, vol->GetNumberOfEdges());
-
-		for (int j = 0; j < vol->GetNumberOfFaces(); j++)
-		{
-			if (isInsert[j]) {
+			Volume* vol = this->GetVolume(i);
+			m_Volumes->GetCellIds(i, cell);
+			memset(isInsert, 0, vol->GetNumberOfFaces() * sizeof(igIndex));
+			for (int j = 0; j < vol->GetNumberOfFaces(); j++) // number of faces
+			{
 				const igIndex* index;
-				int size = vol->GetFaceEdgeIds(j, index);
+				int size = vol->GetFacePointIds(j, index); // this face's number of points 
 				for (int k = 0; k < size; k++) {
-					face[k] = edgeIds[index[k]];
+					face[k] = cell[index[k]];
 				}
-				m_FaceEdges->AddCellIds(face, size);
+				igIndex idx;
+				if ((idx = FaceTable->IsFace(face, size)) == -1) {
+					idx = FaceTable->GetNumberOfFaces();
+					FaceTable->InsertFace(face, size);
+					isInsert[j] = 1;
+				}
+				faceIds[j] = idx;
+			}
+			m_VolumeFaces->AddCellIds(faceIds, vol->GetNumberOfFaces());
+
+			for (int j = 0; j < vol->GetNumberOfEdges(); j++)
+			{
+				const igIndex* index;
+				vol->GetEdgePointIds(j, index); // this edge's number of points
+				for (int k = 0; k < 2; k++) {
+					edge[k] = cell[index[k]];
+				}
+				igIndex idx;
+				if ((idx = EdgeTable->IsEdge(edge[0], edge[1])) == -1) {
+					idx = EdgeTable->GetNumberOfEdges();
+					EdgeTable->InsertEdge(edge[0], edge[1]);
+				}
+				edgeIds[j] = idx;
+			}
+			m_VolumeEdges->AddCellIds(edgeIds, vol->GetNumberOfEdges());
+
+			for (int j = 0; j < vol->GetNumberOfFaces(); j++)
+			{
+				if (isInsert[j]) {
+					const igIndex* index;
+					int size = vol->GetFaceEdgeIds(j, index);
+					for (int k = 0; k < size; k++) {
+						face[k] = edgeIds[index[k]];
+					}
+					m_FaceEdges->AddCellIds(face, size);
+				}
 			}
 		}
-	}
 
-	m_Faces = FaceTable->GetOutput();
-	m_Edges = EdgeTable->GetOutput();
+		m_Faces = FaceTable->GetOutput();
+		m_Edges = EdgeTable->GetOutput();
+	}
+	else {
+		m_VolumeEdges = CellArray::New();
+		m_FaceEdges = CellArray::New();
+
+	}
 }
 
 void VolumeMesh::BuildVolumeLinks()

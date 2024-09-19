@@ -97,11 +97,17 @@ void igQtStreamTracerWidget::generateStreamline() {
 	streamtracer->SetPtFinder(ptFinder);
 	auto seeds = streamtracer->streamSeedGenerate(control, proportion, numOfSeeds);
 	std::vector<std::vector<float>> streamlineColor;
-	auto streamline = streamtracer->showStreamLineHex(seeds, "V", streamlineColor,lengthOfStreamLine, lengthOfStep,terminalSpeed,maxSteps);
+	std::vector<std::vector<float>> streamline;
+	if (mesh->GetIsPolyhedronType()) {
+		 streamline = streamtracer->showStreamLineCellData(seeds, "V", streamlineColor, lengthOfStreamLine, lengthOfStep, terminalSpeed, maxSteps);
+	}
+	else {
+		 streamline = streamtracer->showStreamLineHex(seeds, "V", streamlineColor, lengthOfStreamLine, lengthOfStep, terminalSpeed, maxSteps);
+	}
 	m_StreamBase->SetStreamLine(streamline);
 
 	if (!haveDraw) {
-		m_StreamBase->DataObject::SetName("SAHDAKDHKASJ");
+		m_StreamBase->DataObject::SetName("SONGGENB");
 		Q_EMIT AddStreamObject(m_StreamBase);
 		haveDraw = true;
 	}

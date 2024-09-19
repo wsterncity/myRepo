@@ -24,7 +24,7 @@ public:
 	void SetVolumes(CellArray::Pointer volumes);
 
 	// Get edge cell by index volumeId
-	Volume* GetVolume(const IGsize volumeId);
+	Cell* GetVolume(const IGsize volumeId);
 
 	// Get volume's point index. Return PointIds size
 	int GetVolumePointIds(const IGsize volumeId, igIndex* ptIds);
@@ -244,11 +244,15 @@ public:
 			}
 			m_Volumes->AddCellIds(vhs, vcnt);
 		}
-
+		m_VolumeEdges = CellArray::New();
+		m_FaceEdges = CellArray::New();
 		EdgeTable::Pointer EdgeTable = EdgeTable::New();
 		igIndex cell[64]{}, edge[64]{}, edgeIds[64]{};
 		for (IGsize i = 0; i < CellNum; i++)
 		{
+			if (i == 97) {
+				int a = 1;
+			}
 			Volume* vol = this->GetVolume(i);
 			m_Volumes->GetCellIds(i, cell);
 
@@ -354,7 +358,8 @@ private:
 		m_Prism{}; // Used for the returned 'Prism' object, which is Thread-Unsafe
 	Pyramid::Pointer
 		m_Pyramid{}; // Used for the returned 'Pyramid' object, which is Thread-Unsafe
-
+	Polyhedron::Pointer
+		m_Polyhedron{};
 public:
 	void Draw(Scene*) override;
 	void ConvertToDrawableData() override;
