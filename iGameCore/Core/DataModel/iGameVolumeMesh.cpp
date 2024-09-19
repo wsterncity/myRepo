@@ -24,13 +24,12 @@ void VolumeMesh::SetVolumes(CellArray::Pointer volumes)
 	}
 }
 
-Cell* VolumeMesh::GetVolume(const IGsize volumeId)
+Volume* VolumeMesh::GetVolume(const IGsize volumeId)
 {
 	const igIndex* cell;
 	int ncells = m_Volumes->GetCellIds(volumeId, cell);
 
 	Volume* volume = nullptr;
-	if (!IsPolyhedronType) {
 		if (ncells == Tetra::NumberOfPoints)
 		{
 			if (m_Tetra == nullptr)
@@ -63,14 +62,7 @@ Cell* VolumeMesh::GetVolume(const IGsize volumeId)
 			}
 			volume = m_Pyramid.get();
 		}
-	}
-	else {
-		if (m_Polyhedron == nullptr) {
-			m_Polyhedron = Polyhedron::New();
-		}
-		volume = m_Polyhedron;
 
-	}
 	assert(volume != nullptr);
 	volume->PointIds->Reset();
 	volume->Points->Reset();
