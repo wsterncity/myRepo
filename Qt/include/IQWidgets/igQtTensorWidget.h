@@ -35,7 +35,7 @@ signals:
 	void UpdateAttributes(DataObject::Pointer);
 private:
 	Ui::TensorView* ui;
-	iGameTensorWidgetBase::Pointer m_Manager;
+	iGameTensorWidgetBase* m_Manager;
 	DataObject* m_DataObject;
 	bool m_Generated = false;
 	//iGame::iGamePoints* Points;
