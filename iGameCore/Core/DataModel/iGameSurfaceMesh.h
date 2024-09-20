@@ -147,6 +147,7 @@ public:
 
     //Get real size of DataObject
     IGsize GetRealMemorySize() override;
+    bool GetClipped() override { return true; }
 protected:
     SurfaceMesh();
     ~SurfaceMesh() override = default;
