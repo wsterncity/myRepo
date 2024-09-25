@@ -8,7 +8,8 @@
 #include "MESH/iGameMESHWriter.h"
 #include "OBJ/iGameOBJReader.h"
 #include "OBJ/iGameOBJWriter.h"
-//#include "iGameSTLReader.h"
+#include "STL/iGameSTLReader.h"
+#include "STL/iGameSTLWriter.h"
 #include "PLY/iGamePLYReader.h"
 #include "PLY/iGamePLYWriter.h"
 #include "VTK XML/iGamePVDReader.h"
@@ -143,13 +144,14 @@ DataObject::Pointer FileIO::ReadFile(const std::string& file_name)
 		resObj = reader->GetOutput();
 		break;
 	}
-	//      case iGame::FileIO::STL:
-	//      {
-	//          auto app = iGameSTLReader::New();
-	//          resObj = app->ReadFile(file_name);
-	//          delete app;
-	//          break;
-	//      }
+	case iGame::FileIO::STL:
+	{
+		STLReader::Pointer reader = STLReader::New();
+		reader->SetFilePath(file_name);
+		reader->Execute();
+		resObj = reader->GetOutput();
+		break;
+	}
 	case iGame::FileIO::PLY:
 	{
 		PLYReader::Pointer reader = PLYReader::New();
@@ -270,13 +272,13 @@ bool  FileIO::WriteFile(const std::string& file_name, DataObject::Pointer dataOb
 		result = writer->WriteToFile(dataObject, file_name);
 		break;
 	}
-	//      case iGame::FileIO::STL:
-	//      {
-	//          auto app = iGameSTLReader::New();
-	//          resObj = app->ReadFile(file_name);
-	//          delete app;
-	//          break;
-	//      }
+	case iGame::FileIO::STL:
+	{
+		STLWriter::Pointer writer = STLWriter::New();
+		writer->SetBinary(true); // set file format
+		result = writer->WriteToFile(dataObject, file_name);
+		break;
+	}
 	case iGame::FileIO::PLY:
 	{
 		PLYWriter::Pointer writer = PLYWriter::New();

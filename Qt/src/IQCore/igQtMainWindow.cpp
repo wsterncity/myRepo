@@ -759,6 +759,97 @@ void igQtMainWindow::initAllFilters() {
 			rendererWidget->ChangeInteractorStyle(Interactor::BasicStyle);
 		});
 
+	// add test VolumeMesh
+	connect(ui->menuTest->addAction("test VolumeMesh"), &QAction::triggered, this, [&](bool checked) {
+		VolumeMesh::Pointer mesh = VolumeMesh::New();
+		Points::Pointer points = Points::New();
+		CellArray::Pointer cells = CellArray::New();
+
+		const int subdivision = 10;
+		const int subdivision1 = subdivision + 1;
+		const int subdivision1_2 = subdivision1 * subdivision1;
+		const float step = 1.0 / subdivision;
+		auto getIdx = [&](int i, int j, int k) -> int {
+			return i * subdivision1_2 + j * subdivision1 + k;
+			};
+		points->Resize(subdivision1 * subdivision1 * subdivision1);
+		for (int i = 0; i <= subdivision; ++i) {
+			for (int j = 0; j <= subdivision; ++j) {
+				for (int k = 0; k <= subdivision; ++k) {
+					points->SetPoint(getIdx(i, j, k), i * step, j * step, k * step);
+				}
+			}
+		}
+		igIndex cell[8];
+		for (int i = 0; i < subdivision; ++i) {
+			for (int j = 0; j < subdivision; ++j) {
+				for (int k = 0; k < subdivision; ++k) {
+					cell[0] = getIdx(i, j, k);
+					cell[1] = getIdx(i + 1, j, k);
+					cell[2] = getIdx(i + 1, j + 1, k);
+					cell[3] = getIdx(i, j + 1, k);
+					cell[4] = getIdx(i, j, k + 1);
+					cell[5] = getIdx(i + 1, j, k + 1);
+					cell[6] = getIdx(i + 1, j + 1, k + 1);
+					cell[7] = getIdx(i, j + 1, k + 1);
+					cells->AddCellIds(cell, 8);
+				}
+			}
+		}
+		mesh->SetPoints(points);
+		mesh->SetVolumes(cells);
+		mesh->SetName("Test_VolumeMesh");
+		modelTreeWidget->addDataObjectToModelTree(mesh, ItemSource::Algorithm);
+		rendererWidget->update();
+		});
+
+
+	// add test UnstructuredMesh
+	connect(ui->menuTest->addAction("test UnstructuredMesh"), &QAction::triggered, this, [&](bool checked) {
+		UnstructuredMesh::Pointer mesh = UnstructuredMesh::New();
+		Points::Pointer points = Points::New();
+		CellArray::Pointer cells = CellArray::New();
+		UnsignedIntArray::Pointer types = UnsignedIntArray::New();
+
+		const int subdivision = 10;
+		const int subdivision1 = subdivision + 1;
+		const int subdivision1_2 = subdivision1 * subdivision1;
+		const float step = 1.0 / subdivision;
+		auto getIdx = [&](int i, int j, int k) -> int {
+			return i * subdivision1_2 + j * subdivision1 + k;
+			};
+		points->Resize(subdivision1 * subdivision1 * subdivision1);
+		for (int i = 0; i <= subdivision; ++i) {
+			for (int j = 0; j <= subdivision; ++j) {
+				for (int k = 0; k <= subdivision; ++k) {
+					points->SetPoint(getIdx(i, j, k), i * step, j * step, k * step);
+				}
+			}
+		}
+		igIndex cell[8];
+		for (int i = 0; i < subdivision; ++i) {
+			for (int j = 0; j < subdivision; ++j) {
+				for (int k = 0; k < subdivision; ++k) {
+					cell[0] = getIdx(i, j, k);
+					cell[1] = getIdx(i + 1, j, k);
+					cell[2] = getIdx(i + 1, j + 1, k);
+					cell[3] = getIdx(i, j + 1, k);
+					cell[4] = getIdx(i, j, k + 1);
+					cell[5] = getIdx(i + 1, j, k + 1);
+					cell[6] = getIdx(i + 1, j + 1, k + 1);
+					cell[7] = getIdx(i, j + 1, k + 1);
+					cells->AddCellIds(cell, 8);
+					types->AddValue(IG_HEXAHEDRON);
+				}
+			}
+		}
+		mesh->SetPoints(points);
+		mesh->SetCells(cells, types);
+		mesh->SetName("Test_UnstructuredMesh");
+		modelTreeWidget->addDataObjectToModelTree(mesh, ItemSource::Algorithm);
+
+		rendererWidget->update();
+		});
 }
 
 void igQtMainWindow::initAllDockWidgetConnectWithAction() {
@@ -798,19 +889,19 @@ void igQtMainWindow::initAllMySignalConnections() {
 	// connect(rendererWidget, &igQtModelDrawWidget::insertToModelListView,
 	// ui->modelTreeView, &igQtModelListView::InsertModel);
 
-  connect(fileLoader, &igQtFileLoader::NewModel, modelTreeWidget,
-          &igQtModelDialogWidget::addDataObjectToModelTree);
-  connect(fileLoader, &igQtFileLoader::FinishReading, this,
-          &igQtMainWindow::updateRecentFilePaths);
-  connect(ui->action_DeleteMesh, &QAction::triggered, modelTreeWidget, &igQtModelDialogWidget::deleteCurrentModel);
+	connect(fileLoader, &igQtFileLoader::NewModel, modelTreeWidget,
+		&igQtModelDialogWidget::addDataObjectToModelTree);
+	connect(fileLoader, &igQtFileLoader::FinishReading, this,
+		&igQtMainWindow::updateRecentFilePaths);
+	connect(ui->action_DeleteMesh, &QAction::triggered, modelTreeWidget, &igQtModelDialogWidget::deleteCurrentModel);
 
 
-  // connect(fileLoader, &igQtFileLoader::FinishReading, this,
-  // &igQtMainWindow::updateViewStyleAndCloudPicture); connect(fileLoader,
-  // &igQtFileLoader::FinishReading, this,
-  // &igQtMainWindow::updateCurrentSceneWidget);
-  connect(fileLoader, &igQtFileLoader::FinishReading, ui->widget_Animation,
-          &igQtAnimationWidget::initAnimationComponents);
+	// connect(fileLoader, &igQtFileLoader::FinishReading, this,
+	// &igQtMainWindow::updateViewStyleAndCloudPicture); connect(fileLoader,
+	// &igQtFileLoader::FinishReading, this,
+	// &igQtMainWindow::updateCurrentSceneWidget);
+	connect(fileLoader, &igQtFileLoader::FinishReading, ui->widget_Animation,
+		&igQtAnimationWidget::initAnimationComponents);
 
 
 	connect(ui->widget_FlowField, &igQtStreamTracerWidget::AddStreamObject, this,
@@ -952,6 +1043,27 @@ void igQtMainWindow::initAllMySignalConnections() {
 	// this, [&]() { 	this->rendererWidget->UpdateEllipsoidGlyph();
 	//	});
 
+	// reset clipping
+	connect(ui->action_ResetClipping, &QAction::triggered, this, [&](bool checked) {
+		if (!rendererWidget->GetScene()->GetCurrentModel()) {
+			std::cout << "Need Input" << std::endl;
+			return;
+		}
+		auto scene = iGame::SceneManager::Instance()->GetCurrentScene();
+		auto inputMesh = DynamicCast<iGame::DrawObject>(scene->GetCurrentModel()->GetDataObject());
+		if (!inputMesh->GetClipped()) {
+			std::cout << "This type of mesh can't be clipped" << std::endl;
+			return;
+		}
+
+		inputMesh->SetExtentClipping(false);
+		inputMesh->SetPlaneClipping(false);
+		inputMesh->Modified();
+
+		rendererWidget->update();
+		});
+
+
 	// box clipping
 	connect(ui->action_BoxClipping, &QAction::triggered, this, [&](bool checked) {
 		if (!rendererWidget->GetScene()->GetCurrentModel()) {
@@ -961,9 +1073,9 @@ void igQtMainWindow::initAllMySignalConnections() {
 		bool ok;
 
 		auto scene = iGame::SceneManager::Instance()->GetCurrentScene();
-		auto inputMesh = DynamicCast<iGame::VolumeMesh>(scene->GetCurrentModel()->GetDataObject());
-		if (!inputMesh /*|| inputMesh->GetDataObjectType() != IG_VOLUME_MESH*/) {
-			std::cout << "Need VolumeMesh" << std::endl;
+		auto inputMesh = DynamicCast<iGame::DrawObject>(scene->GetCurrentModel()->GetDataObject());
+		if (!inputMesh->GetClipped()) {
+			std::cout << "This type of mesh can't be clipped" << std::endl;
 			return;
 		}
 
@@ -1015,9 +1127,9 @@ void igQtMainWindow::initAllMySignalConnections() {
 
 		auto scene = iGame::SceneManager::Instance()->GetCurrentScene();
 
-		auto inputMesh = DynamicCast<iGame::VolumeMesh>(scene->GetCurrentModel()->GetDataObject());
-		if (!inputMesh /*|| inputMesh->GetDataObjectType() != IG_VOLUME_MESH*/) {
-			std::cout << "Need VolumeMesh" << std::endl;
+		auto inputMesh = DynamicCast<iGame::DrawObject>(scene->GetCurrentModel()->GetDataObject());
+		if (!inputMesh->GetClipped()) {
+			std::cout << "This type of mesh can't be clipped" << std::endl;
 			return;
 		}
 
@@ -1055,7 +1167,7 @@ void igQtMainWindow::initAllMySignalConnections() {
 				return;
 			}
 
-			inputMesh->SetClipPlane(origin_x, origin_y, origin_z, normal_x, normal_y, normal_z, flip);
+			inputMesh->SetPlane(origin_x, origin_y, origin_z, normal_x, normal_y, normal_z, flip);
 			inputMesh->Modified();
 
 			rendererWidget->update();

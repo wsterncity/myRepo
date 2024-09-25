@@ -246,20 +246,20 @@ GLShaderProgram* Scene::GenShader(IGenum type) {
             sp->addShaders({font_vert, font_frag});
         } break;
         case DEPTHREDUCE: {
-            GLShader depthReduce_comp = GLShader{
-                    (std::string(SHADERS_DIR) + "/GLSL/depthReduce.comp")
-                            .c_str(),
-                    GL_COMPUTE_SHADER};
-            sp = new GLShaderProgram;
-            sp->addShaders({depthReduce_comp});
+            //GLShader depthReduce_comp = GLShader{
+            //        (std::string(SHADERS_DIR) + "/GLSL/depthReduce.comp")
+            //                .c_str(),
+            //        GL_COMPUTE_SHADER};
+            //sp = new GLShaderProgram;
+            //sp->addShaders({depthReduce_comp});
         } break;
         case MESHLETCULL: {
-            GLShader meshletCull_comp = GLShader{
-                    (std::string(SHADERS_DIR) + "/GLSL/meshletCull.comp")
-                            .c_str(),
-                    GL_COMPUTE_SHADER};
-            sp = new GLShaderProgram;
-            sp->addShaders({meshletCull_comp});
+            //GLShader meshletCull_comp = GLShader{
+            //        (std::string(SHADERS_DIR) + "/GLSL/meshletCull.comp")
+            //                .c_str(),
+            //        GL_COMPUTE_SHADER};
+            //sp = new GLShaderProgram;
+            //sp->addShaders({meshletCull_comp});
         } break;
         case SCREEN: {
             GLShader screen_vert = GLShader{
@@ -357,8 +357,8 @@ void Scene::InitOpenGL() {
         }
         // map culling computer shader block
         {
-            auto shader = this->GetShader(MESHLETCULL);
-            shader->mapUniformBlock("CameraDataBlock", 0, m_CameraDataBlock);
+            //auto shader = this->GetShader(MESHLETCULL);
+            //shader->mapUniformBlock("CameraDataBlock", 0, m_CameraDataBlock);
         }
     }
 

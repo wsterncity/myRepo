@@ -12,6 +12,9 @@ public:
 
 	bool GenerateBuffers() override;
 
+	// Write the head of type 'mesh' to the buffer.
+	const void WriteHeaderToBuffer(CharArray::Pointer& buffer);
+
 	// Write the point data to the buffer for output.
 	const void WritePointsToBuffer(Points::Pointer, CharArray::Pointer& buffer);
 

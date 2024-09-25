@@ -71,6 +71,7 @@ public:
 
 	//Get real size of DataObject
 	IGsize GetRealMemorySize() override;
+	bool GetClipped() override { return true; }
 protected:
 	UnstructuredMesh();
 	~UnstructuredMesh() override = default;
@@ -111,7 +112,7 @@ public:
 	void SetAttributeWithPointData(ArrayObject::Pointer attr, std::pair<float, float>& range,
 		igIndex i = -1) override;
 	void SetAttributeWithCellData(ArrayObject::Pointer attr, igIndex i = -1);
-	
+
 protected:
 	SurfaceMesh::Pointer m_DrawMesh{ nullptr };
 	void Create();

@@ -7,7 +7,7 @@
 ## Install
 
 ~~~shell
-git clone https://github.com/mky8812/OpeniGame_main.git
+git clone --recurse-submodules https://github.com/mky8812/editOpeniGame.git
 ~~~
 
 ## Build

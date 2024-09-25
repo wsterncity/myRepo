@@ -117,6 +117,8 @@ border:2px solid #EEF1F7
      <property name="title">
       <string>切割</string>
      </property>
+     <addaction name="action_ResetClipping"/>
+     <addaction name="separator"/>
      <addaction name="action_BoxClipping"/>
      <addaction name="action_PlaneClipping"/>
     </widget>
@@ -1309,6 +1311,11 @@ border:2px solid #EEF1F7
   <action name="action_PlaneClipping">
    <property name="text">
     <string>平面切割</string>
+   </property>
+  </action>
+  <action name="action_ResetClipping">
+   <property name="text">
+    <string>重置</string>
    </property>
   </action>
  </widget>
