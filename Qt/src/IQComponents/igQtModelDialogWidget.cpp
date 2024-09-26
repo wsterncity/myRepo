@@ -191,6 +191,6 @@ void igQtModelDialogWidget::deleteCurrentModel() {
     }
 
     iGame::SceneManager::Instance()->GetCurrentScene()->RemoveCurrentModel();
-
+    iGame::SceneManager::Instance()->GetCurrentScene()->Draw();
     std::cout << "delete\n";
 }
