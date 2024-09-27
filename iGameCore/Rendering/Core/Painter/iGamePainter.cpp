@@ -46,7 +46,7 @@ void Painter::Delete(IGuint handle) {
 void Painter::SetPen(const Pen::Pointer& pen) { m_Pen = pen; }
 void Painter::SetPen(const Color& color) { m_Pen->SetColor(color); }
 void Painter::SetPen(const PenStyle& style) { m_Pen->SetStyle(style); }
-void Painter::SetPen(int width) { m_Pen->SetWidth(width); }
+void Painter::SetPen(float width) { m_Pen->SetWidth(width); }
 
 void Painter::SetBrush(const Color& color) { m_Brush->SetColor(color); }
 void Painter::SetBrush(const Brush::Pointer& brush) { m_Brush = brush; }
@@ -276,7 +276,9 @@ void Painter::Draw(Scene* scene) {
             m_VAO.elementBuffer(m_LineEBO);
 
             m_VAO.bind();
+            GLCheckError();
             glad_glLineWidth(primitive.penWidth);
+            GLCheckError();
             glad_glDrawElements(GL_LINES, indexes[1].size(), GL_UNSIGNED_INT,
                                 0);
         }
@@ -297,7 +299,7 @@ void Painter::Draw(Scene* scene) {
 
 void Painter::Clear() {
     m_PrimitivesPool.Clear();
-    
+
     m_Points.clear();
     m_Colors.clear();
     m_PointIndexes.clear();

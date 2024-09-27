@@ -1,5 +1,9 @@
 # OpeniGame developer version
 
+## File Import
+
+File import cannot have Chinese path.
+
 ## Requirements
 
 - QT 5.14.2

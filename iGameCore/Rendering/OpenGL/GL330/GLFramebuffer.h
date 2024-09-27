@@ -21,6 +21,8 @@ private:
     }
 
 public:
+    // GLbitfield mask: GL_COLOR_BUFFER_BIT, GL_DEPTH_BUFFER_BIT, GL_STENCIL_BUFFER_BIT
+    // GLenum filter: GL_NEAREST, GL_LINEAR
     static void blit(const GLFramebuffer& source,
                      const GLFramebuffer& destination, GLint srcX0, GLint srcY0,
                      GLint srcX1, GLint srcY1, GLint dstX0, GLint dstY0,
@@ -49,6 +51,7 @@ public:
     // GLenum attachment: GL_COLOR_ATTACHMENT0(texture need GL_RGB)
     // GLenum attachment: GL_DEPTH_ATTACHMENT(texture need GL_DEPTH_COMPONENT)
     // GLenum attachment: GL_STENCIL_ATTACHMENT(texture need GL_STENCIL_INDEX)
+    // GLenum attachment: GL_DEPTH_STENCIL_ATTACHMENT(texture need GL_DEPTH24_STENCIL8)
     void texture(GLenum attachment, const GLTexture2d& texture,
                  unsigned mip_level) {
         glBindFramebuffer(GL_FRAMEBUFFER, handle);
