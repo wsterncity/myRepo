@@ -851,6 +851,28 @@ IGsize SurfaceMesh::GetRealMemorySize() {
     res += m_FaceDeleteMarker->GetRealMemorySize();
   return res + sizeof(IGsize);
 }
+
+void SurfaceMesh::SetFaceColor(const float color[3]) {
+    m_FaceColor[0] = color[0]; 
+    m_FaceColor[1] = color[1];
+    m_FaceColor[2] = color[2];
+    m_UseColor = true;
+    this->Modified();
+}
+
+const float* SurfaceMesh::GetFaceColor() const {
+    return this->m_FaceColor;
+}
+
+void SurfaceMesh::SetFaceTransparency(float val) { 
+    this->m_FaceTransparency = val;
+    this->Modified();
+}
+
+float SurfaceMesh::GetFaceTransparency() const { 
+    return this->m_FaceTransparency;
+}
+
 void SurfaceMesh::Draw(Scene *scene) {
   if (!m_Visibility) {
     return;
@@ -913,7 +935,9 @@ void SurfaceMesh::Draw(Scene *scene) {
     m_LineVAO.release();
   }
   if (m_ViewStyle & IG_SURFACE) {
-    scene->GetShader(Scene::BLINNPHONG)->use();
+    auto shader = scene->GetShader(Scene::BLINNPHONG);
+    shader->use();
+    shader->setUniform(shader->getUniformLocation("transparency"), m_FaceTransparency);
     m_TriangleVAO.bind();
     glad_glDrawElements(GL_TRIANGLES, m_TriangleIndices->GetNumberOfIds(),
                         GL_UNSIGNED_INT, 0);
@@ -1183,7 +1207,7 @@ void SurfaceMesh::ConvertToDrawableData() {
 
   // set line indices
   if (this->GetEdges() == nullptr) {
-    this->BuildEdges();
+      this->BuildEdges();
   }
   m_LineIndices = this->GetEdges()->GetCellIdArray();
 
@@ -1193,20 +1217,37 @@ void SurfaceMesh::ConvertToDrawableData() {
   igIndex cell[32]{};
 
   for (i = 0; i < this->GetNumberOfFaces(); i++) {
-    ncell = this->GetFacePointIds(i, cell);
-    for (int j = 2; j < ncell; j++) {
-      triangleIndices->AddId(cell[0]);
-      triangleIndices->AddId(cell[j - 1]);
-      triangleIndices->AddId(cell[j]);
-    }
+      ncell = this->GetFacePointIds(i, cell);
+      for (int j = 2; j < ncell; j++) {
+          triangleIndices->AddId(cell[0]);
+          triangleIndices->AddId(cell[j - 1]);
+          triangleIndices->AddId(cell[j]);
+      }
   }
   m_TriangleIndices = triangleIndices;
+
+  // set triangles
+  if (m_UseColor) {
+      IGsize numberOfPoints = m_Positions->GetNumberOfElements();
+      m_Colors = FloatArray::New();
+      m_Colors->SetDimension(3);
+      m_Colors->Resize(numberOfPoints);
+      for (IGsize i = 0; i < numberOfPoints; ++i) {
+          m_Colors->SetElement(i, m_FaceColor);
+      }
+  } 
 
   // allocate buffer
   {
     GLAllocateGLBuffer(m_PositionVBO,
                        m_Positions->GetNumberOfValues() * sizeof(float),
                        m_Positions->RawPointer());
+
+    if (m_UseColor) {
+        GLAllocateGLBuffer(m_ColorVBO,
+                           m_Colors->GetNumberOfValues() * sizeof(float),
+                           m_Colors->RawPointer());
+    }
 
     GLAllocateGLBuffer(m_LineEBO,
                        m_LineIndices->GetNumberOfIds() * sizeof(igIndex),
@@ -1235,6 +1276,12 @@ void SurfaceMesh::ConvertToDrawableData() {
                                3 * sizeof(float));
     GLSetVertexAttrib(m_TriangleVAO, GL_LOCATION_IDX_0, GL_VBO_IDX_0, 3,
                       GL_FLOAT, GL_FALSE, 0);
+    if (m_UseColor) {
+        m_TriangleVAO.vertexBuffer(GL_VBO_IDX_1, m_ColorVBO, 0,
+                                   3 * sizeof(float));
+        GLSetVertexAttrib(m_TriangleVAO, GL_LOCATION_IDX_1, GL_VBO_IDX_1, 3,
+            GL_FLOAT, GL_FALSE, 0);
+    }
     m_TriangleVAO.elementBuffer(m_TriangleEBO);
 
 #ifdef IGAME_OPENGL_VERSION_460

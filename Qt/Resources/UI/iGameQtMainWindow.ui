@@ -121,6 +121,8 @@ border:2px solid #EEF1F7
      <addaction name="separator"/>
      <addaction name="action_BoxClipping"/>
      <addaction name="action_PlaneClipping"/>
+     <addaction name="action_BoxClipping_Better"/>
+     <addaction name="action_PlaneClipping_Better"/>
     </widget>
     <addaction name="action_Scalar"/>
     <addaction name="action_Vector"/>
@@ -1316,6 +1318,16 @@ border:2px solid #EEF1F7
   <action name="action_ResetClipping">
    <property name="text">
     <string>重置</string>
+   </property>
+  </action>
+  <action name="action_PlaneClipping_Better">
+   <property name="text">
+    <string>平面切割（美观）</string>
+   </property>
+  </action>
+  <action name="action_BoxClipping_Better">
+   <property name="text">
+    <string>盒子切割（美观）</string>
    </property>
   </action>
  </widget>
