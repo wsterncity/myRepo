@@ -784,20 +784,8 @@ void SurfaceMesh::Draw(Scene* scene) {
 
         m_LineVAO.bind();
         glLineWidth(m_LineWidth);
-
-        // TODO: A better way to render wireframes
-        //    auto boundingBoxDiag = this->GetBoundingBox().diag();
-        //    auto scaleFactor =
-        //        1e-5 / std::pow(10, std::floor(std::log10(boundingBoxDiag)));
-        //    glad_glDepthRange(scaleFactor, 1);
-        //    glad_glDepthFunc(GL_GEQUAL);
-
         glad_glDrawElements(GL_LINES, m_LineIndices->GetNumberOfIds(),
                             GL_UNSIGNED_INT, 0);
-
-        //    glad_glDepthFunc(GL_GREATER);
-        //    glad_glDepthRange(0, 1);
-
         m_LineVAO.release();
     }
     if (m_ViewStyle & IG_SURFACE) {
