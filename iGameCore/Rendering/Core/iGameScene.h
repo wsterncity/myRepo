@@ -80,6 +80,7 @@ public:
         DEPTHREDUCE,
         MESHLETCULL,
         SCREEN,
+        FXAA,
         SHADERTYPE_COUNT
     };
 
@@ -193,7 +194,8 @@ protected:
     // used to draw full-screen triangle
     GLVertexArray m_EmptyVAO;
 
-    GLint samples = 1;
+#ifdef MSAA
+    GLint samples = 4;
     GLFramebuffer m_FramebufferMultisampled;
     GLTexture2dMultisample m_ColorTextureMultisampled;
     GLTexture2dMultisample m_DepthTextureMultisampled;
@@ -201,6 +203,11 @@ protected:
     GLFramebuffer m_FramebufferResolved;
     GLTexture2d m_ColorTextureResolved;
     GLTexture2d m_DepthTextureResolved;
+#else
+    GLFramebuffer m_Framebuffer;
+    GLTexture2d m_ColorTexture;
+    GLTexture2d m_DepthTexture;
+#endif
 
     GLBuffer m_DrawCullData;
     int m_DepthPyramidWidth, m_DepthPyramidHeight, m_DepthPyramidLevels;

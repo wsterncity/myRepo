@@ -26,8 +26,6 @@ class igQtFilterDialogDockWidget;
 class igQtProgressBarWidget;
 class igQtModelDialogWidget;
 
-using namespace iGame;
-
 class IG_QT_MODULE_EXPORT igQtMainWindow : public QMainWindow {
     Q_OBJECT
 public:

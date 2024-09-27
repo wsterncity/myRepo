@@ -16,7 +16,7 @@ void Pen::SetColor(const Color& color) { m_PenColor = color; };
 
 Color Pen::GetColor() const { return m_PenColor; }
 
-void Pen::SetWidth(int width) { m_PenWidth = width; }
+void Pen::SetWidth(float width) { m_PenWidth = width; }
 
 int Pen::GetWidth() const { return m_PenWidth; }
 

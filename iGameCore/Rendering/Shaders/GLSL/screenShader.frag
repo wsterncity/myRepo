@@ -16,8 +16,7 @@ float ReverseZLinearizeDepth(float depth) {
     return near / depth;
 }
 
-void main()
-{
+void main() {
     // color
     {
         out_ScreenColor = texture(screenColorSampler, in_UV);
@@ -25,7 +24,13 @@ void main()
 
     // depth
     {
-        // float depth = texture(screenColorSampler, in_UV).r;
+        // ivec2 texSize = textureSize(screenColorSampler, 0);
+        // ivec2 texCoord = ivec2(in_UV * vec2(texSize));
+        // float depth = texelFetch(screenColorSampler, texCoord, 0).r;
+        //
+        // // texture(gsampler2D sampler, vec2 P)
+        // // float depth = texture(screenColorSampler, in_UV).r;
+        //
         // if (depth == 0.0f) {
         //     out_ScreenColor = vec4(0.39215f, 0.58431f, 0.92941f, 1.0f);
         // } else {

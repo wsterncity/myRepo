@@ -1,5 +1,7 @@
 #pragma once
 
+#define MSAA
+
 /*
     GL_NO_ERROR: (0)
     GL_INVALID_ENUM: (1280)
@@ -10,7 +12,7 @@
     GL_OUT_OF_MEMORY: (1285)
     GL_INVALID_FRAMEBUFFER_OPERATION: (1286)
     GL_CONTEXT_LOST: (1287)
- */
+    */
 
 #ifdef IGAME_OPENGL_VERSION_460
 #define GLCheckError()                                                         \
