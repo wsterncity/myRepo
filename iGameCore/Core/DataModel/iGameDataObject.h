@@ -103,7 +103,7 @@ public:
 
 	private:
 		SubDataObjectsHelper() {}
-		~SubDataObjectsHelper() override {std::cout << "Helper Desctructure\n";}
+		~SubDataObjectsHelper() override {/*std::cout << "Helper Desctructure\n";*/}
 
 		DataObject* m_parentObject{ nullptr };
 		SubDataObjectMap m_SubDataObjects;

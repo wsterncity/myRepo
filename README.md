@@ -1,5 +1,9 @@
 # OpeniGame developer version
 
+## File Import
+
+File import cannot have Chinese path.
+
 ## Requirements
 
 - QT 5.14.2
@@ -7,7 +11,7 @@
 ## Install
 
 ~~~shell
-git clone https://github.com/mky8812/OpeniGame_main.git
+git clone --recurse-submodules https://github.com/mky8812/editOpeniGame.git
 ~~~
 
 ## Build

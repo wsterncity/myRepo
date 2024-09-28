@@ -38,17 +38,27 @@ bool MESHWriter::GenerateBuffers()
 	}
 	return true;
 }
+const void MESHWriter::WriteHeaderToBuffer(CharArray::Pointer& buffer)
+{
+	if(buffer == nullptr) {
+		buffer = CharArray::New();
+	}
+	const std::string header = "MeshVersionFormatted 1\n\nDimension 3\n\n";
+	AddStringToBuffer(header, buffer);
+}
 const void MESHWriter::WriteWithSurfaceMeshType()
 {
-	m_Buffers.resize(2, nullptr);
-	WritePointsToBuffer(m_SurfaceMesh->GetPoints(), m_Buffers[0]);
-	WriteFacesToBuffer(m_SurfaceMesh->GetFaces(), m_Buffers[1]);
+	m_Buffers.resize(3, nullptr);
+	WriteHeaderToBuffer(m_Buffers[0]);
+	WritePointsToBuffer(m_SurfaceMesh->GetPoints(), m_Buffers[1]);
+	WriteFacesToBuffer(m_SurfaceMesh->GetFaces(), m_Buffers[2]);
 }
 const void MESHWriter::WriteWithVolumeMeshType()
 {
-	m_Buffers.resize(2, nullptr);
-	WritePointsToBuffer(m_VolumeMesh->GetPoints(), m_Buffers[0]);
-	WriteVolumesToBuffer(m_VolumeMesh->GetVolumes(), m_Buffers[1]);
+	m_Buffers.resize(3, nullptr);
+	WriteHeaderToBuffer(m_Buffers[0]);
+	WritePointsToBuffer(m_VolumeMesh->GetPoints(), m_Buffers[1]);
+	WriteVolumesToBuffer(m_VolumeMesh->GetVolumes(), m_Buffers[2]);
 }
 const void MESHWriter::WritePointsToBuffer(Points::Pointer Points, CharArray::Pointer& buffer)
 {
@@ -211,7 +221,7 @@ const void MESHWriter::WriteVolumesToBuffer(CellArray::Pointer Cells, CharArray:
 	}
 	int PrismNum = Prisms->GetNumberOfElements();
 	if (PrismNum) {
-		data = "Hexahedra\n" + std::to_string(PrismNum) + '\n';
+		data = "Prisms\n" + std::to_string(PrismNum) + '\n';
 		AddStringToBuffer(data, buffer);
 		auto cells = Prisms->RawPointer();
 		for (int i = 0; i < PrismNum; i++) {
@@ -227,10 +237,10 @@ const void MESHWriter::WriteVolumesToBuffer(CellArray::Pointer Cells, CharArray:
 	}
 
 	auto Pyramids = IntArray::New();
-	Pyramids->SetDimension(6);
+	Pyramids->SetDimension(5);
 	for (igIndex i = 0; i < VolumeNum; i++) {
 		vcnt = Cells->GetCellIds(i, vhs);
-		if (vcnt == 6) {
+		if (vcnt == 5) {
 			Pyramids->AddElement(vhs);
 		}
 	}
@@ -240,7 +250,7 @@ const void MESHWriter::WriteVolumesToBuffer(CellArray::Pointer Cells, CharArray:
 		AddStringToBuffer(data, buffer);
 		auto cells = Pyramids->RawPointer();
 		for (int i = 0; i < PyramidNum; i++) {
-			for (int j = 0; j < 6; j++) {
+			for (int j = 0; j < 5; j++) {
 				if (j)buffer->AddValue(' ');
 				data = std::to_string(1 + (*cells++));
 				AddStringToBuffer(data, buffer);

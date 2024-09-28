@@ -225,6 +225,7 @@ public:
 
 		EdgeTable::Pointer EdgeTable = EdgeTable::New();
 		m_Volumes = CellArray::New();
+		m_VolumeEdges = CellArray::New();
 		igIndex CellNum = this->m_VolumeFaces->GetNumberOfCells();
 		igIndex ptIds[64]{}, edgeIds[64]{}, faceIds[64]{};
 		IGsize npts, nedges;
@@ -289,30 +290,7 @@ public:
 	}
 	//Get real size of DataObject
 	IGsize GetRealMemorySize() override;
-
-	void SetExtentClipping(bool _in) { this->m_Clip.m_Extent.m_Use = _in; }
-	void SetPlaneClipping(bool _in) { this->m_Clip.m_Plane.m_Use = _in; }
-	void SetExtent(double xMin, double xMax, double yMin, double yMax,
-		double zMin, double zMax, bool flip = false) {
-		m_Clip.m_Extent.m_bmin[0] = xMin;
-		m_Clip.m_Extent.m_bmin[1] = yMin;
-		m_Clip.m_Extent.m_bmin[2] = zMin;
-		m_Clip.m_Extent.m_bmax[0] = xMax;
-		m_Clip.m_Extent.m_bmax[1] = yMax;
-		m_Clip.m_Extent.m_bmax[2] = zMax;
-		m_Clip.m_Extent.m_flip = flip;
-		SetExtentClipping(true);
-	}
-	void SetClipPlane(double ox, double oy, double oz, double nx, double ny, double nz, bool flip = false) {
-		m_Clip.m_Plane.m_origin[0] = ox;
-		m_Clip.m_Plane.m_origin[1] = oy;
-		m_Clip.m_Plane.m_origin[2] = oz;
-		m_Clip.m_Plane.m_normal[0] = nx;
-		m_Clip.m_Plane.m_normal[1] = ny;
-		m_Clip.m_Plane.m_normal[2] = nz;
-		m_Clip.m_Plane.m_flip = flip;
-		SetPlaneClipping(true);
-	}
+	bool GetClipped() override { return true; }
 protected:
 	VolumeMesh();
 	~VolumeMesh() override = default;
@@ -340,7 +318,6 @@ private:
 		m_Prism{}; // Used for the returned 'Prism' object, which is Thread-Unsafe
 	Pyramid::Pointer
 		m_Pyramid{}; // Used for the returned 'Pyramid' object, which is Thread-Unsafe
-
 public:
 	void Draw(Scene*) override;
 	void ConvertToDrawableData() override;

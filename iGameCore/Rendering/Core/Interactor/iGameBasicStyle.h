@@ -38,7 +38,7 @@ protected:
     igm::vec2 m_NewPoint2D{};
     float m_CameraScaleSpeed{1.0f};
     float m_CameraMoveSpeed{0.01f};
-    MouseButton m_MouseMode;
+    MouseButton m_MouseMode{NoButton};
 };
 IGAME_NAMESPACE_END
 #endif
