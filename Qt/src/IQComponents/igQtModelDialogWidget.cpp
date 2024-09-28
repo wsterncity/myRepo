@@ -27,7 +27,8 @@ igQtModelDialogWidget::igQtModelDialogWidget(QWidget* parent)
 
 	modelTreeWidget->setColumnCount(2);
 	modelTreeWidget->header()->hide();
-	modelTreeWidget->setColumnWidth(0, 150);
+	modelTreeWidget->setColumnWidth(0, 250);
+	modelTreeWidget->setColumnWidth(1, 150);
 
 	//propertyTreeWidget = ui->propertyTreeWidget;
 	//propertyTreeWidget->setHeaderVisible(false);
