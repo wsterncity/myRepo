@@ -4,6 +4,10 @@
 
 IGAME_NAMESPACE_BEGIN
 
+/*
+ * need extension GL_ARB_bindless_texture
+ */
+
 class GLImageHandle {
 private:
     GLuint64 handle;

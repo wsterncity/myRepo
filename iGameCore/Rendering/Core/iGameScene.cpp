@@ -171,22 +171,33 @@ void Scene::SetShader(IGenum type, GLShaderProgram* sp) {
 GLShaderProgram* Scene::GenShader(IGenum type) {
     GLShaderProgram* sp;
     switch (type) {
-        case PATCH: {
+        case BLINNPHONG: {
             GLShader shader_vert = GLShader{
-                    (std::string(ASSEST_DIR) + "/Shaders/shader.vert").c_str(),
+                    (std::string(SHADERS_DIR) + "/GLSL/shader.vert").c_str(),
                     GL_VERTEX_SHADER};
             GLShader shader_frag = GLShader{
-                    (std::string(ASSEST_DIR) + "/Shaders/shader.frag").c_str(),
+                    (std::string(SHADERS_DIR) + "/GLSL/blinnPhong.frag")
+                            .c_str(),
+                    GL_FRAGMENT_SHADER};
+            sp = new GLShaderProgram;
+            sp->addShaders({shader_vert, shader_frag});
+        } break;
+        case PBR: {
+            GLShader shader_vert = GLShader{
+                    (std::string(SHADERS_DIR) + "/GLSL/shader.vert").c_str(),
+                    GL_VERTEX_SHADER};
+            GLShader shader_frag = GLShader{
+                    (std::string(SHADERS_DIR) + "/GLSL/pbr.frag").c_str(),
                     GL_FRAGMENT_SHADER};
             sp = new GLShaderProgram;
             sp->addShaders({shader_vert, shader_frag});
         } break;
         case NOLIGHT: {
             GLShader shader_vert = GLShader{
-                    (std::string(ASSEST_DIR) + "/Shaders/shader.vert").c_str(),
+                    (std::string(SHADERS_DIR) + "/GLSL/shader.vert").c_str(),
                     GL_VERTEX_SHADER};
             GLShader shader_frag = GLShader{
-                    (std::string(ASSEST_DIR) + "/Shaders/shaderNoLight.frag")
+                    (std::string(SHADERS_DIR) + "/GLSL/shaderNoLight.frag")
                             .c_str(),
                     GL_FRAGMENT_SHADER};
             sp = new GLShaderProgram;
@@ -194,71 +205,80 @@ GLShaderProgram* Scene::GenShader(IGenum type) {
         } break;
         case PURECOLOR: {
             GLShader shader_vert = GLShader{
-                    (std::string(ASSEST_DIR) + "/Shaders/shader.vert").c_str(),
+                    (std::string(SHADERS_DIR) + "/GLSL/shader.vert").c_str(),
                     GL_VERTEX_SHADER};
             GLShader pureColor_frag = GLShader{
-                    (std::string(ASSEST_DIR) + "/Shaders/pureColor.frag")
-                            .c_str(),
+                    (std::string(SHADERS_DIR) + "/GLSL/pureColor.frag").c_str(),
                     GL_FRAGMENT_SHADER};
             sp = new GLShaderProgram;
             sp->addShaders({shader_vert, pureColor_frag});
         } break;
         case AXES: {
             GLShader Axis_vert = GLShader{
-                    (std::string(ASSEST_DIR) + "/Shaders/axis.vert").c_str(),
+                    (std::string(SHADERS_DIR) + "/GLSL/axis.vert").c_str(),
                     GL_VERTEX_SHADER};
             GLShader Axis_frag = GLShader{
-                    (std::string(ASSEST_DIR) + "/Shaders/axis.frag").c_str(),
+                    (std::string(SHADERS_DIR) + "/GLSL/axis.frag").c_str(),
                     GL_FRAGMENT_SHADER};
             sp = new GLShaderProgram;
             sp->addShaders({Axis_vert, Axis_frag});
         } break;
         case FONT: {
             GLShader font_vert = GLShader{
-                    (std::string(ASSEST_DIR) + "/Shaders/font.vert").c_str(),
+                    (std::string(SHADERS_DIR) + "/GLSL/font.vert").c_str(),
                     GL_VERTEX_SHADER};
             GLShader font_frag = GLShader{
-                    (std::string(ASSEST_DIR) + "/Shaders/font.frag").c_str(),
+                    (std::string(SHADERS_DIR) + "/GLSL/font.frag").c_str(),
                     GL_FRAGMENT_SHADER};
             sp = new GLShaderProgram;
             sp->addShaders({font_vert, font_frag});
         } break;
         case ATTACHMENTRESOLVE: {
-            GLShader font_vert = GLShader{(std::string(ASSEST_DIR) +
-                                           "/Shaders/attachmentResolve.vert")
-                                                  .c_str(),
-                                          GL_VERTEX_SHADER};
-            GLShader font_frag = GLShader{(std::string(ASSEST_DIR) +
-                                           "/Shaders/attachmentResolve.frag")
-                                                  .c_str(),
-                                          GL_FRAGMENT_SHADER};
+            GLShader font_vert = GLShader{
+                    (std::string(SHADERS_DIR) + "/GLSL/attachmentResolve.vert")
+                            .c_str(),
+                    GL_VERTEX_SHADER};
+            GLShader font_frag = GLShader{
+                    (std::string(SHADERS_DIR) + "/GLSL/attachmentResolve.frag")
+                            .c_str(),
+                    GL_FRAGMENT_SHADER};
             sp = new GLShaderProgram;
             sp->addShaders({font_vert, font_frag});
         } break;
         case DEPTHREDUCE: {
-            GLShader depthReduce_comp = GLShader{
-                    (std::string(ASSEST_DIR) + "/Shaders/depthReduce.comp")
-                            .c_str(),
-                    GL_COMPUTE_SHADER};
-            sp = new GLShaderProgram;
-            sp->addShaders({depthReduce_comp});
+            //GLShader depthReduce_comp = GLShader{
+            //        (std::string(SHADERS_DIR) + "/GLSL/depthReduce.comp")
+            //                .c_str(),
+            //        GL_COMPUTE_SHADER};
+            //sp = new GLShaderProgram;
+            //sp->addShaders({depthReduce_comp});
         } break;
         case MESHLETCULL: {
-            GLShader meshletCull_comp = GLShader{
-                    (std::string(ASSEST_DIR) + "/Shaders/meshletCull.comp")
-                            .c_str(),
-                    GL_COMPUTE_SHADER};
-            sp = new GLShaderProgram;
-            sp->addShaders({meshletCull_comp});
+            //GLShader meshletCull_comp = GLShader{
+            //        (std::string(SHADERS_DIR) + "/GLSL/meshletCull.comp")
+            //                .c_str(),
+            //        GL_COMPUTE_SHADER};
+            //sp = new GLShaderProgram;
+            //sp->addShaders({meshletCull_comp});
         } break;
         case SCREEN: {
             GLShader screen_vert = GLShader{
-                    (std::string(ASSEST_DIR) + "/Shaders/screenShader.vert")
+                    (std::string(SHADERS_DIR) + "/GLSL/screenShader.vert")
                             .c_str(),
                     GL_VERTEX_SHADER};
             GLShader screen_frag = GLShader{
-                    (std::string(ASSEST_DIR) + "/Shaders/screenShader.frag")
+                    (std::string(SHADERS_DIR) + "/GLSL/screenShader.frag")
                             .c_str(),
+                    GL_FRAGMENT_SHADER};
+            sp = new GLShaderProgram;
+            sp->addShaders({screen_vert, screen_frag});
+        } break;
+        case FXAA: {
+            GLShader screen_vert = GLShader{
+                    (std::string(SHADERS_DIR) + "/GLSL/fxaa.vert").c_str(),
+                    GL_VERTEX_SHADER};
+            GLShader screen_frag = GLShader{
+                    (std::string(SHADERS_DIR) + "/GLSL/fxaa.frag").c_str(),
                     GL_FRAGMENT_SHADER};
             sp = new GLShaderProgram;
             sp->addShaders({screen_vert, screen_frag});
@@ -326,7 +346,7 @@ void Scene::InitOpenGL() {
 
         // map shader block
         {
-            auto shader = this->GetShader(PATCH);
+            auto shader = this->GetShader(BLINNPHONG);
             shader->mapUniformBlock("CameraDataBlock", 0, m_CameraDataBlock);
             shader->mapUniformBlock("ObjectDataBlock", 1, m_ObjectDataBlock);
             shader->mapUniformBlock("UniformBufferObjectBlock", 2, m_UBOBlock);
@@ -347,8 +367,8 @@ void Scene::InitOpenGL() {
         }
         // map culling computer shader block
         {
-            auto shader = this->GetShader(MESHLETCULL);
-            shader->mapUniformBlock("CameraDataBlock", 0, m_CameraDataBlock);
+            //auto shader = this->GetShader(MESHLETCULL);
+            //shader->mapUniformBlock("CameraDataBlock", 0, m_CameraDataBlock);
         }
     }
 
@@ -410,9 +430,9 @@ void Scene::ResizeFrameBuffer() {
     uint32_t width = viewport.x;
     uint32_t height = viewport.y;
 
+#ifdef MSAA
     // resize multisample framebuffer
     {
-        samples = 4;
         //glGetIntegerv(GL_MAX_SAMPLES, &samples);
 
         GLFramebuffer fbo;
@@ -429,7 +449,7 @@ void Scene::ResizeFrameBuffer() {
         GLTexture2dMultisample depthTexture;
         depthTexture.create();
         depthTexture.bind();
-        depthTexture.storage(samples, GL_DEPTH_COMPONENT32F, width, height,
+        depthTexture.storage(samples, GL_DEPTH_COMPONENT24, width, height,
                              GL_TRUE);
         fbo.texture(GL_DEPTH_ATTACHMENT, depthTexture, 0);
 
@@ -448,8 +468,8 @@ void Scene::ResizeFrameBuffer() {
     {
         auto width = m_Camera->GetScaledViewPort().x;
         auto height = m_Camera->GetScaledViewPort().y;
-        int mipLevels =
-                static_cast<int>(std::ceil(std::log2(std::max(width, height))));
+        //int mipLevels =
+        //        static_cast<int>(std::ceil(std::log2(std::max(width, height))));
 
         GLFramebuffer fbo;
         fbo.create();
@@ -459,10 +479,10 @@ void Scene::ResizeFrameBuffer() {
         GLTexture2d colorTexture;
         colorTexture.create();
         colorTexture.bind();
-        colorTexture.storage(mipLevels, GL_RGBA8, width, height);
+        colorTexture.storage(1, GL_RGBA8, width, height);
         colorTexture.parameteri(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         colorTexture.parameteri(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        colorTexture.parameteri(GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        colorTexture.parameteri(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         colorTexture.parameteri(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         fbo.texture(GL_COLOR_ATTACHMENT0, colorTexture, 0);
 
@@ -489,6 +509,41 @@ void Scene::ResizeFrameBuffer() {
             std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!"
                       << std::endl;
     }
+#else
+    //resize resolve framebuffer(form multisamples to single sample)
+    {
+        GLFramebuffer fbo;
+        fbo.create();
+        fbo.target(GL_FRAMEBUFFER);
+        fbo.bind();
+
+        GLTexture2d colorTexture;
+        colorTexture.create();
+        colorTexture.bind();
+        colorTexture.storage(1, GL_RGBA8, width, height);
+        colorTexture.parameteri(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        colorTexture.parameteri(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        colorTexture.parameteri(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        colorTexture.parameteri(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        fbo.texture(GL_COLOR_ATTACHMENT0, colorTexture, 0);
+
+        GLTexture2d depthTexture;
+        depthTexture.create();
+        depthTexture.bind();
+        depthTexture.storage(1, GL_DEPTH_COMPONENT24, width, height);
+        fbo.texture(GL_DEPTH_ATTACHMENT, depthTexture, 0);
+
+        fbo.release();
+
+        m_ColorTexture = std::move(colorTexture);
+        m_DepthTexture = std::move(depthTexture);
+        m_Framebuffer = std::move(fbo);
+
+        if (m_Framebuffer.checkStatus() != GL_FRAMEBUFFER_COMPLETE)
+            std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!"
+                      << std::endl;
+    }
+#endif
 
     ResizeDepthPyramid();
 }
@@ -533,6 +588,7 @@ void Scene::ResizeDepthPyramid() {
 }
 
 void Scene::Draw() {
+#ifdef MSAA
     // save default framebuffer, because it is not 0 in Qt
     GLint defaultFramebuffer = GL_NONE;
     glGetIntegerv(GL_FRAMEBUFFER_BINDING, &defaultFramebuffer);
@@ -541,9 +597,8 @@ void Scene::Draw() {
     auto height = m_Camera->GetScaledViewPort().y;
 
     // render to multisample framebuffer
+    m_FramebufferMultisampled.bind();
     {
-        m_FramebufferMultisampled.bind();
-
         // reversed-z buffer, depth range: 1.0(near plane) -> 0.0(far plane)
         glClearColor(m_BackgroundColor.r, m_BackgroundColor.g,
                      m_BackgroundColor.b, 1.0f);
@@ -554,15 +609,12 @@ void Scene::Draw() {
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_GREATER);
         DrawFrame();
-        glDepthFunc(GL_LESS);
-        glDisable(GL_DEPTH_TEST);
-
-        m_FramebufferMultisampled.release();
     }
+    m_FramebufferMultisampled.release();
 
     // resolve to single sample framebuffer
+    m_FramebufferResolved.bind();
     {
-        m_FramebufferResolved.bind();
         glViewport(0, 0, width, height);
         glClear(GL_COLOR_BUFFER_BIT);
         glDisable(GL_DEPTH_TEST);
@@ -579,34 +631,76 @@ void Scene::Draw() {
         m_EmptyVAO.bind();
         glDrawArrays(GL_TRIANGLES, 0, 3);
         m_EmptyVAO.release();
-
-        m_FramebufferResolved.release();
     }
+    m_FramebufferResolved.release();
 
     // render to screen
+    glBindFramebuffer(GL_FRAMEBUFFER, defaultFramebuffer);
     {
-        glBindFramebuffer(GL_FRAMEBUFFER, defaultFramebuffer);
         glViewport(0, 0, width, height);
         glClear(GL_COLOR_BUFFER_BIT);
         glDisable(GL_DEPTH_TEST);
 
-        // generate mipmap for screen texture
-        m_ColorTextureResolved.generateMipmap();
-
         auto shader = GetShader(Scene::SCREEN);
         shader->use();
 
+        m_ColorTextureResolved.generateMipmap();
         m_ColorTextureResolved.active(GL_TEXTURE1);
         m_DepthTextureResolved.active(GL_TEXTURE2);
         m_DepthPyramid.active(GL_TEXTURE3);
-        shader->setUniform(shader->getUniformLocation("screenTexture"), 1);
+        shader->setUniform(shader->getUniformLocation("screenColorSampler"), 1);
 
         m_EmptyVAO.bind();
         glDrawArrays(GL_TRIANGLES, 0, 3);
         m_EmptyVAO.release();
-
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+#else
+    // save default framebuffer, because it is not 0 in Qt
+    GLint qtDefaultFramebuffer = GL_NONE;
+    glGetIntegerv(GL_FRAMEBUFFER_BINDING, &qtDefaultFramebuffer);
+
+    auto width = m_Camera->GetScaledViewPort().x;
+    auto height = m_Camera->GetScaledViewPort().y;
+
+    // render to my framebuffer
+    glViewport(0, 0, width, height);
+    glBindFramebuffer(GL_FRAMEBUFFER, m_Framebuffer);
+    {
+        //reversed-z buffer, depth range: 1.0(near plane) -> 0.0(far plane)
+        glClearColor(m_BackgroundColor.r, m_BackgroundColor.g,
+                     m_BackgroundColor.b, 1.0f);
+        glClearDepth(0.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        // use reversed-z buffer
+        glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_GREATER);
+        DrawFrame();
+    }
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    // render to screen
+    glBindFramebuffer(GL_FRAMEBUFFER, qtDefaultFramebuffer);
+    {
+        glViewport(0, 0, width, height);
+        glClear(GL_COLOR_BUFFER_BIT);
+        glDisable(GL_DEPTH_TEST);
+
+        auto shader = GetShader(Scene::SCREEN);
+        shader->use();
+
+        m_ColorTexture.active(GL_TEXTURE1);
+        m_DepthTexture.active(GL_TEXTURE2);
+        m_DepthPyramid.active(GL_TEXTURE3);
+        shader->setUniform(shader->getUniformLocation("screenColorSampler"), 1);
+
+        m_EmptyVAO.bind();
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+        m_EmptyVAO.release();
+    }
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+#endif
 
     CalculateFrameRate();
     GLCheckError();
@@ -692,7 +786,7 @@ void Scene::DrawModels() {
         obj->Draw(this);
     }
 #elif IGAME_OPENGL_VERSION_460
-    bool debug = false;
+    bool debug = true;
     if (debug) {
         //std::cout << "-------:Draw:-------" << std::endl;
         RefreshDrawCullDataBuffer();
@@ -728,6 +822,7 @@ void Scene::DrawModels() {
 
 void Scene::UpdateUniformData() {
     // update camera data matrix
+    m_CameraData.camera_position = m_Camera->GetCameraPos();
     m_CameraData.view = m_Camera->GetViewMatrix();
     m_CameraData.proj = m_Camera->GetProjectionMatrixReversedZ();
     m_CameraData.proj_view = m_Camera->GetProjectionMatrixReversedZ() *
@@ -738,7 +833,6 @@ void Scene::UpdateUniformData() {
     m_ObjectData.normal = m_ObjectData.model.invert().transpose();
 
     // update other ubo
-    m_UBO.viewPos = m_Camera->GetCameraPos();
 }
 
 void Scene::UseColor() { this->UBO().useColor = true; }
@@ -755,7 +849,7 @@ void Scene::UpdateUniformBuffer() {
 }
 
 void Scene::DrawAxes() {
-    glClear(GL_DEPTH_BUFFER_BIT);
+    //glClear(GL_DEPTH_BUFFER_BIT);
 
     uint32_t width = m_Camera->GetScaledViewPort().x;
     uint32_t height = m_Camera->GetScaledViewPort().y;
@@ -781,7 +875,7 @@ void Scene::DrawAxes() {
     {
         axesShader->setUniform(isFontLocation, true);
         GLUniform textureUniform =
-                axesShader->getUniformLocation("fontTexture");
+                axesShader->getUniformLocation("fontSampler");
         GLUniform colorUniform = axesShader->getUniformLocation("textColor");
 
         m_Axes->Update(Axes::ProjMatrix() * Axes::ViewMatrix() * m_ModelRotate,

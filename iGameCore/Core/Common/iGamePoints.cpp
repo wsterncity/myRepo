@@ -106,6 +106,6 @@ float* Points::RawPointer() { return m_Buffer->RawPointer(); }
 Points::Points()
 {
 	m_Buffer = FloatArray::New();
-	m_Buffer->SetElementSize(3);
+	m_Buffer->SetDimension(3);
 }
 IGAME_NAMESPACE_END

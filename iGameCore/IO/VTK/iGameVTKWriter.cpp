@@ -254,7 +254,7 @@ std::string VTKWriter::GenerateAttributeHeader(AttributeSet::Attribute attribute
 	switch (attribute.type)
 	{
 	case IG_SCALAR:
-		return "SCALARS " + ArrayName + type + ' ' + std::to_string(array->GetElementSize()) + "\nLOOKUP_TABLE default\n";
+		return "SCALARS " + ArrayName + type + ' ' + std::to_string(array->GetDimension()) + "\nLOOKUP_TABLE default\n";
 	case IG_VECTOR:
 		return "VECTORS " + ArrayName + type + '\n';
 	case IG_TENSOR:
@@ -307,7 +307,7 @@ const void VTKWriter::WriteArrayToBuffer(ArrayObject::Pointer array)
 {
 
 	int Num = array->GetNumberOfElements();
-	int Component = array->GetElementSize();
+	int Component = array->GetDimension();
 	std::string data;
 	auto buffer = CharArray::New();
 	if (m_FileType == IGAME_ASCII) {

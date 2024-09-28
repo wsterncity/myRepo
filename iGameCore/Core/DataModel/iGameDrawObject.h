@@ -13,9 +13,9 @@ public:
 	static Pointer New() { return new DrawObject; }
 	IGenum GetDataObjectType() const { return IG_DRAW_OBJECT; }
 	IGsize GetRealMemorySize() override { return 0; };
-
-	void SetExtentClipping(bool _in) { this->m_Clip.m_Extent.m_Use = _in; }
-	void SetPlaneClipping(bool _in) { this->m_Clip.m_Plane.m_Use = _in; }
+	virtual bool GetClipped() { return false; }; // Gets whether this can be clipped.
+	void SetExtentClipping(bool _in) { if (GetClipped()) this->m_Clip.m_Extent.m_Use = _in; }
+	void SetPlaneClipping(bool _in) { if (GetClipped()) this->m_Clip.m_Plane.m_Use = _in; }
 	void SetExtent(double xMin, double xMax, double yMin, double yMax,
 		double zMin, double zMax, bool flip = false) {
 		m_Clip.m_Extent.m_bmin[0] = xMin;
@@ -27,7 +27,8 @@ public:
 		m_Clip.m_Extent.m_flip = flip;
 		SetExtentClipping(true);
 	}
-	void SetClipPlane(double ox, double oy, double oz, double nx, double ny, double nz, bool flip = false) {
+	void SetPlane(double ox, double oy, double oz,
+		double nx, double ny, double nz, bool flip = false) {
 		m_Clip.m_Plane.m_origin[0] = ox;
 		m_Clip.m_Plane.m_origin[1] = oy;
 		m_Clip.m_Plane.m_origin[2] = oz;

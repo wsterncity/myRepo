@@ -35,9 +35,9 @@ public:
     // Set face array
     void SetFaces(CellArray::Pointer faces);
 
-    // Get edge cell by index edgeId
+    // Get edge cell by index edgeId. Thread-Unsafe, please use GetEdgePointId
     Line* GetEdge(const IGsize edgeId);
-    // Get face cell by index faceId
+    // Get face cell by index faceId. Thread-Unsafe, please use GetFacePointId and GetFaceEdgeId
     Face* GetFace(const IGsize faceId);
 
     // Get edge's point index. Return PointIds size
@@ -147,6 +147,12 @@ public:
 
     //Get real size of DataObject
     IGsize GetRealMemorySize() override;
+    bool GetClipped() override { return true; }
+
+    void SetFaceColor(const float color[3]);;
+    const float* GetFaceColor() const;
+    void SetFaceTransparency(float val);
+    float GetFaceTransparency() const;
 protected:
     SurfaceMesh();
     ~SurfaceMesh() override = default;
@@ -166,6 +172,8 @@ protected:
     CellArray::Pointer m_FaceEdges{};     // The edge set of faces
     CellLinks::Pointer m_FaceEdgeLinks{}; // The adjacent faces of edges
 
+    float m_FaceColor[3]{ 1.0f,1.0f,1.0f }; // The color of the mesh
+    float m_FaceTransparency{ 1.0f }; // Transparency of the faces
 private:
     // Used for the returned cell object, which is Thread-Unsafe
     Line::Pointer m_Edge{};
@@ -181,8 +189,8 @@ public:
     void ConvertToDrawableData() override;
     bool IsDrawable() override { return true; }
     void ViewCloudPicture(Scene* scene, int index, int demension = -1) override;
-    void SetAttributeWithPointData(ArrayObject::Pointer attr,
-        igIndex i = -1, const std::pair<float, float>& range = { 0.f, 0.f }) override;
+    void SetAttributeWithPointData(ArrayObject::Pointer attr, std::pair<float, float>& range,
+        igIndex i = -1) override;
     void SetAttributeWithCellData(ArrayObject::Pointer attr, igIndex i = -1);
 
 protected:

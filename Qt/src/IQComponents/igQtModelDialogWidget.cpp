@@ -96,7 +96,7 @@ ModelTreeWidgetItem* igQtModelDialogWidget::getItemFromObject(DataObject::Pointe
 	}
 	return nullptr;
 }
-void igQtModelDialogWidget::updateAllattriubute(DataObject::Pointer obj)
+void igQtModelDialogWidget::updateAllAttriubute(DataObject::Pointer obj)
 {
 	auto item = getItemFromObject(obj);
 	if (!item)return;
@@ -178,4 +178,20 @@ int igQtModelDialogWidget::updateCurrentModelInfo()
 	ui->ModelInformationWidget->updateInformationFrame();
 	Q_EMIT CurrendModelChanged();
 	return 1;
+}
+
+void igQtModelDialogWidget::deleteCurrentModel() {
+
+    // 获取当前选中的QTreeWidgetItem
+    QTreeWidgetItem* currentItem = modelTreeWidget->currentItem();
+    while(currentItem->parent()) currentItem = currentItem->parent();
+    // 如果没有父节点，说明是顶级项，使用takeTopLevelItem方法
+    int index = modelTreeWidget->indexOfTopLevelItem(currentItem);
+    if (index != -1) {
+        delete modelTreeWidget->takeTopLevelItem(index);
+    }
+
+    iGame::SceneManager::Instance()->GetCurrentScene()->RemoveCurrentModel();
+    iGame::SceneManager::Instance()->GetCurrentScene()->Draw();
+    std::cout << "delete\n";
 }

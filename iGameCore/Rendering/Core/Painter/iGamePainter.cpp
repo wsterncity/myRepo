@@ -46,7 +46,7 @@ void Painter::Delete(IGuint handle) {
 void Painter::SetPen(const Pen::Pointer& pen) { m_Pen = pen; }
 void Painter::SetPen(const Color& color) { m_Pen->SetColor(color); }
 void Painter::SetPen(const PenStyle& style) { m_Pen->SetStyle(style); }
-void Painter::SetPen(int width) { m_Pen->SetWidth(width); }
+void Painter::SetPen(float width) { m_Pen->SetWidth(width); }
 
 void Painter::SetBrush(const Color& color) { m_Brush->SetColor(color); }
 void Painter::SetBrush(const Brush::Pointer& brush) { m_Brush = brush; }
@@ -264,6 +264,8 @@ void Painter::Draw(Scene* scene) {
             m_PointEBO.allocate(indexes[0].size() * sizeof(iguIndex),
                                 indexes[0].data(), GL_STATIC_DRAW);
             m_VAO.elementBuffer(m_PointEBO);
+
+            m_VAO.bind();
             glad_glPointSize(primitive.penWidth);
             glad_glDrawElements(GL_POINTS, indexes[0].size(), GL_UNSIGNED_INT,
                                 0);
@@ -272,7 +274,11 @@ void Painter::Draw(Scene* scene) {
             m_LineEBO.allocate(indexes[1].size() * sizeof(iguIndex),
                                indexes[1].data(), GL_STATIC_DRAW);
             m_VAO.elementBuffer(m_LineEBO);
+
+            m_VAO.bind();
+            GLCheckError();
             glad_glLineWidth(primitive.penWidth);
+            GLCheckError();
             glad_glDrawElements(GL_LINES, indexes[1].size(), GL_UNSIGNED_INT,
                                 0);
         }
@@ -280,6 +286,8 @@ void Painter::Draw(Scene* scene) {
             m_TriangleEBO.allocate(indexes[2].size() * sizeof(iguIndex),
                                    indexes[2].data(), GL_STATIC_DRAW);
             m_VAO.elementBuffer(m_TriangleEBO);
+
+            m_VAO.bind();
             glad_glDrawElements(GL_TRIANGLES, indexes[2].size(),
                                 GL_UNSIGNED_INT, 0);
         }
@@ -290,6 +298,8 @@ void Painter::Draw(Scene* scene) {
 }
 
 void Painter::Clear() {
+    m_PrimitivesPool.Clear();
+
     m_Points.clear();
     m_Colors.clear();
     m_PointIndexes.clear();

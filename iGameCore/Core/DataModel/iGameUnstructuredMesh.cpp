@@ -347,7 +347,7 @@ void UnstructuredMesh::Draw(Scene* scene) {
 		m_LineVAO.release();
 	}
 	if (m_ViewStyle & IG_SURFACE) {
-		scene->GetShader(Scene::PATCH)->use();
+		scene->GetShader(Scene::BLINNPHONG)->use();
 		m_TriangleVAO.bind();
 		glad_glDrawElements(GL_TRIANGLES,
 			M_TriangleIndices->GetNumberOfValues(),
@@ -417,8 +417,8 @@ void UnstructuredMesh::ConvertToDrawableData() {
 	M_VertexIndices = UnsignedIntArray::New();
 	M_LineIndices = UnsignedIntArray::New();
 	M_TriangleIndices = UnsignedIntArray::New();
-	M_LineIndices->SetElementSize(2);
-	M_TriangleIndices->SetElementSize(3);
+	M_LineIndices->SetDimension(2);
+	M_TriangleIndices->SetDimension(3);
 
 
 	igIndex ids[128]{};
@@ -596,7 +596,7 @@ void UnstructuredMesh::ViewCloudPicture(Scene* scene, int index, int demension)
 	auto& attr = this->GetAttributeSet()->GetAttribute(index);
 	if (!attr.isDeleted) {
 		if (attr.attachmentType == IG_POINT)
-			this->SetAttributeWithPointData(attr.pointer, demension, attr.dataRange);
+			this->SetAttributeWithPointData(attr.pointer, attr.dataRange, demension);
 		else if (attr.attachmentType == IG_CELL)
 			this->SetAttributeWithCellData(attr.pointer, demension);
 	}
@@ -604,25 +604,25 @@ void UnstructuredMesh::ViewCloudPicture(Scene* scene, int index, int demension)
 	scene->Update();
 }
 
-void UnstructuredMesh::SetAttributeWithPointData(ArrayObject::Pointer attr,
-	igIndex i, const std::pair<float, float>& range) {
-	if (m_ViewAttribute != attr || m_ViewDemension != i) {
+void UnstructuredMesh::SetAttributeWithPointData(ArrayObject::Pointer attr, std::pair<float, float>& range, igIndex dimension) {
+	if (m_ViewAttribute != attr || m_ViewDemension != dimension) {
 		m_ViewAttribute = attr;
-		m_ViewDemension = i;
+		m_ViewDemension = dimension;
 		m_UseColor = true;
 		m_ColorWithCell = false;
 		ScalarsToColors::Pointer mapper = ScalarsToColors::New();
 		if (range.first != range.second) {
 			mapper->SetRange(range.first, range.second);
 		}
-		else if (i == -1) {
+		else if (dimension == -1) {
 			mapper->InitRange(attr);
 		}
 		else {
-			mapper->InitRange(attr, i);
+			mapper->InitRange(attr, dimension);
 		}
-
-		m_Colors = mapper->MapScalars(attr, i);
+        range.first  = mapper->GetRange()[0];
+        range.second = mapper->GetRange()[1];
+		m_Colors = mapper->MapScalars(attr, dimension);
 		if (m_Colors == nullptr) { return; }
 
 		GLAllocateGLBuffer(m_ColorVBO,

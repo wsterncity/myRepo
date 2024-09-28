@@ -16,11 +16,11 @@ public:
 	// Get the number of values
 	virtual IGsize GetNumberOfValues() const = 0;
 
-	// Set the size of the element
-	virtual void SetElementSize(const int _Newsize) = 0;
+	// Set the dimension of the element, such as VECTOR = 3
+	virtual void SetDimension(const int _Newsize) = 0;
 
-	// Get the size of the element
-	virtual int GetElementSize() = 0;
+	// Get the dimension of the element
+	virtual int GetDimension() = 0;
 
 	// Get value by index _Pos. Return double type.
 	virtual double GetValue(const IGsize _Pos) = 0;

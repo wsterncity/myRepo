@@ -157,7 +157,7 @@ FT_CFLAGS = $(CPPFLAGS) \
 FT_COMPILE := $(CC) $(ANSIFLAGS) $(INCLUDE_FLAGS) $(FT_CFLAGS)
 
 
-# Include the `exports' rules file.
+# include the `exports' rules file.
 #
 include $(TOP_DIR)/builds/exports.mk
 
@@ -216,7 +216,7 @@ $(FTDEBUG_OBJ): $(FTDEBUG_SRC) $(FREETYPE_H)
 	$(FT_COMPILE) $T$(subst /,$(COMPILER_SEP),$@ $<)
 
 
-# Include all rule files from FreeType components.
+# include all rule files from FreeType components.
 #
 include $(SRC_DIR)/base/rules.mk
 include $(patsubst %,$(SRC_DIR)/%/rules.mk,$(MODULES))

@@ -46,6 +46,7 @@ public:
 
     /* Rendering Related */
     struct CameraDataBuffer {
+        alignas(16) igm::vec3 camera_position;
         alignas(16) igm::mat4 view;
         alignas(16) igm::mat4 proj;
         alignas(16) igm::mat4 proj_view; // proj * view
@@ -56,7 +57,6 @@ public:
         alignas(16) igm::vec4 sphereBounds;
     };
     struct UniformBufferObjectBuffer {
-        alignas(16) igm::vec3 viewPos;
         alignas(4) int useColor{0};
     };
 
@@ -70,7 +70,8 @@ public:
     };
 
     enum ShaderType {
-        PATCH = 0,
+        BLINNPHONG = 0,
+        PBR,
         NOLIGHT,
         PURECOLOR,
         AXES,
@@ -79,6 +80,7 @@ public:
         DEPTHREDUCE,
         MESHLETCULL,
         SCREEN,
+        FXAA,
         SHADERTYPE_COUNT
     };
 
@@ -192,7 +194,8 @@ protected:
     // used to draw full-screen triangle
     GLVertexArray m_EmptyVAO;
 
-    GLint samples = 1;
+#ifdef MSAA
+    GLint samples = 4;
     GLFramebuffer m_FramebufferMultisampled;
     GLTexture2dMultisample m_ColorTextureMultisampled;
     GLTexture2dMultisample m_DepthTextureMultisampled;
@@ -200,6 +203,11 @@ protected:
     GLFramebuffer m_FramebufferResolved;
     GLTexture2d m_ColorTextureResolved;
     GLTexture2d m_DepthTextureResolved;
+#else
+    GLFramebuffer m_Framebuffer;
+    GLTexture2d m_ColorTexture;
+    GLTexture2d m_DepthTexture;
+#endif
 
     GLBuffer m_DrawCullData;
     int m_DepthPyramidWidth, m_DepthPyramidHeight, m_DepthPyramidLevels;

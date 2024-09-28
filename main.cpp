@@ -18,14 +18,22 @@ int main(int argc, char* argv[]) {
     QGuiApplication::setAttribute(Qt::AA_UseHighDpiPixmaps); // 图标高分辨率支持
     QCoreApplication::setAttribute(Qt::AA_UseDesktopOpenGL);
     QApplication a(argc, argv);
+
     QSurfaceFormat format;
     format.setRenderableType(QSurfaceFormat::OpenGL);
-    format.setSamples(16);
-    format.setDepthBufferSize(32);
-    //format.setStencilBufferSize (16);
-    format.setVersion(4, 6); //Mac set to format.setVersion(4, 1);
-    //format.setProfile (QSurfaceFormat::CompatibilityProfile);
+    format.setVersion(3, 3); // Mac set to format.setVersion(3, 3);
     format.setProfile(QSurfaceFormat::CoreProfile);
+
+    format.setRedBufferSize(8); // RGBA8
+    format.setGreenBufferSize(8);
+    format.setBlueBufferSize(8);
+    format.setAlphaBufferSize(8);
+    // If the depth buffer is set to 24, the line width can only be set to 1
+    format.setDepthBufferSize(32);
+    // If the template buffer is turned on, the line width can only be set to 1
+    // format.setStencilBufferSize(8);
+    format.setSamples(1);
+
     QSurfaceFormat::setDefaultFormat(format);
 
     a.processEvents();
@@ -38,7 +46,8 @@ int main(int argc, char* argv[]) {
 
     //    QApplication app(argc, argv);
     //
-    ////    iGameFileDialog::getOpenFileNames("Load file", QDir::currentPath(), "ALL FIle(*.obj *.off *.stl *.vtk *.mesh *.pvd *.vts)");
+    ////    iGameFileDialog::getOpenFileNames("Load file", QDir::currentPath(),
+    ///"ALL FIle(*.obj *.off *.stl *.vtk *.mesh *.pvd *.vts)");
     //    iGameFileDialog fileDialog;
     //    fileDialog.exec();
     return 0;

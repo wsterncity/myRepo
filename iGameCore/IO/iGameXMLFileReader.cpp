@@ -142,5 +142,4 @@ tinyxml2::XMLElement* iGameXMLFileReader::FindTargetAttributeItem(tinyxml2::XMLE
 }
 
 
-
 IGAME_NAMESPACE_END

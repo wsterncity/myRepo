@@ -28,9 +28,11 @@ public:
 public slots:
 	int addModelToModelTree(Model::Pointer model);
 	ModelTreeWidgetItem* getItemFromObject(DataObject::Pointer obj);
-	void updateAllattriubute(DataObject::Pointer obj);
+	void updateAllAttriubute(DataObject::Pointer obj);
 	int addDataObjectToModelTree(DataObject::Pointer obj, ItemSource source);
 	int updateCurrentModelInfo();
+
+    void deleteCurrentModel();
 signals:
 	void CurrendModelChanged();
 protected:

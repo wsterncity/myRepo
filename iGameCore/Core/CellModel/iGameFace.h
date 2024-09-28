@@ -26,15 +26,10 @@ public:
 
 	virtual Vector3f GetNormal() = 0;
 
-	igIndex GetEdgeId(const int id) { return this->EdgeIds->GetId(id); }
-
-	IdArray::Pointer EdgeIds{};
-
 protected:
 	Face()
 	{
 		m_Line = Line::New();
-		EdgeIds = IdArray::New();
 	}
 	~Face() override = default;
 

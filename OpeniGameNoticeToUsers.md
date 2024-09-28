@@ -543,8 +543,14 @@ ENDIF ()
 Mac系统最高只支持``OpenGL4.1``，因此必须设置为``OpenGL3.3``，还需要在``main.cpp``中修改相关代码
 
 ```Cpp
-format.setVersion(4, 6); //Mac set to format.setVersion(4, 1);
+format.setVersion(4, 6); //Mac set to format.setVersion(3, 3);
 ```
+
+### 遮挡剔除功能
+
+遮挡剔除为加速渲染功能，由于需要用到计算着色器（Compute Shader），因此在本项目必须在``OpenGL4.6``版本才能开启。
+
+> **注意:** 该功能只能在开启MSAA的情况下使用（还没适配未启用MSAA的情况）
 
 ### Painter 类用法
 
