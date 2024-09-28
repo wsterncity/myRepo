@@ -14,7 +14,6 @@ public:
 	I_OBJECT(PointFinder);
 	static Pointer New() { return new PointFinder; }
 
-
 	void SetPoints(Points::Pointer p) {
 		m_Points = p;
 	}
@@ -148,7 +147,6 @@ protected:
 			return;
 		}
 
-		// 找level邻域内所有的box
 		for (i = 0; i < 3; i++) {
 			min = ijk[i] - level;
 			max = ijk[i] + level;
@@ -156,7 +154,6 @@ protected:
 			maxLevel[i] = (max < (m_Size - 1) ? max : (m_Size - 1));
 		}
 
-		// 仅找level层的box
 		for (i = minLevel[0]; i <= maxLevel[0]; i++) {
 			for (j = minLevel[1]; j <= maxLevel[1]; j++) {
 				for (k = minLevel[2]; k <= maxLevel[2]; k++) {
