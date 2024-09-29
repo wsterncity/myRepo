@@ -80,9 +80,17 @@ public:
                 format = GL_RED;
                 type = GL_FLOAT;
                 break;
+            case GL_DEPTH_COMPONENT24:
+                format = GL_DEPTH_COMPONENT;
+                type = GL_FLOAT;
+                break;
             case GL_DEPTH_COMPONENT32F:
                 format = GL_DEPTH_COMPONENT;
                 type = GL_FLOAT;
+                break;
+            case GL_DEPTH24_STENCIL8:
+                format = GL_DEPTH_STENCIL;
+                type = GL_UNSIGNED_INT_24_8;
                 break;
             default:
                 throw std::runtime_error("You called the GLTexture2d::storage "
