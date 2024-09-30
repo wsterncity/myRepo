@@ -40,7 +40,7 @@ igQtModelDialogWidget::igQtModelDialogWidget(QWidget* parent)
 	connect(modelTreeWidget, &igQtModelTreeWidget::ChangeCurrentModel, this, &igQtModelDialogWidget::UpdateCurrentModel);
 	connect(modelTreeWidget, &igQtModelTreeWidget::ChangeCurrentModel, this, &igQtModelDialogWidget::updateCurrentModelInfo);
 
-
+    connect(ui->pushButton, &QPushButton::clicked, this, [&](){iGame::SceneManager::Instance()->GetCurrentScene()->Draw();});
 }
 
 void igQtModelDialogWidget::UpdateCurrentModel(Model::Pointer model) {
@@ -192,6 +192,7 @@ void igQtModelDialogWidget::deleteCurrentModel() {
     }
 
     iGame::SceneManager::Instance()->GetCurrentScene()->RemoveCurrentModel();
-    iGame::SceneManager::Instance()->GetCurrentScene()->Draw();
-    std::cout << "delete\n";
+    iGame::SceneManager::Instance()->GetCurrentScene()->Update();
+
+
 }

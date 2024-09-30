@@ -191,7 +191,7 @@ public:
     void ViewCloudPicture(Scene* scene, int index, int demension = -1) override;
     void SetAttributeWithPointData(ArrayObject::Pointer attr, std::pair<float, float>& range,
         igIndex i = -1) override;
-    void SetAttributeWithCellData(ArrayObject::Pointer attr, igIndex i = -1);
+    void SetAttributeWithCellData(ArrayObject::Pointer attr, std::pair<float, float>& range, igIndex i = -1);
 
 protected:
     SurfaceMesh::Pointer m_DrawMesh{ nullptr };

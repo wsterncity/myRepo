@@ -588,6 +588,7 @@ void Scene::ResizeDepthPyramid() {
 }
 
 void Scene::Draw() {
+
 #ifdef MSAA
     // save default framebuffer, because it is not 0 in Qt
     GLint defaultFramebuffer = GL_NONE;

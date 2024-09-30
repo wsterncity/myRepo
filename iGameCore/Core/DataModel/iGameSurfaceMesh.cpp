@@ -1177,7 +1177,7 @@ void SurfaceMesh::ViewCloudPicture(Scene* scene, int index, int demension) {
             this->SetAttributeWithPointData(attr.pointer, attr.dataRange,
                                             demension);
         else if (attr.attachmentType == IG_CELL)
-            this->SetAttributeWithCellData(attr.pointer, demension);
+            this->SetAttributeWithCellData(attr.pointer, attr.dataRange, demension);
     }
     scene->DoneCurrent();
     scene->Update();
@@ -1200,6 +1200,12 @@ void SurfaceMesh::SetAttributeWithPointData(ArrayObject::Pointer attr,
         } else {
             mapper->InitRange(attr, dimension);
         }
+//        if (dimension == -1) {
+//            mapper->InitRange(attr);
+//        } else {
+//            mapper->InitRange(attr, dimension);
+//        }
+
         m_Colors = mapper->MapScalars(attr, dimension);
         if (m_Colors == nullptr) { return; }
         range.first = mapper->GetRange()[0];
@@ -1223,22 +1229,30 @@ void SurfaceMesh::SetAttributeWithPointData(ArrayObject::Pointer attr,
     }
 }
 
-void SurfaceMesh::SetAttributeWithCellData(ArrayObject::Pointer attr,
-                                           igIndex i) {
-    if (m_ViewAttribute != attr || m_ViewDemension != i) {
+void SurfaceMesh::SetAttributeWithCellData(ArrayObject::Pointer attr, std::pair<float, float>& range,
+                                           igIndex dimension) {
+    if (m_ViewAttribute != attr || m_ViewDemension != dimension) {
         m_ViewAttribute = attr;
-        m_ViewDemension = i;
+        m_ViewDemension = dimension;
         m_UseColor = true;
         m_ColorWithCell = true;
         ScalarsToColors::Pointer mapper = ScalarsToColors::New();
 
-        if (i == -1) {
+
+        if (range.first != range.second) {
+            mapper->SetRange(range.first, range.second);
+        } else if (dimension == -1) {
             mapper->InitRange(attr);
         } else {
-            mapper->InitRange(attr, i);
+            mapper->InitRange(attr, dimension);
         }
+//        if (dimension == -1) {
+//            mapper->InitRange(attr);
+//        } else {
+//            mapper->InitRange(attr, dimension);
+//        }
 
-        FloatArray::Pointer colors = mapper->MapScalars(attr, i);
+        FloatArray::Pointer colors = mapper->MapScalars(attr, dimension);
         if (colors == nullptr) { return; }
 
         FloatArray::Pointer newPositions = FloatArray::New();
