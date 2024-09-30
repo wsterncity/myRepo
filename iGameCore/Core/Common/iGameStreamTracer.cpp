@@ -153,7 +153,7 @@ std::vector<std::vector<float>> iGameStreamTracer::showStreamLineMix(
     int component = Vector.pointer->GetDimension();
     float MAX_STEP = 0.001, MIN_STEP = 0.0001, ERR = 0.000001;
 
-    for (size_t i = 0; i < numOfPoints; i++) {
+    for (int i = 0; i < numOfPoints; i++) {
         float v[8] = {0.0f};
         Vector.pointer->GetElement(i, v);
         _vector.emplace_back(Vector3f(v[0], v[1], v[2]));
@@ -266,7 +266,7 @@ std::vector<std::vector<float>> iGameStreamTracer::showStreamLineMix(
 
     for (int i = 0; i < seed.size(); i++) { result[i] = tp->Commit(func, i); }
     for (int i = 0; i < seed.size(); i++) { result[i].wait(); }
-
+    return tem;
     // result[2] = tp->Commit(func, 2);
     // result[2].wait();
 
@@ -290,7 +290,7 @@ std::vector<std::vector<float>> iGameStreamTracer::showStreamLineHex(
     int component = Vector.pointer->GetDimension();
     float MAX_STEP = 0.001, MIN_STEP = 0.0001, ERR = 0.000001;
 
-    for (size_t i = 0; i < numOfPoints; i++) {
+    for (int i = 0; i < numOfPoints; i++) {
         float v[8] = {0.0f};
         Vector.pointer->GetElement(i, v);
         _vector.emplace_back(Vector3f(v[0], v[1], v[2]));
@@ -428,23 +428,26 @@ std::vector<std::vector<float>> iGameStreamTracer::showStreamLineCellData(
     if (mesh == nullptr) return tem;
     std::vector<Vector3f> _vector;
     auto Vec = mesh->GetAttributeSet();
-    auto vec = Vec->GetVector(vectorName);
+    auto vec = Vec->GetVector(0);
     int numOfCells = mesh->GetNumberOfVolumes();
-    for (size_t i = 0; i < numOfPoints; i++) {
+    for (int i = 0; i < numOfPoints; i++) {
         float VV[3] = {0.0f};
         vec.pointer->GetElement(i, VV);
         _vector.emplace_back(VV[0], VV[1], VV[2]);
     }
-    std::vector<std::vector<igIndex>> f2c(numOfFaces);
-    std::vector<std::vector<igIndex>> c2c(numOfCells);
+    std::vector<std::vector<int>> f2c(numOfFaces);
+    std::vector<std::vector<int>> c2c(numOfCells);
     igIndex vhs[256];
     igIndex fhs[256];
     igIndex vcnt, fcnt = 0;
-    for (size_t i = 0; i < numOfCells; i++) {
+    for (int i = 0; i < numOfCells; i++) {
         int size = mesh->GetVolumeFaceIds(i, fhs);
-        for (int j = 0; j < size; j++) { f2c[fhs[j]].emplace_back(i); }
+        for (int j = 0; j < size; j++) { 
+            int temIndex = fhs[j];
+            f2c[temIndex].emplace_back(i);
+        }
     }
-    for (size_t i = 0; i < numOfCells; i++) {
+    for (int i = 0; i < numOfCells; i++) {
         int size = mesh->GetVolumeFaceIds(i, fhs);
         for (int j = 0; j < size; j++) {
             auto chs = f2c[fhs[j]];
@@ -593,12 +596,12 @@ std::vector<std::vector<std::vector<float>>> iGameStreamTracer::showStreamFace(
     float* Length = new float[seedTem.size()];
     int MAX_SEED = seed.size() * 2;
     std::vector<int> tem_strip;
-    for (size_t i = 0; i < seedTem.size(); i++) {
+    for (int i = 0; i < seedTem.size(); i++) {
         Length[i] = 0;
         if (i != seedTem.size() - 1) { tem_strip.emplace_back(i); }
     }
     // mesh->streamFaceStrip.emplace_back(tem_strip);
-    for (size_t i = 0; i < numOfPoints; i++) {
+    for (int i = 0; i < numOfPoints; i++) {
         float v[8] = {0.0f};
         Vector.pointer->GetElement(i, v);
         _vector.emplace_back(Vector3f(v[0], v[1], v[2]));
@@ -712,6 +715,8 @@ std::vector<std::vector<std::vector<float>>> iGameStreamTracer::showStreamFace(
         // std::cout << i << "end" <<clock()-time1<< std::endl;
     };
     float* temLength = nullptr;
+    temLength = new float[1];
+    temLength[0] = 0;
     while (maxSteps > 0 && !seedTem.empty()) {
         int nOfSeed = seedTem.size();
         std::vector<std::future<void>> result(nOfSeed);
@@ -728,8 +733,9 @@ std::vector<std::vector<std::vector<float>>> iGameStreamTracer::showStreamFace(
         tem.emplace_back(temFace);
         streamColor.emplace_back(temColor);
         seedTem.clear();
+        delete[] temLength;
         temLength = new float[nOfSeed * 2];
-        for (size_t i = 0; i < nOfSeed * 2; i++) { temLength[i] = 0; }
+        for (int i = 0; i < nOfSeed * 2; i++) { temLength[i] = 0; }
         bool* seedIsEnd = new bool[nOfSeed];
         for (int i = 0; i < nOfSeed; i++) { seedIsEnd[i] = true; }
         for (int i = 0; i < nOfSeed - 1; i++) {
@@ -802,8 +808,10 @@ bool iGameStreamTracer::CellData2PointData(std::string vectorName) {
     ;
     auto Vec = mesh->GetAttributeSet();
     auto vec = Vec->GetVector(vectorName);
-    // 维数
-    if (vec.attachmentType != IG_CELL) { return false; }
+    // how much D
+    if (vec.attachmentType != IG_CELL) { 
+        std::cout << vec.attachmentType << std::endl;
+        return false; }
     auto vecV = vec.pointer->GetDimension();
     std::vector<Vector3f> pointVector(numOfPoints);
     std::vector<int> pointVectorNUM(
@@ -811,7 +819,7 @@ bool iGameStreamTracer::CellData2PointData(std::string vectorName) {
     igIndex vhs[256];
     igIndex fhs[256];
     igIndex vcnt, fcnt = 0;
-    for (size_t i = 0; i < numOfCells; i++) {
+    for (int i = 0; i < numOfCells; i++) {
         float VV[3] = {0.0f};
         vec.pointer->GetElement(i, VV);
         Vector3f temVec(VV[0], VV[1], VV[2]);
@@ -826,8 +834,8 @@ bool iGameStreamTracer::CellData2PointData(std::string vectorName) {
     FloatArray::Pointer VectorData = FloatArray::New();
     VectorData->SetDimension(3);
     VectorData->SetName(vectorName);
-    for (size_t i = 0; i < numOfPoints; i++) {
-        for (size_t j = 0; j < vecV; j++) {
+    for (int i = 0; i < numOfPoints; i++) {
+        for (int j = 0; j < vecV; j++) {
             VectorData->AddValue(pointVector[i][j] / pointVectorNUM[i]);
         }
     }
@@ -892,7 +900,7 @@ Vector3f iGameStreamTracer::interpolationVectorTri(
                  pointToFaceDis(v[2], v[1], v[2], v[3]);
     weights[3] = pointToFaceDis(coord, v[1], v[2], v[0]) /
                  pointToFaceDis(v[3], v[1], v[2], v[3]);
-    for (size_t i = 0; i < 4; i++) {
+    for (int i = 0; i < 4; i++) {
         finnal += _vector[volume->GetPointId(i)] * weights[i];
     }
     if (finnal.length() < terminalSpeed) { inside = false; }
@@ -1011,7 +1019,7 @@ Vector3f iGameStreamTracer::interpolationVectorHexWithNatural(
         return finnal;
     }
     InterpolationFunctions(pcoords, weights);
-    for (size_t i = 0; i < 8; i++) {
+    for (int i = 0; i < 8; i++) {
 
         finnal += _vector[volume[i]] * weights[i];
     }
@@ -1079,13 +1087,13 @@ Vector3f iGameStreamTracer::interpolationVectorMixWithMeanV(
     int fsize = mesh->GetVolumeFaceIds(VolumeId, face);
     std::vector<float> weights(size);
     int MaxPolygonSize = 0;
-    for (size_t i = 0; i < fsize; i++) {
+    for (int i = 0; i < fsize; i++) {
         int fpsize = mesh->GetFacePointIds(face[i], p);
         MaxPolygonSize = std::max(fpsize, MaxPolygonSize);
     }
     weights = ComputeWeightsForPolygonMesh(volume, coord, face, MaxPolygonSize,
                                            size, fsize);
-    for (size_t i = 0; i < size; i++) {
+    for (int i = 0; i < size; i++) {
 
         finnal += _vector[volume[i]] * weights[i];
     }
@@ -1136,7 +1144,7 @@ std::vector<float> iGameStreamTracer::ComputeWeightsForPolygonMesh(
         }
 
         for (int j = 0; j < fpsize; j++) {
-            for (size_t i = 0; i < psize; i++) {
+            for (int i = 0; i < psize; i++) {
                 int temid = fp[j];
                 if (PointIds[i] == temid) u[j] = uVec[i];
                 uIdInVolume[j] = i;
@@ -1269,13 +1277,13 @@ std::vector<float> iGameStreamTracer::ComputeWeightsForPolygonMesh(
 	}
 
 	float sumWeight = 0;
-	for (size_t i = 0; i < weights.size(); i++)
+    for (int i = 0; i < weights.size(); i++)
 	{
 		sumWeight += weights[i];
 	}
 
     if (fabs(sumWeight) < eps) { return weights; }
-    for (size_t i = 0; i < weights.size(); i++) { weights[i] /= sumWeight; }
+    for (int i = 0; i < weights.size(); i++) { weights[i] /= sumWeight; }
     return weights;
 }
 bool iGameStreamTracer::isInside(Vector3f coord, Vector3f v0, Vector3f v1,

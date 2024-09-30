@@ -19,6 +19,7 @@ igQtStreamTracerWidget::igQtStreamTracerWidget(QWidget* parent) : QWidget(parent
 	 numOfSeeds = 20;
 	 ui->numOfSeedLineEdit->setText("20");
 	 control = 0;
+     haveClicked = false;
 	 proportion = 0.35;
 	 ui->proportion_Slider->setValue(35);
 	 lengthOfStreamLine = 5;
