@@ -4,8 +4,8 @@
 #include "iGameCellArray.h"
 #include "iGameCellLinks.h"
 #include "iGameEdgeTable.h"
-#include "iGamePointSet.h"
 #include "iGameFlexArray.h"
+#include "iGamePointSet.h"
 
 #include "iGameLine.h"
 #include "iGamePolygon.h"
@@ -70,45 +70,68 @@ public:
     };
     int GetNumberOfLinks(const IGsize id, Type type);
     // Get all points within one ring of a point. Return the size of indices.
-    int GetPointToOneRingPoints(const IGsize ptId, igIndex* ptIds); // Unsafe: Stake overflow
-    bool GetPointToOneRingPoints(const IGsize ptId, IdArray::Pointer ptIds); // Safe
+    int GetPointToOneRingPoints(const IGsize ptId,
+                                igIndex* ptIds); // Unsafe: Stake overflow
+    bool GetPointToOneRingPoints(const IGsize ptId,
+                                 IdArray::Pointer ptIds); // Safe
 
     // Get all neighboring edges of a point. Return the size of indices.
-    int GetPointToNeighborEdges(const IGsize ptId, igIndex* edgeIds); // Unsafe: Stake overflow
-    bool GetPointToNeighborEdges(const IGsize ptId, const igIndex*& edgeIds, int& size); // Safe but data will be modified
-    bool GetPointToNeighborEdges(const IGsize ptId, IdArray::Pointer edgeIds); // Safe
-    bool GetPointToNeighborEdges(const IGsize ptId, ReturnContainer& edgeIds); // Safe
+    int GetPointToNeighborEdges(const IGsize ptId,
+                                igIndex* edgeIds); // Unsafe: Stake overflow
+    bool GetPointToNeighborEdges(const IGsize ptId, const igIndex*& edgeIds,
+                                 int& size); // Safe but data will be modified
+    bool GetPointToNeighborEdges(const IGsize ptId,
+                                 IdArray::Pointer edgeIds); // Safe
+    bool GetPointToNeighborEdges(const IGsize ptId,
+                                 ReturnContainer& edgeIds); // Safe
 
     // Get all neighboring faces of a point. Return the size of indices.
-    int GetPointToNeighborFaces(const IGsize ptId, igIndex* faceIds); // Unsafe: Stake overflow
-    bool GetPointToNeighborFaces(const IGsize ptId, const igIndex*& faceIds, int& size); // Safe but data will be modified
-    bool GetPointToNeighborFaces(const IGsize ptId, IdArray::Pointer faceIds); // Safe
-    bool GetPointToNeighborFaces(const IGsize ptId, ReturnContainer& faceIds); // Safe
+    int GetPointToNeighborFaces(const IGsize ptId,
+                                igIndex* faceIds); // Unsafe: Stake overflow
+    bool GetPointToNeighborFaces(const IGsize ptId, const igIndex*& faceIds,
+                                 int& size); // Safe but data will be modified
+    bool GetPointToNeighborFaces(const IGsize ptId,
+                                 IdArray::Pointer faceIds); // Safe
+    bool GetPointToNeighborFaces(const IGsize ptId,
+                                 ReturnContainer& faceIds); // Safe
 
     // Get all neighboring faces of a edge (shared edge). Return the size of
     // indices.
-    int GetEdgeToNeighborFaces(const IGsize edgeId, igIndex* faceIds); // Unsafe: Stake overflow
-    bool GetEdgeToNeighborFaces(const IGsize edgeId, const igIndex*& faceIds, int& size); // Safe but data will be modified
-    bool GetEdgeToNeighborFaces(const IGsize edgeId, IdArray::Pointer faceIds); // Safe
-    bool GetEdgeToNeighborFaces(const IGsize edgeId, ReturnContainer& faceIds); // Safe
+    int GetEdgeToNeighborFaces(const IGsize edgeId,
+                               igIndex* faceIds); // Unsafe: Stake overflow
+    bool GetEdgeToNeighborFaces(const IGsize edgeId, const igIndex*& faceIds,
+                                int& size); // Safe but data will be modified
+    bool GetEdgeToNeighborFaces(const IGsize edgeId,
+                                IdArray::Pointer faceIds); // Safe
+    bool GetEdgeToNeighborFaces(const IGsize edgeId,
+                                ReturnContainer& faceIds); // Safe
 
     // Get all faces within one ring of a edge (shared point). Return the size of
     // indices.
-    int GetEdgeToOneRingFaces(const IGsize edgeId, igIndex* faceIds); // Unsafe: Stake overflow
-    bool GetEdgeToOneRingFaces(const IGsize edgeId, IdArray::Pointer faceIds); // Safe
-    bool GetEdgeToOneRingFaces(const IGsize edgeId, ReturnContainer& faceIds); // Safe
+    int GetEdgeToOneRingFaces(const IGsize edgeId,
+                              igIndex* faceIds); // Unsafe: Stake overflow
+    bool GetEdgeToOneRingFaces(const IGsize edgeId,
+                               IdArray::Pointer faceIds); // Safe
+    bool GetEdgeToOneRingFaces(const IGsize edgeId,
+                               ReturnContainer& faceIds); // Safe
 
     // Get all neighboring faces of a face (shared edge). Return the size of
     // indices.
-    int GetFaceToNeighborFaces(const IGsize faceId, igIndex* faceIds); // Unsafe: Stake overflow
-    bool GetFaceToNeighborFaces(const IGsize faceId, IdArray::Pointer faceIds); // Safe
-    bool GetFaceToNeighborFaces(const IGsize faceId, ReturnContainer& faceIds); // Safe
+    int GetFaceToNeighborFaces(const IGsize faceId,
+                               igIndex* faceIds); // Unsafe: Stake overflow
+    bool GetFaceToNeighborFaces(const IGsize faceId,
+                                IdArray::Pointer faceIds); // Safe
+    bool GetFaceToNeighborFaces(const IGsize faceId,
+                                ReturnContainer& faceIds); // Safe
 
     // Get all faces within one ring of a face (shared point). Return the size of
     // indices.
-    int GetFaceToOneRingFaces(const IGsize faceId, igIndex* faceIds); // Unsafe: Stake overflow
-    bool GetFaceToOneRingFaces(const IGsize faceId, IdArray::Pointer faceIds); // Safe
-    bool GetFaceToOneRingFaces(const IGsize faceId, ReturnContainer& faceIds); // Safe
+    int GetFaceToOneRingFaces(const IGsize faceId,
+                              igIndex* faceIds); // Unsafe: Stake overflow
+    bool GetFaceToOneRingFaces(const IGsize faceId,
+                               IdArray::Pointer faceIds); // Safe
+    bool GetFaceToOneRingFaces(const IGsize faceId,
+                               ReturnContainer& faceIds); // Safe
 
     // Get edge index according to two point index. If don't, return index -1
     igIndex GetEdgeIdFormPointIds(const IGsize ptId1, const IGsize ptId2);
@@ -149,10 +172,12 @@ public:
     IGsize GetRealMemorySize() override;
     bool GetClipped() override { return true; }
 
-    void SetFaceColor(const float color[3]);;
+    void SetFaceColor(const float color[3]);
+    ;
     const float* GetFaceColor() const;
     void SetFaceTransparency(float val);
     float GetFaceTransparency() const;
+
 protected:
     SurfaceMesh();
     ~SurfaceMesh() override = default;
@@ -172,8 +197,8 @@ protected:
     CellArray::Pointer m_FaceEdges{};     // The edge set of faces
     CellLinks::Pointer m_FaceEdgeLinks{}; // The adjacent faces of edges
 
-    float m_FaceColor[3]{ 1.0f,1.0f,1.0f }; // The color of the mesh
-    float m_FaceTransparency{ 1.0f }; // Transparency of the faces
+    float m_FaceColor[3]{1.0f, 1.0f, 1.0f}; // The color of the mesh
+    float m_FaceTransparency{1.0f};         // Transparency of the faces
 private:
     // Used for the returned cell object, which is Thread-Unsafe
     Line::Pointer m_Edge{};
@@ -189,18 +214,19 @@ public:
     void ConvertToDrawableData() override;
     bool IsDrawable() override { return true; }
     void ViewCloudPicture(Scene* scene, int index, int demension = -1) override;
-    void SetAttributeWithPointData(ArrayObject::Pointer attr, std::pair<float, float>& range,
-        igIndex i = -1) override;
-    void SetAttributeWithCellData(ArrayObject::Pointer attr, std::pair<float, float>& range, igIndex i = -1);
+    void SetAttributeWithPointData(ArrayObject::Pointer attr,
+                                   std::pair<float, float>& range,
+                                   igIndex i = -1) override;
+    void SetAttributeWithCellData(ArrayObject::Pointer attr,
+                                  std::pair<float, float>& range,
+                                  igIndex i = -1);
 
 protected:
-    SurfaceMesh::Pointer m_DrawMesh{ nullptr };
+    SurfaceMesh::Pointer m_DrawMesh{nullptr};
 
 #ifdef IGAME_OPENGL_VERSION_460
-    Meshlet::Pointer m_Meshlets{ Meshlet::New() };
+    Meshlet::Pointer m_Meshlets{Meshlet::New()};
 #endif
-
-
 };
 IGAME_NAMESPACE_END
 #endif

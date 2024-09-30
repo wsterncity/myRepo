@@ -16,13 +16,20 @@ igQtStreamTracerWidget::igQtStreamTracerWidget(QWidget* parent) : QWidget(parent
 	connect(ui->generate_streamline_btn, &QPushButton::clicked, this, &igQtStreamTracerWidget::generateStreamline);
 	connect(ui->pushButton, &QPushButton::clicked, this, &igQtStreamTracerWidget::increaseProportion);
 	connect(ui->pushButton_2, &QPushButton::clicked, this, &igQtStreamTracerWidget::reduceProportion);
-	 numOfSeeds = 10;
+	 numOfSeeds = 20;
+	 ui->numOfSeedLineEdit->setText("20");
 	 control = 0;
-	 proportion = 0.5;
+     haveClicked = false;
+	 proportion = 0.35;
+	 ui->proportion_Slider->setValue(35);
 	 lengthOfStreamLine = 5;
-	 maxSteps = 2000;
-	 lengthOfStep = 0.003;
-	 terminalSpeed = 0.00001;
+	 ui->lengthOfStreamLine->setText("5");
+	 maxSteps =500;
+	 ui->maxSteps->setText("500");
+	 lengthOfStep = 0.001;
+	 ui->lengthOfStep->setText("0.001");
+	 terminalSpeed = 0.001;
+	 ui->terminalSpeed->setText("0.001");
 	 haveDraw = false;
 	 haveClicked = true;
 	ui->control_comboBox->setCurrentIndex(0);
@@ -86,7 +93,15 @@ void igQtStreamTracerWidget::generateStreamline() {
 	auto scene = SceneManager::Instance()->GetCurrentScene();
 	iGameStreamTracer* streamtracer=m_StreamBase->streamFilter;
 	Model::Pointer model = scene->GetCurrentModel();
-	VolumeMesh::Pointer mesh = DynamicCast<UnstructuredMesh>(model->GetDataObject())->TransferToVolumeMesh();
+	VolumeMesh::Pointer mesh;
+	if (DynamicCast<UnstructuredMesh>(model->GetDataObject())) {
+		 mesh = DynamicCast<UnstructuredMesh>(model->GetDataObject())->TransferToVolumeMesh();
+	}
+	else if (DynamicCast<VolumeMesh>(model->GetDataObject())) {
+		mesh = DynamicCast<VolumeMesh>(model->GetDataObject());
+	}
+	else { return; }
+
 	streamtracer->SetMesh(mesh);
 	if (!ptFinder)
 	{

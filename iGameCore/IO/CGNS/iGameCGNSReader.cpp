@@ -1267,106 +1267,106 @@ void iGameCGNSReader::ReadFields(int index_file, int index_base, int  index_zone
 
 void iGameCGNSReader::TransformVectorArray()
 {
-	/*igIndex i, j, k;
-	for (auto DataSet : this->MultiBlockDataSet->GetAllChildDataSet()) {
-
-		igIndex arraySize = 0;
-		if (DataSet->GetPointData()) {
-			auto AllScalars = DataSet->GetPointData()->GetAllScalars();
-			Points::PointerData* NewPointData = Points::PointerData::New();
-			std::vector<std::string>scalarNames;
-			for (i = 0; i < AllScalars.size(); i++) {
-				auto scalarDataArray = AllScalars[i].Array;
-				arraySize = scalarDataArray->GetNumberOfTuples();
-				scalarNames.emplace_back(scalarDataArray->GetName());
-			}
-			for (i = 0; i < AllScalars.size(); i++) {
-
-				auto name = scalarNames[i];
-				bool isvector = false;
-				if (name[name.length() - 1] == 'X') {
-					isvector = true;
-					for (j = 1; j < 3; j++) {
-						auto tmpName = scalarNames[i + j];
-						if (tmpName[tmpName.length() - 1] != 'X' + j) {
-							isvector = false;
-						}
-					}
-				}
-				if (isvector) {
-					iGameFloatArray* Vector = iGameFloatArray::New();
-					Vector->SetName(name.substr(0, name.length() - 1));
-					Vector->SetNumberOfComponents(3);
-					Vector->SetNumberOfTuples(arraySize);
-					float* vector = Vector->GetRawPointer();
-					igIndex index = 0;
-					for (j = 0; j < 3; j++) {
-						auto scalarData = AllScalars[i + j].Array;
-						index = j;
-						for (k = 0; k < arraySize; k++) {
-							vector[index] = scalarData->GetValueF(k);
-							index += 3;
-						}
-					}
-					NewPointData->AddVectors(Vector);
-					i += 2;
-				}
-				else {
-					NewPointData->AddScalars(AllScalars[i].Array);
-				}
-				DataSet->SetPointData(NewPointData);
-			}
-		}
-
-		if (DataSet->GetCellData()) {
-			auto AllScalars = DataSet->GetCellData()->GetAllScalars();
-			iGameCellData* NewCellData = iGameCellData::New();
-			std::vector<std::string>scalarNames;
-			for (i = 0; i < AllScalars.size(); i++) {
-				auto scalarDataArray = AllScalars[i].Array;
-				arraySize = scalarDataArray->GetNumberOfTuples();
-				scalarNames.emplace_back(scalarDataArray->GetName());
-			}
-			for (i = 0; i < AllScalars.size(); i++) {
-
-				auto name = scalarNames[i];
-				bool isvector = false;
-				if (name[name.length() - 1] == 'X') {
-					isvector = true;
-					for (j = 1; j < 3; j++) {
-						auto tmpName = scalarNames[i + j];
-						if (tmpName[tmpName.length() - 1] != 'X' + j) {
-							isvector = false;
-						}
-					}
-				}
-				if (isvector) {
-					iGameFloatArray* Vector = iGameFloatArray::New();
-					Vector->SetName(name.substr(0, name.length() - 1));
-					Vector->SetNumberOfComponents(3);
-					Vector->SetNumberOfTuples(arraySize);
-					float* vector = Vector->GetRawPointer();
-					igIndex index = 0;
-					for (j = 0; j < 3; j++) {
-						auto scalarData = AllScalars[i + j].Array;
-						index = j;
-						for (k = 0; k < arraySize; k++) {
-							vector[index] = scalarData->GetValueF(k);
-							index += 3;
-						}
-						delete scalarData;
-					}
-					NewCellData->AddVectors(Vector);
-					i += 2;
-				}
-				else {
-					NewCellData->AddScalars(AllScalars[i].Array);
-				}
-			}
-			DataSet->SetCellData(NewCellData);
-		}
-
-	}*/
+//	igIndex i, j, k;
+//	
+//	AttributeSet DataSet = this->m_AttributeSet;
+//	igIndex arraySize = 0;
+//	if (DataSet->attachmentType) {
+//			auto AllScalars = DataSet->GetPointData()->;
+//			Points::PointerData* NewPointData = Points::PointerData::New();
+//			std::vector<std::string>scalarNames;
+//			for (i = 0; i < AllScalars.size(); i++) {
+//				auto scalarDataArray = AllScalars[i].Array;
+//				arraySize = scalarDataArray->GetNumberOfTuples();
+//				scalarNames.emplace_back(scalarDataArray->GetName());
+//			}
+//			for (i = 0; i < AllScalars.size(); i++) {
+//
+//				auto name = scalarNames[i];
+//				bool isvector = false;
+//				if (name[name.length() - 1] == 'X') {
+//					isvector = true;
+//					for (j = 1; j < 3; j++) {
+//						auto tmpName = scalarNames[i + j];
+//						if (tmpName[tmpName.length() - 1] != 'X' + j) {
+//							isvector = false;
+//						}
+//					}
+//				}
+//				if (isvector) {
+//					iGameFloatArray* Vector = iGameFloatArray::New();
+//					Vector->SetName(name.substr(0, name.length() - 1));
+//					Vector->SetNumberOfComponents(3);
+//					Vector->SetNumberOfTuples(arraySize);
+//					float* vector = Vector->GetRawPointer();
+//					igIndex index = 0;
+//					for (j = 0; j < 3; j++) {
+//						auto scalarData = AllScalars[i + j].Array;
+//						index = j;
+//						for (k = 0; k < arraySize; k++) {
+//							vector[index] = scalarData->GetValueF(k);
+//							index += 3;
+//						}
+//					}
+//					NewPointData->AddVectors(Vector);
+//					i += 2;
+//				}
+//				else {
+//					NewPointData->AddScalars(AllScalars[i].Array);
+//				}
+//				DataSet->SetPointData(NewPointData);
+//			}
+//		}
+//
+//		if (DataSet->GetCellData()) {
+//			auto AllScalars = DataSet->GetCellData()->GetAllScalars();
+//			iGameCellData* NewCellData = iGameCellData::New();
+//			std::vector<std::string>scalarNames;
+//			for (i = 0; i < AllScalars.size(); i++) {
+//				auto scalarDataArray = AllScalars[i].Array;
+//				arraySize = scalarDataArray->GetNumberOfTuples();
+//				scalarNames.emplace_back(scalarDataArray->GetName());
+//			}
+//			for (i = 0; i < AllScalars.size(); i++) {
+//
+//				auto name = scalarNames[i];
+//				bool isvector = false;
+//				if (name[name.length() - 1] == 'X') {
+//					isvector = true;
+//					for (j = 1; j < 3; j++) {
+//						auto tmpName = scalarNames[i + j];
+//						if (tmpName[tmpName.length() - 1] != 'X' + j) {
+//							isvector = false;
+//						}
+//					}
+//				}
+//				if (isvector) {
+//					iGameFloatArray* Vector = iGameFloatArray::New();
+//					Vector->SetName(name.substr(0, name.length() - 1));
+//					Vector->SetNumberOfComponents(3);
+//					Vector->SetNumberOfTuples(arraySize);
+//					float* vector = Vector->GetRawPointer();
+//					igIndex index = 0;
+//					for (j = 0; j < 3; j++) {
+//						auto scalarData = AllScalars[i + j].Array;
+//						index = j;
+//						for (k = 0; k < arraySize; k++) {
+//							vector[index] = scalarData->GetValueF(k);
+//							index += 3;
+//						}
+//						delete scalarData;
+//					}
+//					NewCellData->AddVectors(Vector);
+//					i += 2;
+//				}
+//				else {
+//					NewCellData->AddScalars(AllScalars[i].Array);
+//				}
+//			}
+//			DataSet->SetCellData(NewCellData);
+//		}
+//
+//	
 }
 IGAME_NAMESPACE_END
 #endif
