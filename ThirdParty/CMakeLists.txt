@@ -37,3 +37,7 @@ if (ENABLE_CGNS_MODULE)
     endif ()
     add_subdirectory(CGNS)
 endif ()
+
+if (ENABLE_ABAQUS_MODULE)
+
+endif ()

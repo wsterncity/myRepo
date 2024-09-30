@@ -13,6 +13,7 @@ int main(int argc, char* argv[]) {
     //	// 运行所有测试
     //	return RUN_ALL_TESTS();
 
+
     QCoreApplication::setAttribute(
             Qt::AA_EnableHighDpiScaling); // 窗口高分辨率支持
     QGuiApplication::setAttribute(Qt::AA_UseHighDpiPixmaps); // 图标高分辨率支持
@@ -43,12 +44,5 @@ int main(int argc, char* argv[]) {
     w.show();
     w.showMaximized();
     a.exec();
-
-    //    QApplication app(argc, argv);
-    //
-    ////    iGameFileDialog::getOpenFileNames("Load file", QDir::currentPath(),
-    ///"ALL FIle(*.obj *.off *.stl *.vtk *.mesh *.pvd *.vts)");
-    //    iGameFileDialog fileDialog;
-    //    fileDialog.exec();
     return 0;
 }

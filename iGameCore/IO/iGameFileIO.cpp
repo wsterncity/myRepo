@@ -18,6 +18,8 @@
 #include "VTK XML/iGameVTMReader.h"
 #include "INP/iGameINPReader.h"
 #include "CGNS/iGameCGNSReader.h"
+#include "Abaqus/iGameODBReader.h"
+
 IGAME_NAMESPACE_BEGIN
 IGenum FileIO::GetFileType(const std::string& file_name)
 {
@@ -71,6 +73,8 @@ IGenum FileIO::GetFileType(const std::string& file_name)
 	}
 	else if (FileSuffix == "inp") {
 		return INP;
+	} else if (FileSuffix == "odb") {
+		return ODB;
 	}
 	return NONE;
 }
@@ -94,6 +98,7 @@ std::string FileIO::GetFileTypeAsString(IGenum type)
 	case VTU:return "VTU";
 	case CGNS:return "CGNS";
 	case INP:return "INP";
+	case ODB:return "ODB";
 	default:return "NONE";
 	}
 }
@@ -173,6 +178,16 @@ DataObject::Pointer FileIO::ReadFile(const std::string& file_name)
 		resObj = reader->ReadFile(file_name);
 		break;
 	}
+#if defined(AbqSDK_ENABLE)
+    case iGame::FileIO::ODB:
+	{
+		ODBReader::Pointer reader = ODBReader::New();
+		resObj = reader->ReadFile(file_name);
+		break;
+	}
+#endif
+
+
 	//      case iGame::FileIO::STEP:
 	//      {
 
