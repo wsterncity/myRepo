@@ -765,6 +765,7 @@ void SurfaceMesh::Draw(Scene* scene) {
 
     if (m_ViewStyle & IG_POINTS) {
         scene->GetShader(Scene::NOLIGHT)->use();
+
         m_PointVAO.bind();
         glad_glPointSize(8);
         glad_glDepthRange(0.000001, 1);
@@ -790,9 +791,13 @@ void SurfaceMesh::Draw(Scene* scene) {
     }
     if (m_ViewStyle & IG_SURFACE) {
         scene->GetShader(Scene::BLINNPHONG)->use();
+
         m_TriangleVAO.bind();
+        glEnable(GL_POLYGON_OFFSET_FILL);
+        glPolygonOffset(-0.5f, -0.5f);
         glad_glDrawElements(GL_TRIANGLES, m_TriangleIndices->GetNumberOfIds(),
                             GL_UNSIGNED_INT, 0);
+        glDisable(GL_POLYGON_OFFSET_FILL);
         m_TriangleVAO.release();
     }
 }

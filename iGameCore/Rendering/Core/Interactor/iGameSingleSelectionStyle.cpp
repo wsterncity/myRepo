@@ -114,7 +114,7 @@ void SingleSelectionStyle::SelectFace(igm::vec2 pos) {
 
         auto painter = m_Model->GetPainter();
         painter->SetPen(3);
-        painter->SetPen(Color::Green);
+        painter->SetPen(Color::None);
         painter->SetBrush(Color::Red);
 
         for (int j = 2; j < size; j++) {
