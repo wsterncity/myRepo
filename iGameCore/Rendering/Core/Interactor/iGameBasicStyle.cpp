@@ -121,7 +121,7 @@ void BasicStyle::MapToSphere(igm::vec3& old_v3D, igm::vec3& new_v3D) {
     p_mvp /= p_mvp.w;
 
     // if the perspective enters the model, rotate around (0,0)
-    if (p_mvp.x > 1.0f || p_mvp.x < 0.0f || p_mvp.y > 1.0f || p_mvp.y < 0.0f) {
+    if (p_mvp.x > 1.0f || p_mvp.x < -1.0f || p_mvp.y > 1.0f || p_mvp.y < -1.0f) {
         p_mvp = igm::vec4{0.0f, 0.0f, 0.0f, 0.0f};
     }
 

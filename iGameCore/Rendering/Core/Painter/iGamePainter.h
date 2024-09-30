@@ -32,7 +32,7 @@ public:
     void SetPen(const Pen::Pointer& pen);
     void SetPen(const Color& color);
     void SetPen(const PenStyle& style);
-    void SetPen(int width);
+    void SetPen(float width);
 
     void SetBrush(const Brush::Pointer& brush);
     void SetBrush(const Color& color);
@@ -71,7 +71,7 @@ public:
 
 protected:
     struct Primitive {
-        int penWidth;
+        float penWidth;
         std::vector<Vector3f> points;
         std::vector<Vector3f> colors;
         std::array<std::vector<iguIndex>, 3> indexes;

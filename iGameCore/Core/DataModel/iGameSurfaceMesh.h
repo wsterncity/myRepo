@@ -147,6 +147,12 @@ public:
 
     //Get real size of DataObject
     IGsize GetRealMemorySize() override;
+    bool GetClipped() override { return true; }
+
+    void SetFaceColor(const float color[3]);;
+    const float* GetFaceColor() const;
+    void SetFaceTransparency(float val);
+    float GetFaceTransparency() const;
 protected:
     SurfaceMesh();
     ~SurfaceMesh() override = default;
@@ -166,6 +172,8 @@ protected:
     CellArray::Pointer m_FaceEdges{};     // The edge set of faces
     CellLinks::Pointer m_FaceEdgeLinks{}; // The adjacent faces of edges
 
+    float m_FaceColor[3]{ 1.0f,1.0f,1.0f }; // The color of the mesh
+    float m_FaceTransparency{ 1.0f }; // Transparency of the faces
 private:
     // Used for the returned cell object, which is Thread-Unsafe
     Line::Pointer m_Edge{};
@@ -183,7 +191,7 @@ public:
     void ViewCloudPicture(Scene* scene, int index, int demension = -1) override;
     void SetAttributeWithPointData(ArrayObject::Pointer attr, std::pair<float, float>& range,
         igIndex i = -1) override;
-    void SetAttributeWithCellData(ArrayObject::Pointer attr, igIndex i = -1);
+    void SetAttributeWithCellData(ArrayObject::Pointer attr, std::pair<float, float>& range, igIndex i = -1);
 
 protected:
     SurfaceMesh::Pointer m_DrawMesh{ nullptr };

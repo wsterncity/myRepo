@@ -21,6 +21,8 @@ private:
     }
 
 public:
+    // GLbitfield mask: GL_COLOR_BUFFER_BIT, GL_DEPTH_BUFFER_BIT, GL_STENCIL_BUFFER_BIT
+    // GLenum filter: GL_NEAREST, GL_LINEAR
     static void blit(const GLFramebuffer& source,
                      const GLFramebuffer& destination, GLint srcX0, GLint srcY0,
                      GLint srcX1, GLint srcY1, GLint dstX0, GLint dstY0,

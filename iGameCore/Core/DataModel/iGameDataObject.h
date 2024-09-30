@@ -33,6 +33,7 @@ public:
 	virtual bool DeepCopy(Pointer o) { return true; }
 
 	StreamingData::Pointer GetTimeFrames();
+//	SmartPointer<StreamingData> GetTimeFrames();
 	void SetTimeFrames(StreamingData::Pointer p) { m_TimeFrames = p; }
 
 	void SetAttributeSet(AttributeSet::Pointer p) { m_Attributes = p; }
@@ -103,7 +104,7 @@ public:
 
 	private:
 		SubDataObjectsHelper() {}
-		~SubDataObjectsHelper() override {std::cout << "Helper Desctructure\n";}
+		~SubDataObjectsHelper() override {/*std::cout << "Helper Desctructure\n";*/}
 
 		DataObject* m_parentObject{ nullptr };
 		SubDataObjectMap m_SubDataObjects;

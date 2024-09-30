@@ -13,9 +13,6 @@ uniform sampler2DMS depthTextureMS;
 
 void main()
 {
-    ivec2 texSize = textureSize(colorTextureMS);
-    ivec2 texCoord = ivec2(in_UV * vec2(texSize));
-
     // color resolve(from multisamples to single sample)
     {
         ivec2 texSize = textureSize(colorTextureMS);

@@ -27,7 +27,7 @@ public:
     void SetColor(const Color& color);
     Color GetColor() const;
 
-    void SetWidth(int width);
+    void SetWidth(float width);
     int GetWidth() const;
 
     void SetStyle(PenStyle style);
@@ -41,7 +41,7 @@ protected:
     ~Pen() override;
 
     Color m_PenColor;
-    int m_PenWidth;
+    float m_PenWidth;
     PenStyle m_PenStyle;
     float m_PenOpacity;
 };

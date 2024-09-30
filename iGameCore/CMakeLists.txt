@@ -8,8 +8,8 @@ elseif (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     add_definitions(-DPLATFORM_MAC)
 endif ()
 
-set(SHADER_COMPILE_TARGET OpeniGameShaderCompile)
-add_subdirectory(Rendering/Shaders)
+#set(SHADER_COMPILE_TARGET OpeniGameShaderCompile)
+#add_subdirectory(Rendering/Shaders)
 
 file(GLOB_RECURSE IGAME_CORE_FILE CONFIGURE_DEPENDS ./*.h ./*.cpp)
 add_library(${MODULE_NAME} STATIC ${IGAME_CORE_FILE})
