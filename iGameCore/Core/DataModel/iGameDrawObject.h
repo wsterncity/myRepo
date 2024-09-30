@@ -42,6 +42,7 @@ protected:
 	DrawObject() {};
 	~DrawObject() override = default;
 
+
 protected:
 	GLVertexArray m_PointVAO, m_VertexVAO,  m_LineVAO, m_TriangleVAO;
 	GLBuffer m_PositionVBO, m_ColorVBO, m_NormalVBO, m_TextureVBO;
@@ -79,6 +80,7 @@ protected:
 			bool m_flip{ false };
 		} m_Plane;
 	} m_Clip; // Used for clip mesh
+
 };
 
 IGAME_NAMESPACE_END

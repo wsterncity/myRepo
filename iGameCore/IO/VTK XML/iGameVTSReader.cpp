@@ -139,32 +139,36 @@ bool iGame::iGameVTSReader::Parsing() {
     elem = elem->FirstChildElement("DataArray");
     //  use while loop to find point's multiple scala data.
     while(elem){
-        data = elem->GetText();
-        ArrayObject::Pointer  array;
+
+        ArrayObject::Pointer array;
         std::string scalarName = elem->Attribute("Name");
         const char* type = elem->Attribute("type");
+        data = elem->Attribute("NumberOfComponents");
+        int scalarComponents = data ? mAtoi(data) : 1;
 
-//        int scalarComponents = mAtoi(elem->Attribute("NumberOfComponents"));
+        data = elem->GetText();
         if(data)
         {
             float range_max = FLT_MIN;
             float range_min = FLT_MAX;
             if(!strncmp(type, "Float", 5)){
                 FloatArray::Pointer arr = FloatArray::New();
-                float ps[3] = { 0 };
+                arr->SetDimension(scalarComponents);
+                auto* ps = new float[scalarComponents];
                 token = strtok(const_cast<char*>(data), delimiters);
                 while (token != nullptr) {
-                    for(float & i : ps) {
-                        i = mAtof(token);
-//                        i /= 0.010064;
-//                        i *= 0.12;
-//                        i = std::abs(i);
-                        if(i > range_max) range_max = i;
-                        else if(i < range_min) range_min = i;
+                    for (int i = 0; i < scalarComponents; i++) {
+
+                        ps[i] = mAtof(token);
+                        range_max = std::max(range_max, ps[i]);
+                        range_min = std::min(range_min, ps[i]);
+//                        if(it > range_max) range_max = it;
+//                        else if(it < range_min) range_min = it;
                         token = strtok(nullptr, delimiters);
                     }
                     arr->AddElement(ps);
                 }
+                delete[] ps;
                 array = arr;
             }
             if(array != nullptr){

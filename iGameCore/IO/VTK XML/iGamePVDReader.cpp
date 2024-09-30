@@ -187,10 +187,14 @@ bool iGame::iGamePVDReader::Parsing() {
         bool scalar_exist_1 = (m_data_object->HasSubDataObject() && m_data_object->SubDataObjectIteratorBegin()->second->GetAttributeSet());
         /* Model's scalar num is determined by the dataObject and its subDataObject 's scalar num. */
         if(scalar_exist_0 || scalar_exist_1){
+
             IGsize scalarNum = scalar_exist_0 ? subScalarPointer->GetNumberOfElements() :  m_data_object->SubDataObjectIteratorBegin()->second->GetAttributeSet()->GetAllAttributes()->GetNumberOfElements();
+
             float range_max, range_min;
             for(IGsize k = 0; k < scalarNum; k ++)
             {
+                /*If false, means the scalar is point scalar, otherwise, the scalar is cell scalar.*/
+                bool scalar_type = m_data_object->SubDataObjectIteratorBegin()->second->GetAttributeSet()->GetAttribute(k).type == IG_CELL;
                 FloatArray::Pointer array = FloatArray::New();
                 array->SetName(m_data_object->SubDataObjectIteratorBegin()->second->GetAttributeSet()->GetAttribute(k).pointer->GetName());
                 range_max = FLT_MIN;
@@ -213,7 +217,7 @@ bool iGame::iGamePVDReader::Parsing() {
                         ScalarDataRange.second = range_max;
                     }
                 }
-                m_data_object->GetAttributeSet()->AddScalar(IG_POINT, array, {range_min, range_max});
+                m_data_object->GetAttributeSet()->AddScalar(scalar_type ? IG_POINT : IG_CELL, array, {range_min, range_max});
             }
         }
 

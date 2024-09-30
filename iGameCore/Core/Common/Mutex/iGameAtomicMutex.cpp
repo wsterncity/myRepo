@@ -1,67 +1,52 @@
-/*=========================================================================
 
-  Program:   Visualization Toolkit
-  Module:    iGameAtomicMutex.cxx
-
-  Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
-  All rights reserved.
-  See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
-
-     This software is distributed WITHOUT ANY WARRANTY; without even
-     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-     PURPOSE.  See the above copyright notice for more information.
-
-=========================================================================*/
 #include "iGameAtomicMutex.h"
 
-#if defined(__i386__) || defined(__x86_64__)
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
+// For x86/x86_64 architecture, use Intel's intrinsic function for _mm_pause()
 #include <immintrin.h>
-#elif defined(__ARM_FEATURE_SIMD32) || defined(__ARM_NEON)
-// https://github.com/DLTcollab/sse2neon
-static inline __attribute__((always_inline)) void _mm_pause() {
-    __asm__ __volatile__("isb\n");
-}
+#elif defined(__ARM_NEON) || defined(__aarch64__)
+// For ARM NEON and ARM 64-bit architectures, define a custom _mm_pause() using inline assembly
+static inline void _mm_pause() {
+    __asm__ __volatile__("yield" ::: "memory");
+    }
 #else
-#define _mm_pause()
+// If the platform doesn't support _mm_pause(), define it as an empty function
+static inline void _mm_pause() {}
 #endif
 
 IGAME_NAMESPACE_BEGIN
-//------------------------------------------------------------------------------
-iGameAtomicMutex::iGameAtomicMutex() : Locked(false) {}
+iGameAtomicMutex::iGameAtomicMutex()
+{
+    this->m_Locked = false;
+}
 
-//------------------------------------------------------------------------------
-iGameAtomicMutex::iGameAtomicMutex(const iGameAtomicMutex& other)
-    : Locked(other.Locked.load(std::memory_order_acquire)) {}
+// Copy constructor, ensures thread-safe reading of another object's lock state via atomic load
+iGameAtomicMutex::iGameAtomicMutex(const iGameAtomicMutex& other) {
+    this->m_Locked = other.m_Locked.load(std::memory_order_acquire);
+}
 
-//------------------------------------------------------------------------------
+// Assignment operator, ensures consistent state during assignment via atomic store
 iGameAtomicMutex& iGameAtomicMutex::operator=(const iGameAtomicMutex& other) {
-    this->Locked.store(other.Locked.load(std::memory_order_acquire),
-                       std::memory_order_release);
+    this->m_Locked.store(other.m_Locked.load(std::memory_order_acquire), std::memory_order_release);
     return *this;
 }
 
-//------------------------------------------------------------------------------
+// Lock function, implements a spinlock mechanism
 void iGameAtomicMutex::lock() {
     while (true) {
-        // The default memory ordering of C++ atomics std::memory_order_seq_cst
-        // (sequentially-consistent ordering) is overly restrictive and can be changed
-        // to std::memory_order_acquire for operations that acquires the lock and
-        // std::memory_order_release for operations that releases the lock2.
-        if (!this->Locked.exchange(true, std::memory_order_acquire)) { return; }
-        // The memory_order_relaxed is used to avoid of continuous futile attempts to acquire
-        // the held lock, and we wait for the lock holder to first release the lock. This
-        // eliminates cache coherency traffic during spinning:
-        while (this->Locked.load(std::memory_order_relaxed)) {
-            // The pause instruction provides a hint that a spin-wait loop is running and
-            // throttles the CPU core in some architecture specific way in order to reduce
-            // power usage and contention on the load-store units
+        // Attempt atomic exchange, set m_Locked to true, if it was false, lock is acquired
+        if (!this->m_Locked.exchange(true, std::memory_order_acquire)) {
+            return;
+        }
+        // If lock acquisition fails, enter a spin-wait loop, using _mm_pause() to reduce CPU busy-wait overhead
+        while (this->m_Locked.load(std::memory_order_relaxed)) {
             _mm_pause();
         }
     }
 }
 
-//------------------------------------------------------------------------------
+// Unlock function, sets the lock state to false to release the lock
 void iGameAtomicMutex::unlock() {
-    this->Locked.store(false, std::memory_order_release);
+    this->m_Locked.store(false, std::memory_order_release);
 }
 IGAME_NAMESPACE_END
