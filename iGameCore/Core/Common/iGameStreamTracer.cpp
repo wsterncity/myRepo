@@ -100,7 +100,7 @@ std::vector<Vector3f> iGameStreamTracer::streamSeedGenerate(int control, float p
 		{
 		case 0:
 		{
-			tem.emplace_back(Vector3f(minPosition[0] + proportion * lengthX, minPosition[1] + i * step * lengthY, minPosition[2] + 0.5 * lengthZ));
+			tem.emplace_back(Vector3f(minPosition[0] + proportion * lengthX, minPosition[1] + i * step * lengthY, minPosition[2] + 0.1 * lengthZ));
 			break;
 		}
 		case 1:
@@ -345,7 +345,9 @@ std::vector<std::vector<float>> iGameStreamTracer::showStreamLineHex(std::vector
 }
 std::vector<std::vector<float>> iGameStreamTracer::showStreamLineCellData(std::vector<Vector3f>seed, std::string vectorName, std::vector<std::vector<float>>& streamColor, float lengOfStreamLine, float lengthOfStep, float terminalSpeed, int maxSteps)
 {
-	CellData2PointData(vectorName);
+	if (!tranform) {
+		CellData2PointData(vectorName);
+	}
 	this->mesh = DynamicCast<VolumeMesh>(this->mesh);
 	auto allPolyhedrons = mesh->GetVolumes();
 	auto allPoints = mesh->GetPoints();
@@ -358,40 +360,38 @@ std::vector<std::vector<float>> iGameStreamTracer::showStreamLineCellData(std::v
 	std::vector<std::vector<float>> tem(seed.size());
 	if (mesh == nullptr)return tem;
 	std::vector<Vector3f>_vector;
-	auto Vec = mesh->GetAttributeSet();
-	auto vec = Vec->GetVector(vectorName);
 	int numOfCells = mesh->GetNumberOfVolumes();
 	for (size_t i = 0; i < numOfPoints; i++)
 	{
 		float VV[3] = { 0.0f };
-		vec.pointer->GetElement(i, VV);
+		tranform->GetElement(i, VV);
 		_vector.emplace_back(VV[0], VV[1], VV[2]);
 	}
-	std::vector<std::vector<igIndex>>f2c(numOfFaces);
-	std::vector<std::vector<igIndex>>c2c(numOfCells);
-	igIndex vhs[256];
-	igIndex fhs[256];
-	igIndex vcnt, fcnt = 0;
-	for (size_t i = 0; i < numOfCells; i++)
-	{
-		int size = mesh->GetVolumeFaceIds(i, fhs);
-		for (int j = 0; j < size; j++) {
-			f2c[fhs[j]].emplace_back(i);
-		}
+	//std::vector<std::vector<igIndex>>f2c(numOfFaces);
+	//std::vector<std::vector<igIndex>>c2c(numOfCells);
+	//igIndex vhs[256];
+	//igIndex fhs[256];
+	//igIndex vcnt, fcnt = 0;
+	//for (size_t i = 0; i < numOfCells; i++)
+	//{
+	//	int size = mesh->GetVolumeFaceIds(i, fhs);
+	//	for (int j = 0; j < size; j++) {
+	//		f2c[fhs[j]].emplace_back(i);
+	//	}
 
-	}
-	for (size_t i = 0; i < numOfCells; i++)
-	{
-		int size = mesh->GetVolumeFaceIds(i, fhs);
-		for (int j = 0; j < size; j++) {
-			auto chs = f2c[fhs[j]];
-			for (int k = 0; k < chs.size(); k++) {
-				if (chs[k] != i) {
-					c2c[i].emplace_back(chs[k]);
-				}
-			}
-		}
-	}
+	//}
+	//for (size_t i = 0; i < numOfCells; i++)
+	//{
+	//	int size = mesh->GetVolumeFaceIds(i, fhs);
+	//	for (int j = 0; j < size; j++) {
+	//		auto chs = f2c[fhs[j]];
+	//		for (int k = 0; k < chs.size(); k++) {
+	//			if (chs[k] != i) {
+	//				c2c[i].emplace_back(chs[k]);
+	//			}
+	//		}
+	//	}
+	//}
 
 	clock_t time1 = clock();
 	float MAX_STEP = 0.001, MIN_STEP = 0.0001, ERR = 0.000001;
@@ -689,7 +689,9 @@ bool iGameStreamTracer::CellData2PointData(std::string vectorName)
 	auto numOfPoints = mesh->GetNumberOfPoints();
 	auto numOfCells = mesh->GetNumberOfVolumes();;
 	auto Vec = mesh->GetAttributeSet();
-	auto vec = Vec->GetVector(vectorName);
+	Vec->TransformScalars2VectorArray();
+	//auto vec = Vec->GetVector(vectorName);
+	auto& vec = Vec->GetVector(0);
 	//维数
 	if (vec.attachmentType != IG_CELL) { return false; }
 	auto vecV = vec.pointer->GetDimension();
@@ -703,16 +705,16 @@ bool iGameStreamTracer::CellData2PointData(std::string vectorName)
 		float VV[3] = { 0.0f };
 		vec.pointer->GetElement(i, VV);
 		Vector3f temVec(VV[0], VV[1], VV[2]);
-		auto volume = mesh->GetVolume(i);
-		int numOfCellPoints = volume->GetCellSize();//点的数量
+		igIndex temPId[32];
+		int numOfCellPoints =mesh->GetVolumePointIds(i,temPId);
 		for (int j = 0; j < numOfCellPoints; j++) {
-			auto pointId = volume->GetPointId(j);
-			pointVector[pointId] = pointVector[pointId] + temVec;
+			auto pointId =temPId[j];
 			pointVectorNUM[pointId]++;
+			pointVector[pointId] += temVec;
 		}
 	}
 	FloatArray::Pointer VectorData = FloatArray::New();
-	VectorData->SetDimension(3);
+	VectorData->SetDimension(vecV);
 	VectorData->SetName(vectorName);
 	for (size_t i = 0; i < numOfPoints; i++)
 	{
@@ -721,6 +723,7 @@ bool iGameStreamTracer::CellData2PointData(std::string vectorName)
 			VectorData->AddValue(pointVector[i][j] / pointVectorNUM[i]);
 		}
 	}
+	tranform = VectorData;
 	return true;
 }
 float iGameStreamTracer::distance2Line(Vector3f point, Vector3f lineP1, Vector3f lineP2) {
@@ -836,7 +839,6 @@ Vector3f iGameStreamTracer::interpolationVectorHexWithNatural(Vector3f coord, bo
 			return finnal;
 		}
 		int contactPointNum = 0;
-		//Hexahedron *volume = dynamic_cast<Hexahedron*>(mesh->GetVolume(c));
 		igIndex volume[32]{};
 		igIndex f[32]{};
 		int size = mesh->GetVolumeFaceIds(c, volume);
@@ -932,7 +934,6 @@ Vector3f iGameStreamTracer::interpolationVectorHexWithNatural(Vector3f coord, bo
 			return finnal;
 		}
 
-		//  if not converged, repeat
 		else
 		{
 			params[0] = pcoords[0];
@@ -1058,18 +1059,15 @@ std::vector<float> iGameStreamTracer::ComputeWeightsForPolygonMesh(igIndex* Poin
 		// distance
 		dist[pid] = uVec[pid].length();
 
-		// handle special case when the point is really close to a vertex
 		if (dist[pid] < eps)
 		{
 			weights[pid] = 1.0;
 			return weights;
 		}
 
-		// project onto unit sphere
 		uVec[pid] /= dist[pid];
 	}
 
-	// Now loop over all triangle to compute weights
 	//点到多面体内点源的单位矢量
 	std::vector<Vector3f> u(MaxPolygonSize);
 	//点在体单元内的局部id
@@ -1126,10 +1124,6 @@ std::vector<float> iGameStreamTracer::ComputeWeightsForPolygonMesh(igIndex* Poin
 		v[2] += 0.5 * angle * temp[2];
 		double vNorm = v.length();
 		v.normalize();
-
-		// The direction of v depends on the orientation (clockwise or
-		// contour-clockwise) of the polygon. We want to make sure that v
-		// starts from x and point towards the polygon.
 		if (v.dot(u[0]) < 0)
 		{
 			v[0] = -v[0];
@@ -1167,7 +1161,6 @@ std::vector<float> iGameStreamTracer::ComputeWeightsForPolygonMesh(igIndex* Poin
 			alpha[fpsize - 1] = -alpha[fpsize - 1];
 		}
 
-		// theta[nPolyPts-1] = acos(vtkMath::Dot(u[nPolyPts-1], v));
 		l = (u[fpsize - 1] - v).length();
 		theta[fpsize - 1] = 2.0 * asin(l / 2.0);
 
@@ -1195,12 +1188,9 @@ std::vector<float> iGameStreamTracer::ComputeWeightsForPolygonMesh(igIndex* Poin
 			sum += 1.0 / tan(theta[j]) * (tan(alpha[j] / 2.0) + tan(alpha[j - 1] / 2.0));
 		}
 
-		// the special case when x lies on the polygon, handle it using 2D mvc.
-		// in the 2D case, alpha = theta
 		if (fabs(sum) < eps)
 		{
 			weights.assign(psize, 0.0);
-			// recompute theta, the theta computed previously are not robust
 			for (int j = 0; j < fpsize - 1; j++)
 			{
 				l = (u[j] - u[j + 1]).length();
@@ -1241,11 +1231,9 @@ std::vector<float> iGameStreamTracer::ComputeWeightsForPolygonMesh(igIndex* Poin
 				(tan(alpha[j] / 2.0) + tan(alpha[j - 1] / 2.0));
 		}
 
-		// next iteration
 		poly++;
 	}
 
-	// normalize weight
 	float sumWeight = 0;
 	for (size_t i = 0; i < weights.size(); i++)
 	{

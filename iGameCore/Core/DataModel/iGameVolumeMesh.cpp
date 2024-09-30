@@ -203,7 +203,7 @@ void VolumeMesh::BuildVolumeEdgeLinks()
 	m_VolumeEdgeLinks = CellLinks::New();
 	IGsize nedges = this->GetNumberOfEdges();
 	IGsize nvolumes = this->GetNumberOfVolumes();
-	igIndex cell[32]{};
+	igIndex cell[64]{};
 
 	m_VolumeEdgeLinks->Allocate(nedges);
 	for (IGsize i = 0; i < nvolumes; i++) {
