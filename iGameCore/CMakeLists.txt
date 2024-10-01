@@ -22,6 +22,7 @@ target_include_directories(${MODULE_NAME} PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/Core/Mapper
         ${CMAKE_CURRENT_SOURCE_DIR}/IO
         ${CMAKE_CURRENT_SOURCE_DIR}/Filters
+        # 删除下面
         ${CMAKE_CURRENT_SOURCE_DIR}/Filters/*
 
         ${CMAKE_CURRENT_SOURCE_DIR}/Rendering
@@ -43,6 +44,15 @@ if (ENABLE_CGNS_MODULE)
     target_compile_definitions(${MODULE_NAME} PRIVATE CGNS_ENABLE)
     target_link_libraries(${MODULE_NAME} PUBLIC cgns_static)
 ENDIF ()
+
+if(ENABLE_ABAQUS_MODULE)
+    find_package(AbqSDK)
+    if (${AbqSDK_FOUND})
+        message("Find abqsdk")
+        target_compile_definitions(${MODULE_NAME} PRIVATE AbqSDK_ENABLE)
+        target_link_libraries(${MODULE_NAME} PUBLIC ${ABQ_LIB_TARGETS})
+    endif ()
+endif ()
 
 target_compile_definitions(${MODULE_NAME} PRIVATE ASSESTS_DIR="${CMAKE_CURRENT_SOURCE_DIR}/Rendering/Assests")
 target_compile_definitions(${MODULE_NAME} PRIVATE SHADERS_DIR="${CMAKE_CURRENT_SOURCE_DIR}/Rendering/Shaders")

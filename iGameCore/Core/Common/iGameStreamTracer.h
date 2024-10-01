@@ -152,4 +152,5 @@ private:
 	bool checkContact(Vector3f coord, Vector3f v0, Vector3f v1, Vector3f v2);
 	VolumeMesh::Pointer mesh{};
 	PointFinder::Pointer ptFinder{};
+	FloatArray::Pointer tranform{};
 };

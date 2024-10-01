@@ -226,6 +226,7 @@ public:
 		EdgeTable::Pointer EdgeTable = EdgeTable::New();
 		m_Volumes = CellArray::New();
 		m_VolumeEdges = CellArray::New();
+		m_FaceEdges = CellArray::New();
 		igIndex CellNum = this->m_VolumeFaces->GetNumberOfCells();
 		igIndex ptIds[64]{}, edgeIds[64]{}, faceIds[64]{};
 		IGsize npts, nedges;
