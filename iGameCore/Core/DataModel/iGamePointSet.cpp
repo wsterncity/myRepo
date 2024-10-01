@@ -126,19 +126,8 @@ void PointSet::ComputeBoundingBox() {
 //};
 
 void PointSet::ConvertToDrawableData() {
+    this->Create();
     if (m_Positions && m_Positions->GetMTime() > this->GetMTime()) { return; }
-
-    if (!m_Flag) {
-        m_PointVAO.create();
-        m_PositionVBO.create();
-        m_PositionVBO.target(GL_ARRAY_BUFFER);
-        m_ColorVBO.create();
-        m_ColorVBO.target(GL_ARRAY_BUFFER);
-        m_PointEBO.create();
-        m_PointEBO.target(GL_ELEMENT_ARRAY_BUFFER);
-
-        m_Flag = true;
-    }
 
     m_Positions = m_Points->ConvertToArray();
 
@@ -176,21 +165,19 @@ void PointSet::SetAttributeWithPointData(ArrayObject::Pointer attr,
         m_ViewAttribute = attr;
         m_ViewDemension = dimension;
 
-    m_UseColor = true;
+        m_UseColor = true;
 
-      if (range.first != range.second) {
-      m_ColorMapper->SetRange(range.first, range.second);
-      } else if (dimension == -1) {
-      m_ColorMapper->InitRange(attr);
-      } else {
-      m_ColorMapper->InitRange(attr, dimension);
-      }
-      range.first = m_ColorMapper->GetRange()[0];
-      range.second = m_ColorMapper->GetRange()[1];
-      m_Colors = m_ColorMapper->MapScalars(attr, dimension);
-    if (m_Colors == nullptr) {
-      return;
-    }
+        if (range.first != range.second) {
+            m_ColorMapper->SetRange(range.first, range.second);
+        } else if (dimension == -1) {
+            m_ColorMapper->InitRange(attr);
+        } else {
+            m_ColorMapper->InitRange(attr, dimension);
+        }
+        range.first = m_ColorMapper->GetRange()[0];
+        range.second = m_ColorMapper->GetRange()[1];
+        m_Colors = m_ColorMapper->MapScalars(attr, dimension);
+        if (m_Colors == nullptr) { return; }
 
         GLAllocateGLBuffer(m_ColorVBO,
                            m_Colors->GetNumberOfValues() * sizeof(float),

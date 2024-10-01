@@ -79,6 +79,7 @@ void Model::Draw(Scene* scene) {
         m_DataObject->m_TriangleVAO.release();
     }
     GLCheckError();
+
     m_Painter->Draw(scene);
     GLCheckError();
 }

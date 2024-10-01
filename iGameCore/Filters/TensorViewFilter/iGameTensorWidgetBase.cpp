@@ -202,7 +202,11 @@ void iGameTensorWidgetBase::ConvertToDrawableData() {
     }
     m_Positions = m_DrawGlyphPoints->ConvertToArray();
     m_Positions->Modified();
-    M_TriangleIndices = m_DrawGlyphPointOrders;
+    //M_TriangleIndices = m_DrawGlyphPointOrders;
+    for (int i = 0; i < m_DrawGlyphPointOrders->GetNumberOfValues(); i++) {
+        m_TriangleIndices->AddId(static_cast<igIndex>(
+                *m_DrawGlyphPointOrders->RawPointer() + i));
+    }
     m_Colors = m_DrawGlyphColors;
 
 
@@ -220,10 +224,13 @@ void iGameTensorWidgetBase::ConvertToDrawableData() {
     //	sizeof(unsigned int),
     //	M_LineIndices->RawPointer());
 
+    //GLAllocateGLBuffer(m_TriangleEBO,
+    //                   M_TriangleIndices->GetNumberOfValues() *
+    //                           sizeof(unsigned int),
+    //                   M_TriangleIndices->RawPointer());
     GLAllocateGLBuffer(m_TriangleEBO,
-                       M_TriangleIndices->GetNumberOfValues() *
-                               sizeof(unsigned int),
-                       M_TriangleIndices->RawPointer());
+                       m_TriangleIndices->GetNumberOfIds() * sizeof(igIndex),
+                       m_TriangleIndices->RawPointer());
 
     m_PointVAO.vertexBuffer(GL_VBO_IDX_0, m_PositionVBO, 0, 3 * sizeof(float));
     GLSetVertexAttrib(m_PointVAO, GL_LOCATION_IDX_0, GL_VBO_IDX_0, 3, GL_FLOAT,

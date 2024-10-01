@@ -26,9 +26,13 @@ protected:
     ~DrawObject() override = default;
 
 public:
-    virtual void ConvertToDrawableData();
-    virtual IGenum GetDataObjectType() const;
-    virtual IGsize GetRealMemorySize();
+    void SetVisibility(bool f);
+    bool GetVisibility();
+    /*ViewStyle's detail. See iGameType.h */
+    void SetViewStyle(IGenum mode);
+    void AddViewStyle(IGenum mode);
+    void RemoveViewStyle(IGenum mode);
+    unsigned int GetViewStyle();
 
     virtual bool GetClipped();
     void SetExtentClipping(bool _in);
@@ -38,14 +42,12 @@ public:
     void SetPlane(double ox, double oy, double oz, double nx, double ny,
                   double nz, bool flip = false);
 
-public:
-    void SetVisibility(bool f);
-    bool GetVisibility();
-    /*ViewStyle's detail. See iGameType.h */
-    void SetViewStyle(IGenum mode);
-    void AddViewStyle(IGenum mode);
-    void RemoveViewStyle(IGenum mode);
-    unsigned int GetViewStyle();
+    virtual IGenum GetDataObjectType() const;
+    virtual IGsize GetRealMemorySize();
+
+protected:
+    void Create();
+    virtual void ConvertToDrawableData();
 
 protected:
     unsigned int m_ViewStyle{0};
@@ -64,9 +66,9 @@ protected:
     IdArray::Pointer m_PointIndices{};
     IdArray::Pointer m_LineIndices{};
     IdArray::Pointer m_TriangleIndices{};
-    UnsignedIntArray::Pointer M_VertexIndices{};
-    UnsignedIntArray::Pointer M_LineIndices{};
-    UnsignedIntArray::Pointer M_TriangleIndices{};
+    //UnsignedIntArray::Pointer M_VertexIndices{};
+    //UnsignedIntArray::Pointer M_LineIndices{};
+    //UnsignedIntArray::Pointer M_TriangleIndices{};
 
     bool m_Flag{false};
     bool m_UseColor{false};
@@ -74,6 +76,7 @@ protected:
     int m_PointSize{8};
     int m_LineWidth{1};
     int m_CellPositionSize{};
+    float m_Transparency{1.0f};
 
     ArrayObject::Pointer m_ViewAttribute{};
     int m_ViewDemension{};

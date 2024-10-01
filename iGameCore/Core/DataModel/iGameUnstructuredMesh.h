@@ -119,7 +119,6 @@ public:
 
 protected:
     SurfaceMesh::Pointer m_DrawMesh{nullptr};
-    void Create();
 };
 IGAME_NAMESPACE_END
 #endif

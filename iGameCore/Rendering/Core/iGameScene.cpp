@@ -1007,10 +1007,10 @@ void Scene::UpdateModelsBoundingSphere() {
     igm::vec3 min(FLT_MAX);
     igm::vec3 max(-FLT_MAX);
 
-    for (auto& [id, obj]: m_Models) {
-        if (!obj->m_DataObject->GetVisibility()) continue;
+    for (auto& [id, model]: m_Models) {
+        if (!model->GetVisibility()) continue;
 
-        auto box = obj->m_DataObject->GetBoundingBox();
+        auto box = model->m_DataObject->GetBoundingBox();
         Vector3f boxMin = box.min;
         Vector3f boxMax = box.max;
 

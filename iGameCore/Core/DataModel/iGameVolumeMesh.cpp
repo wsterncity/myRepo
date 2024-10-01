@@ -1195,55 +1195,30 @@ void VolumeMesh::RequestVolumeStatus() {
 //}
 
 void VolumeMesh::ConvertToDrawableData() {
+    this->Create();
     if (m_Positions && m_Positions->GetMTime() > this->GetMTime()) { return; }
-    if (m_DrawMesh == nullptr || m_DrawMesh->GetMTime() < this->GetMTime()) {
-        iGameModelGeometryFilter::Pointer extract =
-                iGameModelGeometryFilter::New();
-        // update clip status
-        if (m_Clip.m_Extent.m_Use) {
-            const auto& a = m_Clip.m_Extent.m_bmin;
-            const auto& b = m_Clip.m_Extent.m_bmax;
-            extract->SetExtent(a[0], b[0], a[1], b[1], a[2], b[2],
-                               m_Clip.m_Extent.m_flip);
-        }
-        if (m_Clip.m_Plane.m_Use) {
-            extract->SetClipPlane(m_Clip.m_Plane.m_origin,
-                                  m_Clip.m_Plane.m_normal,
-                                  m_Clip.m_Plane.m_flip);
-        }
 
-        m_DrawMesh = SurfaceMesh::New();
-        if (!extract->Execute(this, m_DrawMesh)) { m_DrawMesh = nullptr; }
-        if (m_DrawMesh) { m_DrawMesh->Modified(); }
-    }
-    if (m_DrawMesh) { return m_DrawMesh->ConvertToDrawableData(); }
-
-    if (!m_Flag) {
-        m_PointVAO.create();
-        m_LineVAO.create();
-        m_TriangleVAO.create();
-        m_PositionVBO.create();
-        m_PositionVBO.target(GL_ARRAY_BUFFER);
-        m_ColorVBO.create();
-        m_ColorVBO.target(GL_ARRAY_BUFFER);
-        m_NormalVBO.create();
-        m_NormalVBO.target(GL_ARRAY_BUFFER);
-        m_TextureVBO.create();
-        m_TextureVBO.target(GL_ARRAY_BUFFER);
-        m_PointEBO.create();
-        m_PointEBO.target(GL_ELEMENT_ARRAY_BUFFER);
-        m_LineEBO.create();
-        m_LineEBO.target(GL_ELEMENT_ARRAY_BUFFER);
-        m_TriangleEBO.create();
-        m_TriangleEBO.target(GL_ELEMENT_ARRAY_BUFFER);
-
-        m_CellVAO.create();
-        m_CellPositionVBO.create();
-        m_CellPositionVBO.target(GL_ARRAY_BUFFER);
-        m_CellColorVBO.create();
-        m_CellColorVBO.target(GL_ARRAY_BUFFER);
-        m_Flag = true;
-    }
+    //if (m_DrawMesh == nullptr || m_DrawMesh->GetMTime() < this->GetMTime()) {
+    //    iGameModelGeometryFilter::Pointer extract =
+    //            iGameModelGeometryFilter::New();
+    //    // update clip status
+    //    if (m_Clip.m_Extent.m_Use) {
+    //        const auto& a = m_Clip.m_Extent.m_bmin;
+    //        const auto& b = m_Clip.m_Extent.m_bmax;
+    //        extract->SetExtent(a[0], b[0], a[1], b[1], a[2], b[2],
+    //                           m_Clip.m_Extent.m_flip);
+    //    }
+    //    if (m_Clip.m_Plane.m_Use) {
+    //        extract->SetClipPlane(m_Clip.m_Plane.m_origin,
+    //                              m_Clip.m_Plane.m_normal,
+    //                              m_Clip.m_Plane.m_flip);
+    //    }
+    //
+    //    m_DrawMesh = SurfaceMesh::New();
+    //    if (!extract->Execute(this, m_DrawMesh)) { m_DrawMesh = nullptr; }
+    //    if (m_DrawMesh) { m_DrawMesh->Modified(); }
+    //}
+    //if (m_DrawMesh) { return m_DrawMesh->ConvertToDrawableData(); }
 
     m_Positions = m_Points->ConvertToArray();
     m_Positions->Modified();

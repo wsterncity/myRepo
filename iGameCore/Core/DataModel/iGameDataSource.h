@@ -198,21 +198,12 @@ public:
     //    m_LineVAO.release();
     //}
     void ConvertToDrawableData() override {
+        this->Create();
+
         if (m_Positions && m_Positions->GetMTime() > this->GetMTime()) {
             return;
         }
-
-        if (!m_Flag) {
-            m_LineVAO.create();
-            m_PositionVBO.create();
-            m_PositionVBO.target(GL_ARRAY_BUFFER);
-            m_ColorVBO.create();
-            m_ColorVBO.target(GL_ARRAY_BUFFER);
-            m_LineEBO.create();
-            m_LineEBO.target(GL_ELEMENT_ARRAY_BUFFER);
-            m_Flag = true;
-        }
-
+        
         m_Positions = m_Points->ConvertToArray();
         m_Positions->Modified();
 
