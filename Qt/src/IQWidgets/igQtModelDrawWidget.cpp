@@ -13,8 +13,8 @@
 
 igQtModelDrawWidget::igQtModelDrawWidget(QWidget* parent)
     : igQtRenderWidget(parent) {
-
-
+    m_ColorBarWidget = new igQtColorBarWidget(this);
+    m_ColorBarWidget->hide();
 
 }
 

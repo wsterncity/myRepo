@@ -38,6 +38,11 @@ public:
 		m_Clip.m_Plane.m_flip = flip;
 		SetPlaneClipping(true);
 	}
+	ScalarsToColors::Pointer GetColorMapper() { 
+		return this->m_ColorMapper;
+	}
+
+
 protected:
 	DrawObject() {};
 	~DrawObject() override = default;
@@ -81,6 +86,7 @@ protected:
 		} m_Plane;
 	} m_Clip; // Used for clip mesh
 
+	ScalarsToColors::Pointer m_ColorMapper = ScalarsToColors::New();
 };
 
 IGAME_NAMESPACE_END

@@ -1357,18 +1357,17 @@ void VolumeMesh::SetAttributeWithPointData(ArrayObject::Pointer attr,
         m_ViewDemension = dimension;
         m_UseColor = true;
         m_ColorWithCell = false;
-        ScalarsToColors::Pointer mapper = ScalarsToColors::New();
 
         if (range.first != range.second) {
-            mapper->SetRange(range.first, range.second);
+            m_ColorMapper->SetRange(range.first, range.second);
         } else if (dimension == -1) {
-            mapper->InitRange(attr);
+            m_ColorMapper->InitRange(attr);
         } else {
-            mapper->InitRange(attr, dimension);
+            m_ColorMapper->InitRange(attr, dimension);
         }
-        range.first = mapper->GetRange()[0];
-        range.second = mapper->GetRange()[1];
-        m_Colors = mapper->MapScalars(attr, dimension);
+        range.first = m_ColorMapper->GetRange()[0];
+        range.second = m_ColorMapper->GetRange()[1];
+        m_Colors = m_ColorMapper->MapScalars(attr, dimension);
         if (m_Colors == nullptr) { return; }
 
         GLAllocateGLBuffer(m_ColorVBO,
@@ -1398,15 +1397,15 @@ void VolumeMesh::SetAttributeWithCellData(ArrayObject::Pointer attr,
         m_ViewDemension = i;
         m_UseColor = true;
         m_ColorWithCell = true;
-        ScalarsToColors::Pointer mapper = ScalarsToColors::New();
+
 
         if (i == -1) {
-            mapper->InitRange(attr);
+            m_ColorMapper->InitRange(attr);
         } else {
-            mapper->InitRange(attr, i);
+            m_ColorMapper->InitRange(attr, i);
         }
 
-        FloatArray::Pointer colors = mapper->MapScalars(attr, i);
+        FloatArray::Pointer colors = m_ColorMapper->MapScalars(attr, i);
         if (colors == nullptr) { return; }
 
         FloatArray::Pointer newPositions = FloatArray::New();

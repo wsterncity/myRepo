@@ -1,6 +1,8 @@
 ﻿#include <IQWidgets/igQtColorBarWidget.h>
 #include <QDebug>
-//#include <iGameManager.h>
+#include <iGameSceneManager.h>
+#include "iGameSmartPointer.h"
+#include "iGameDrawObject.h"
 //#include <iGameModelColorManager.h>
 #include <QMouseEvent>
 #include <iomanip>
@@ -24,70 +26,80 @@ igQtColorBarWidget::igQtColorBarWidget(QWidget* parent) : QWidget(parent)
 }
 void igQtColorBarWidget::updateColorBarDrawInfo() {
 
-	//auto iGameColorBar = iGame::iGameModelColorManager::Instance()->GetColorMapper();
-	//// 计算colors
-	//this->colorBarLength = this->height() - this->fontHeight - 1-10;
-	//colors.resize(colorBarLength);
-	//float scale = 1.0 / colorBarLength;
-	//QColor color;
-	//float rgb[16];
-	//for (int i = 0; i < colorBarLength; i++) {
-	//	float val = i * scale;
-	//	iGameColorBar->MapColor(val, rgb);
-	//	color.setRgbF(rgb[0], rgb[1], rgb[2]);
-	//	colors[i] = (color);
-	//}
-	//float min = iGameColorBar->GetRange()[0];
-	//float max = iGameColorBar->GetRange()[1];
-	//this->strData.resize(6);
-	//for (int i = 0; i < 6; i++) {
-	//	float x = min + i * (max - min) * 0.2;
-	//	strData[i] = QString::fromStdString(formatNumber(x));
+    auto scene = iGame::SceneManager::Instance()->GetCurrentScene();
+    m_ColorMapper = nullptr;
+	if (scene) {
+        auto model = scene->GetCurrentModel();
+        if (model&&model->GetDataObject()&&DynamicCast<iGame::DrawObject>(model->GetDataObject())) {
+			m_ColorMapper =DynamicCast<iGame::DrawObject>(model->GetDataObject())->GetColorMapper();
+		}
+	}
+    if (!m_ColorMapper) { 
+		m_ColorMapper = iGame::ScalarsToColors::New();
+	}
 
-	//}
+	// 计算colors
+	this->colorBarLength = this->height() - this->fontHeight - 1-10;
+	colors.resize(colorBarLength);
+	float scale = 1.0 / colorBarLength;
+	QColor color;
+	float rgb[16];
+	for (int i = 0; i < colorBarLength; i++) {
+		float val = i * scale;
+        m_ColorMapper->MapColor(val, rgb);
+		color.setRgbF(rgb[0], rgb[1], rgb[2]);
+		colors[i] = (color);
+	}
+    float min = m_ColorMapper->GetRange()[0];
+    float max = m_ColorMapper->GetRange()[1];
+	this->strData.resize(6);
+	for (int i = 0; i < 6; i++) {
+		float x = min + i * (max - min) * 0.2;
+		strData[i] = QString::fromStdString(formatNumber(x));
+	}
 
 }
 std::string igQtColorBarWidget::formatNumber(float x)
 {
-	//bool isNegative = false;
-	//std::ostringstream strStream;
-	//int precision = 4;
-	//if (x < 0) {
-	//	x = -x;
-	//	isNegative = true;
-	//}
-	//std::string str = isNegative == true ? "-" : "";
-	//if (x < 0.01 && x >= 0.0000000001) {
-	//	
-	//	float a = x;
-	//	int num = 0;
-	//	precision = 3;
-	//	while (a < 1) {
-	//		a *= 10;
-	//		num++;
-	//	}
-	//	strStream << std::setprecision(precision) << a;
-	//	str += strStream.str() + "e-" + std::to_string(num);
-	//}
-	//else if (x > 1000) {
-	//	float a = x;
-	//	int num = 0;
-	//	while (a > 10) {
-	//		a /= 10.0;
-	//		num++;
-	//	}
-	//	strStream << std::setprecision(precision) << a;
-	//	str += strStream.str() + 'e' + std::to_string(num);
-	//}
-	//else {
-	//	if (x < 0.1)precision = 4;
-	//	else if (x < 1)precision = 5;
-	//	else precision = 6;
-	//	strStream << std::setprecision(precision) << x;
-	//	str += strStream.str();
-	//}
-	//return str;
-    return "";
+	bool isNegative = false;
+	std::ostringstream strStream;
+	int precision = 4;
+	if (x < 0) {
+		x = -x;
+		isNegative = true;
+	}
+	std::string str = isNegative == true ? "-" : "";
+	if (x < 0.01 && x >= 0.0000000001) {
+		
+		float a = x;
+		int num = 0;
+		precision = 3;
+		while (a < 1) {
+			a *= 10;
+			num++;
+		}
+		strStream << std::setprecision(precision) << a;
+		str += strStream.str() + "e-" + std::to_string(num);
+	}
+	else if (x > 1000) {
+		float a = x;
+		int num = 0;
+		while (a > 10) {
+			a /= 10.0;
+			num++;
+		}
+		strStream << std::setprecision(precision) << a;
+		str += strStream.str() + 'e' + std::to_string(num);
+	}
+	else {
+		if (x < 0.1)precision = 4;
+		else if (x < 1)precision = 5;
+		else precision = 6;
+		strStream << std::setprecision(precision) << x;
+		str += strStream.str();
+	}
+	return str;
+    //return "";
 }
 
 void igQtColorBarWidget::initDrawStringStyle()
@@ -175,7 +187,6 @@ void igQtColorBarWidget::paintEvent(QPaintEvent* event)
 	painter.setFont(this->font);
 	int restWidth = 5;
 	for (int i = 0; i < data.size(); i++) {
-		//字符串所占的像素宽度,高度
 		int textWidth = data[i].width();
 		int textHeight = data[i].height();
 		float y = st * 1.0 - i * 1.0 * colorBarLength / 5.0;

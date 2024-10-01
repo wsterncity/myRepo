@@ -882,13 +882,13 @@ void igQtMainWindow::initAllDockWidgetConnectWithAction() {
 	// { 	ui->dockWidget_SearchInfo->sh
 	//  ow();
 	//	});
-	// connect(ui->action_IsShowColorBar, &QAction::triggered, this,
-	// &igQtMainWindow::updateColorBarShow);
+	 connect(ui->action_IsShowColorBar, &QAction::triggered, this,
+	 &igQtMainWindow::updateColorBarShow);
 	connect(ui->action_ExportAnimation, &QAction::triggered, this,
 		[&](bool checked) { ui->dockWidget_Animation->show(); });
-	// connect(ui->action_Scalar, &QAction::triggered, this, [&](bool checked) {
-	//	ui->dockWidget_ScalarField->show();
-	//	});
+	 connect(ui->action_Scalar, &QAction::triggered, this, [&](bool checked) {
+		ui->dockWidget_ScalarField->show();
+		});
 	// connect(ui->action_Vector, &QAction::triggered, this, [&](bool checked) {
 	//	ui->dockWidget_VectorField->show();
 	//	});
@@ -1488,13 +1488,13 @@ void igQtMainWindow::updateRecentFilePaths() {
     }
 }
 void igQtMainWindow::updateColorBarShow() {
-    // auto colorBar = this->rendererWidget->getColorBarWidget();
-    // if (colorBar->isHidden()) {
-    //	colorBar->show();
-    // }
-    // else {
-    //	colorBar->hide();
-    // }
+     auto colorBar = this->rendererWidget->getColorBarWidget();
+     if (colorBar->isHidden()) {
+    	colorBar->show();
+     }
+     else {
+    	colorBar->hide();
+     }
 }
 
 void igQtMainWindow::initAllSources() {
