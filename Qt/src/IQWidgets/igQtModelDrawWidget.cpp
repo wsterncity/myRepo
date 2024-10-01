@@ -14,7 +14,14 @@
 igQtModelDrawWidget::igQtModelDrawWidget(QWidget* parent)
     : igQtRenderWidget(parent) {
     m_ColorBarWidget = new igQtColorBarWidget(this);
+
+    m_ColorBarWidget->setWindowFlag(Qt::WindowStaysOnTopHint);
     m_ColorBarWidget->hide();
+    connect(this, &igQtModelDrawWidget::resized, this, [&]() {
+        QRect tmp = this->geometry();
+        this->m_ColorBarWidget->setLimitPosition(0, 0, tmp.width(),
+                                                 tmp.height());
+    });
 
 }
 

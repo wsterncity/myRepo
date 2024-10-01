@@ -1238,11 +1238,10 @@ void SurfaceMesh::SetAttributeWithCellData(ArrayObject::Pointer attr,
         m_UseColor = true;
         m_ColorWithCell = true;
 
-
-        if (i == -1) {
+        if (dimension == -1) {
             m_ColorMapper->InitRange(attr);
         } else {
-            m_ColorMapper->InitRange(attr, i);
+            m_ColorMapper->InitRange(attr, dimension);
         }
         //        if (dimension == -1) {
         //            mapper->InitRange(attr);
@@ -1250,7 +1249,7 @@ void SurfaceMesh::SetAttributeWithCellData(ArrayObject::Pointer attr,
         //            mapper->InitRange(attr, dimension);
         //        }
 
-        FloatArray::Pointer colors = m_ColorMapper->MapScalars(attr, i);
+        FloatArray::Pointer colors = m_ColorMapper->MapScalars(attr, dimension);
         if (colors == nullptr) { return; }
 
         FloatArray::Pointer newPositions = FloatArray::New();

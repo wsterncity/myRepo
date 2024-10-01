@@ -1196,21 +1196,21 @@ void igQtMainWindow::initAllMySignalConnections() {
     // &igQtScalarViewWidget::changeColorBarShow, this,
     // &igQtMainWindow::updateColorBarShow); connect(ui->widget_QualityDetection,
     // &igQtQualityDetectionWidget::updateCurrentModelColor, rendererWidget,
-    // &igQtModelDrawWidget::UpdateCurrentModel); connect(ui->widget_ScalarField,
-    // &igQtScalarViewWidget::ChangeShowColorManager, this, [&]() { 	if
-    //(this->ColorManagerWidget->isHidden()) {
-    //		this->ColorManagerWidget->resetColorRange();
-    //		this->ColorManagerWidget->show();
-    //	}
-    //	else {
-    //		this->ColorManagerWidget->hide();
-    //	}
-    //	});
-    // connect(this->ColorManagerWidget,
-    // &igQtColorManagerWidget::UpdateColorBarFinished, this, [&]() {
-    //	ui->widget_ScalarField->drawModelWithScalarData();
-    //	this->rendererWidget->getColorBarWidget()->update();
-    //	});
+    // &igQtModelDrawWidget::UpdateCurrentModel); 
+    connect(ui->widget_ScalarField,&igQtScalarViewWidget::ChangeShowColorManager, this, [&]() { 
+         if(this->ColorManagerWidget->isHidden()) {
+    		this->ColorManagerWidget->resetColorRange();
+    		this->ColorManagerWidget->show();
+         }
+    	else {
+    		this->ColorManagerWidget->hide();
+    	}
+    	});
+     connect(this->ColorManagerWidget,
+     &igQtColorManagerWidget::UpdateColorBarFinished, this, [&]() {
+    	ui->widget_ScalarField->drawModelWithScalarData();
+    	this->rendererWidget->getColorBarWidget()->update();
+    	});
     // connect(ui->widget_EditMode, &igQtEditModeWidget::ChangeCutFlag,
     // rendererWidget, &igQtModelDrawWidget::UpdateCutFlag);
     // connect(ui->widget_EditMode,
@@ -1489,6 +1489,10 @@ void igQtMainWindow::updateRecentFilePaths() {
 }
 void igQtMainWindow::updateColorBarShow() {
      auto colorBar = this->rendererWidget->getColorBarWidget();
+     if (!colorBar) {
+         return;
+     }
+     colorBar->update();
      if (colorBar->isHidden()) {
     	colorBar->show();
      }

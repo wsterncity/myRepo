@@ -30,8 +30,8 @@ void igQtColorBarWidget::updateColorBarDrawInfo() {
     m_ColorMapper = nullptr;
 	if (scene) {
         auto model = scene->GetCurrentModel();
-        if (model&&model->GetDataObject()&&DynamicCast<iGame::DrawObject>(model->GetDataObject())) {
-			m_ColorMapper =DynamicCast<iGame::DrawObject>(model->GetDataObject())->GetColorMapper();
+        if (model&&model->GetDataObject()) {
+			m_ColorMapper =model->GetDataObject()->GetColorMapper();
 		}
 	}
     if (!m_ColorMapper) { 
