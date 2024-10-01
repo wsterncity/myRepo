@@ -121,4 +121,14 @@ void DrawObject::SetPlane(double ox, double oy, double oz, double nx, double ny,
     SetPlaneClipping(true);
 }
 
+void DrawObject::SetTransparency(float transparency) {
+    if (transparency < 0.0f || transparency > 1.0f) {
+        throw std::runtime_error("Transparency must be between 0-1");
+    }
+    m_Transparency = transparency;
+    m_TransparencyChanged = true;
+}
+
+float DrawObject::GetTransparency() { return m_Transparency; }
+
 IGAME_NAMESPACE_END

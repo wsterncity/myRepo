@@ -49,6 +49,9 @@ public:
     void SetPlane(double ox, double oy, double oz, double nx, double ny,
                   double nz, bool flip = false);
 
+    void SetTransparency(float transparency);
+    float GetTransparency();
+
 protected:
     void Create();
 
@@ -78,7 +81,9 @@ protected:
     int m_PointSize{8};
     int m_LineWidth{1};
     int m_CellPositionSize{};
+
     float m_Transparency{1.0f};
+    bool m_TransparencyChanged{false};
 
     ArrayObject::Pointer m_ViewAttribute{};
     int m_ViewDemension{};

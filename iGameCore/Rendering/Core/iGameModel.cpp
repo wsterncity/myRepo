@@ -72,7 +72,7 @@ void Model::Draw(Scene* scene) {
 
         drawObject->m_TriangleVAO.bind();
         glEnable(GL_POLYGON_OFFSET_FILL);
-        glPolygonOffset(-0.4f, -0.4f);
+        glPolygonOffset(-0.5f, -0.5f);
         glad_glDrawElements(GL_TRIANGLES,
                             drawObject->m_TriangleIndices->GetNumberOfIds(),
                             GL_UNSIGNED_INT, 0);
