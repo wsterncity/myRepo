@@ -162,10 +162,10 @@ void VolumeMesh::BuildVolumeEdgeLinks() {
         return;
     }
 
-	m_VolumeEdgeLinks = CellLinks::New();
-	IGsize nedges = this->GetNumberOfEdges();
-	IGsize nvolumes = this->GetNumberOfVolumes();
-	igIndex cell[64]{};
+    m_VolumeEdgeLinks = CellLinks::New();
+    IGsize nedges = this->GetNumberOfEdges();
+    IGsize nvolumes = this->GetNumberOfVolumes();
+    igIndex cell[64]{};
 
     m_VolumeEdgeLinks->Allocate(nedges);
     for (IGsize i = 0; i < nvolumes; i++) {
@@ -1108,91 +1108,91 @@ void VolumeMesh::RequestVolumeStatus() {
     m_VolumeDeleteMarker->Initialize(GetNumberOfEdges());
 }
 
-void VolumeMesh::Draw(Scene* scene) {
-    if (!m_Visibility) { return; }
-    if (m_DrawMesh) {
-        m_DrawMesh->SetViewStyle(m_ViewStyle);
-        return m_DrawMesh->Draw(scene);
-    }
-    //update uniform buffer
-    if (m_UseColor) {
-        scene->UBO().useColor = true;
-    } else {
-        scene->UBO().useColor = false;
-    }
-    scene->UpdateUniformBuffer();
-
-    if (m_UseColor && m_ColorWithCell) {
-        scene->GetShader(Scene::BLINNPHONG)->use();
-
-        m_CellVAO.bind();
-        glad_glDrawArrays(GL_TRIANGLES, 0, m_CellPositionSize);
-        m_CellVAO.release();
-        return;
-    }
-
-    if (m_ViewStyle & IG_POINTS) {
-        scene->GetShader(Scene::NOLIGHT)->use();
-
-        m_PointVAO.bind();
-        glad_glPointSize(m_PointSize);
-        glad_glDepthRange(0.000001, 1);
-        glad_glDrawArrays(GL_POINTS, 0, m_Positions->GetNumberOfValues() / 3);
-        glad_glDepthRange(0, 1);
-        m_PointVAO.release();
-    }
-    if (m_ViewStyle & IG_WIREFRAME) {
-        if (m_UseColor) {
-            scene->GetShader(Scene::NOLIGHT)->use();
-        } else {
-            auto shader = scene->GetShader(Scene::PURECOLOR);
-            shader->use();
-            shader->setUniform(shader->getUniformLocation("inputColor"),
-                               igm::vec3{0.0f, 0.0f, 0.0f});
-        }
-
-        m_LineVAO.bind();
-        glLineWidth(m_LineWidth);
-        glad_glDrawElements(GL_LINES, m_LineIndices->GetNumberOfIds(),
-                            GL_UNSIGNED_INT, 0);
-        m_LineVAO.release();
-    }
-    if (m_ViewStyle & IG_SURFACE) {
-        scene->GetShader(Scene::BLINNPHONG)->use();
-
-        m_TriangleVAO.bind();
-        glEnable(GL_POLYGON_OFFSET_FILL);
-        glPolygonOffset(-0.5f, -0.5f);
-        glad_glDrawElements(GL_TRIANGLES, m_TriangleIndices->GetNumberOfIds(),
-                            GL_UNSIGNED_INT, 0);
-        glDisable(GL_POLYGON_OFFSET_FILL);
-        m_TriangleVAO.release();
-    }
-
-    /*if (m_ViewStyle == IG_SURFACE_WITH_EDGE)
-	{
-		if (m_UseColor)
-		{
-			scene->GetShader(Scene::NOLIGHT)->use();
-		}
-		else
-		{
-			auto shader = scene->GetShader(Scene::PURECOLOR);
-			shader->use();
-			shader->setUniform(shader->getUniformLocation("inputColor"), igm::vec3{ 0.0f, 0.0f, 0.0f });
-		}
-
-		m_LineVAO.bind();
-		glLineWidth(m_LineWidth);
-		glad_glDrawElements(GL_LINES, m_LineIndices->GetNumberOfIds(), GL_UNSIGNED_INT, 0);
-		m_LineVAO.release();
-
-		scene->GetShader(Scene::PATCH)->use();
-		m_TriangleVAO.bind();
-		glad_glDrawElements(GL_TRIANGLES, m_TriangleIndices->GetNumberOfIds(), GL_UNSIGNED_INT, 0);
-		m_TriangleVAO.release();
-	}*/
-}
+//void VolumeMesh::Draw(Scene* scene) {
+//    if (!m_Visibility) { return; }
+//    if (m_DrawMesh) {
+//        m_DrawMesh->SetViewStyle(m_ViewStyle);
+//        return m_DrawMesh->Draw(scene);
+//    }
+//    //update uniform buffer
+//    if (m_UseColor) {
+//        scene->UBO().useColor = true;
+//    } else {
+//        scene->UBO().useColor = false;
+//    }
+//    scene->UpdateUniformBuffer();
+//
+//    if (m_UseColor && m_ColorWithCell) {
+//        scene->GetShader(Scene::BLINNPHONG)->use();
+//
+//        m_CellVAO.bind();
+//        glad_glDrawArrays(GL_TRIANGLES, 0, m_CellPositionSize);
+//        m_CellVAO.release();
+//        return;
+//    }
+//
+//    if (m_ViewStyle & IG_POINTS) {
+//        scene->GetShader(Scene::NOLIGHT)->use();
+//
+//        m_PointVAO.bind();
+//        glad_glPointSize(m_PointSize);
+//        glad_glDepthRange(0.000001, 1);
+//        glad_glDrawArrays(GL_POINTS, 0, m_Positions->GetNumberOfValues() / 3);
+//        glad_glDepthRange(0, 1);
+//        m_PointVAO.release();
+//    }
+//    if (m_ViewStyle & IG_WIREFRAME) {
+//        if (m_UseColor) {
+//            scene->GetShader(Scene::NOLIGHT)->use();
+//        } else {
+//            auto shader = scene->GetShader(Scene::PURECOLOR);
+//            shader->use();
+//            shader->setUniform(shader->getUniformLocation("inputColor"),
+//                               igm::vec3{0.0f, 0.0f, 0.0f});
+//        }
+//
+//        m_LineVAO.bind();
+//        glLineWidth(m_LineWidth);
+//        glad_glDrawElements(GL_LINES, m_LineIndices->GetNumberOfIds(),
+//                            GL_UNSIGNED_INT, 0);
+//        m_LineVAO.release();
+//    }
+//    if (m_ViewStyle & IG_SURFACE) {
+//        scene->GetShader(Scene::BLINNPHONG)->use();
+//
+//        m_TriangleVAO.bind();
+//        glEnable(GL_POLYGON_OFFSET_FILL);
+//        glPolygonOffset(-0.5f, -0.5f);
+//        glad_glDrawElements(GL_TRIANGLES, m_TriangleIndices->GetNumberOfIds(),
+//                            GL_UNSIGNED_INT, 0);
+//        glDisable(GL_POLYGON_OFFSET_FILL);
+//        m_TriangleVAO.release();
+//    }
+//
+//    /*if (m_ViewStyle == IG_SURFACE_WITH_EDGE)
+//	{
+//		if (m_UseColor)
+//		{
+//			scene->GetShader(Scene::NOLIGHT)->use();
+//		}
+//		else
+//		{
+//			auto shader = scene->GetShader(Scene::PURECOLOR);
+//			shader->use();
+//			shader->setUniform(shader->getUniformLocation("inputColor"), igm::vec3{ 0.0f, 0.0f, 0.0f });
+//		}
+//
+//		m_LineVAO.bind();
+//		glLineWidth(m_LineWidth);
+//		glad_glDrawElements(GL_LINES, m_LineIndices->GetNumberOfIds(), GL_UNSIGNED_INT, 0);
+//		m_LineVAO.release();
+//
+//		scene->GetShader(Scene::PATCH)->use();
+//		m_TriangleVAO.bind();
+//		glad_glDrawElements(GL_TRIANGLES, m_TriangleIndices->GetNumberOfIds(), GL_UNSIGNED_INT, 0);
+//		m_TriangleVAO.release();
+//	}*/
+//}
 
 void VolumeMesh::ConvertToDrawableData() {
     if (m_Positions && m_Positions->GetMTime() > this->GetMTime()) { return; }

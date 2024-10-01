@@ -6,7 +6,7 @@
 #include <iGameStreamTracer.h>
 IGAME_NAMESPACE_BEGIN
 class Scene;
-class iGameStreamBase : public Filter, public DrawObject {
+class iGameStreamBase : public Filter, public DataObject {
 public:
     I_OBJECT(iGameStreamBase);
     static iGameStreamBase* New() { return new iGameStreamBase; }
@@ -28,7 +28,7 @@ private:
     FloatArray::Pointer m_PositionColors;
 
 public:
-    void Draw(Scene*) override;
+    //void Draw(Scene*) override;
     void ConvertToDrawableData() override;
     std::vector<std::vector<float>> m_StreamLine;
 };

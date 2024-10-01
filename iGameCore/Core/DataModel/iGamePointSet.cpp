@@ -93,37 +93,37 @@ void PointSet::ComputeBoundingBox() {
     }
 }
 
-void PointSet::Draw(Scene* scene) {
-    if (!m_Visibility) { return; }
+//void PointSet::Draw(Scene* scene) {
+//    if (!m_Visibility) { return; }
+//
+//    if (m_UseColor) {
+//        scene->UBO().useColor = true;
+//    } else {
+//        scene->UBO().useColor = false;
+//    }
+//    scene->UpdateUniformBuffer();
+//
+//    if (m_ViewStyle & IG_POINTS) {
+//        scene->GetShader(Scene::NOLIGHT)->use();
+//
+//        m_PointVAO.bind();
+//        glPointSize(m_PointSize);
+//        glad_glDepthRange(0.000001, 1);
+//        glad_glDrawArrays(GL_POINTS, 0, m_Positions->GetNumberOfValues() / 3);
+//        glad_glDepthRange(0, 1);
+//        m_PointVAO.release();
+//    }
+//}
 
-    if (m_UseColor) {
-        scene->UBO().useColor = true;
-    } else {
-        scene->UBO().useColor = false;
-    }
-    scene->UpdateUniformBuffer();
-
-    if (m_ViewStyle & IG_POINTS) {
-        scene->GetShader(Scene::NOLIGHT)->use();
-
-        m_PointVAO.bind();
-        glPointSize(m_PointSize);
-        glad_glDepthRange(0.000001, 1);
-        glad_glDrawArrays(GL_POINTS, 0, m_Positions->GetNumberOfValues() / 3);
-        glad_glDepthRange(0, 1);
-        m_PointVAO.release();
-    }
-}
-// TODO: wait to implement
-void PointSet::DrawPhase1(Scene*) {
-
-};
-void PointSet::DrawPhase2(Scene*) {
-
-};
-void PointSet::TestOcclusionResults(Scene*) {
-
-};
+//void PointSet::DrawPhase1(Scene*) {
+//
+//};
+//void PointSet::DrawPhase2(Scene*) {
+//
+//};
+//void PointSet::TestOcclusionResults(Scene*) {
+//
+//};
 
 void PointSet::ConvertToDrawableData() {
     if (m_Positions && m_Positions->GetMTime() > this->GetMTime()) { return; }

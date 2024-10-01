@@ -18,6 +18,9 @@ public:
     static Pointer New() { return new Model; }
 
     void Draw(Scene*);
+    void DrawPhase1(Scene*);
+    void DrawPhase2(Scene*);
+    void TestOcclusionResults(Scene*);
 
     DataObject::Pointer GetDataObject() { return m_DataObject; }
     bool GetVisibility() { return m_DataObject->GetVisibility(); }

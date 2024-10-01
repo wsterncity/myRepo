@@ -173,7 +173,7 @@ GLShaderProgram* Scene::GenShader(IGenum type) {
     switch (type) {
         case BLINNPHONG: {
             GLShader shader_vert = GLShader{
-                    (std::string(SHADERS_DIR) + "/GLSL/shader.vert").c_str(),
+                    (std::string(SHADERS_DIR) + "/GLSL/vertex.vert").c_str(),
                     GL_VERTEX_SHADER};
             GLShader shader_frag = GLShader{
                     (std::string(SHADERS_DIR) + "/GLSL/blinnPhong.frag")
@@ -184,7 +184,7 @@ GLShaderProgram* Scene::GenShader(IGenum type) {
         } break;
         case PBR: {
             GLShader shader_vert = GLShader{
-                    (std::string(SHADERS_DIR) + "/GLSL/shader.vert").c_str(),
+                    (std::string(SHADERS_DIR) + "/GLSL/vertex.vert").c_str(),
                     GL_VERTEX_SHADER};
             GLShader shader_frag = GLShader{
                     (std::string(SHADERS_DIR) + "/GLSL/pbr.frag").c_str(),
@@ -194,18 +194,17 @@ GLShaderProgram* Scene::GenShader(IGenum type) {
         } break;
         case NOLIGHT: {
             GLShader shader_vert = GLShader{
-                    (std::string(SHADERS_DIR) + "/GLSL/shader.vert").c_str(),
+                    (std::string(SHADERS_DIR) + "/GLSL/vertex.vert").c_str(),
                     GL_VERTEX_SHADER};
             GLShader shader_frag = GLShader{
-                    (std::string(SHADERS_DIR) + "/GLSL/shaderNoLight.frag")
-                            .c_str(),
+                    (std::string(SHADERS_DIR) + "/GLSL/noLight.frag").c_str(),
                     GL_FRAGMENT_SHADER};
             sp = new GLShaderProgram;
             sp->addShaders({shader_vert, shader_frag});
         } break;
         case PURECOLOR: {
             GLShader shader_vert = GLShader{
-                    (std::string(SHADERS_DIR) + "/GLSL/shader.vert").c_str(),
+                    (std::string(SHADERS_DIR) + "/GLSL/vertex.vert").c_str(),
                     GL_VERTEX_SHADER};
             GLShader pureColor_frag = GLShader{
                     (std::string(SHADERS_DIR) + "/GLSL/pureColor.frag").c_str(),
@@ -246,20 +245,20 @@ GLShaderProgram* Scene::GenShader(IGenum type) {
             sp->addShaders({font_vert, font_frag});
         } break;
         case DEPTHREDUCE: {
-            //GLShader depthReduce_comp = GLShader{
-            //        (std::string(SHADERS_DIR) + "/GLSL/depthReduce.comp")
-            //                .c_str(),
-            //        GL_COMPUTE_SHADER};
-            //sp = new GLShaderProgram;
-            //sp->addShaders({depthReduce_comp});
+            GLShader depthReduce_comp = GLShader{
+                    (std::string(SHADERS_DIR) + "/GLSL/depthReduce.comp")
+                            .c_str(),
+                    GL_COMPUTE_SHADER};
+            sp = new GLShaderProgram;
+            sp->addShaders({depthReduce_comp});
         } break;
         case MESHLETCULL: {
-            //GLShader meshletCull_comp = GLShader{
-            //        (std::string(SHADERS_DIR) + "/GLSL/meshletCull.comp")
-            //                .c_str(),
-            //        GL_COMPUTE_SHADER};
-            //sp = new GLShaderProgram;
-            //sp->addShaders({meshletCull_comp});
+            GLShader meshletCull_comp = GLShader{
+                    (std::string(SHADERS_DIR) + "/GLSL/meshletCull.comp")
+                            .c_str(),
+                    GL_COMPUTE_SHADER};
+            sp = new GLShaderProgram;
+            sp->addShaders({meshletCull_comp});
         } break;
         case SCREEN: {
             GLShader screen_vert = GLShader{
@@ -787,27 +786,25 @@ void Scene::DrawModels() {
         obj->Draw(this);
     }
 #elif IGAME_OPENGL_VERSION_460
-    bool debug = true;
+    bool debug = false;
     if (debug) {
         //std::cout << "-------:Draw:-------" << std::endl;
         RefreshDrawCullDataBuffer();
 
-        for (auto& [id, obj]: m_Models) {
-            obj->m_DataObject->ConvertToDrawableData();
+        for (auto& [id, model]: m_Models) {
+            model->m_DataObject->ConvertToDrawableData();
         }
 
-        for (auto& [id, obj]: m_Models) {
-            obj->m_DataObject->TestOcclusionResults(this);
-        }
+        for (auto& [id, model]: m_Models) { model->TestOcclusionResults(this); }
 
         // draw phase1: draw visible meshlet
-        for (auto& [id, obj]: m_Models) { obj->m_DataObject->DrawPhase1(this); }
+        for (auto& [id, model]: m_Models) { model->DrawPhase1(this); }
 
         // refresh phase1: generate loacl hierarchical z-buffer
         RefreshDepthPyramid();
 
         // draw phase2: draw invisible meshlet
-        for (auto& [id, obj]: m_Models) { obj->m_DataObject->DrawPhase2(this); }
+        for (auto& [id, model]: m_Models) { model->DrawPhase2(this); }
 
         // refresh phase2: generate global hierarchical z-buffer
         RefreshDepthPyramid();
@@ -816,8 +813,8 @@ void Scene::DrawModels() {
             obj->m_DataObject->ConvertToDrawableData();
             obj->Draw(this);
         }
-        painter->Draw(this);
     }
+    painter->Draw(this);
 #endif
 }
 
