@@ -1,12 +1,12 @@
 #ifndef iGameDataSource_h
 #define iGameDataSource_h
 
-#include "iGameDataObject.h"
+#include "iGameDrawObject.h"
 #include "iGamePoints.h"
 #include "iGameScene.h"
 
 IGAME_NAMESPACE_BEGIN
-class DataSource : public DataObject {
+class DataSource : public DrawObject {
 public:
     I_OBJECT(DataSource);
     static Pointer New() { return new DataSource; }
@@ -203,7 +203,7 @@ public:
         if (m_Positions && m_Positions->GetMTime() > this->GetMTime()) {
             return;
         }
-        
+
         m_Positions = m_Points->ConvertToArray();
         m_Positions->Modified();
 

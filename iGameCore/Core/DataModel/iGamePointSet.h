@@ -1,13 +1,13 @@
 #ifndef iGamePointSet_h
 #define iGamePointSet_h
 
-#include "iGameDataObject.h"
+#include "iGameDrawObject.h"
 #include "iGameMarker.h"
 #include "iGamePoints.h"
 
 IGAME_NAMESPACE_BEGIN
 
-class PointSet : public DataObject {
+class PointSet : public DrawObject {
 public:
     I_OBJECT(PointSet);
     static Pointer New() { return new PointSet; }

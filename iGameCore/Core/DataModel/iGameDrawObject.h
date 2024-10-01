@@ -1,6 +1,7 @@
 #ifndef iGameDrawObject_h
 #define iGameDrawObject_h
 
+#include "iGameDataObject.h"
 #include "iGameIdArray.h"
 #include "iGameMarker.h"
 #include "iGameMeshlet.h"
@@ -16,7 +17,7 @@
 IGAME_NAMESPACE_BEGIN
 class Model;
 
-class DrawObject : public Object {
+class DrawObject : public DataObject {
 public:
     I_OBJECT(DrawObject);
     static Pointer New() { return new DrawObject; }
@@ -26,6 +27,10 @@ protected:
     ~DrawObject() override = default;
 
 public:
+    virtual void ConvertToDrawableData();
+    IGenum GetDataObjectType() const override;
+    IGsize GetRealMemorySize() override;
+
     void SetVisibility(bool f);
     bool GetVisibility();
     /*ViewStyle's detail. See iGameType.h */
@@ -33,6 +38,8 @@ public:
     void AddViewStyle(IGenum mode);
     void RemoveViewStyle(IGenum mode);
     unsigned int GetViewStyle();
+    void AddViewStyleOfModel(IGenum mode);
+    unsigned int GetViewStyleOfModel();
 
     virtual bool GetClipped();
     void SetExtentClipping(bool _in);
@@ -42,17 +49,12 @@ public:
     void SetPlane(double ox, double oy, double oz, double nx, double ny,
                   double nz, bool flip = false);
 
-    virtual IGenum GetDataObjectType() const;
-    virtual IGsize GetRealMemorySize();
-
 protected:
     void Create();
-    virtual void ConvertToDrawableData();
 
 protected:
     unsigned int m_ViewStyle{0};
     bool m_Visibility{true};
-    bool m_Drawable{false};
 
 protected:
     GLVertexArray m_PointVAO, m_VertexVAO, m_LineVAO, m_TriangleVAO;

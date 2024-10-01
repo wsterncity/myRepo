@@ -65,6 +65,26 @@ void DrawObject::RemoveViewStyle(IGenum mode) { m_ViewStyle &= ~mode; }
 
 unsigned int DrawObject::GetViewStyle() { return m_ViewStyle; }
 
+void DrawObject::AddViewStyleOfModel(IGenum mode) {
+    //auto* parent = FindParent();
+    auto* parentDrawObject = DynamicCast<DrawObject>(FindParent());
+    if (parentDrawObject != this) {
+        parentDrawObject->AddViewStyle(mode);
+    } else {
+        this->AddViewStyle(mode);
+    }
+}
+
+unsigned int DrawObject::GetViewStyleOfModel() {
+    //auto* parent = FindParent();
+    auto* parentDrawObject = DynamicCast<DrawObject>(FindParent());
+    if (parentDrawObject != this) {
+        return parentDrawObject->GetViewStyle();
+    } else {
+        return this->GetViewStyle();
+    }
+}
+
 bool DrawObject::GetClipped() {
     return false;
 }; // Gets whether this can be clipped.

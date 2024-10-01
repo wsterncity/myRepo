@@ -972,6 +972,7 @@ void igQtMainWindow::initAllDockWidgetConnectWithAction() {
                 auto scene = iGame::SceneManager::Instance()->GetCurrentScene();
                 auto oldCurrentModel = scene->GetCurrentModel();
                 auto dataObject = scene->GetCurrentModel()->GetDataObject();
+                auto drawObject = DynamicCast<DrawObject>(dataObject);
                 static std::vector<int> supportTypes = {IG_VOLUME_MESH,
                                                         IG_UNSTRUCTURED_MESH,
                                                         IG_STRUCTURED_MESH};
@@ -1057,7 +1058,7 @@ void igQtMainWindow::initAllDockWidgetConnectWithAction() {
                     auto OIV = DynamicCast<SurfaceMesh>(clipper->GetOutput(2));
                     AddClippingMeshToScene(dataObject->GetName(), OV, IV, OIV,
                                            modelTreeWidget);
-                    dataObject->SetVisibility(false);
+                    drawObject->SetVisibility(false);
                     scene->SetCurrentModel(oldCurrentModel);
                     rendererWidget->update();
                 });
@@ -1073,6 +1074,7 @@ void igQtMainWindow::initAllDockWidgetConnectWithAction() {
                 auto scene = iGame::SceneManager::Instance()->GetCurrentScene();
                 auto oldCurrentModel = scene->GetCurrentModel();
                 auto dataObject = scene->GetCurrentModel()->GetDataObject();
+                auto drawObject = DynamicCast<DrawObject>(dataObject);
                 static std::vector<int> supportTypes = {IG_VOLUME_MESH,
                                                         IG_UNSTRUCTURED_MESH,
                                                         IG_STRUCTURED_MESH};
@@ -1156,7 +1158,7 @@ void igQtMainWindow::initAllDockWidgetConnectWithAction() {
                     auto OIV = DynamicCast<SurfaceMesh>(clipper->GetOutput(2));
                     AddClippingMeshToScene(dataObject->GetName(), OV, IV, OIV,
                                            modelTreeWidget);
-                    dataObject->SetVisibility(false);
+                    drawObject->SetVisibility(false);
                     scene->SetCurrentModel(oldCurrentModel);
                     rendererWidget->update();
                 });
@@ -1331,7 +1333,7 @@ void igQtMainWindow::initAllMySignalConnections() {
                     return;
                 }
                 auto scene = iGame::SceneManager::Instance()->GetCurrentScene();
-                auto inputMesh = DynamicCast<iGame::DataObject>(
+                auto inputMesh = DynamicCast<iGame::DrawObject>(
                         scene->GetCurrentModel()->GetDataObject());
                 if (!inputMesh->GetClipped()) {
                     std::cout << "This type of mesh can't be clipped"
@@ -1351,16 +1353,28 @@ void igQtMainWindow::initAllMySignalConnections() {
                 const std::string OIVName =
                         "__" + inputMesh->GetName() + "_OIV"; // 临时模型
                 bool exist[3]{false, false, false};
+                //for (auto& [id, model]: scene->GetModelList()) {
+                //    if (model->GetDataObject()->GetName() == OVName) {
+                //        auto model = scene->GetModelById(id);
+                //        model->GetDataObject()->SetVisibility(false);
+                //    } else if (model->GetDataObject()->GetName() == IVName) {
+                //        auto model = scene->GetModelById(id);
+                //        model->GetDataObject()->SetVisibility(false);
+                //    } else if (model->GetDataObject()->GetName() == OIVName) {
+                //        auto model = scene->GetModelById(id);
+                //        model->GetDataObject()->SetVisibility(false);
+                //    }
+                //}
                 for (auto& [id, model]: scene->GetModelList()) {
-                    if (model->GetDataObject()->GetName() == OVName) {
-                        auto model = scene->GetModelById(id);
-                        model->GetDataObject()->SetVisibility(false);
-                    } else if (model->GetDataObject()->GetName() == IVName) {
-                        auto model = scene->GetModelById(id);
-                        model->GetDataObject()->SetVisibility(false);
-                    } else if (model->GetDataObject()->GetName() == OIVName) {
-                        auto model = scene->GetModelById(id);
-                        model->GetDataObject()->SetVisibility(false);
+                    auto drawObject =
+                            DynamicCast<DrawObject>(model->GetDataObject());
+
+                    if (drawObject->GetName() == OVName) {
+                        drawObject->SetVisibility(false);
+                    } else if (drawObject->GetName() == IVName) {
+                        drawObject->SetVisibility(false);
+                    } else if (drawObject->GetName() == OIVName) {
+                        drawObject->SetVisibility(false);
                     }
                 }
 
@@ -1378,7 +1392,7 @@ void igQtMainWindow::initAllMySignalConnections() {
                 bool ok;
 
                 auto scene = iGame::SceneManager::Instance()->GetCurrentScene();
-                auto inputMesh = DynamicCast<iGame::DataObject>(
+                auto inputMesh = DynamicCast<iGame::DrawObject>(
                         scene->GetCurrentModel()->GetDataObject());
                 if (!inputMesh->GetClipped()) {
                     std::cout << "This type of mesh can't be clipped"
@@ -1469,7 +1483,7 @@ void igQtMainWindow::initAllMySignalConnections() {
 
                 auto scene = iGame::SceneManager::Instance()->GetCurrentScene();
 
-                auto inputMesh = DynamicCast<iGame::DataObject>(
+                auto inputMesh = DynamicCast<iGame::DrawObject>(
                         scene->GetCurrentModel()->GetDataObject());
                 if (!inputMesh->GetClipped()) {
                     std::cout << "This type of mesh can't be clipped"

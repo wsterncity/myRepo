@@ -3,7 +3,6 @@
 
 #include "iGameAttributeSet.h"
 #include "iGameBoundingBox.h"
-#include "iGameDrawObject.h"
 #include "iGameMetadata.h"
 #include "iGamePropertyTree.h"
 #include "iGameScalarsToColors.h"
@@ -12,7 +11,7 @@
 IGAME_NAMESPACE_BEGIN
 class Scene;
 
-class DataObject : public DrawObject {
+class DataObject : public Object {
 public:
     I_OBJECT(DataObject);
     static Pointer New() { return new DataObject; }
@@ -22,7 +21,7 @@ public:
 
     static Pointer CreateDataObject(IGenum type);
 
-    IGenum GetDataObjectType() const { return IG_DATA_OBJECT; }
+    virtual IGenum GetDataObjectType() const { return IG_DATA_OBJECT; }
 
     virtual bool ShallowCopy(Pointer o) { return true; }
 
@@ -131,7 +130,7 @@ public:
 
     DataObject* FindParent();
     //Get real size of DataObject
-    IGsize GetRealMemorySize() { return 0; };
+    virtual IGsize GetRealMemorySize() { return 0; };
 
 protected:
     DataObject() {
@@ -187,7 +186,7 @@ public:
     //virtual void DrawPhase1(Scene*);
     //virtual void DrawPhase2(Scene*);
     //virtual void TestOcclusionResults(Scene*);
-    virtual void ConvertToDrawableData();
+    //virtual void ConvertToDrawableData();
 
     virtual void ChangeDrawable(bool drawScalar) { m_Drawable = drawScalar; }
     virtual bool IsDrawable() { return m_Drawable; }
@@ -196,8 +195,6 @@ public:
     virtual void ViewCloudPicture(Scene*, int index, int dimension = -1);
     void ViewCloudPictureOfModel(Scene*, int index, int dimension = -1);
 
-    void AddViewStyleOfModel(IGenum mode);
-    unsigned int GetViewStyleOfModel();
     int GetAttributeIndex();
     int GetAttributeDimension();
 
@@ -205,6 +202,7 @@ public:
     void SwitchToCurrentTimeframe(int timeIndex);
 
 protected:
+    bool m_Drawable{false};
     int m_AttributeIndex{-1};
     int m_AttributeDimension{-1};
     int m_CurrentTimeframeIndex{-1};

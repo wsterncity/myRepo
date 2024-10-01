@@ -781,9 +781,10 @@ void Scene::DrawModels() {
     glViewport(0, 0, viewport.x, viewport.y);
 
 #ifdef IGAME_OPENGL_VERSION_330
-    for (auto& [id, obj]: m_Models) {
-        obj->m_DataObject->ConvertToDrawableData();
-        obj->Draw(this);
+    for (auto& [id, model]: m_Models) {
+        auto drawObject = DynamicCast<DrawObject>(model->m_DataObject);
+        drawObject->ConvertToDrawableData();
+        model->Draw(this);
     }
 #elif IGAME_OPENGL_VERSION_460
     bool debug = false;
@@ -792,7 +793,8 @@ void Scene::DrawModels() {
         RefreshDrawCullDataBuffer();
 
         for (auto& [id, model]: m_Models) {
-            model->m_DataObject->ConvertToDrawableData();
+            auto drawObject = DynamicCast<DrawObject>(model->m_DataObject);
+            drawObject->ConvertToDrawableData();
         }
 
         for (auto& [id, model]: m_Models) { model->TestOcclusionResults(this); }
@@ -809,9 +811,10 @@ void Scene::DrawModels() {
         // refresh phase2: generate global hierarchical z-buffer
         RefreshDepthPyramid();
     } else {
-        for (auto& [id, obj]: m_Models) {
-            obj->m_DataObject->ConvertToDrawableData();
-            obj->Draw(this);
+        for (auto& [id, model]: m_Models) {
+            auto drawObject = DynamicCast<DrawObject>(model->m_DataObject);
+            drawObject->ConvertToDrawableData();
+            model->Draw(this);
         }
     }
     painter->Draw(this);

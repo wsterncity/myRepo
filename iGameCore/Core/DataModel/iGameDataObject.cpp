@@ -95,10 +95,6 @@ void DataObject::SetParent(DataObject* parent) {
 //    ProcessSubDataObjects(&DataObject::TestOcclusionResults, scene);
 //}
 
-void DataObject::ConvertToDrawableData() {
-    ProcessSubDataObjects(&DataObject::ConvertToDrawableData);
-}
-
 void DataObject::ViewCloudPicture(Scene* scene, int index, int dimension) {
     m_AttributeIndex = index;
     m_AttributeDimension = dimension;
@@ -113,24 +109,6 @@ void DataObject::ViewCloudPictureOfModel(Scene* scene, int index,
         parent->ViewCloudPicture(scene, index, demension);
     } else {
         this->ViewCloudPicture(scene, index, demension);
-    }
-}
-
-void DataObject::AddViewStyleOfModel(IGenum mode) {
-    auto* parent = FindParent();
-    if (parent != this) {
-        parent->AddViewStyle(mode);
-    } else {
-        this->AddViewStyle(mode);
-    }
-}
-
-unsigned int DataObject::GetViewStyleOfModel() {
-    auto* parent = FindParent();
-    if (parent != this) {
-        return parent->GetViewStyle();
-    } else {
-        return this->GetViewStyle();
     }
 }
 
