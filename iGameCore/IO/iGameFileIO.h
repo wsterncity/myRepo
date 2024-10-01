@@ -27,6 +27,7 @@ public:
         EX2,
 		CGNS,
 		INP,
+		ODB,
 		CAS,
 		FILETYPE_COUNT
 	};

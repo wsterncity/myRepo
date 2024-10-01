@@ -75,11 +75,9 @@ public:
 		UpdateColorRange(colorrange);
 	}
 	void UpdateColorBar(FloatArray::Pointer colorbar) {
-		if (this->ColorBar != nullptr) { this->ColorBar->Delete(); }
 		this->ColorBar = colorbar;
 	};
 	void UpdateColorRange(FloatArray::Pointer colorrange) {
-		if (this->ColorRange != nullptr) { this->ColorRange->Delete(); }
 		this->ColorRange = colorrange;
 	};
 	// get the colorbar draw info,use to draw colorbar
@@ -92,8 +90,8 @@ protected:
 	{
 		this->ColorBar = FloatArray::New();
 		this->ColorRange = FloatArray::New();
-		InitColorBarByFourSegmentType();
-//        InitColorBarByTwoSegmentType();
+//		InitColorBarByFourSegmentType();
+        InitColorBarByTwoSegmentType();
 	}
 	~ColorMap() override = default;
 

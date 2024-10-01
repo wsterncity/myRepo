@@ -38,9 +38,13 @@ public:
 		m_Clip.m_Plane.m_flip = flip;
 		SetPlaneClipping(true);
 	}
+
+
+
 protected:
 	DrawObject() {};
 	~DrawObject() override = default;
+
 
 protected:
 	GLVertexArray m_PointVAO, m_VertexVAO,  m_LineVAO, m_TriangleVAO;
@@ -79,6 +83,7 @@ protected:
 			bool m_flip{ false };
 		} m_Plane;
 	} m_Clip; // Used for clip mesh
+
 };
 
 IGAME_NAMESPACE_END

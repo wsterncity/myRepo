@@ -33,6 +33,7 @@ public:
 	virtual bool DeepCopy(Pointer o) { return true; }
 
 	StreamingData::Pointer GetTimeFrames();
+//	SmartPointer<StreamingData> GetTimeFrames();
 	void SetTimeFrames(StreamingData::Pointer p) { m_TimeFrames = p; }
 
 	void SetAttributeSet(AttributeSet::Pointer p) { m_Attributes = p; }
@@ -191,8 +192,8 @@ public:
 	virtual void ConvertToDrawableData();
 	virtual void ChangeDrawable(bool drawScalar) { m_Drawable = drawScalar; }
 	virtual bool IsDrawable() { return m_Drawable; }
-
-	virtual void ViewCloudPicture(Scene*, int index, int dimension = -1);
+    virtual ScalarsToColors::Pointer GetColorMapper() { return m_ColorMapper; }
+    virtual void ViewCloudPicture(Scene*, int index, int dimension = -1);
 	void ViewCloudPictureOfModel(Scene*, int index, int dimension = -1);
 
 	/*ViewStyle's detail. See iGameType.h */
@@ -217,6 +218,7 @@ protected:
 	bool m_Visibility{ true };
 	bool m_Drawable{ false };
 	int m_CurrentTimeframeIndex{ -1 };
+    ScalarsToColors::Pointer m_ColorMapper = ScalarsToColors::New();
 };
 
 template <typename Functor, typename... Args>

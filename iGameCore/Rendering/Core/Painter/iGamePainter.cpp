@@ -118,11 +118,15 @@ IGuint Painter::DrawTriangle(const Point& p1, const Point& p2,
     }
 
     if (m_Brush->GetColor() != Color::None) {
+        int offset = points.size();
+
         auto color = ColorMap(m_Brush->GetColor());
         points.insert(points.end(), {p1, p2, p3});
         colors.insert(colors.end(), {color, color, color});
 
-        std::vector<int> index = {3, 4, 5};
+        std::vector<int> index = {0, 1, 2};
+        std::for_each(index.begin(), index.end(),
+                      [offset](int& value) { value += offset; });
         indexes[2].insert(indexes[2].end(), index.begin(), index.end());
     }
 
@@ -156,11 +160,15 @@ IGuint Painter::DrawRect(const Point& p1, const Point& p3) {
     }
 
     if (m_Brush->GetColor() != Color::None) {
+        int offset = points.size();
+
         auto color = ColorMap(m_Brush->GetColor());
         points.insert(points.end(), {p1, p2, p3, p4});
         colors.insert(colors.end(), {color, color, color, color});
 
-        std::vector<int> index = {4, 5, 6, 6, 7, 4};
+        std::vector<int> index = {0, 1, 2, 2, 3, 0};
+        std::for_each(index.begin(), index.end(),
+                      [offset](int& value) { value += offset; });
         indexes[2].insert(indexes[2].end(), index.begin(), index.end());
     }
 
@@ -200,14 +208,18 @@ IGuint Painter::DrawCube(const Point& p1, const Point& p7) {
     }
 
     if (m_Brush->GetColor() != Color::None) {
+        int offset = points.size();
+
         auto color = ColorMap(m_Brush->GetColor());
         points.insert(points.end(), {p1, p2, p3, p4, p5, p6, p7, p8});
         colors.insert(colors.end(),
                       {color, color, color, color, color, color, color, color});
 
-        std::vector<int> index = {8, 9,  10, 10, 11, 8, 8,  9,  13, 13, 12, 8,
-                                  8, 11, 15, 15, 12, 8, 11, 15, 14, 14, 10, 11,
-                                  9, 10, 14, 14, 13, 9, 12, 13, 14, 14, 15, 12};
+        std::vector<int> index = {0, 1, 2, 2, 3, 0, 0, 1, 5, 5, 4, 0,
+                                  0, 3, 7, 7, 4, 0, 3, 7, 6, 6, 2, 3,
+                                  1, 2, 6, 6, 5, 1, 4, 5, 6, 6, 7, 4};
+        std::for_each(index.begin(), index.end(),
+                      [offset](int& value) { value += offset; });
         indexes[2].insert(indexes[2].end(), index.begin(), index.end());
     }
 
@@ -258,7 +270,6 @@ void Painter::Draw(Scene* scene) {
         scene->GetShader(Scene::NOLIGHT)->use();
 
         m_VAO.bind();
-        glad_glDepthRange(0.000001, 1);
 
         if (indexes[0].size() != 0) {
             m_PointEBO.allocate(indexes[0].size() * sizeof(iguIndex),
@@ -267,8 +278,10 @@ void Painter::Draw(Scene* scene) {
 
             m_VAO.bind();
             glad_glPointSize(primitive.penWidth);
+            glad_glDepthRange(0.000001, 1);
             glad_glDrawElements(GL_POINTS, indexes[0].size(), GL_UNSIGNED_INT,
                                 0);
+            glad_glDepthRange(0, 1);
         }
         if (indexes[1].size() != 0) {
             m_LineEBO.allocate(indexes[1].size() * sizeof(iguIndex),
@@ -292,7 +305,6 @@ void Painter::Draw(Scene* scene) {
                                 GL_UNSIGNED_INT, 0);
         }
 
-        glad_glDepthRange(0, 1);
         m_VAO.release();
     }
 }

@@ -743,41 +743,39 @@ IGsize SurfaceMesh::GetRealMemorySize() {
 }
 
 void SurfaceMesh::SetFaceColor(const float color[3]) {
-    m_FaceColor[0] = color[0]; 
+    m_FaceColor[0] = color[0];
     m_FaceColor[1] = color[1];
     m_FaceColor[2] = color[2];
     m_UseColor = true;
     this->Modified();
 }
 
-const float* SurfaceMesh::GetFaceColor() const {
-    return this->m_FaceColor;
-}
+const float* SurfaceMesh::GetFaceColor() const { return this->m_FaceColor; }
 
-void SurfaceMesh::SetFaceTransparency(float val) { 
+void SurfaceMesh::SetFaceTransparency(float val) {
     this->m_FaceTransparency = val;
     this->Modified();
 }
 
-float SurfaceMesh::GetFaceTransparency() const { 
+float SurfaceMesh::GetFaceTransparency() const {
     return this->m_FaceTransparency;
 }
 
-void SurfaceMesh::Draw(Scene *scene) {
-  if (!m_Visibility) {
-    return;
-  }
-  if (m_DrawMesh) {
-    m_DrawMesh->SetViewStyle(m_ViewStyle);
-    return m_DrawMesh->Draw(scene);
-  }
-  // update uniform buffer
-  if (m_UseColor) {
-    scene->UBO().useColor = true;
-  } else {
-    scene->UBO().useColor = false;
-  }
-  scene->UpdateUniformBuffer();
+void SurfaceMesh::Draw(Scene* scene) {
+    if (!m_Visibility) { return; }
+
+    if (m_DrawMesh) {
+        m_DrawMesh->SetViewStyle(m_ViewStyle);
+        return m_DrawMesh->Draw(scene);
+    }
+
+    // update uniform buffer
+    if (m_UseColor) {
+        scene->UBO().useColor = true;
+    } else {
+        scene->UBO().useColor = false;
+    }
+    scene->UpdateUniformBuffer();
 
     if (m_UseColor && m_ColorWithCell) {
         scene->GetShader(Scene::BLINNPHONG)->use();
@@ -789,6 +787,7 @@ void SurfaceMesh::Draw(Scene *scene) {
 
     if (m_ViewStyle & IG_POINTS) {
         scene->GetShader(Scene::NOLIGHT)->use();
+
         m_PointVAO.bind();
         glad_glPointSize(8);
         glad_glDepthRange(0.000001, 1);
@@ -796,6 +795,7 @@ void SurfaceMesh::Draw(Scene *scene) {
         glad_glDepthRange(0, 1);
         m_PointVAO.release();
     }
+
     if (m_ViewStyle & IG_WIREFRAME) {
         if (m_UseColor) {
             scene->GetShader(Scene::NOLIGHT)->use();
@@ -812,13 +812,19 @@ void SurfaceMesh::Draw(Scene *scene) {
                             GL_UNSIGNED_INT, 0);
         m_LineVAO.release();
     }
+
     if (m_ViewStyle & IG_SURFACE) {
         auto shader = scene->GetShader(Scene::BLINNPHONG);
         shader->use();
-        shader->setUniform(shader->getUniformLocation("transparency"), m_FaceTransparency);
+        shader->setUniform(shader->getUniformLocation("transparency"),
+                           m_FaceTransparency);
+
         m_TriangleVAO.bind();
+        glEnable(GL_POLYGON_OFFSET_FILL);
+        glPolygonOffset(-0.5f, -0.5f);
         glad_glDrawElements(GL_TRIANGLES, m_TriangleIndices->GetNumberOfIds(),
                             GL_UNSIGNED_INT, 0);
+        glDisable(GL_POLYGON_OFFSET_FILL);
         m_TriangleVAO.release();
     }
 }
@@ -1083,32 +1089,32 @@ void SurfaceMesh::ConvertToDrawableData() {
     }
     m_TriangleIndices = triangleIndices;
 
-  // set triangles
-  if (m_UseColor) {
-      IGsize numberOfPoints = m_Positions->GetNumberOfElements();
-      m_Colors = FloatArray::New();
-      m_Colors->SetDimension(3);
-      m_Colors->Resize(numberOfPoints);
-      for (IGsize i = 0; i < numberOfPoints; ++i) {
-          m_Colors->SetElement(i, m_FaceColor);
-      }
-  } 
-
-  // allocate buffer
-  {
-    GLAllocateGLBuffer(m_PositionVBO,
-                       m_Positions->GetNumberOfValues() * sizeof(float),
-                       m_Positions->RawPointer());
-
+    // set triangles
     if (m_UseColor) {
-        GLAllocateGLBuffer(m_ColorVBO,
-                           m_Colors->GetNumberOfValues() * sizeof(float),
-                           m_Colors->RawPointer());
+        IGsize numberOfPoints = m_Positions->GetNumberOfElements();
+        m_Colors = FloatArray::New();
+        m_Colors->SetDimension(3);
+        m_Colors->Resize(numberOfPoints);
+        for (IGsize i = 0; i < numberOfPoints; ++i) {
+            m_Colors->SetElement(i, m_FaceColor);
+        }
     }
 
-    GLAllocateGLBuffer(m_LineEBO,
-                       m_LineIndices->GetNumberOfIds() * sizeof(igIndex),
-                       m_LineIndices->RawPointer());
+    // allocate buffer
+    {
+        GLAllocateGLBuffer(m_PositionVBO,
+                           m_Positions->GetNumberOfValues() * sizeof(float),
+                           m_Positions->RawPointer());
+
+        if (m_UseColor) {
+            GLAllocateGLBuffer(m_ColorVBO,
+                               m_Colors->GetNumberOfValues() * sizeof(float),
+                               m_Colors->RawPointer());
+        }
+
+        GLAllocateGLBuffer(m_LineEBO,
+                           m_LineIndices->GetNumberOfIds() * sizeof(igIndex),
+                           m_LineIndices->RawPointer());
 
         GLAllocateGLBuffer(m_TriangleEBO,
                            m_TriangleIndices->GetNumberOfIds() *
@@ -1131,18 +1137,18 @@ void SurfaceMesh::ConvertToDrawableData() {
                           GL_FLOAT, GL_FALSE, 0);
         m_LineVAO.elementBuffer(m_LineEBO);
 
-    // triangle
-    m_TriangleVAO.vertexBuffer(GL_VBO_IDX_0, m_PositionVBO, 0,
-                               3 * sizeof(float));
-    GLSetVertexAttrib(m_TriangleVAO, GL_LOCATION_IDX_0, GL_VBO_IDX_0, 3,
-                      GL_FLOAT, GL_FALSE, 0);
-    if (m_UseColor) {
-        m_TriangleVAO.vertexBuffer(GL_VBO_IDX_1, m_ColorVBO, 0,
+        // triangle
+        m_TriangleVAO.vertexBuffer(GL_VBO_IDX_0, m_PositionVBO, 0,
                                    3 * sizeof(float));
-        GLSetVertexAttrib(m_TriangleVAO, GL_LOCATION_IDX_1, GL_VBO_IDX_1, 3,
-            GL_FLOAT, GL_FALSE, 0);
-    }
-    m_TriangleVAO.elementBuffer(m_TriangleEBO);
+        GLSetVertexAttrib(m_TriangleVAO, GL_LOCATION_IDX_0, GL_VBO_IDX_0, 3,
+                          GL_FLOAT, GL_FALSE, 0);
+        if (m_UseColor) {
+            m_TriangleVAO.vertexBuffer(GL_VBO_IDX_1, m_ColorVBO, 0,
+                                       3 * sizeof(float));
+            GLSetVertexAttrib(m_TriangleVAO, GL_LOCATION_IDX_1, GL_VBO_IDX_1, 3,
+                              GL_FLOAT, GL_FALSE, 0);
+        }
+        m_TriangleVAO.elementBuffer(m_TriangleEBO);
 
 #ifdef IGAME_OPENGL_VERSION_460
         bool debug = true;
@@ -1177,7 +1183,8 @@ void SurfaceMesh::ViewCloudPicture(Scene* scene, int index, int demension) {
             this->SetAttributeWithPointData(attr.pointer, attr.dataRange,
                                             demension);
         else if (attr.attachmentType == IG_CELL)
-            this->SetAttributeWithCellData(attr.pointer, demension);
+            this->SetAttributeWithCellData(attr.pointer, attr.dataRange,
+                                           demension);
     }
     scene->DoneCurrent();
     scene->Update();
@@ -1191,19 +1198,18 @@ void SurfaceMesh::SetAttributeWithPointData(ArrayObject::Pointer attr,
         m_ViewDemension = dimension;
         m_UseColor = true;
         m_ColorWithCell = false;
-        ScalarsToColors::Pointer mapper = ScalarsToColors::New();
 
         if (range.first != range.second) {
-            mapper->SetRange(range.first, range.second);
+            m_ColorMapper->SetRange(range.first, range.second);
         } else if (dimension == -1) {
-            mapper->InitRange(attr);
+            m_ColorMapper->InitRange(attr);
         } else {
-            mapper->InitRange(attr, dimension);
+            m_ColorMapper->InitRange(attr, dimension);
         }
-        m_Colors = mapper->MapScalars(attr, dimension);
+        m_Colors = m_ColorMapper->MapScalars(attr, dimension);
         if (m_Colors == nullptr) { return; }
-        range.first = mapper->GetRange()[0];
-        range.second = mapper->GetRange()[1];
+        range.first = m_ColorMapper->GetRange()[0];
+        range.second = m_ColorMapper->GetRange()[1];
         GLAllocateGLBuffer(m_ColorVBO,
                            m_Colors->GetNumberOfValues() * sizeof(float),
                            m_Colors->RawPointer());
@@ -1224,21 +1230,26 @@ void SurfaceMesh::SetAttributeWithPointData(ArrayObject::Pointer attr,
 }
 
 void SurfaceMesh::SetAttributeWithCellData(ArrayObject::Pointer attr,
-                                           igIndex i) {
-    if (m_ViewAttribute != attr || m_ViewDemension != i) {
+                                           std::pair<float, float>& range,
+                                           igIndex dimension) {
+    if (m_ViewAttribute != attr || m_ViewDemension != dimension) {
         m_ViewAttribute = attr;
-        m_ViewDemension = i;
+        m_ViewDemension = dimension;
         m_UseColor = true;
         m_ColorWithCell = true;
-        ScalarsToColors::Pointer mapper = ScalarsToColors::New();
 
-        if (i == -1) {
-            mapper->InitRange(attr);
+        if (dimension == -1) {
+            m_ColorMapper->InitRange(attr);
         } else {
-            mapper->InitRange(attr, i);
+            m_ColorMapper->InitRange(attr, dimension);
         }
+        //        if (dimension == -1) {
+        //            mapper->InitRange(attr);
+        //        } else {
+        //            mapper->InitRange(attr, dimension);
+        //        }
 
-        FloatArray::Pointer colors = mapper->MapScalars(attr, i);
+        FloatArray::Pointer colors = m_ColorMapper->MapScalars(attr, dimension);
         if (colors == nullptr) { return; }
 
         FloatArray::Pointer newPositions = FloatArray::New();

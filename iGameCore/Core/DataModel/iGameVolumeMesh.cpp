@@ -162,10 +162,10 @@ void VolumeMesh::BuildVolumeEdgeLinks() {
         return;
     }
 
-    m_VolumeEdgeLinks = CellLinks::New();
-    IGsize nedges = this->GetNumberOfEdges();
-    IGsize nvolumes = this->GetNumberOfVolumes();
-    igIndex cell[32]{};
+	m_VolumeEdgeLinks = CellLinks::New();
+	IGsize nedges = this->GetNumberOfEdges();
+	IGsize nvolumes = this->GetNumberOfVolumes();
+	igIndex cell[64]{};
 
     m_VolumeEdgeLinks->Allocate(nedges);
     for (IGsize i = 0; i < nvolumes; i++) {
@@ -1124,6 +1124,7 @@ void VolumeMesh::Draw(Scene* scene) {
 
     if (m_UseColor && m_ColorWithCell) {
         scene->GetShader(Scene::BLINNPHONG)->use();
+
         m_CellVAO.bind();
         glad_glDrawArrays(GL_TRIANGLES, 0, m_CellPositionSize);
         m_CellVAO.release();
@@ -1132,6 +1133,7 @@ void VolumeMesh::Draw(Scene* scene) {
 
     if (m_ViewStyle & IG_POINTS) {
         scene->GetShader(Scene::NOLIGHT)->use();
+
         m_PointVAO.bind();
         glad_glPointSize(m_PointSize);
         glad_glDepthRange(0.000001, 1);
@@ -1157,9 +1159,13 @@ void VolumeMesh::Draw(Scene* scene) {
     }
     if (m_ViewStyle & IG_SURFACE) {
         scene->GetShader(Scene::BLINNPHONG)->use();
+
         m_TriangleVAO.bind();
+        glEnable(GL_POLYGON_OFFSET_FILL);
+        glPolygonOffset(-0.5f, -0.5f);
         glad_glDrawElements(GL_TRIANGLES, m_TriangleIndices->GetNumberOfIds(),
                             GL_UNSIGNED_INT, 0);
+        glDisable(GL_POLYGON_OFFSET_FILL);
         m_TriangleVAO.release();
     }
 
@@ -1357,18 +1363,17 @@ void VolumeMesh::SetAttributeWithPointData(ArrayObject::Pointer attr,
         m_ViewDemension = dimension;
         m_UseColor = true;
         m_ColorWithCell = false;
-        ScalarsToColors::Pointer mapper = ScalarsToColors::New();
 
         if (range.first != range.second) {
-            mapper->SetRange(range.first, range.second);
+            m_ColorMapper->SetRange(range.first, range.second);
         } else if (dimension == -1) {
-            mapper->InitRange(attr);
+            m_ColorMapper->InitRange(attr);
         } else {
-            mapper->InitRange(attr, dimension);
+            m_ColorMapper->InitRange(attr, dimension);
         }
-        range.first = mapper->GetRange()[0];
-        range.second = mapper->GetRange()[1];
-        m_Colors = mapper->MapScalars(attr, dimension);
+        range.first = m_ColorMapper->GetRange()[0];
+        range.second = m_ColorMapper->GetRange()[1];
+        m_Colors = m_ColorMapper->MapScalars(attr, dimension);
         if (m_Colors == nullptr) { return; }
 
         GLAllocateGLBuffer(m_ColorVBO,
@@ -1398,15 +1403,15 @@ void VolumeMesh::SetAttributeWithCellData(ArrayObject::Pointer attr,
         m_ViewDemension = i;
         m_UseColor = true;
         m_ColorWithCell = true;
-        ScalarsToColors::Pointer mapper = ScalarsToColors::New();
+
 
         if (i == -1) {
-            mapper->InitRange(attr);
+            m_ColorMapper->InitRange(attr);
         } else {
-            mapper->InitRange(attr, i);
+            m_ColorMapper->InitRange(attr, i);
         }
 
-        FloatArray::Pointer colors = mapper->MapScalars(attr, i);
+        FloatArray::Pointer colors = m_ColorMapper->MapScalars(attr, i);
         if (colors == nullptr) { return; }
 
         FloatArray::Pointer newPositions = FloatArray::New();

@@ -27,6 +27,17 @@ if (ENABLE_CGNS_MODULE)
     # if you want to set cgns static build , please configure in CGNS directory's CMakeLists.txt
     # Set CGNS_BUILD_SHARED to "OFF" which is on line 112 of the CMakeLists.txt
     #    set(CGNS_ENABLE_HDF5 OFF)
-    set(HDF5_DIR "C:/Program Files/HDF_Group/HDF5/1.13.0/share/cmake")
+    # set(HDF5_DIR "C:/Program Files/HDF_Group/HDF5/1.13.0/share/cmake")
+
+    # 在系统环境变量里设置HDF5_HOME，值为HDF5路径
+    if (DEFINED ENV{HDF5_HOME})
+        set(HDF5_DIR "$ENV{HDF5_HOME}/cmake")
+    else ()
+        set(HDF5_DIR "C:/Program Files/HDF_Group/HDF5/1.13.0/share/cmake")
+    endif ()
     add_subdirectory(CGNS)
+endif ()
+
+if (ENABLE_ABAQUS_MODULE)
+
 endif ()

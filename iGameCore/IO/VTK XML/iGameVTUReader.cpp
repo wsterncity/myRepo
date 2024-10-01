@@ -120,11 +120,13 @@ bool iGame::iGameVTUReader::Parsing() {
 					//  Float32
 					if (!strncmp(type + 5, "32", 2)) {
 						FloatArray::Pointer arr = FloatArray::New();
+                        arr->SetDimension(scalarComponents);
 						ReadBase64EncodedArray<float>(m_Header_8_byte_flag, data_p, arr);
 						array = arr;
 					}
 					else /*Float64*/ {
 						DoubleArray::Pointer arr = DoubleArray::New();
+                        arr->SetDimension(scalarComponents);
 						ReadBase64EncodedArray<double>(m_Header_8_byte_flag, data_p, arr);
 						array = arr;
 					}
@@ -132,6 +134,7 @@ bool iGame::iGameVTUReader::Parsing() {
 				}
 				else if (strcmp(attribute, "ascii") == 0) {
 					FloatArray::Pointer arr = FloatArray::New();
+                    arr->SetDimension(scalarComponents);
 					auto* ps = new float[scalarComponents];
 					token = strtok(data_p, delimiters);
 					while (token != nullptr) {
@@ -152,17 +155,20 @@ bool iGame::iGameVTUReader::Parsing() {
 					//  Int32
 					if (!strncmp(type + 3, "32", 2)) {
 						IntArray::Pointer arr = IntArray::New();
+                        arr->SetDimension(scalarComponents);
 						ReadBase64EncodedArray<int>(m_Header_8_byte_flag, data_p, arr);
 						array = arr;
 					}
 					else /* Int64*/ {
 						LongLongArray::Pointer arr = LongLongArray::New();
+                        arr->SetDimension(scalarComponents);
 						ReadBase64EncodedArray<int64_t>(m_Header_8_byte_flag, data_p, arr);
 						array = arr;
 					}
 				}
 				else if (strcmp(attribute, "ascii") == 0) {
 					IntArray::Pointer arr = IntArray::New();
+                    arr->SetDimension(scalarComponents);
 					int* ps = new int[scalarComponents];
 					token = strtok(data_p, delimiters);
 					while (token != nullptr) {
@@ -195,9 +201,112 @@ bool iGame::iGameVTUReader::Parsing() {
 	}
 
 	// find Piece's Cell data.
-	elem = FindTargetItem(root, "Cells");
+    elem = FindTargetItem(root, "CellData")->FirstChildElement("DataArray");
+    //  use while loop to find point's multiple scala data.
+    while (elem) {
+
+        data = elem->Attribute("Name");
+        std::string scalarName = data ? data : "Undefined Scalar";
+        data = elem->Attribute("NumberOfComponents");
+
+        ArrayObject::Pointer  array;
+        const char* type = elem->Attribute("type");
+
+        int scalarComponents = data ? mAtoi(data) : 1;
+        data = elem->GetText();
+        if (data)
+        {
+            char* data_p = const_cast<char*>(data);
+            while (*data_p == '\n' || *data_p == ' ' || *data_p == '\t') data_p++;
+            attribute = elem->Attribute("format");
+            if (!strncmp(type, "Float", 5)) {
+                if (strcmp(attribute, "binary") == 0) {
+                    //  Float32
+                    if (!strncmp(type + 5, "32", 2)) {
+                        FloatArray::Pointer arr = FloatArray::New();
+                        arr->SetDimension(scalarComponents);
+                        ReadBase64EncodedArray<float>(m_Header_8_byte_flag, data_p, arr);
+                        array = arr;
+                    }
+                    else /*Float64*/ {
+                        DoubleArray::Pointer arr = DoubleArray::New();
+                        arr->SetDimension(scalarComponents);
+                        ReadBase64EncodedArray<double>(m_Header_8_byte_flag, data_p, arr);
+                        array = arr;
+                    }
+
+                }
+                else if (strcmp(attribute, "ascii") == 0) {
+                    FloatArray::Pointer arr = FloatArray::New();
+                    arr->SetDimension(scalarComponents);
+                    auto* ps = new float[scalarComponents];
+                    token = strtok(data_p, delimiters);
+                    while (token != nullptr) {
+                        for (int i = 0; i < scalarComponents; i++) {
+
+                            auto& it = ps[i];
+                            it = mAtof(token);
+                            token = strtok(nullptr, delimiters);
+                        }
+                        arr->AddElement(ps);
+                    }
+                    array = arr;
+                    delete[] ps;
+                }
+            }
+            else if (!strncmp(type, "Int", 3)) {
+                if (strcmp(attribute, "binary") == 0) {
+                    //  Int32
+                    if (!strncmp(type + 3, "32", 2)) {
+                        IntArray::Pointer arr = IntArray::New();
+                        arr->SetDimension(scalarComponents);
+                        ReadBase64EncodedArray<int>(m_Header_8_byte_flag, data_p, arr);
+                        array = arr;
+                    }
+                    else /* Int64*/ {
+                        LongLongArray::Pointer arr = LongLongArray::New();
+                        arr->SetDimension(scalarComponents);
+                        ReadBase64EncodedArray<int64_t>(m_Header_8_byte_flag, data_p, arr);
+                        array = arr;
+                    }
+                }
+                else if (strcmp(attribute, "ascii") == 0) {
+                    IntArray::Pointer arr = IntArray::New();
+                    arr->SetDimension(scalarComponents);
+                    int* ps = new int[scalarComponents];
+                    token = strtok(data_p, delimiters);
+                    while (token != nullptr) {
+                        for (int i = 0; i < scalarComponents; i++) {
+
+                            auto& it = ps[i];
+                            it = mAtoi(token);
+                            token = strtok(nullptr, delimiters);
+                        }
+                        arr->AddElement(ps);
+                    }
+                    array = arr;
+                    delete[] ps;
+                }
+            }
+            if (array != nullptr) {
+                array->SetName(scalarName);
+                float scalar_range_max = FLT_MIN;
+                float scalar_range_min = FLT_MAX;
+                float value;
+                for (int i = 0; i < array->GetNumberOfElements(); i++) {
+                    value = array->GetValue(i);
+                    scalar_range_max = std::max(scalar_range_max, value);
+                    scalar_range_min = std::min(scalar_range_min, value);
+                }
+                m_Data.GetData()->AddScalar(IG_CELL, array, { scalar_range_min, scalar_range_max });
+            }
+        }
+        elem = elem->NextSiblingElement("DataArray");
+    }
+
 
 	//   find Cell connectivity;
+    elem = FindTargetItem(root, "Cells");
 	ArrayObject::Pointer CellConnects;
 
 	elem = FindTargetAttributeItem(elem, "DataArray", "Name", "connectivity");
