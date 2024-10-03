@@ -85,6 +85,7 @@ public:
     };
 
     Camera::Pointer Camera() { return m_Camera; }
+    void ChangeCameraType(IGenum type);
     GLTexture2d& DepthPyramid() { return m_DepthPyramid; }
 
     CameraDataBuffer& CameraData() { return m_CameraData; }

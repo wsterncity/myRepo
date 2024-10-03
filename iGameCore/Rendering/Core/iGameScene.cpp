@@ -150,6 +150,7 @@ void Scene::ResetCenter() {
     float radius = m_ModelsBoundingSphere.w;
     m_Camera->SetCameraPos(centerInWorld.x, centerInWorld.y,
                            centerInWorld.z + 2.0f * radius);
+    m_Camera->SetCameraFocal(centerInWorld);
 }
 
 void Scene::ChangeModelVisibility(Model* model, bool visibility) {
@@ -160,6 +161,19 @@ void Scene::ChangeModelVisibility(Model* model, bool visibility) {
         if (m_VisibleModelsCount == 1) { ResetCenter(); }
     } else {
         m_VisibleModelsCount--;
+    }
+}
+
+void Scene::ChangeCameraType(IGenum type) {
+    switch (type) {
+        case Camera::CameraType::PERSPECTIVE: {
+            m_Camera->ChangeCameraType(Camera::CameraType::PERSPECTIVE);
+        } break;
+        case Camera::CameraType::ORTHOGRAPHIC: {
+            m_Camera->ChangeCameraType(Camera::CameraType::ORTHOGRAPHIC);
+        } break;
+        default:
+            break;
     }
 }
 
@@ -825,9 +839,9 @@ void Scene::UpdateUniformData() {
     // update camera data matrix
     m_CameraData.camera_position = m_Camera->GetCameraPos();
     m_CameraData.view = m_Camera->GetViewMatrix();
-    m_CameraData.proj = m_Camera->GetProjectionMatrixReversedZ();
-    m_CameraData.proj_view = m_Camera->GetProjectionMatrixReversedZ() *
-                             m_Camera->GetViewMatrix();
+    m_CameraData.proj = m_Camera->GetProjectionMatrix();
+    m_CameraData.proj_view =
+            m_Camera->GetProjectionMatrix() * m_Camera->GetViewMatrix();
 
     // update object data matrix
     m_ObjectData.model = m_ModelMatrix;
@@ -886,7 +900,7 @@ void Scene::DrawAxes() {
 }
 
 void Scene::RefreshDrawCullDataBuffer() {
-    igm::mat4 projection = m_Camera->GetProjectionMatrixReversedZ();
+    igm::mat4 projection = m_Camera->GetProjectionMatrix();
     igm::mat4 projectionT = projection.transpose();
 
     igm::vec4 frustumX =

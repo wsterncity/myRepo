@@ -169,9 +169,22 @@ void igQtMainWindow::initAllComponents() {
     // connect(ui->action_RecoverMesh, &QAction::triggered, this, [&]() {
     //	iGame::iGameManager::Instance()->RecoverMesh();
     //	});
+    connect(ui->action_UseOrthographic, &QAction::triggered, this,
+            [&](bool checked) {
+                if (ui->action_UseOrthographic->isChecked()) {
+                    SceneManager::Instance()
+                            ->GetCurrentScene()
+                            ->ChangeCameraType(
+                                    Camera::CameraType::ORTHOGRAPHIC);
+                } else {
+                    SceneManager::Instance()
+                            ->GetCurrentScene()
+                            ->ChangeCameraType(Camera::CameraType::PERSPECTIVE);
+                }
+                rendererWidget->update();
+            });
     connect(ui->action_ResetCenter, &QAction::triggered, this, [&]() {
         SceneManager::Instance()->GetCurrentScene()->ResetCenter();
-        std::cout << "dsadas" << '\n';
         rendererWidget->update();
     });
     // connect(ui->action_PickCenter, &QAction::triggered, this, [&]() {
