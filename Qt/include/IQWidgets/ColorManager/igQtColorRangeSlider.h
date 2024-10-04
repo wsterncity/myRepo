@@ -2,7 +2,7 @@
 #include <QWidget>
 #include <QPainter>
 #include <QMouseEvent>
-
+#include "iGameColorMap.h"
 //namespace iGame {
 //	class iGameColorMap;
 //}
@@ -15,7 +15,7 @@ public:
 
 	QSize minimumSizeHint() const override;
 
-	void  initColorRanges();
+	void initColorRanges();
 
 protected:
 	void updateColorBarDrawInfo();
@@ -39,7 +39,8 @@ private:
 	int colorBarLength;
 	int colorBarHeight;
 	QVector<QColor> drawColors;// 颜色数组
-	//iGame::iGameColorMap* myColorMap = { nullptr };
+    iGame::ColorMap::Pointer m_ColorMapper{nullptr};
+    iGame::ColorMap::Pointer m_TmpColorMapper{nullptr};
 	int PressedHandle = -1;
 	bool isPressed = false;
 	int mDelta;

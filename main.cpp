@@ -13,6 +13,7 @@ int main(int argc, char* argv[]) {
     //	// 运行所有测试
     //	return RUN_ALL_TESTS();
 
+
     QCoreApplication::setAttribute(
             Qt::AA_EnableHighDpiScaling); // 窗口高分辨率支持
     QGuiApplication::setAttribute(Qt::AA_UseHighDpiPixmaps); // 图标高分辨率支持
@@ -27,11 +28,14 @@ int main(int argc, char* argv[]) {
     format.setRedBufferSize(8); // RGBA8
     format.setGreenBufferSize(8);
     format.setBlueBufferSize(8);
-    format.setAlphaBufferSize(8);
+    // format.setAlphaBufferSize(8); // This will cause the OpenGLWidget window to be transparent
+
     // If the depth buffer is set to 24, the line width can only be set to 1
     format.setDepthBufferSize(32);
+
     // If the template buffer is turned on, the line width can only be set to 1
     // format.setStencilBufferSize(8);
+
     format.setSamples(1);
 
     QSurfaceFormat::setDefaultFormat(format);
@@ -43,12 +47,5 @@ int main(int argc, char* argv[]) {
     w.show();
     w.showMaximized();
     a.exec();
-
-    //    QApplication app(argc, argv);
-    //
-    ////    iGameFileDialog::getOpenFileNames("Load file", QDir::currentPath(),
-    ///"ALL FIle(*.obj *.off *.stl *.vtk *.mesh *.pvd *.vts)");
-    //    iGameFileDialog fileDialog;
-    //    fileDialog.exec();
     return 0;
 }

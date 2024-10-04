@@ -11,6 +11,9 @@ File import cannot have Chinese path.
 ## Install
 
 ~~~shell
+# Needn't to use ThirdParty's SubModule
+git clone https://github.com/mky8812/editOpeniGame.git
+# If you need to use ThirdParty's SubModule. SubModule's detail see target file(.gitmodules)
 git clone --recurse-submodules https://github.com/mky8812/editOpeniGame.git
 ~~~
 

@@ -138,8 +138,8 @@ void Axes::Update(const igm::mat4& _mvp, const igm::vec4& viewPort) {
 
 igm::vec3 Axes::CameraPos() { return igm::vec3{0.0f, 0.0f, 3.5f}; }
 igm::mat4 Axes::ViewMatrix() {
-    return igm::lookAt(CameraPos(), igm::vec3{0.0f, 0.0f, 0.0f},
-                       igm::vec3{0.0f, 1.0f, 0.0f});
+    return igm::lookAtRH(CameraPos(), igm::vec3{0.0f, 0.0f, 0.0f},
+                         igm::vec3{0.0f, 1.0f, 0.0f});
 }
 igm::mat4 Axes::ProjMatrix() {
     // reversed-z buffer

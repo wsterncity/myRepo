@@ -150,6 +150,7 @@ void Scene::ResetCenter() {
     float radius = m_ModelsBoundingSphere.w;
     m_Camera->SetCameraPos(centerInWorld.x, centerInWorld.y,
                            centerInWorld.z + 2.0f * radius);
+    m_Camera->SetCameraFocal(centerInWorld);
 }
 
 void Scene::ChangeModelVisibility(Model* model, bool visibility) {
@@ -163,6 +164,19 @@ void Scene::ChangeModelVisibility(Model* model, bool visibility) {
     }
 }
 
+void Scene::ChangeCameraType(IGenum type) {
+    switch (type) {
+        case Camera::CameraType::PERSPECTIVE: {
+            m_Camera->ChangeCameraType(Camera::CameraType::PERSPECTIVE);
+        } break;
+        case Camera::CameraType::ORTHOGRAPHIC: {
+            m_Camera->ChangeCameraType(Camera::CameraType::ORTHOGRAPHIC);
+        } break;
+        default:
+            break;
+    }
+}
+
 void Scene::SetShader(IGenum type, GLShaderProgram* sp) {
     if (sp == nullptr) { return; }
     m_ShaderPrograms[type] = std::unique_ptr<GLShaderProgram>(sp);
@@ -173,7 +187,7 @@ GLShaderProgram* Scene::GenShader(IGenum type) {
     switch (type) {
         case BLINNPHONG: {
             GLShader shader_vert = GLShader{
-                    (std::string(SHADERS_DIR) + "/GLSL/shader.vert").c_str(),
+                    (std::string(SHADERS_DIR) + "/GLSL/vertex.vert").c_str(),
                     GL_VERTEX_SHADER};
             GLShader shader_frag = GLShader{
                     (std::string(SHADERS_DIR) + "/GLSL/blinnPhong.frag")
@@ -184,7 +198,7 @@ GLShaderProgram* Scene::GenShader(IGenum type) {
         } break;
         case PBR: {
             GLShader shader_vert = GLShader{
-                    (std::string(SHADERS_DIR) + "/GLSL/shader.vert").c_str(),
+                    (std::string(SHADERS_DIR) + "/GLSL/vertex.vert").c_str(),
                     GL_VERTEX_SHADER};
             GLShader shader_frag = GLShader{
                     (std::string(SHADERS_DIR) + "/GLSL/pbr.frag").c_str(),
@@ -194,18 +208,17 @@ GLShaderProgram* Scene::GenShader(IGenum type) {
         } break;
         case NOLIGHT: {
             GLShader shader_vert = GLShader{
-                    (std::string(SHADERS_DIR) + "/GLSL/shader.vert").c_str(),
+                    (std::string(SHADERS_DIR) + "/GLSL/vertex.vert").c_str(),
                     GL_VERTEX_SHADER};
             GLShader shader_frag = GLShader{
-                    (std::string(SHADERS_DIR) + "/GLSL/shaderNoLight.frag")
-                            .c_str(),
+                    (std::string(SHADERS_DIR) + "/GLSL/noLight.frag").c_str(),
                     GL_FRAGMENT_SHADER};
             sp = new GLShaderProgram;
             sp->addShaders({shader_vert, shader_frag});
         } break;
         case PURECOLOR: {
             GLShader shader_vert = GLShader{
-                    (std::string(SHADERS_DIR) + "/GLSL/shader.vert").c_str(),
+                    (std::string(SHADERS_DIR) + "/GLSL/vertex.vert").c_str(),
                     GL_VERTEX_SHADER};
             GLShader pureColor_frag = GLShader{
                     (std::string(SHADERS_DIR) + "/GLSL/pureColor.frag").c_str(),
@@ -246,20 +259,20 @@ GLShaderProgram* Scene::GenShader(IGenum type) {
             sp->addShaders({font_vert, font_frag});
         } break;
         case DEPTHREDUCE: {
-            //GLShader depthReduce_comp = GLShader{
-            //        (std::string(SHADERS_DIR) + "/GLSL/depthReduce.comp")
-            //                .c_str(),
-            //        GL_COMPUTE_SHADER};
-            //sp = new GLShaderProgram;
-            //sp->addShaders({depthReduce_comp});
+            GLShader depthReduce_comp = GLShader{
+                    (std::string(SHADERS_DIR) + "/GLSL/depthReduce.comp")
+                            .c_str(),
+                    GL_COMPUTE_SHADER};
+            sp = new GLShaderProgram;
+            sp->addShaders({depthReduce_comp});
         } break;
         case MESHLETCULL: {
-            //GLShader meshletCull_comp = GLShader{
-            //        (std::string(SHADERS_DIR) + "/GLSL/meshletCull.comp")
-            //                .c_str(),
-            //        GL_COMPUTE_SHADER};
-            //sp = new GLShaderProgram;
-            //sp->addShaders({meshletCull_comp});
+            GLShader meshletCull_comp = GLShader{
+                    (std::string(SHADERS_DIR) + "/GLSL/meshletCull.comp")
+                            .c_str(),
+                    GL_COMPUTE_SHADER};
+            sp = new GLShaderProgram;
+            sp->addShaders({meshletCull_comp});
         } break;
         case SCREEN: {
             GLShader screen_vert = GLShader{
@@ -782,42 +795,43 @@ void Scene::DrawModels() {
     glViewport(0, 0, viewport.x, viewport.y);
 
 #ifdef IGAME_OPENGL_VERSION_330
-    for (auto& [id, obj]: m_Models) {
-        obj->m_DataObject->ConvertToDrawableData();
-        obj->Draw(this);
+    for (auto& [id, model]: m_Models) {
+        auto drawObject = DynamicCast<DrawObject>(model->m_DataObject);
+        drawObject->ConvertToDrawableData();
+        model->Draw(this);
     }
 #elif IGAME_OPENGL_VERSION_460
-    bool debug = true;
+    bool debug = false;
     if (debug) {
         //std::cout << "-------:Draw:-------" << std::endl;
         RefreshDrawCullDataBuffer();
 
-        for (auto& [id, obj]: m_Models) {
-            obj->m_DataObject->ConvertToDrawableData();
+        for (auto& [id, model]: m_Models) {
+            auto drawObject = DynamicCast<DrawObject>(model->m_DataObject);
+            drawObject->ConvertToDrawableData();
         }
 
-        for (auto& [id, obj]: m_Models) {
-            obj->m_DataObject->TestOcclusionResults(this);
-        }
+        for (auto& [id, model]: m_Models) { model->TestOcclusionResults(this); }
 
         // draw phase1: draw visible meshlet
-        for (auto& [id, obj]: m_Models) { obj->m_DataObject->DrawPhase1(this); }
+        for (auto& [id, model]: m_Models) { model->DrawPhase1(this); }
 
         // refresh phase1: generate loacl hierarchical z-buffer
         RefreshDepthPyramid();
 
         // draw phase2: draw invisible meshlet
-        for (auto& [id, obj]: m_Models) { obj->m_DataObject->DrawPhase2(this); }
+        for (auto& [id, model]: m_Models) { model->DrawPhase2(this); }
 
         // refresh phase2: generate global hierarchical z-buffer
         RefreshDepthPyramid();
     } else {
-        for (auto& [id, obj]: m_Models) {
-            obj->m_DataObject->ConvertToDrawableData();
-            obj->Draw(this);
+        for (auto& [id, model]: m_Models) {
+            auto drawObject = DynamicCast<DrawObject>(model->m_DataObject);
+            drawObject->ConvertToDrawableData();
+            model->Draw(this);
         }
-        painter->Draw(this);
     }
+    painter->Draw(this);
 #endif
 }
 
@@ -825,9 +839,9 @@ void Scene::UpdateUniformData() {
     // update camera data matrix
     m_CameraData.camera_position = m_Camera->GetCameraPos();
     m_CameraData.view = m_Camera->GetViewMatrix();
-    m_CameraData.proj = m_Camera->GetProjectionMatrixReversedZ();
-    m_CameraData.proj_view = m_Camera->GetProjectionMatrixReversedZ() *
-                             m_Camera->GetViewMatrix();
+    m_CameraData.proj = m_Camera->GetProjectionMatrix();
+    m_CameraData.proj_view =
+            m_Camera->GetProjectionMatrix() * m_Camera->GetViewMatrix();
 
     // update object data matrix
     m_ObjectData.model = m_ModelMatrix;
@@ -886,7 +900,7 @@ void Scene::DrawAxes() {
 }
 
 void Scene::RefreshDrawCullDataBuffer() {
-    igm::mat4 projection = m_Camera->GetProjectionMatrixReversedZ();
+    igm::mat4 projection = m_Camera->GetProjectionMatrix();
     igm::mat4 projectionT = projection.transpose();
 
     igm::vec4 frustumX =
@@ -1010,10 +1024,10 @@ void Scene::UpdateModelsBoundingSphere() {
     igm::vec3 min(FLT_MAX);
     igm::vec3 max(-FLT_MAX);
 
-    for (auto& [id, obj]: m_Models) {
-        if (!obj->m_DataObject->GetVisibility()) continue;
+    for (auto& [id, model]: m_Models) {
+        if (!model->GetVisibility()) continue;
 
-        auto box = obj->m_DataObject->GetBoundingBox();
+        auto box = model->m_DataObject->GetBoundingBox();
         Vector3f boxMin = box.min;
         Vector3f boxMax = box.max;
 
