@@ -2,12 +2,12 @@
 #ifndef iGameVectorBase_h
 #define iGameVectorBase_h
 #include "iGameDrawObject.h"
-#include <iGameFilter.h>
-#include<iGamePainter.h>
-#include<iGameVector.h>
-#include <iGameVolumeMesh.h>
 #include "iGameSceneManager.h"
-#include<iGameScalarsToColors.h>
+#include <iGameFilter.h>
+#include <iGamePainter.h>
+#include <iGameScalarsToColors.h>
+#include <iGameVector.h>
+#include <iGameVolumeMesh.h>
 IGAME_NAMESPACE_BEGIN
 class Scene;
 class iGameVectorBase : public Filter, public DrawObject {
@@ -26,10 +26,11 @@ private:
     FloatArray::Pointer m_PositionColors;
     iGame::Model::Pointer model{};
     bool isInit = false;
-    public:
-    void DrawVector(std::string VecName); 
+
+public:
+    void DrawVector(std::string VecName);
     std::vector<Vector3f> convertPoint2Arrow(Vector3f coord, Vector3f normal);
-    void Draw(Scene*) override;
+    //void Draw(Scene*) override;
     void ConvertToDrawableData() override;
     std::vector<float> Vector;
     float hR;
