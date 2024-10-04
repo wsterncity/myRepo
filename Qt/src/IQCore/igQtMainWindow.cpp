@@ -889,9 +889,10 @@ void igQtMainWindow::initAllDockWidgetConnectWithAction() {
 	// connect(ui->action_Scalar, &QAction::triggered, this, [&](bool checked) {
 	//	ui->dockWidget_ScalarField->show();
 	//	});
-	// connect(ui->action_Vector, &QAction::triggered, this, [&](bool checked) {
-	//	ui->dockWidget_VectorField->show();
-	//	});
+	 connect(ui->action_Vector, &QAction::triggered, this, [&](bool checked) {
+		ui->dockWidget_VectorField->show();
+        ui->widget_VectorField->updateVectorNameList();
+		});
 	connect(ui->action_Tensor, &QAction::triggered, this, [&](bool checked) {
 		ui->dockWidget_TensorField->show();
 		ui->widget_TensorField->UpdateScalarsNameList();
