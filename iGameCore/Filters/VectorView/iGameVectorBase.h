@@ -29,7 +29,7 @@ private:
     public:
     void DrawVector(std::string VecName); 
     std::vector<Vector3f> convertPoint2Arrow(Vector3f coord, Vector3f normal);
-    void Draw(Scene*) override;
+   /* void Draw(Scene*) override;*/
     void ConvertToDrawableData() override;
     std::vector<float> Vector;
     float hR;

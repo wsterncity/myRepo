@@ -25,8 +25,9 @@ void iGameVectorBase::DrawVector(std::string VecName) {
     auto allPoints =DynamicCast<SurfaceMesh>(model->GetDataObject())->GetPoints();
     auto mapper = ScalarsToColors::New();
     auto array = allVectors.pointer;
-    auto colars = mapper->MapScalars(array, -1);
     mapper->InitRange(array, -1); 
+    auto colors = mapper->MapScalars(array, -1);
+    auto colorsPtr = colors->RawPointer();
     for (int i = 0; i < numOfPoint; i++) {
         float v[4] = {0.0f};
         allVectors.pointer->GetElement(i, v);
@@ -35,7 +36,7 @@ void iGameVectorBase::DrawVector(std::string VecName) {
         auto painter = SceneManager::Instance() ->GetCurrentScene() ->GetCurrentModel()->GetPainter();
         painter->SetPen(3);
         painter->SetPen(Color::Green);
-        painter->SetBrush(Color::Red);
+        painter->SetBrush(colorsPtr[3 * i], colorsPtr[3*i+1], colorsPtr[3*i+2]);
         
         auto drawV = convertPoint2Arrow(allPoints->GetPoint(i),vec);
         for (int j = 0; j < drawV.size(); j++) { 
@@ -97,42 +98,42 @@ std::vector<Vector3f> iGameVectorBase::convertPoint2Arrow(Vector3f coord, Vector
     return arrow;
 }
 
-void iGameVectorBase::Draw(Scene* scene) {
-    if (!m_Visibility) { return; }
-    // Update uniform buffer
-    if (m_UseColor) {
-        scene->UBO().useColor = true;
-    } else {
-        scene->UBO().useColor = false;
-    }
-    scene->UpdateUniformBuffer();
-
-    if (m_ViewStyle & IG_POINTS) {
-        scene->GetShader(Scene::NOLIGHT)->use();
-        m_PointVAO.bind();
-        //        glPointSize(m_PointSize);
-        glPointSize(9);
-        glad_glDrawArrays(GL_POINTS, 0, m_Positions->GetNumberOfValues() / 3);
-        m_PointVAO.release();
-    }
-    if (m_ViewStyle & IG_WIREFRAME) {
-        if (m_UseColor) {
-            scene->GetShader(Scene::NOLIGHT)->use();
-        } else {
-            auto shader = scene->GetShader(Scene::PURECOLOR);
-            shader->use();
-            shader->setUniform(shader->getUniformLocation("inputColor"),
-                               igm::vec3{0.0f, 0.0f, 0.0f});
-        }
-
-        m_LineVAO.bind();
-        glLineWidth(m_LineWidth);
-        //glad_glDrawElements(GL_LINES, M_LineIndices->GetNumberOfValues(),
-        //	GL_UNSIGNED_INT, 0);
-        glad_glDrawArrays(GL_LINES, 0, m_Positions->GetNumberOfValues());
-        m_LineVAO.release();
-    }
-}
+//void iGameVectorBase::Draw(Scene* scene) {
+//    if (!m_Visibility) { return; }
+//    // Update uniform buffer
+//    if (m_UseColor) {
+//        scene->UBO().useColor = true;
+//    } else {
+//        scene->UBO().useColor = false;
+//    }
+//    scene->UpdateUniformBuffer();
+//
+//    if (m_ViewStyle & IG_POINTS) {
+//        scene->GetShader(Scene::NOLIGHT)->use();
+//        m_PointVAO.bind();
+//        //        glPointSize(m_PointSize);
+//        glPointSize(9);
+//        glad_glDrawArrays(GL_POINTS, 0, m_Positions->GetNumberOfValues() / 3);
+//        m_PointVAO.release();
+//    }
+//    if (m_ViewStyle & IG_WIREFRAME) {
+//        if (m_UseColor) {
+//            scene->GetShader(Scene::NOLIGHT)->use();
+//        } else {
+//            auto shader = scene->GetShader(Scene::PURECOLOR);
+//            shader->use();
+//            shader->setUniform(shader->getUniformLocation("inputColor"),
+//                               igm::vec3{0.0f, 0.0f, 0.0f});
+//        }
+//
+//        m_LineVAO.bind();
+//        glLineWidth(m_LineWidth);
+//        //glad_glDrawElements(GL_LINES, M_LineIndices->GetNumberOfValues(),
+//        //	GL_UNSIGNED_INT, 0);
+//        glad_glDrawArrays(GL_LINES, 0, m_Positions->GetNumberOfValues());
+//        m_LineVAO.release();
+//    }
+//}
 
 void iGameVectorBase::ConvertToDrawableData() {
     if (!m_Flag) {
