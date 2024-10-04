@@ -1,5 +1,5 @@
-#include "iGameScene.h"
 #include "iGameVectorBase.h"
+#include "iGameScene.h"
 IGAME_NAMESPACE_BEGIN
 iGameVectorBase::iGameVectorBase() {
     this->m_Points = Points::New();
@@ -22,7 +22,8 @@ void iGameVectorBase::DrawVector(std::string VecName) {
     auto allVectors = AttributeSet->GetVector(VecName);
     if (allVectors.isNone() || allVectors.attachmentType != IG_POINT) return;
     long long numOfPoint = allVectors.pointer->GetNumberOfElements();
-    auto allPoints =DynamicCast<SurfaceMesh>(model->GetDataObject())->GetPoints();
+    auto allPoints =
+            DynamicCast<SurfaceMesh>(model->GetDataObject())->GetPoints();
     auto mapper = ScalarsToColors::New();
     auto array = allVectors.pointer;
     mapper->InitRange(array, -1); 
@@ -33,7 +34,10 @@ void iGameVectorBase::DrawVector(std::string VecName) {
         allVectors.pointer->GetElement(i, v);
         Vector3f vec(v[0], v[1], v[2]);
 
-        auto painter = SceneManager::Instance() ->GetCurrentScene() ->GetCurrentModel()->GetPainter();
+        auto painter = SceneManager::Instance()
+                               ->GetCurrentScene()
+                               ->GetCurrentModel()
+                               ->GetPainter();
         painter->SetPen(3);
         painter->SetPen(Color::Green);
         painter->SetBrush(colorsPtr[3 * i], colorsPtr[3*i+1], colorsPtr[3*i+2]);
@@ -45,43 +49,44 @@ void iGameVectorBase::DrawVector(std::string VecName) {
             }
         }
     }
-
 }
-std::vector<Vector3f> iGameVectorBase::convertPoint2Arrow(Vector3f coord, Vector3f normal) {
+std::vector<Vector3f> iGameVectorBase::convertPoint2Arrow(Vector3f coord,
+                                                          Vector3f normal) {
     std::vector<Vector3f> arrow;
     Vector3f L = normal.normalized();
     Vector3f normal1 = Vector3f(0, 1, 0).cross(L);
     Vector3f normal2 = normal1.cross(L);
-    Vector3f centerHigh = coord + normal * (tL+hL);
+    Vector3f centerHigh = coord + normal * (tL + hL);
     std::vector<Vector3f> vertices(7);
     std::vector<Vector3f> verticesMid(7);
     std::vector<Vector3f> verticesHigh(7);
     for (int i = 0; i < 6; i++) {
         float angle = igm::radians(60.0 * float(i));
-        Vector3f tem = (normal1 * cos(angle) + normal2 * sin(angle)).normalized();
+        Vector3f tem =
+                (normal1 * cos(angle) + normal2 * sin(angle)).normalized();
         Vector3f vertex = coord + tem * tR;
         vertices[i] = vertex;
         verticesMid[i] = vertex + L * tL;
         verticesHigh[i] = coord + tem * hR + L * tL;
     }
     //tail
-    for (int i = 1; i < 5; i++) { 
+    for (int i = 1; i < 5; i++) {
         arrow.emplace_back(vertices[0]);
         arrow.emplace_back(vertices[i]);
-        arrow.emplace_back(vertices[i+1]);
+        arrow.emplace_back(vertices[i + 1]);
 
         arrow.emplace_back(verticesMid[0]);
         arrow.emplace_back(verticesMid[i]);
-        arrow.emplace_back(verticesMid[i+1]);
+        arrow.emplace_back(verticesMid[i + 1]);
     }
-    for (int i = 0; i < 6; i++) { 
+    for (int i = 0; i < 6; i++) {
         arrow.emplace_back(vertices[i]);
-        arrow.emplace_back(vertices[(i+1)%6]);
+        arrow.emplace_back(vertices[(i + 1) % 6]);
         arrow.emplace_back(verticesMid[i]);
 
         arrow.emplace_back(vertices[(i + 1) % 6]);
         arrow.emplace_back(verticesMid[(i + 1) % 6]);
-        arrow.emplace_back(verticesMid[i]);        
+        arrow.emplace_back(verticesMid[i]);
     }
     //head
     for (int i = 1; i < 5; i++) {
