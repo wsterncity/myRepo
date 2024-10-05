@@ -18,6 +18,7 @@ public:
     static Pointer New() { return new Model; }
 
     void Draw(Scene*);
+    void DrawWithTransparency(Scene*);
     void DrawPhase1(Scene*);
     void DrawPhase2(Scene*);
     void TestOcclusionResults(Scene*);

@@ -939,7 +939,7 @@ void SurfaceMesh::ConvertToDrawableData() {
         m_TriangleVAO.elementBuffer(m_TriangleEBO);
 
 #ifdef IGAME_OPENGL_VERSION_460
-        bool debug = false;
+        bool debug = true;
         if (debug) {
             m_Meshlets->BuildMeshlet(m_Positions->RawPointer(),
                                      m_Positions->GetNumberOfValues() / 3,

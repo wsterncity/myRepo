@@ -31,6 +31,8 @@ public:
     IGenum GetDataObjectType() const override;
     IGsize GetRealMemorySize() override;
 
+    bool IsUseColor() { return m_UseColor; }
+
     void SetVisibility(bool f);
     bool GetVisibility();
     /*ViewStyle's detail. See iGameType.h */
@@ -71,11 +73,8 @@ protected:
     IdArray::Pointer m_PointIndices{};
     IdArray::Pointer m_LineIndices{};
     IdArray::Pointer m_TriangleIndices{};
-    //UnsignedIntArray::Pointer M_VertexIndices{};
-    //UnsignedIntArray::Pointer M_LineIndices{};
-    //UnsignedIntArray::Pointer M_TriangleIndices{};
 
-    bool m_Flag{false};
+    bool m_Flag{true};
     bool m_UseColor{false};
     bool m_ColorWithCell{false};
     int m_PointSize{8};
@@ -83,7 +82,6 @@ protected:
     int m_CellPositionSize{};
 
     float m_Transparency{1.0f};
-    bool m_TransparencyChanged{false};
 
     ArrayObject::Pointer m_ViewAttribute{};
     int m_ViewDemension{};

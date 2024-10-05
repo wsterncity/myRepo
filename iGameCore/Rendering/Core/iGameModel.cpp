@@ -3,8 +3,8 @@
 #include "iGameInteractor.h"
 #include "iGameScene.h"
 
-
 IGAME_NAMESPACE_BEGIN
+
 void Model::Draw(Scene* scene) {
     auto drawObject = DynamicCast<DrawObject>(m_DataObject);
     auto visibility = drawObject->m_Visibility;
@@ -12,21 +12,7 @@ void Model::Draw(Scene* scene) {
     auto colorWithCell = drawObject->m_ColorWithCell;
     auto viewStyle = drawObject->m_ViewStyle;
 
-    GLCheckError();
     if (!visibility) { return; }
-
-    //if (m_DrawObject.m_DrawMesh) {
-    //    m_DrawMesh->SetViewStyle(m_ViewStyle);
-    //    return m_DrawMesh->Draw(scene);
-    //}
-
-    // update uniform buffer
-    if (useColor) {
-        scene->UBO().useColor = true;
-    } else {
-        scene->UBO().useColor = false;
-    }
-    scene->UpdateUniformBuffer();
 
     if (useColor && colorWithCell) {
         scene->GetShader(Scene::BLINNPHONG)->use();
@@ -79,10 +65,80 @@ void Model::Draw(Scene* scene) {
         glDisable(GL_POLYGON_OFFSET_FILL);
         drawObject->m_TriangleVAO.release();
     }
-    GLCheckError();
+    m_Painter->Draw(scene);
+}
+
+void Model::DrawWithTransparency(Scene* scene) {
+    auto drawObject = DynamicCast<DrawObject>(m_DataObject);
+    auto visibility = drawObject->m_Visibility;
+    auto useColor = drawObject->m_UseColor;
+    auto colorWithCell = drawObject->m_ColorWithCell;
+    auto viewStyle = drawObject->m_ViewStyle;
+
+    if (!visibility) { return; }
+
+    if (useColor && colorWithCell) {
+        auto shader = scene->GetShader(Scene::TRANSPARENCYLINK);
+        shader->use();
+        shader->setUniform(shader->getUniformLocation("colorMode"), 0);
+
+        drawObject->m_CellVAO.bind();
+        glad_glDrawArrays(GL_TRIANGLES, 0, drawObject->m_CellPositionSize);
+        drawObject->m_CellVAO.release();
+        return;
+    }
+
+    if (viewStyle & IG_POINTS) {
+        auto shader = scene->GetShader(Scene::TRANSPARENCYLINK);
+        shader->use();
+        shader->setUniform(shader->getUniformLocation("colorMode"), 1);
+
+        drawObject->m_PointVAO.bind();
+        glad_glPointSize(8);
+        glad_glDepthRange(0.000001, 1);
+        glad_glDrawArrays(GL_POINTS, 0,
+                          drawObject->m_Positions->GetNumberOfValues() / 3);
+        glad_glDepthRange(0, 1);
+        drawObject->m_PointVAO.release();
+    }
+
+    if (viewStyle & IG_WIREFRAME) {
+        if (useColor) {
+            auto shader = scene->GetShader(Scene::TRANSPARENCYLINK);
+            shader->use();
+            shader->setUniform(shader->getUniformLocation("colorMode"), 1);
+        } else {
+            auto shader = scene->GetShader(Scene::TRANSPARENCYLINK);
+            shader->use();
+            shader->setUniform(shader->getUniformLocation("colorMode"), 2);
+            shader->setUniform(shader->getUniformLocation("inputColor"),
+                               igm::vec3{0.0f, 0.0f, 0.0f});
+        }
+
+        drawObject->m_LineVAO.bind();
+        glLineWidth(drawObject->m_LineWidth);
+        glad_glDrawElements(GL_LINES,
+                            drawObject->m_LineIndices->GetNumberOfIds(),
+                            GL_UNSIGNED_INT, 0);
+        drawObject->m_LineVAO.release();
+    }
+
+    if (viewStyle & IG_SURFACE) {
+        auto shader = scene->GetShader(Scene::TRANSPARENCYLINK);
+        shader->use();
+        shader->setUniform(shader->getUniformLocation("colorMode"), 0);
+
+        drawObject->m_TriangleVAO.bind();
+        glEnable(GL_POLYGON_OFFSET_FILL);
+        glPolygonOffset(-0.5f, -0.5f);
+        glad_glDrawElements(GL_TRIANGLES,
+                            drawObject->m_TriangleIndices->GetNumberOfIds(),
+                            GL_UNSIGNED_INT, 0);
+        glDisable(GL_POLYGON_OFFSET_FILL);
+        drawObject->m_TriangleVAO.release();
+    }
 
     m_Painter->Draw(scene);
-    GLCheckError();
 }
 
 void Model::DrawPhase1(Scene* scene) {

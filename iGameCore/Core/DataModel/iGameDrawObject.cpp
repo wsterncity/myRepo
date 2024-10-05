@@ -3,40 +3,42 @@
 IGAME_NAMESPACE_BEGIN
 
 void DrawObject::Create() {
-    m_PointVAO.create();
-    m_VertexVAO.create();
-    m_LineVAO.create();
-    m_TriangleVAO.create();
+    if (m_Flag) {
+        m_PointVAO.create();
+        m_VertexVAO.create();
+        m_LineVAO.create();
+        m_TriangleVAO.create();
 
-    m_PositionVBO.create();
-    m_PositionVBO.target(GL_ARRAY_BUFFER);
-    m_ColorVBO.create();
-    m_ColorVBO.target(GL_ARRAY_BUFFER);
-    m_NormalVBO.create();
-    m_NormalVBO.target(GL_ARRAY_BUFFER);
-    m_TextureVBO.create();
-    m_TextureVBO.target(GL_ARRAY_BUFFER);
+        m_PositionVBO.create();
+        m_PositionVBO.target(GL_ARRAY_BUFFER);
+        m_ColorVBO.create();
+        m_ColorVBO.target(GL_ARRAY_BUFFER);
+        m_NormalVBO.create();
+        m_NormalVBO.target(GL_ARRAY_BUFFER);
+        m_TextureVBO.create();
+        m_TextureVBO.target(GL_ARRAY_BUFFER);
 
-    m_PointEBO.create();
-    m_PointEBO.target(GL_ELEMENT_ARRAY_BUFFER);
-    m_VertexEBO.create();
-    m_VertexEBO.target(GL_ELEMENT_ARRAY_BUFFER);
-    m_LineEBO.create();
-    m_LineEBO.target(GL_ELEMENT_ARRAY_BUFFER);
-    m_TriangleEBO.create();
-    m_TriangleEBO.target(GL_ELEMENT_ARRAY_BUFFER);
+        m_PointEBO.create();
+        m_PointEBO.target(GL_ELEMENT_ARRAY_BUFFER);
+        m_VertexEBO.create();
+        m_VertexEBO.target(GL_ELEMENT_ARRAY_BUFFER);
+        m_LineEBO.create();
+        m_LineEBO.target(GL_ELEMENT_ARRAY_BUFFER);
+        m_TriangleEBO.create();
+        m_TriangleEBO.target(GL_ELEMENT_ARRAY_BUFFER);
 
-    m_CellVAO.create();
-    m_CellPositionVBO.create();
-    m_CellPositionVBO.target(GL_ELEMENT_ARRAY_BUFFER);
-    m_CellColorVBO.create();
-    m_CellColorVBO.target(GL_ELEMENT_ARRAY_BUFFER);
+        m_CellVAO.create();
+        m_CellPositionVBO.create();
+        m_CellPositionVBO.target(GL_ELEMENT_ARRAY_BUFFER);
+        m_CellColorVBO.create();
+        m_CellColorVBO.target(GL_ELEMENT_ARRAY_BUFFER);
 
 #ifdef IGAME_OPENGL_VERSION_460
-    m_Meshlets->CreateBuffer();
+        m_Meshlets->CreateBuffer();
 #endif
 
-    m_Flag = true;
+        m_Flag = false;
+    }
 }
 
 void DrawObject::ConvertToDrawableData() {
@@ -126,7 +128,6 @@ void DrawObject::SetTransparency(float transparency) {
         throw std::runtime_error("Transparency must be between 0-1");
     }
     m_Transparency = transparency;
-    m_TransparencyChanged = true;
 }
 
 float DrawObject::GetTransparency() { return m_Transparency; }
