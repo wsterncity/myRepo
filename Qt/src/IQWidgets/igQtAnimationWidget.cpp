@@ -113,7 +113,7 @@ igQtAnimationWidget::igQtAnimationWidget(QWidget *parent) : QWidget(parent), ui(
 
 }
 
-void igQtAnimationWidget::playAnimation_snap(int keyframe_idx){
+void igQtAnimationWidget::playAnimation_snap(unsigned int keyframe_idx){
     using namespace iGame;
     auto currentScene = SceneManager::Instance()->GetCurrentScene();
     auto currentObject = currentScene->GetCurrentModel()->GetDataObject();
@@ -240,4 +240,96 @@ void igQtAnimationWidget::initAnimationComponents() {
     ui->lineEditEndTime->setText(QString::asprintf("%.20f", *(timeValues.end() - 1)));
     connect(ui->SliderAnimationTrack, &QSlider::sliderMoved, VcrController, &igQtAnimationVcrController::updateCurrentKeyframe);
 
+}
+
+//#include <fstream>
+//#include <windows.h>
+
+#include <QFileDialog>
+#include <IQComponents/igQtOptionDialog.h>
+#include <IQCore/igQtOpenGLWidgetManager.h>
+#include <QMessageBox>
+
+bool igQtAnimationWidget::saveAnimation()
+{
+    igQtRenderWidget* rendererWidget = igQtOpenGLManager::Instance()->getRenderWidget();
+
+    QString path = QFileDialog::getSaveFileName(nullptr, "Save Animation", "", "Mp4 Files(.mp4)");
+//        if(!path.contains(".mp4")) path += ".mp4";
+    igQtOptionDialog dialog(this);
+    dialog.setWindowTitle("Save Animation Option.");
+    int oldwidth = rendererWidget->width(), oldheight = rendererWidget->height();
+    int ratio_pixel = rendererWidget->devicePixelRatio();
+    int width = 1920, height = 1080;
+    if (dialog.exec() == QDialog::Accepted) {
+        auto input = dialog.getInput();
+        width = input.first, height = input.second;
+
+    }
+    width /= ratio_pixel, height /= ratio_pixel;
+    rendererWidget->resize(width, height);
+
+    using namespace iGame;
+    auto currentScene = SceneManager::Instance()->GetCurrentScene();
+    auto currentObject = currentScene->GetCurrentModel()->GetDataObject();
+    if(currentObject == nullptr || currentObject->GetTimeFrames()->GetArrays().empty()) return false;
+    size_t timeStepSize = currentObject->GetTimeFrames()->GetTimeNum();
+
+    bool sc = true;
+    for(int i = 0; i < timeStepSize; i ++)
+    {
+        this->playAnimation_snap(i);
+        QImage image = rendererWidget->grabFramebuffer();
+
+        QString idx = QString(std::to_string(i).c_str());
+        QString res_path = path + "_" + idx + ".png";
+        std::cout << "===================path " << res_path.toStdString() << '\n';
+
+        if(!image.save(res_path)) sc = false;
+    }
+    rendererWidget->resize(oldwidth, oldheight);
+    if(sc){
+        QMessageBox::information(this, "", "保存成功");
+    }else {
+        QMessageBox::information(this, "", "保存失败");
+    }
+
+//    using namespace iGame;
+//    auto currentScene = SceneManager::Instance()->GetCurrentScene();
+//    auto currentObject = currentScene->GetCurrentModel()->GetDataObject();
+//    if(currentObject == nullptr || currentObject->GetTimeFrames()->GetArrays().empty()) return false;
+//    size_t timeStepSize = currentObject->GetTimeFrames()->GetTimeNum();
+//    for(size_t i = 0; i < timeStepSize; i ++)
+//    {
+//        playAnimation_snap(i);
+//
+//    }
+
+////    currentScene
+//    int width = 1920, height = 1080;
+//    currentScene->MakeCurrent();
+//    auto* bits = currentScene->CaptureOffScreenBuffer(width, height);
+//    currentScene->DoneCurrent();
+////    for(auto i = 0; i )
+//    FILE* pfile = fopen(file_path.toStdString().c_str(), "wb");
+//    if(pfile){
+//        BITMAPFILEHEADER  bfh;
+//        memset(&bfh, 0, sizeof (BITMAPFILEHEADER));
+//        bfh.bfType = 0x4D42;
+//        bfh.bfSize = sizeof(BITMAPFILEHEADER) + sizeof (BITMAPINFOHEADER) + width * height * 3;
+//        bfh.bfOffBits = sizeof (BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER);
+//        fwrite(&bfh, sizeof(BITMAPFILEHEADER), 1, pfile);
+//
+//        BITMAPINFOHEADER  bih;
+//        memset(&bih, 0, sizeof (BITMAPINFOHEADER));
+//        bih.biWidth = width;
+//        bih.biHeight = height;
+//        bih.biBitCount = 24;
+//        bih.biSize = sizeof(BITMAPINFOHEADER);
+//        fwrite(&bih, sizeof(BITMAPINFOHEADER), 1, pfile);
+//
+//        fwrite(bits, 1, width * height * 3, pfile);
+//        fclose(pfile);
+//    }
+//    delete[] bits;
 }

@@ -660,7 +660,6 @@ void Scene::Draw() {
     // save default framebuffer, because it is not 0 in Qt
     GLint qtDefaultFramebuffer = GL_NONE;
     glGetIntegerv(GL_FRAMEBUFFER_BINDING, &qtDefaultFramebuffer);
-
     auto width = m_Camera->GetScaledViewPort().x;
     auto height = m_Camera->GetScaledViewPort().y;
 
@@ -700,7 +699,7 @@ void Scene::Draw() {
         glDrawArrays(GL_TRIANGLES, 0, 3);
         m_EmptyVAO.release();
     }
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+//    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 #endif
 
     CalculateFrameRate();
@@ -1041,5 +1040,31 @@ void Scene::CalculateFrameRate() {
         //std::cout << framesPerSecond << std::endl;
         framesPerSecond = 0;
     }
+}
+
+unsigned char * Scene::CaptureOffScreenBuffer(int width, int height) {
+//    unsigned char * screenPixel = new unsigned char [width * height * 3];
+//    glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, screenPixel);
+
+    auto old_viewport = this->m_Camera->GetViewPort();
+    GLCheckError();
+    Resize(width, height, m_Camera->GetDevicePixelRatio());
+    glFinish();
+//    GLCheckError();
+//    Draw();
+//    GLCheckError();
+//    glFinish();
+    unsigned char * screenPixel = new unsigned char [width * height * 3];
+//    GLint defaultFramebuffer = GL_NONE;
+//    glGetIntegerv(GL_FRAMEBUFFER_BINDING, &defaultFramebuffer);
+//    std::cout << "default frame : " << defaultFramebuffer << '\n';
+//    glBindFramebuffer(GL_FRAMEBUFFER, 1);
+    glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, screenPixel);
+//    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    GLCheckError();
+    Resize(old_viewport.x, old_viewport.y, m_Camera->GetDevicePixelRatio());
+    GLCheckError();
+    return screenPixel;
+
 }
 IGAME_NAMESPACE_END

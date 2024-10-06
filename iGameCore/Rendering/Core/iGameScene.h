@@ -118,6 +118,9 @@ public:
     void rotateNinetyClockwise();
     void rotateNinetyCounterClockwise();
 
+    unsigned char * CaptureOffScreenBuffer(int width, int height);
+
+
     template<typename Functor, typename... Args>
     void SetUpdateFunctor(Functor&& functor, Args&&... args) {
         m_UpdateFunctor = std::bind(functor, args...);
@@ -160,6 +163,7 @@ protected:
     void DrawModels();
     void DrawAxes();
     void CalculateFrameRate();
+
 
     /* Data Object Related */
     std::map<int, Model::Pointer> m_Models;
