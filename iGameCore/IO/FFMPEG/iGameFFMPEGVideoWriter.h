@@ -3,6 +3,7 @@
  * @brief   iGameFFMPEGVideoWriter's brief
  */
 
+#ifdef FFMPEG_ENABLE
 #pragma once
 #include <iGameObject.h>
 
@@ -27,3 +28,5 @@ protected:
 
 };
 IGAME_NAMESPACE_END
+
+#endif

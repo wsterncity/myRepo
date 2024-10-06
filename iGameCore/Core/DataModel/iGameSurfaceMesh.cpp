@@ -656,7 +656,8 @@ IGsize SurfaceMesh::AddFace(igIndex* ptIds, int size) {
 void SurfaceMesh::DeletePoint(const IGsize ptId) {
     if (!InEditStatus()) { RequestEditStatus(); }
     if (IsPointDeleted(ptId)) { return; }
-    const igIndex* edgeIds;
+//    igIndex* edgeIds;
+    igIndex edgeIds[64];
     int size;
 
     GetPointToNeighborEdges(ptId, edgeIds, size);

@@ -1,6 +1,7 @@
 //
 // Created by m_ky on 2024/10/5.
 //
+#ifdef FFMPEG_ENABLE
 
 /**
  * @class   iGameFFMPEGVideoWriter
@@ -26,8 +27,8 @@ FFMPEGVideoWriter::FFMPEGVideoWriter() {
 //    AVFrame *tmp_frame;
 //    AVPacket kAVPacket = { 0 };
 //    struct SwsContext *kSwsContext;
-//    AVRational time{1,24};  /*1s25֡*/
-//    AVRational time_1{1,1};  /*1s25֡*/
+//    AVRational time{1,24};  /*1s25帧*/
+//    AVRational time_1{1,1};  /*1s25帧*/
 //    uint8_t *intBuffer = 0;
 //
 //    int ret;
@@ -49,3 +50,4 @@ void FFMPEGVideoWriter::SetImageData(const std::vector<const char *> &_imageData
     m_RawImageData = _imageData_vec;
 }
 IGAME_NAMESPACE_END
+#endif
