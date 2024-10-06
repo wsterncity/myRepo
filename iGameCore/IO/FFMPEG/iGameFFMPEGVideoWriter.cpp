@@ -8,9 +8,9 @@
  */
 
 #include "iGameFFMPEGVideoWriter.h"
-extern "C" {
-#include <libavcodec/avcodec.h>
-}
+//extern "C" {
+//#include <libavcodec/avcodec.h>
+//}
 
 
 IGAME_NAMESPACE_BEGIN
@@ -28,7 +28,7 @@ FFMPEGVideoWriter::FFMPEGVideoWriter() {
 //    struct SwsContext *kSwsContext;
 //    AVRational time{1,24};  /*1s25帧*/
 //    AVRational time_1{1,1};  /*1s25帧*/
-//    uint8_t *intBuffer = 0;                           // 图片数据缓冲区
+//    uint8_t *intBuffer = 0;
 //
 //    int ret;
 //    int got_packer = 0;
@@ -37,7 +37,7 @@ FFMPEGVideoWriter::FFMPEGVideoWriter() {
 //    tmp_frame = av_frame_alloc();
 //    av_init_packet(&kAVPacket);
 //
-//    av_register_all();     //1、注册所有容易和编解码器
+//    av_register_all();
 
 }
 

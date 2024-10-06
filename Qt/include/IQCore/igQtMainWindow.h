@@ -19,7 +19,7 @@
 #include <QtWidgets/QMainWindow>
 #undef QT_NO_OPENGL
 
-class igQtRenderWidget;
+class igQtModelDrawWidget;
 class igQtFileLoader;
 class igQtColorManagerWidget;
 class igQtFilterDialogDockWidget;
@@ -42,7 +42,7 @@ public:
     void initAllInteractor();
 
 public:
-    igQtRenderWidget* rendererWidget;
+    igQtModelDrawWidget* rendererWidget;
     igQtFileLoader* fileLoader;
     igQtModelDialogWidget* modelTreeWidget;
 

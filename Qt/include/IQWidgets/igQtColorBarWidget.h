@@ -2,7 +2,7 @@
 #include <QApplication>
 #include <QWidget>
 #include <QPainter>
-
+#include "iGameScalarsToColors.h"
 class igQtColorBarWidget : public QWidget
 {
 	Q_OBJECT
@@ -35,5 +35,6 @@ private:
 	int colorBarWidth = 0;
 	int fontHeight = 0;
 	QColor boundColor = Qt::black;
+    iGame::ScalarsToColors::Pointer m_ColorMapper;
 };
 
