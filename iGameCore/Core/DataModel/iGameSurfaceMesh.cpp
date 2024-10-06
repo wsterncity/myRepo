@@ -239,6 +239,14 @@ bool SurfaceMesh::GetPointToNeighborEdges(const IGsize ptId,
     size = m_EdgeLinks->GetLinkSize(ptId);
     return true;
 }
+bool SurfaceMesh::GetPointToNeighborEdges(const IGsize ptId, igIndex *edgeIds, int &size) {
+    assert(ptId < GetNumberOfPoints() && "ptId too large");
+    auto& link = m_EdgeLinks->GetLink(ptId);
+    for (int i = 0; i < link.size; i++) { edgeIds[i] = link.pointer[i]; }
+    size = link.size;
+    return true;
+}
+
 bool SurfaceMesh::GetPointToNeighborEdges(const IGsize ptId,
                                           IdArray::Pointer edgeIds) {
     assert(ptId < GetNumberOfPoints() && "ptId too large");
@@ -648,10 +656,10 @@ IGsize SurfaceMesh::AddFace(igIndex* ptIds, int size) {
 void SurfaceMesh::DeletePoint(const IGsize ptId) {
     if (!InEditStatus()) { RequestEditStatus(); }
     if (IsPointDeleted(ptId)) { return; }
-    const igIndex* edgeIds;
+    igIndex* edgeIds;
     int size;
     GetPointToNeighborEdges(ptId, edgeIds, size);
-    for (int i = 0; i < size; i++) { DeleteEdge(edgeIds[i]); }
+    for (int i = 0; i < size; i++) {DeleteEdge(edgeIds[i]);}
     m_EdgeLinks->DeleteLink(ptId);
     m_FaceLinks->DeleteLink(ptId);
     m_PointDeleteMarker->MarkDeleted(ptId);
@@ -1304,4 +1312,6 @@ void SurfaceMesh::SetAttributeWithCellData(ArrayObject::Pointer attr,
                           GL_FLOAT, GL_FALSE, 0);
     }
 }
+
+
 IGAME_NAMESPACE_END
