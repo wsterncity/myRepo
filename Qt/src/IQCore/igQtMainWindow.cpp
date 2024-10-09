@@ -453,6 +453,17 @@ void igQtMainWindow::initAllFilters() {
         // this->updateCurrentDataObject();
     });
 
+    connect(ui->menuTest->addAction("SurfaceSimplification"), &QAction::triggered,
+            this, [&](bool checked) { 
+                auto fp = SurfaceSimplification::New();
+                auto input = rendererWidget->GetScene()
+                                        ->GetCurrentModel()
+                                        ->GetDataObject();
+                fp->SetInput(input);
+                fp->Execute();
+                rendererWidget->update();
+        });
+
     connect(ui->menuTest->addAction("surfaceExtractTest"), &QAction::triggered,
             this, [&](bool checked) {
                 auto fp = iGameModelGeometryFilter::New();

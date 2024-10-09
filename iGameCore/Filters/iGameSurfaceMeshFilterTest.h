@@ -19,9 +19,9 @@ public:
         std::uniform_real_distribution<> dis(0.0, 1.0);
 
         //AddFaceTest();
-        //DeletePointTest();
+        DeletePointTest();
         //DeleteEdgeTest();
-        DeleteFaceTest();
+        //DeleteFaceTest();
 
         SetOutput(0, m_Mesh);
         return true;
