@@ -8,5 +8,6 @@
 
 /*.rar
 /*.zip
+build/
 
 iGameCore/Filters/TensorViewFilter/iGameTensorWidgetBase.cpp~
