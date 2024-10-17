@@ -504,6 +504,17 @@ void igQtMainWindow::initAllFilters() {
         // aaa->Execute();
     });
 
+    connect(ui->menu_meshprocess->addAction("Digistra"), &QAction::triggered, this,
+            [&](bool checked) {
+                
+                Model::Pointer mp = rendererWidget->GetScene()->GetCurrentModel();
+                Painter::Pointer p = mp->GetPainter();
+                Digistra::Pointer fp = Digistra::New();
+                fp->SetInput(mp->GetDataObject());
+                fp->SetPainter(p);
+                fp->Execute(); 
+    });
+
     auto action_tensorview = ui->menu_help->addAction("tensorview");
     connect(action_tensorview, &QAction::triggered, this, [&](bool checked) {
         clock_t time1 = clock();
