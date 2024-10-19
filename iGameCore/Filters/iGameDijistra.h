@@ -15,14 +15,16 @@ public:
     static Pointer New() { return new Digistra; }
 
     bool Execute() override {
-        
-        
+
         igIndex AdjPids[64];
         
         std::queue<igIndex> waitQueue;
         std::vector<igIndex> Trace;
         std::vector<bool> isIncluded;
         SurfaceMesh::Pointer mesh = DynamicCast<SurfaceMesh>(GetInput(0));
+
+        tracePath.clear();
+        cost = 0;
 
         if (mesh == nullptr) { return false; }
         int psize = mesh->GetNumberOfPoints();
@@ -72,14 +74,15 @@ public:
         }
 
         IGuint handle;
-        painter->SetPen(3);
+        painter->SetPen(15);
         painter->SetPen(Color::Red);
         painter->SetBrush(None);
         handle = painter->DrawPoint(mesh->GetPoint(source));
         painter->Show(handle);
         handle = painter->DrawPoint(mesh->GetPoint(target));
         painter->Show(handle);
-        painter->SetPen(Color::Green);
+        painter->SetPen(4);
+        painter->SetPen(Color::Cyan);
         
 
         igIndex cursor = target;
@@ -90,9 +93,10 @@ public:
             handle = painter->DrawLine(p1, p2);
             painter->Show(handle);
             cost++;
+            tracePath.push_back(cursor);
             cursor = Trace[cursor];
         }
-
+        tracePath.push_back(source);
 
         return true;
     }
@@ -106,7 +110,7 @@ public:
     int GetWeight() { return cost; }
 
     void SetPainter(Painter::Pointer p){painter = p;}
-
+    std::vector<igIndex> GetPath() { return tracePath; }
 protected:
 
     Digistra() 
@@ -117,8 +121,8 @@ protected:
 
     ~Digistra() noexcept override = default;
 
-    SurfaceMesh::Pointer mesh;
     Painter::Pointer painter;
+    std::vector<igIndex> tracePath;
     igIndex source = -1, target = -1;
     int cost = 0;
     

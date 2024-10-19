@@ -515,6 +515,33 @@ void igQtMainWindow::initAllFilters() {
                 fp->Execute(); 
     });
 
+    connect(ui->menu_meshprocess->addAction("MST"), &QAction::triggered,
+            this, [&](bool checked) {
+                Model::Pointer mp = rendererWidget->GetScene()->GetCurrentModel();
+                Painter::Pointer p = mp->GetPainter();
+                MST::Pointer fp = MST::New();
+                std::vector<int> vec{
+                    1,
+                    100,
+                    114,
+                    514,
+                    1000,
+                    5000,
+                    1453,
+                    600,
+                    9092,
+                    7777,
+                    8086,
+                    2345,
+                    5547};
+                fp->SetInput(mp->GetDataObject());
+                fp->SetPainter(p);
+                fp->SetSize(13);
+                fp->SetIds(vec);
+                fp->Execute();
+                
+            });
+
     auto action_tensorview = ui->menu_help->addAction("tensorview");
     connect(action_tensorview, &QAction::triggered, this, [&](bool checked) {
         clock_t time1 = clock();
