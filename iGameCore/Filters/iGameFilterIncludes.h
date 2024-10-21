@@ -13,3 +13,4 @@
 #include "TestFilter/iGameTestFilter.h"
 #include "iGameDijistra.h"
 #include "iGameMST.h"
+#include "iGameCurvature.h"

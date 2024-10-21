@@ -542,6 +542,37 @@ void igQtMainWindow::initAllFilters() {
                 
             });
 
+    connect(ui->menu_view->addAction("MeanCurvatureView"), &QAction::triggered,
+        this, [&](bool checked) {
+
+            Curvature::Pointer fp = Curvature::New();
+            auto mesh = DynamicCast<SurfaceMesh>(rendererWidget->GetScene()->GetCurrentModel()->GetDataObject());
+            fp->SetInput(mesh);
+            fp->SetViewMode(MeanCurvatureMode);
+            fp->Execute();
+            modelTreeWidget->addDataObjectToModelTree(mesh, ItemSource::File);
+        });
+
+    connect(ui->menu_view->addAction("AbsoluteMeanCurvatureView"), &QAction::triggered,
+        this, [&](bool checked) {
+            Curvature::Pointer fp = Curvature::New();
+            auto mesh = DynamicCast<SurfaceMesh>(rendererWidget->GetScene()->GetCurrentModel()->GetDataObject());
+            fp->SetInput(mesh);
+            fp->SetViewMode(AbsoluteMeanCurvatureMode);
+            fp->Execute();
+            modelTreeWidget->addDataObjectToModelTree(mesh, ItemSource::File);
+        });
+
+    connect(ui->menu_view->addAction("GuassianCurvatureView"), &QAction::triggered,
+        this, [&](bool checked) {
+            Curvature::Pointer fp = Curvature::New();
+            auto mesh = DynamicCast<SurfaceMesh>(rendererWidget->GetScene()->GetCurrentModel()->GetDataObject());
+            fp->SetInput(mesh);
+            fp->SetViewMode(GuassianCurvatureMode);
+            fp->Execute();
+            modelTreeWidget->addDataObjectToModelTree(mesh, ItemSource::File);
+        });
+
     auto action_tensorview = ui->menu_help->addAction("tensorview");
     connect(action_tensorview, &QAction::triggered, this, [&](bool checked) {
         clock_t time1 = clock();
