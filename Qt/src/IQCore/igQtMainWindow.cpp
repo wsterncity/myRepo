@@ -566,11 +566,19 @@ void igQtMainWindow::initAllFilters() {
     connect(ui->menu_view->addAction("GuassianCurvatureView"), &QAction::triggered,
         this, [&](bool checked) {
             Curvature::Pointer fp = Curvature::New();
-            auto mesh = DynamicCast<SurfaceMesh>(rendererWidget->GetScene()->GetCurrentModel()->GetDataObject());
+            SurfaceMesh::Pointer mesh = DynamicCast<SurfaceMesh>(rendererWidget->GetScene()->GetCurrentModel()->GetDataObject());
             fp->SetInput(mesh);
             fp->SetViewMode(GuassianCurvatureMode);
             fp->Execute();
             modelTreeWidget->addDataObjectToModelTree(mesh, ItemSource::File);
+        });
+
+    connect(ui->menu_meshprocess->addAction("BilateralNormalFiltering"), &QAction::triggered,
+        this, [&](bool checked) {
+            BilateralNormalFiltering::Pointer fp = BilateralNormalFiltering::New();
+            fp->SetInput(rendererWidget->GetScene()->GetCurrentModel()->GetDataObject());
+            fp->Execute();
+            rendererWidget->update();
         });
 
     auto action_tensorview = ui->menu_help->addAction("tensorview");

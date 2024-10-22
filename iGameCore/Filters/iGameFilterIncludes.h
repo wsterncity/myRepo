@@ -14,3 +14,4 @@
 #include "iGameDijistra.h"
 #include "iGameMST.h"
 #include "iGameCurvature.h"
+#include "iGameBilateralNormalFiltering.h"
