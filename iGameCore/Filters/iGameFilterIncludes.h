@@ -15,3 +15,4 @@
 #include "iGameMST.h"
 #include "iGameCurvature.h"
 #include "iGameBilateralNormalFiltering.h"
+#include "iGameTutteMapping.h"

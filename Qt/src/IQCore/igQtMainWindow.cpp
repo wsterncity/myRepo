@@ -580,6 +580,14 @@ void igQtMainWindow::initAllFilters() {
             fp->Execute();
             rendererWidget->update();
         });
+    
+    connect(ui->menu_meshprocess->addAction("TutteMapping"), &QAction::triggered,
+        this, [&](bool checked) {
+            TutteMapping::Pointer fp = TutteMapping::New();
+            fp->SetInput(rendererWidget->GetScene()->GetCurrentModel()->GetDataObject());
+            fp->Execute();
+            rendererWidget->update();
+        });
 
     auto action_tensorview = ui->menu_help->addAction("tensorview");
     connect(action_tensorview, &QAction::triggered, this, [&](bool checked) {
