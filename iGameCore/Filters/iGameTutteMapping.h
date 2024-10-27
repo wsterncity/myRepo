@@ -21,9 +21,9 @@ public:
 		
 		std::vector<T> coefficients;
 		SpMat mat(vnum, vnum);
-		Eigen::VectorXf bx(vnum);
-		Eigen::VectorXf by(vnum);
-		Eigen::VectorXf bz(vnum);
+		Eigen::VectorXd bx(vnum);
+		Eigen::VectorXd by(vnum);
+		Eigen::VectorXd bz(vnum);
 		std::vector<igIndex> boundary_vid;
 
 		//construct linear system
@@ -36,9 +36,9 @@ public:
 			}
 			else
 			{
-				bx(vid) = 0;
-				by(vid) = 0;
-				bz(vid) = 0;
+				bx(vid) = 0.0;
+				by(vid) = 0.0;
+				bz(vid) = 0.0;
 				igIndex adj_vid[64];
 				IGsize adj_vnum = mesh->GetPointToOneRingPoints(vid, adj_vid);
 				coefficients.push_back(T(vid, vid, adj_vnum));
@@ -50,22 +50,35 @@ public:
 		}
 
 		float circle_radian_speed = (2 * PI) / boundary_vid.size();
-		for(float step = 0; step < boundary_vid.size(); step ++)
+		std::vector<bool> isIncluded;
+		isIncluded.resize(boundary_vid.size(), false);
+		int step = 0;
+		int cur = 0;
+		while(step < boundary_vid.size())
 		{
-			bx(boundary_vid[step]) = std::cos(step * circle_radian_speed);
-			by(boundary_vid[step]) = std::sin(step * circle_radian_speed);
-			bz(boundary_vid[step]) = 0;
+			isIncluded[cur] = true;
+			bx(boundary_vid[cur]) = std::cos(step * circle_radian_speed);
+			by(boundary_vid[cur]) = std::sin(step * circle_radian_speed);
+			bz(boundary_vid[cur]) = 0.0;
+			step ++;
+			for(int i = 0; i < boundary_vid.size(); i++)
+			{
+				if(!isIncluded[i] && mesh->GetEdgeIdFormPointIds(boundary_vid[cur], boundary_vid[i]) != -1)
+				{
+					cur = i;
+					break;
+				}
+			}
 		}
 
 		mat.setFromTriplets(coefficients.begin(), coefficients.end());
 		Eigen::SparseLU<SpMat, Eigen::COLAMDOrdering<int>> solver;
-		solver.analyzePattern(mat);
-		solver.factorize(mat);
+		solver.compute(mat);
 		assert(solver.info() == Eigen::Success);
-		Eigen::VectorXf x = solver.solve(bx);
-		Eigen::VectorXf y = solver.solve(by);
-		Eigen::VectorXf z = solver.solve(bz);
-		assert(x.size() == vnum);
+		Eigen::VectorXd x = solver.solve(bx);
+		Eigen::VectorXd y = solver.solve(by);
+		Eigen::VectorXd z = solver.solve(bz);
+		assert(solver.info() == Eigen::Success);
 		
 		for(igIndex vid = 0; vid < vnum; vid++)
 			mesh->SetPoint(vid, Point(x(vid), y(vid), z(vid) ) );
