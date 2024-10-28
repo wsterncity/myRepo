@@ -589,6 +589,14 @@ void igQtMainWindow::initAllFilters() {
             rendererWidget->update();
         });
 
+    connect(ui->menu_meshprocess->addAction("ARAPMapping"), &QAction::triggered,
+        this, [&](bool checked) {
+            ARAP::Pointer fp = ARAP::New();
+            fp->SetInput(rendererWidget->GetScene()->GetCurrentModel()->GetDataObject());
+            fp->Execute();
+            rendererWidget->update();
+        });
+
     auto action_tensorview = ui->menu_help->addAction("tensorview");
     connect(action_tensorview, &QAction::triggered, this, [&](bool checked) {
         clock_t time1 = clock();

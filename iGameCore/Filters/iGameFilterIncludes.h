@@ -16,3 +16,4 @@
 #include "iGameCurvature.h"
 #include "iGameBilateralNormalFiltering.h"
 #include "iGameTutteMapping.h"
+#include "iGameARAP.h"
