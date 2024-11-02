@@ -81,7 +81,7 @@ void BilateralNormalFiltering::UpdateVerticePosition()
 			Vector3f N = newNormal_f[adj_fids[i]];
 			dx += N * (N.dot(center - pos));
 		}
-		pos += dx / 6.0;
+		pos += dx / 18.0;
 		//std::cout << "Update vertice " << vi << ": " << mesh->GetPoint(vi) << " to " << pos << std::endl;
 		mesh->SetPoint(vi, pos);
 		mesh->Modified();

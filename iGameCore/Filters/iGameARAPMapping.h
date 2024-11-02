@@ -7,30 +7,25 @@
 #include <Eigen/SVD>
 
 IGAME_NAMESPACE_BEGIN
-class ARAP : public Filter
+class ARAPMapping : public Filter
 {
 public:
-	I_OBJECT(ARAP);
-	static ARAP::Pointer New(){return new ARAP;}
+	I_OBJECT(ARAPMapping);
+	static ARAPMapping::Pointer New(){return new ARAPMapping;}
 	bool Execute() override;
 
 protected:
-	ARAP()
+	ARAPMapping()
 	{
 		SetNumberOfInputs(1);
 		SetNumberOfOutputs(0);
 	}
 
-	~ARAP() override = default;
+	~ARAPMapping() override = default;
 
 	SurfaceMesh::Pointer mesh;
-	std::vector<Eigen::Matrix2d> Lts;
-	Eigen::MatrixX2d UV;
-	Eigen::SparseLU<Eigen::SparseMatrix<double>, Eigen::COLAMDOrdering<int>> global_solver;
-	Eigen::MatrixXd local_coord;
-	void local();
-	void global();
-	void Initial();
+
+	void Tutte(Eigen::MatrixX2d& UV);
 };
 
 

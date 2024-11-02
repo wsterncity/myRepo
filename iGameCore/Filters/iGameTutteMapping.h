@@ -4,7 +4,6 @@
 #include "iGameSurfaceMesh.h"
 #include<Eigen/Sparse>
 
-#define PI 3.14159265359
 typedef Eigen::SparseMatrix<double> SpMat;
 typedef Eigen::Triplet<double> T;
 
@@ -17,6 +16,7 @@ public:
 	{
 		SurfaceMesh::Pointer mesh = DynamicCast<SurfaceMesh>(GetInput(0));
 		IGsize vnum = mesh->GetNumberOfPoints();
+		IGsize fnum = mesh->GetNumberOfFaces();
 		mesh->RequestEditStatus();
 		
 		std::vector<T> coefficients;
@@ -25,6 +25,18 @@ public:
 		Eigen::VectorXd by(vnum);
 		Eigen::VectorXd bz(vnum);
 		std::vector<igIndex> boundary_vid;
+
+		double area_sum = 0;
+		for(igIndex fid=0;fid<fnum;fid++)
+		{
+			igIndex pids[3];
+			mesh->GetFacePointIds(fid, pids);
+			Point p[3];
+			for(int i=0;i<3;i++) p[i] = mesh->GetPoint(pids[i]);
+			Vector2d vec0_1 = p[1] - p[0];
+			Vector2d vec0_2 = p[2] - p[0];
+			area_sum += vec0_1.cross(vec0_2).norm() / 2;
+		}
 
 		//construct linear system
 		for(igIndex vid = 0; vid < vnum; vid++)
@@ -49,16 +61,17 @@ public:
 		
 		}
 
-		float circle_radian_speed = (2 * PI) / boundary_vid.size();
+		double circle_radian_speed = (2 * M_PI) / boundary_vid.size();
+		double area_1_factor = sqrt(area_sum / M_PI);
 		std::vector<bool> isIncluded;
 		isIncluded.resize(boundary_vid.size(), false);
-		int step = 0;
+		
 		int cur = 0;
-		while(step < boundary_vid.size())
+		for(int step = 0;step < boundary_vid.size();step ++)
 		{
 			isIncluded[cur] = true;
-			bx(boundary_vid[cur]) = std::cos(step * circle_radian_speed);
-			by(boundary_vid[cur]) = std::sin(step * circle_radian_speed);
+			bx(boundary_vid[cur]) = area_1_factor * std::cos(step * circle_radian_speed);
+			by(boundary_vid[cur]) = area_1_factor * std::sin(-step * circle_radian_speed);
 			bz(boundary_vid[cur]) = 0.0;
 			step ++;
 			for(int i = 0; i < boundary_vid.size(); i++)
