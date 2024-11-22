@@ -597,6 +597,14 @@ void igQtMainWindow::initAllFilters() {
             rendererWidget->update();
         });
 
+    connect(ui->menu_meshprocess->addAction("MVCMapping"), &QAction::triggered,
+        this, [&](bool checked) {
+            MVCMapping::Pointer fp = MVCMapping::New();
+            fp->SetInput(rendererWidget->GetScene()->GetCurrentModel()->GetDataObject());
+            fp->Execute();
+            rendererWidget->update();
+        });
+
     auto action_tensorview = ui->menu_help->addAction("tensorview");
     connect(action_tensorview, &QAction::triggered, this, [&](bool checked) {
         clock_t time1 = clock();

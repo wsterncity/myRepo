@@ -23,9 +23,6 @@ public:
 		edgeCotWeight.resize(e_num, 0);
 		/*CalcEdgeCotWeight();*/
 		CalcEdgeUnifromWeight();
-
-
-
 		Lts.resize(mesh->GetNumberOfPoints(), Eigen::Matrix3d::Zero());
 
 		model = m_Model;
@@ -228,7 +225,6 @@ protected:
 			}
 			Lts[i] = R;
 		}
-
 	}
 
 	void Global()

@@ -17,3 +17,4 @@
 #include "iGameBilateralNormalFiltering.h"
 #include "iGameTutteMapping.h"
 #include "iGameARAPMapping.h"
+#include "iGameMVCMapping.h"

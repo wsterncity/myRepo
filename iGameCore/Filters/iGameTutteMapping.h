@@ -15,9 +15,10 @@ public:
 	bool Execute() override
 	{
 		SurfaceMesh::Pointer mesh = DynamicCast<SurfaceMesh>(GetInput(0));
+		mesh->RequestEditStatus();
 		IGsize vnum = mesh->GetNumberOfPoints();
 		IGsize fnum = mesh->GetNumberOfFaces();
-		mesh->RequestEditStatus();
+		
 		
 		std::vector<T> coefficients;
 		SpMat mat(vnum, vnum);
@@ -73,7 +74,6 @@ public:
 			bx(boundary_vid[cur]) = area_1_factor * std::cos(step * circle_radian_speed);
 			by(boundary_vid[cur]) = area_1_factor * std::sin(-step * circle_radian_speed);
 			bz(boundary_vid[cur]) = 0.0;
-			step ++;
 			for(int i = 0; i < boundary_vid.size(); i++)
 			{
 				if(!isIncluded[i] && mesh->GetEdgeIdFormPointIds(boundary_vid[cur], boundary_vid[i]) != -1)
