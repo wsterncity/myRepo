@@ -12,12 +12,12 @@ bool ARAPMapping::Execute()
 	std::vector<Eigen::Matrix2d> Lts;
 	
 	Eigen::MatrixXd local_coord;
-	//Construct the coeffitients matix of global step and the local coordinates of every 3d triangle. 
+	//Construct the coeffitients matix of global step and the local coordinates of every 3d triangle.
 
 	Lts.resize(fnum);
 	local_coord.resize(fnum, 6);
 	std::vector<Eigen::Triplet<double>> global_coeff;
-	
+
 
 #pragma omp parallel for
 	for(igIndex fid = 0; fid < fnum; fid ++)
@@ -27,7 +27,6 @@ bool ARAPMapping::Execute()
 		mesh->GetFacePointIds(fid, pids);
 		for(int i=0;i<3;i++)
 			p[i] = mesh->GetPoint(pids[i]);
-
 
 		Vector3f v0_v1 = p[1] - p[0];
 		Vector3f v0_v2 = p[2] - p[0];
@@ -85,7 +84,6 @@ bool ARAPMapping::Execute()
 			S << local_coord(fid, 2) - local_coord(fid, 0), local_coord(fid, 4) - local_coord(fid, 0),
 				local_coord(fid, 3) - local_coord(fid, 1), local_coord(fid, 5) - local_coord(fid, 1);
 			J = P * S.inverse();
-			J = P * S.inverse();
 
 			Eigen::JacobiSVD<Eigen::Matrix2d> svd(J, Eigen::ComputeFullU | Eigen::ComputeFullV);
 
@@ -103,7 +101,6 @@ bool ARAPMapping::Execute()
 			Lts[fid] = R;
 
 		}
-
 		Eigen::VectorXd bu, bv;
 		bu.setZero(vnum);
 		bv.setZero(vnum);

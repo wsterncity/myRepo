@@ -605,6 +605,34 @@ void igQtMainWindow::initAllFilters() {
             rendererWidget->update();
         });
 
+    connect(ui->menu_meshprocess->addAction("Morphing"), &QAction::triggered,
+        this, [&](bool checked) {
+            Morphing::Pointer fp = Morphing::New();
+            auto modelList = rendererWidget->GetScene()->GetModelList();
+            double delta_t = 0.1, t = 0.5;
+            assert(modelList.size() == 2);
+            SurfaceMesh::Pointer sourceMesh = DynamicCast<SurfaceMesh>(rendererWidget->GetScene()->GetModelById(0)->GetDataObject());
+            SurfaceMesh::Pointer targetMesh = DynamicCast<SurfaceMesh>(rendererWidget->GetScene()->GetModelById(1)->GetDataObject());
+            Painter::Pointer p = rendererWidget->GetScene()->GetModelById(1)->GetPainter();
+            
+            fp->SetPainter(p);
+            fp->SetInput(0, sourceMesh);
+            fp->SetInput(1, targetMesh);
+            fp->Init();
+            fp->SetInterpolation(t);
+            fp->Execute();
+            rendererWidget->update();
+
+            //while(t <= 1.0)
+            //{
+            //    fp->SetInterpolation(t);
+            //    fp->Execute();
+            //    modelTreeWidget->addDataObjectToModelTree(sourceMesh, ItemSource::File);
+            //    t += delta_t;
+            //}
+
+        });
+
     auto action_tensorview = ui->menu_help->addAction("tensorview");
     connect(action_tensorview, &QAction::triggered, this, [&](bool checked) {
         clock_t time1 = clock();

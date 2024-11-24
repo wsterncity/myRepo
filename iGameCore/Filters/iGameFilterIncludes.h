@@ -18,3 +18,5 @@
 #include "iGameTutteMapping.h"
 #include "iGameARAPMapping.h"
 #include "iGameMVCMapping.h"
+#include "iGameMorphing.h"
+#include <windows.h>
