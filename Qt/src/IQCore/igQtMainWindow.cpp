@@ -464,48 +464,48 @@ void igQtMainWindow::initAllFilters() {
                 rendererWidget->update();
         });
 
-    connect(ui->menuTest->addAction("VonoroiDiagram"),
-            &QAction::triggered, this, [&](bool checked) {
-                //fp->Execute();
-                
-                // this->updateCurrentDataObject();
-                igQtFilterDialogDockWidget* dialog =
-                        new igQtFilterDialogDockWidget(this);
-                int targetId = dialog->addParameter(
-                        igQtFilterDialogDockWidget::QT_LINE_EDIT,
-                        "Target number of points", "1");
-                int reductionId = dialog->addParameter(
-                        igQtFilterDialogDockWidget::QT_LINE_EDIT,
-                        "Reduction (0..1)", "0");
-                int thresholdId = dialog->addParameter(
-                        igQtFilterDialogDockWidget::QT_LINE_EDIT,
-                        "Quality threshold", "0.1");
-                /* 
-                int preserveId = dialog->addParameter(
-                        igQtFilterDialogDockWidget::QT_CHECK_BOX,
-                        "Preserve Boundary of the mesh", "false");
-                 */
-                dialog->show();
+    //connect(ui->menuTest->addAction("VonoroiDiagram"),
+    //        &QAction::triggered, this, [&](bool checked) {
+    //            //fp->Execute();
+    //            
+    //            // this->updateCurrentDataObject();
+    //            igQtFilterDialogDockWidget* dialog =
+    //                    new igQtFilterDialogDockWidget(this);
+    //            int targetId = dialog->addParameter(
+    //                    igQtFilterDialogDockWidget::QT_LINE_EDIT,
+    //                    "Target number of points", "1");
+    //            int reductionId = dialog->addParameter(
+    //                    igQtFilterDialogDockWidget::QT_LINE_EDIT,
+    //                    "Reduction (0..1)", "0");
+    //            int thresholdId = dialog->addParameter(
+    //                    igQtFilterDialogDockWidget::QT_LINE_EDIT,
+    //                    "Quality threshold", "0.1");
+    //            /* 
+    //            int preserveId = dialog->addParameter(
+    //                    igQtFilterDialogDockWidget::QT_CHECK_BOX,
+    //                    "Preserve Boundary of the mesh", "false");
+    //             */
+    //            dialog->show();
 
-                //bool ok;
-                //std::cout << dialog->getInt(targetId, ok) << std::endl;
-                //std::cout << dialog->getDouble(reductionId, ok) << std::endl;
-                //std::cout << dialog->getDouble(thresholdId, ok) << std::endl;
-                //std::cout << (dialog->getChecked(preserveId, ok) ? "true"
-                //                                                : "false")
-                //          << std::endl;
+    //            //bool ok;
+    //            //std::cout << dialog->getInt(targetId, ok) << std::endl;
+    //            //std::cout << dialog->getDouble(reductionId, ok) << std::endl;
+    //            //std::cout << dialog->getDouble(thresholdId, ok) << std::endl;
+    //            //std::cout << (dialog->getChecked(preserveId, ok) ? "true"
+    //            //                                                : "false")
+    //            //          << std::endl;
 
-                VonoroiDiagram::Pointer fp = VonoroiDiagram::New();
-                dialog->setApplyFunctor([=]() {
-                    bool ok;
-                    fp->SetNumOfPoints(dialog->getInt(targetId, ok));
-                    fp->Execute();
-                    auto mesh = DynamicCast<SurfaceMesh>(fp->GetOutput(0));
-                    rendererWidget->update();
-                    modelTreeWidget->addDataObjectToModelTree(mesh, ItemSource::Algorithm);
-                    });
+    //            VonoroiDiagram::Pointer fp = VonoroiDiagram::New();
+    //            dialog->setApplyFunctor([=]() {
+    //                bool ok;
+    //                fp->SetNumOfPoints(dialog->getInt(targetId, ok));
+    //                fp->Execute();
+    //                auto mesh = DynamicCast<SurfaceMesh>(fp->GetOutput(0));
+    //                rendererWidget->update();
+    //                modelTreeWidget->addDataObjectToModelTree(mesh, ItemSource::Algorithm);
+    //                });
 
-            });
+    //        });
 
     connect(ui->menuTest->addAction("surfaceExtractTest"), &QAction::triggered,
             this, [&](bool checked) {
