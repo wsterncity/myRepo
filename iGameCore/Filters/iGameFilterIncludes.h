@@ -12,4 +12,4 @@
 #include "TensorViewFilter/iGameTensorWidgetBase.h"
 #include "TestFilter/iGameTestFilter.h"
 #include "iGameSurfaceSimplification.h"
-#include "iGameVonoroiDiagram.h"
+//#include "iGameVonoroiDiagram.h"
