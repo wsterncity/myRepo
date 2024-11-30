@@ -633,6 +633,25 @@ void igQtMainWindow::initAllFilters() {
 
         });
 
+    connect(ui->menu_meshprocess->addAction("NPolyVectorFields"), &QAction::triggered,
+        this, [&](bool checked) {
+            NPolyVectorFields::Pointer fp = NPolyVectorFields::New();
+            fp->SetInput(rendererWidget->GetScene()->GetCurrentModel()->GetDataObject());
+            fp->setPainter(rendererWidget->GetScene()->GetCurrentModel()->GetPainter());
+            fp->Execute();
+            rendererWidget->update();
+        });
+
+    connect(ui->menu_meshprocess->addAction("N-PolyVector"), &QAction::triggered,
+        this, [&](bool checked) {
+            N_PolyMesh::Pointer fp = N_PolyMesh::New();
+            fp->SetInput(rendererWidget->GetScene()->GetCurrentModel()->GetDataObject());
+            fp->SetModel(rendererWidget->GetScene()->GetCurrentModel());
+            fp->Execute();
+            rendererWidget->update();
+        });
+
+
     auto action_tensorview = ui->menu_help->addAction("tensorview");
     connect(action_tensorview, &QAction::triggered, this, [&](bool checked) {
         clock_t time1 = clock();

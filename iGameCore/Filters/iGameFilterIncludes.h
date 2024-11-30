@@ -19,4 +19,6 @@
 #include "iGameARAPMapping.h"
 #include "iGameMVCMapping.h"
 #include "iGameMorphing.h"
+#include "iGameNPolyVectorFields.h"
+#include "N-PolyVector.h"
 #include <windows.h>
