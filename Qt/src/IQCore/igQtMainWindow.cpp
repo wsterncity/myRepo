@@ -651,6 +651,72 @@ void igQtMainWindow::initAllFilters() {
             rendererWidget->update();
         });
 
+    connect(ui->menu_meshprocess->addAction("IncrementalRemeshing"), &QAction::triggered,
+        this, [&](bool checked) {
+            IncrementalRemeshing::Pointer fp = IncrementalRemeshing::New();
+            fp->SetInput(rendererWidget->GetScene()->GetCurrentModel()->GetDataObject());
+            fp->Execute();
+            rendererWidget->update();
+        });
+
+    //connect(ui->menu_meshprocess->addAction("IncrementalRemeshing_0"), &QAction::triggered,
+    //    this, [&](bool checked) {
+    //        IncrementalRemeshing::Pointer fp = IncrementalRemeshing::New();
+    //        fp->SetInput(rendererWidget->GetScene()->GetCurrentModel()->GetDataObject());
+    //        fp->SetDraw(rendererWidget->GetScene()->GetCurrentModel()->GetPainter());
+    //        fp->SetStep(0);
+    //        fp->Execute();
+    //        rendererWidget->update();
+    //    });
+
+    //connect(ui->menu_meshprocess->addAction("IncrementalRemeshing_1"), &QAction::triggered,
+    //    this, [&](bool checked) {
+    //        IncrementalRemeshing::Pointer fp = IncrementalRemeshing::New();
+    //        fp->SetInput(rendererWidget->GetScene()->GetCurrentModel()->GetDataObject());
+    //        fp->SetDraw(rendererWidget->GetScene()->GetCurrentModel()->GetPainter());
+    //        fp->SetStep(1);
+    //        fp->Execute();
+    //        rendererWidget->update();
+    //    });
+
+    //connect(ui->menu_meshprocess->addAction("IncrementalRemeshing_2"), &QAction::triggered,
+    //    this, [&](bool checked) {
+    //        IncrementalRemeshing::Pointer fp = IncrementalRemeshing::New();
+    //        fp->SetInput(rendererWidget->GetScene()->GetCurrentModel()->GetDataObject());
+    //        fp->SetDraw(rendererWidget->GetScene()->GetCurrentModel()->GetPainter());
+    //        fp->SetStep(2);
+    //        fp->Execute();
+    //        rendererWidget->update();
+    //    });
+
+    //connect(ui->menu_meshprocess->addAction("IncrementalRemeshing_3"), &QAction::triggered,
+    //    this, [&](bool checked) {
+    //        IncrementalRemeshing::Pointer fp = IncrementalRemeshing::New();
+    //        fp->SetInput(rendererWidget->GetScene()->GetCurrentModel()->GetDataObject());
+    //        fp->SetDraw(rendererWidget->GetScene()->GetCurrentModel()->GetPainter());
+    //        fp->SetStep(3);
+    //        fp->Execute();
+    //        rendererWidget->update();
+    //    });
+
+    //connect(ui->menu_meshprocess->addAction("IncrementalRemeshing_4"), &QAction::triggered,
+    //    this, [&](bool checked) {
+    //        IncrementalRemeshing::Pointer fp = IncrementalRemeshing::New();
+    //        fp->SetInput(rendererWidget->GetScene()->GetCurrentModel()->GetDataObject());
+    //        fp->SetDraw(rendererWidget->GetScene()->GetCurrentModel()->GetPainter());
+    //        fp->SetStep(4);
+    //        fp->Execute();
+    //        rendererWidget->update();
+    //    });
+
+    //connect(ui->menu_meshprocess->addAction("IncrementalRemeshing_5"), &QAction::triggered,
+    //    this, [&](bool checked) {
+    //        IncrementalRemeshing::Pointer fp = IncrementalRemeshing::New();
+    //        fp->SetInput(rendererWidget->GetScene()->GetCurrentModel()->GetDataObject());
+    //        fp->SetStep(5);
+    //        fp->Execute();
+    //        rendererWidget->update();
+    //    });
 
     auto action_tensorview = ui->menu_help->addAction("tensorview");
     connect(action_tensorview, &QAction::triggered, this, [&](bool checked) {

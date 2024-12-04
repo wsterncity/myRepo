@@ -21,4 +21,5 @@
 #include "iGameMorphing.h"
 #include "iGameNPolyVectorFields.h"
 #include "N-PolyVector.h"
+#include "iGameIncrementalRemeshing.h"
 #include <windows.h>

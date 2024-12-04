@@ -226,6 +226,13 @@ bool SurfaceMesh::GetPointToOneRingPoints(const IGsize ptId,
     }
     return link.size;
 }
+
+int SurfaceMesh::GetPointValence(const IGsize ptId)
+{
+    assert(ptId < GetNumberOfPoints() && "ptId too large");
+    return m_EdgeLinks->GetLink(ptId).size;
+}
+
 int SurfaceMesh::GetPointToNeighborEdges(const IGsize ptId, igIndex* edgeIds) {
     assert(ptId < GetNumberOfPoints() && "ptId too large");
     auto& link = m_EdgeLinks->GetLink(ptId);

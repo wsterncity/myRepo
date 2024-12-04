@@ -73,6 +73,8 @@ public:
     bool GetPointToOneRingPoints(const IGsize ptId,
                                  IdArray::Pointer ptIds); // Safe
 
+    int GetPointValence(const IGsize ptId);
+
     // Get all neighboring edges of a point. Return the size of indices.
     int GetPointToNeighborEdges(const IGsize ptId,
                                 igIndex* edgeIds); // Unsafe: Stake overflow
