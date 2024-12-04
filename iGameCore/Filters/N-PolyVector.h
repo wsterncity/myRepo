@@ -15,7 +15,6 @@
 
 #include "iGameSceneManager.h"
 
-#define PI 3.1415926
 IGAME_NAMESPACE_BEGIN
     class N_PolyMesh : public Filter
     {

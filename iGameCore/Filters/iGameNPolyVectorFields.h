@@ -8,7 +8,6 @@
 #include<string>
 #include "iGameFilter.h"
 #include "iGameSurfaceMesh.h"
-#define PI 3.14159265358979323846
 IGAME_NAMESPACE_BEGIN
 
 class  NPolyVectorFields : public Filter {
@@ -197,7 +196,7 @@ protected:
 			double arg = std::arg(f_dir[i]) / 4;
 			for (int j = 0; j < 4; j++)
 			{
-				crossfield[i * 4 + j] = f_base[i * 2] * length * cos(arg + j * PI / 2) + f_base[i * 2 + 1] * length * sin(arg + j * PI / 2);
+				crossfield[i * 4 + j] = f_base[i * 2] * length * cos(arg + j * M_PI / 2) + f_base[i * 2 + 1] * length * sin(arg + j * M_PI / 2);
 			}
 		}
 	}

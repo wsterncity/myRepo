@@ -718,6 +718,16 @@ void igQtMainWindow::initAllFilters() {
     //        rendererWidget->update();
     //    });
 
+    connect(ui->menu_meshprocess->addAction("OptimalDelaunayTriangulation"), &QAction::triggered,
+        this, [&](bool checked) {
+            ODT::Pointer fp = ODT::New();
+            fp->SetInput(rendererWidget->GetScene()->GetCurrentModel()->GetDataObject());
+            fp->SetPainter(rendererWidget->GetScene()->GetCurrentModel()->GetPainter());
+            fp->Execute();
+            rendererWidget->update();
+        });
+
+
     auto action_tensorview = ui->menu_help->addAction("tensorview");
     connect(action_tensorview, &QAction::triggered, this, [&](bool checked) {
         clock_t time1 = clock();

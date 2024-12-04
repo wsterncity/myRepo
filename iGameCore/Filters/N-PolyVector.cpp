@@ -133,9 +133,9 @@ void N_PolyMesh::n_polymesh() {
         double arg = std::arg(f_dir[i]) / 4;
         for (int j = 0; j < 4; j++) {
             crossfield[i * 4 + j] =
-                    f_base[i * 2] * length * cos(arg + j * PI / 2) + f_base[
+                    f_base[i * 2] * length * cos(arg + j * M_PI / 2) + f_base[
                         i * 2 + 1] * length *
-                    sin(arg + j * PI / 2);
+                    sin(arg + j * M_PI / 2);
         }
     }
     std::vector<float> lines;

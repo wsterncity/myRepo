@@ -22,4 +22,5 @@
 #include "iGameNPolyVectorFields.h"
 #include "N-PolyVector.h"
 #include "iGameIncrementalRemeshing.h"
+#include "iGameOptimalDelaunayTriangulation.h"
 #include <windows.h>
