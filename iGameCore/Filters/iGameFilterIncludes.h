@@ -23,4 +23,5 @@
 #include "N-PolyVector.h"
 #include "iGameIncrementalRemeshing.h"
 #include "iGameOptimalDelaunayTriangulation.h"
+#include "iGameOptimalShapeProxies.h"
 #include <windows.h>

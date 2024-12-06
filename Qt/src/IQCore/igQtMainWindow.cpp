@@ -727,6 +727,15 @@ void igQtMainWindow::initAllFilters() {
             rendererWidget->update();
         });
 
+    connect(ui->menu_meshprocess->addAction("iGameOptimalShapeProxies"), &QAction::triggered,
+        this, [&](bool checked) {
+            OSP::Pointer fp = OSP::New();
+            fp->SetInput(rendererWidget->GetScene()->GetCurrentModel()->GetDataObject());
+            fp->SetPainter(rendererWidget->GetScene()->GetCurrentModel()->GetPainter());
+            fp->Execute();
+            rendererWidget->update();
+        });
+
 
     auto action_tensorview = ui->menu_help->addAction("tensorview");
     connect(action_tensorview, &QAction::triggered, this, [&](bool checked) {
