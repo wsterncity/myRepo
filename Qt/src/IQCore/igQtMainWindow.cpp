@@ -655,6 +655,7 @@ void igQtMainWindow::initAllFilters() {
         this, [&](bool checked) {
             IncrementalRemeshing::Pointer fp = IncrementalRemeshing::New();
             fp->SetInput(rendererWidget->GetScene()->GetCurrentModel()->GetDataObject());
+            fp->SetDraw(rendererWidget->GetScene()->GetCurrentModel()->GetPainter());
             fp->Execute();
             rendererWidget->update();
         });

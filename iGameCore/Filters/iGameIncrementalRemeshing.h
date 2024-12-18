@@ -310,13 +310,25 @@ protected:
 		if(mesh->IsBoundaryPoint(survivalVid) || mesh->IsBoundaryPoint(extinctVid)) return false;
 		if((extinctPoint - survivalPoint).length() > low) return false;
 
-		igIndex OneRingVids[64];
-		int vvnum = mesh->GetPointToOneRingPoints(extinctVid, OneRingVids);
-		for(int i=0;i<vvnum;i++)
-			if((mesh->GetPoint(OneRingVids[i]) - survivalPoint).length() > high)
+		igIndex eOneRingVids[64], sOneRingVids[64];
+		int evvnum = mesh->GetPointToOneRingPoints(extinctVid, eOneRingVids);
+		int svvnum = mesh->GetPointToOneRingPoints(survivalVid, sOneRingVids);
+		for(int i=0;i<evvnum;i++)
+			if((mesh->GetPoint(eOneRingVids[i]) - survivalPoint).length() > high)
 				return false;
 		
+		//For triangular mesh, two vertices only share two common points
+		int samePointNum = 0;
+		for(int i = 0; i< evvnum; i++)
+			for(int j = 0; j < svvnum; j++)
+				if(eOneRingVids[i] == sOneRingVids[j]) samePointNum ++;
+		if(samePointNum > 2) return false;
+
+
+		
 		int facenum = mesh->GetEdgeToNeighborFaces(eid, fids);
+		
+		//For a triangular face, the other two edge cannot both be boundary edges
 		for(int i=0;i<facenum;i++)
 		{
 			igIndex feids[64];
@@ -327,6 +339,10 @@ protected:
 			if(mesh->IsBoundaryEdge(feids[(loc+1)%3]) && mesh->IsBoundaryEdge(feids[(loc+2)%3]))
 				return false;
 		}
+
+		// edge between two boundary vertices should be a boundary edge
+		if (mesh->IsBoundaryPoint(survivalVid) && mesh->IsBoundaryPoint(extinctVid) && !mesh->IsBoundaryEdge(mesh->GetEdgeIdFormPointIds(survivalVid, extinctVid)))
+			return false;
 
 		return true;
 	}
